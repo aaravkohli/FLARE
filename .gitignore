@@ -26,6 +26,7 @@ ENV/
 *.log
 *.out
 *.err
+logs/
 orchestrator_startup.log
 uvicorn_startup.log
 
@@ -41,6 +42,7 @@ dist/
 # Project-generated artifacts
 benchmarks/
 .benchmarks/
+models/
 experiments/*.csv
 
 # Editor settings
