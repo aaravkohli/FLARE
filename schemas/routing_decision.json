@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "RoutingDecision",
+  "description": "RL agent output: selected path and associated metrics",
+  "type": "object",
+  "required": ["action_id", "path_name", "reward", "recovery_ms"],
+  "additionalProperties": false,
+  "properties": {
+    "action_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2,
+      "description": "RL action index (0=direct, 1=satellite, 2=mesh)"
+    },
+    "path_name": {
+      "type": "string",
+      "enum": ["direct", "satellite", "mesh"],
+      "description": "Selected communication path name"
+    },
+    "reward": {
+      "type": "number",
+      "description": "RL step reward for this decision"
+    },
+    "recovery_ms": {
+      "type": ["number", "null"],
+      "minimum": 0,
+      "description": "Time to recover from jamming in milliseconds (null if no jamming detected)"
+    },
+    "threat_level": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH"],
+      "description": "Aggregated threat level label"
+    }
+  }
+}

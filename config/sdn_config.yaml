@@ -1,0 +1,35 @@
+# =============================================================================
+# config/sdn_config.yaml
+# SDN controller settings and failover priority.
+# =============================================================================
+
+controller:
+  host: "127.0.0.1"
+  port: 8080
+  timeout_s: 1.0
+
+# Deterministic failover priority order.
+# System walks this list top-to-bottom until an available path is found.
+failover_priority:
+  - direct
+  - satellite
+  - mesh
+  - fallback     # Hardcoded default; always available (mesh port pre-installed)
+
+# Port mapping for each path on the OpenFlow switch (REAL mode only)
+port_map:
+  direct: 1
+  satellite: 2
+  mesh: 3
+  fallback: 3    # fallback uses mesh port
+
+# Flow rule priorities (higher = preferred by switch)
+flow_priority:
+  direct: 100
+  satellite: 90
+  mesh: 80
+  fallback: 10   # lowest priority table-miss rule
+
+mock:
+  log_to_file: true
+  log_path: "logs/mock_sdn.log"

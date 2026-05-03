@@ -1,0 +1,142 @@
+# =============================================================================
+# docker-compose.dev.yml — SIMULATION MODE
+# All services use mock SDN and synthetic data.
+# No Open vSwitch or real RF hardware required.
+# =============================================================================
+
+version: "3.9"
+
+networks:
+  antijam-net:
+    driver: bridge
+
+volumes:
+  models:
+  experiments:
+  logs:
+
+services:
+
+  # ── FL Server ─────────────────────────────────────────────────────────────
+  fl-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fl
+    container_name: fl-server
+    networks: [antijam-net]
+    ports:
+      - "8090:8090"
+    volumes:
+      - models:/app/models
+    environment:
+      - PYTHONPATH=/app
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.connect(('localhost',8090))\" 2>/dev/null && echo ok || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  # ── FL Clients (3 simulated drones) ───────────────────────────────────────
+  fl-client-1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fl
+    container_name: fl-client-1
+    networks: [antijam-net]
+    volumes:
+      - models:/app/models
+    environment:
+      - PYTHONPATH=/app
+    command: python fl/client.py --client_id drone_1 --server_address fl-server:8090
+    depends_on:
+      fl-server:
+        condition: service_healthy
+
+  fl-client-2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fl
+    container_name: fl-client-2
+    networks: [antijam-net]
+    volumes:
+      - models:/app/models
+    environment:
+      - PYTHONPATH=/app
+    command: python fl/client.py --client_id drone_2 --server_address fl-server:8090
+    depends_on:
+      fl-server:
+        condition: service_healthy
+
+  fl-client-3:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fl
+    container_name: fl-client-3
+    networks: [antijam-net]
+    volumes:
+      - models:/app/models
+    environment:
+      - PYTHONPATH=/app
+    command: python fl/client.py --client_id drone_3 --server_address fl-server:8090 --jammed
+    depends_on:
+      fl-server:
+        condition: service_healthy
+
+  # ── Mock SDN Controller ────────────────────────────────────────────────────
+  mock-sdn:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.sdn
+    container_name: mock-sdn
+    networks: [antijam-net]
+    ports:
+      - "8080:8080"
+    volumes:
+      - logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  # ── API + Orchestrator ────────────────────────────────────────────────────
+  api-orchestrator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: api-orchestrator
+    networks: [antijam-net]
+    ports:
+      - "8000:8000"
+    volumes:
+      - models:/app/models
+      - experiments:/app/experiments
+      - logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - MODE=simulation
+    depends_on:
+      mock-sdn:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+    # Run both API server and orchestrator loop via a small entrypoint
+    command: >
+      sh -c "uvicorn api.server:app --host 0.0.0.0 --port 8000 &
+             python -m orchestrator.loop"
+
+  # ── Redis (optional pub/sub) ───────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    networks: [antijam-net]
+    ports:
+      - "6379:6379"
+    profiles: ["redis"]   # only starts if --profile redis is passed

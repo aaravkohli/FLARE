@@ -1,0 +1,63 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "DroneRFMetrics",
+  "description": "Per-drone RF metric snapshot across all 3 communication paths",
+  "type": "object",
+  "required": ["drone_id", "timestamp", "paths"],
+  "additionalProperties": false,
+  "properties": {
+    "drone_id": {
+      "type": "string",
+      "description": "Unique drone identifier"
+    },
+    "timestamp": {
+      "type": "number",
+      "description": "Unix epoch timestamp (seconds)"
+    },
+    "paths": {
+      "type": "array",
+      "description": "Metrics for each of the 3 communication paths",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": ["path_id", "rssi", "pdr", "sinr", "latency", "packet_loss"],
+        "additionalProperties": false,
+        "properties": {
+          "path_id": {
+            "type": "string",
+            "enum": ["direct", "satellite", "mesh"],
+            "description": "Communication path identifier"
+          },
+          "rssi": {
+            "type": "number",
+            "minimum": -120,
+            "maximum": 0,
+            "description": "Received Signal Strength Indicator (dBm)"
+          },
+          "pdr": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Packet Delivery Ratio (0–1)"
+          },
+          "sinr": {
+            "type": "number",
+            "description": "Signal-to-Interference-plus-Noise Ratio (dB)"
+          },
+          "latency": {
+            "type": "number",
+            "minimum": 0,
+            "description": "One-way latency in milliseconds"
+          },
+          "packet_loss": {
+            "type": "number",
+            "minimum": 0,
+            "maximum": 1,
+            "description": "Fraction of packets lost (0–1)"
+          }
+        }
+      }
+    }
+  }
+}

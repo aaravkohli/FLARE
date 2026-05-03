@@ -1,0 +1,22 @@
+{
+  "drone_1": {
+    "direct": false,
+    "satellite": false,
+    "mesh": false
+  },
+  "drone_2": {
+    "direct": false,
+    "satellite": false,
+    "mesh": false
+  },
+  "drone_3": {
+    "direct": false,
+    "satellite": false,
+    "mesh": false
+  },
+  "all": {
+    "satellite": false,
+    "mesh": false,
+    "direct": false
+  }
+}

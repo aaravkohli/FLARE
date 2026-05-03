@@ -1,0 +1,32 @@
+# =============================================================================
+# config/rl_config.yaml
+# Reinforcement Learning environment and training parameters.
+# =============================================================================
+
+environment:
+  num_paths: 3               # direct=0, satellite=1, mesh=2
+  latency_window: 3          # Steps of latency history in observation
+  obs_dim: 11                # path_scores(3) + prev_action_onehot(3) + lat_hist(3) + prev_reward(1) + step_norm(1)
+  max_steps: 500             # Episode length
+
+reward:
+  w_throughput: 1.0
+  w_delay: 0.6
+  w_energy: 0.3
+  w_loss: 0.8
+  # reward = w_throughput*T - w_delay*D - w_energy*E - w_loss*L
+  # All terms normalised to [0, 1] before weighting
+
+training:
+  total_timesteps: 50000
+  learning_rate: 0.0001
+  batch_size: 64
+  buffer_size: 10000
+  exploration_fraction: 0.2
+  exploration_final_eps: 0.05
+  train_freq: 4
+  target_update_interval: 1000
+
+paths:
+  model_save: "models/rl_model.zip"
+  log_dir: "logs/rl_tensorboard"

@@ -1,0 +1,47 @@
+.DS_Store
+.env
+.env.*
+
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Logs and runtime output
+*.log
+*.out
+*.err
+orchestrator_startup.log
+uvicorn_startup.log
+
+# Build and packaging artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Project-generated artifacts
+benchmarks/
+.benchmarks/
+experiments/*.csv
+
+# Editor settings
+.vscode/

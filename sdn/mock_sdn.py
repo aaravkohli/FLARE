@@ -1,0 +1,152 @@
+"""
+sdn/mock_sdn.py — [MOCK] [SIMULATION MODE ONLY]
+Mock SDN REST stub that simulates flow rule installation without
+requiring Open vSwitch or a real Ryu controller.
+
+Runs as a lightweight FastAPI server on port 8080.
+Accepts the same POST /sdn/route request as the real Ryu controller.
+Logs all decisions to logs/mock_sdn.log.
+
+Usage:
+  python sdn/mock_sdn.py
+"""
+
+import logging
+import sys
+import time
+from pathlib import Path
+
+# Ensure project root is on sys.path when running as `python sdn/mock_sdn.py`
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
+import uvicorn
+import yaml
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, field_validator
+
+_BASE = Path(__file__).parent.parent
+_SDN_CFG = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
+_MOCK_CFG = _SDN_CFG.get("mock", {})
+_FAILOVER = _SDN_CFG["failover_priority"]
+
+VALID_PATHS = {"direct", "satellite", "mesh", "fallback"}
+
+# Setup logging
+Path(_BASE / "logs").mkdir(exist_ok=True)
+log_path = _BASE / _MOCK_CFG.get("log_path", "logs/mock_sdn.log")
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [MOCK-SDN] %(message)s",
+    handlers=[
+        logging.FileHandler(log_path),
+        logging.StreamHandler(),
+    ],
+)
+logger = logging.getLogger(__name__)
+
+app = FastAPI(title="Mock SDN Controller", version="1.0.0")
+
+# Simulated switch state
+_flow_table: dict = {}
+_available_paths = {"direct", "satellite", "mesh"}  # All paths up by default
+
+
+class RouteRequest(BaseModel):
+    path_name: str
+    action_id: int
+    drone_id: str = "drone_1"
+    priority: int = 100
+
+    @field_validator("path_name")
+    @classmethod
+    def validate_path(cls, v):
+        if v not in VALID_PATHS:
+            raise ValueError(f"Invalid path: {v}. Must be one of {VALID_PATHS}")
+        return v
+
+
+class RouteResponse(BaseModel):
+    status: str
+    installed_path: str
+    flow_priority: int
+    timestamp: float
+    note: str
+
+
+def _select_safe_path(requested: str) -> str:
+    """Walk failover priority until an available path is found."""
+    if requested in _available_paths:
+        return requested
+    for fallback in _FAILOVER:
+        if fallback in _available_paths or fallback == "fallback":
+            logger.warning(
+                "Requested path '%s' unavailable. Falling back to '%s'.", requested, fallback
+            )
+            return fallback
+    return "fallback"
+
+
+@app.post("/sdn/route", response_model=RouteResponse)
+async def install_route(req: RouteRequest) -> RouteResponse:
+    """
+    Simulate installing a flow rule on the virtual switch.
+    Implements deterministic failover if the requested path is unavailable.
+    """
+    safe_path = _select_safe_path(req.path_name)
+    priority = _SDN_CFG["flow_priority"].get(safe_path, 10)
+
+    # Update simulated flow table
+    _flow_table[req.drone_id] = {
+        "path": safe_path,
+        "priority": priority,
+        "installed_at": time.time(),
+    }
+
+    note = "DIRECT INSTALL" if safe_path == req.path_name else f"FAILOVER from {req.path_name}"
+    logger.info(
+        "drone=%s | path=%s | priority=%d | %s",
+        req.drone_id, safe_path, priority, note,
+    )
+
+    return RouteResponse(
+        status="ok",
+        installed_path=safe_path,
+        flow_priority=priority,
+        timestamp=time.time(),
+        note=note,
+    )
+
+
+@app.get("/sdn/flows")
+async def get_flow_table() -> dict:
+    """Return current simulated flow table."""
+    return {"flow_table": _flow_table, "available_paths": list(_available_paths)}
+
+
+@app.post("/sdn/simulate/fail/{path}")
+async def simulate_path_failure(path: str) -> dict:
+    """Mark a path as unavailable (for testing failover)."""
+    if path not in VALID_PATHS:
+        raise HTTPException(status_code=400, detail=f"Unknown path: {path}")
+    _available_paths.discard(path)
+    logger.warning("Path '%s' marked as UNAVAILABLE (simulated failure).", path)
+    return {"status": "ok", "unavailable_paths": list(VALID_PATHS - _available_paths)}
+
+
+@app.post("/sdn/simulate/restore/{path}")
+async def simulate_path_restore(path: str) -> dict:
+    """Restore a previously failed path."""
+    _available_paths.add(path)
+    logger.info("Path '%s' RESTORED.", path)
+    return {"status": "ok", "available_paths": list(_available_paths)}
+
+
+@app.get("/health")
+async def health() -> dict:
+    return {"status": "ok", "mode": "mock", "flows": len(_flow_table)}
+
+
+if __name__ == "__main__":
+    port = _SDN_CFG["controller"]["port"]
+    logger.info("Mock SDN controller starting on port %d", port)
+    uvicorn.run(app, host="0.0.0.0", port=port)

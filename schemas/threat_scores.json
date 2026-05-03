@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "ThreatScores",
+  "description": "FL model output: per-path threat scores, confidence, and attack classification",
+  "type": "object",
+  "required": ["drone_id", "timestamp", "path_scores", "confidence", "attack_type"],
+  "additionalProperties": false,
+  "properties": {
+    "drone_id": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "number"
+    },
+    "path_scores": {
+      "type": "array",
+      "description": "Threat score per path [direct, satellite, mesh], range 0–1 (1 = highest threat)",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {
+        "type": "number",
+        "minimum": 0,
+        "maximum": 1
+      }
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1,
+      "description": "Model confidence in the prediction (entropy-based, 1 = fully confident)"
+    },
+    "attack_type": {
+      "type": "string",
+      "enum": ["none", "barrage", "sweep", "spot", "unknown"],
+      "description": "Classified jamming attack type"
+    }
+  }
+}

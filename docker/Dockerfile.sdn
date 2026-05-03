@@ -1,0 +1,17 @@
+# Python 3.9 required for Ryu compatibility
+FROM python:3.9-slim
+
+WORKDIR /app
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
+
+RUN pip install --no-cache-dir ryu fastapi uvicorn pyyaml
+
+COPY sdn/ sdn/
+COPY config/ config/
+ENV PYTHONPATH=/app
+
+HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
+  CMD curl -f http://localhost:8080/health || exit 1
+
+# Default: run mock SDN (change CMD for real Ryu: ryu-manager sdn/controller.py)
+CMD ["python", "sdn/mock_sdn.py"]

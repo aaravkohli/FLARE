@@ -1,0 +1,19 @@
+# =============================================================================
+# config/mode.yaml
+# System execution mode selector.
+# Change 'mode' to 'real' to use Ryu + Open vSwitch.
+# =============================================================================
+
+mode: simulation   # Options: simulation | real
+
+simulation:
+  sdn_backend: mock          # Uses sdn/mock_sdn.py — no OpenFlow required
+  data_source: synthetic     # Uses simulation/generator.py
+  loop_interval_s: 0.5       # Orchestrator loop frequency
+
+real:
+  sdn_backend: ryu           # Uses sdn/controller.py + Open vSwitch
+  data_source: live          # Expects real RF sensor feed on /metrics endpoint
+  ryu_host: "127.0.0.1"
+  ryu_port: 8080
+  loop_interval_s: 0.5

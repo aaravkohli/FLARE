@@ -1,0 +1,107 @@
+# =============================================================================
+# docker-compose.prod.yml — REAL MODE
+# Requires Open vSwitch and Ryu. See README for OVS setup steps.
+# =============================================================================
+
+version: "3.9"
+
+networks:
+  antijam-net:
+    driver: bridge
+
+volumes:
+  models:
+  experiments:
+  logs:
+
+services:
+
+  fl-server:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fl
+    container_name: fl-server
+    networks: [antijam-net]
+    ports:
+      - "8090:8090"
+    volumes:
+      - models:/app/models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.connect(('localhost',8090))\" 2>/dev/null && echo ok || exit 1"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  fl-client-1:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fl
+    networks: [antijam-net]
+    volumes:
+      - models:/app/models
+    command: python fl/client.py --client_id drone_1 --server_address fl-server:8090
+    restart: on-failure
+    depends_on:
+      fl-server:
+        condition: service_healthy
+
+  fl-client-2:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.fl
+    networks: [antijam-net]
+    volumes:
+      - models:/app/models
+    command: python fl/client.py --client_id drone_2 --server_address fl-server:8090
+    restart: on-failure
+    depends_on:
+      fl-server:
+        condition: service_healthy
+
+  # ── REAL Ryu SDN Controller (Python 3.9 image) ────────────────────────────
+  # Ensure OVS is running on host: ovs-vsctl set-controller br0 tcp:127.0.0.1:6633
+  sdn-controller:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.sdn
+    container_name: sdn-controller
+    networks: [antijam-net]
+    ports:
+      - "8080:8080"   # REST API
+      - "6633:6633"   # OpenFlow
+    volumes:
+      - logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+    command: ryu-manager sdn/controller.py --ofp-tcp-listen-port 6633
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  api-orchestrator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: api-orchestrator
+    networks: [antijam-net]
+    ports:
+      - "8000:8000"
+    volumes:
+      - models:/app/models
+      - experiments:/app/experiments
+      - logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - MODE=real
+    depends_on:
+      sdn-controller:
+        condition: service_healthy
+    restart: unless-stopped
+    command: >
+      sh -c "uvicorn api.server:app --host 0.0.0.0 --port 8000 &
+             python -m orchestrator.loop"

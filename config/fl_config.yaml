@@ -1,0 +1,45 @@
+# =============================================================================
+# config/fl_config.yaml
+# Federated Learning hyperparameters and security settings.
+# =============================================================================
+
+model:
+  input_features: 5          # rssi, pdr, sinr, latency, packet_loss
+  sequence_len: 10           # Time-window length fed to BiLSTM
+  hidden_size: 64            # BiLSTM hidden units (per direction)
+  num_layers: 2              # BiLSTM stacked layers
+  dropout: 0.2
+  num_paths: 3               # direct, satellite, mesh
+  num_attack_classes: 5      # none, barrage, sweep, spot, unknown
+
+training:
+  local_epochs: 3            # Epochs per FL round on each client
+  batch_size: 32
+  learning_rate: 0.001
+  loss_weight_threat: 1.0    # Weight for BCE path-threat loss
+  loss_weight_attack: 0.5    # Weight for CrossEntropy attack-type loss
+
+federation:
+  num_rounds: 20             # Total FL rounds
+  min_clients: 2             # Minimum clients required to start a round
+  fraction_fit: 1.0          # Fraction of clients used in each round
+  server_address: "0.0.0.0:8090"
+
+security:
+  clip_norm: 5.0             # Max L2 norm for gradient clipping
+  anomaly_z_threshold: 2.5   # Z-score threshold to flag poisoned updates
+  use_trimmed_mean: true     # Use trimmed mean instead of plain FedAvg
+  trim_ratio: 0.10           # Fraction to trim from each tail
+
+drift_detection:
+  enabled: true
+  ks_p_threshold: 0.05       # KS test p-value to declare concept drift
+
+lifecycle:
+  retrain_interval_minutes: 60
+  min_clients_for_retrain: 2
+  checkpoint_promotion_threshold: 0.85   # Minimum F1 to promote a checkpoint
+
+paths:
+  model_save: "models/fl_model.pth"
+  checkpoint_save: "models/fl_model_checkpoint.pth"

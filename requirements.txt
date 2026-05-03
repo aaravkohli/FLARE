@@ -1,0 +1,51 @@
+# Core ML / DL
+torch>=2.1.0
+numpy>=1.24.0
+scipy>=1.11.0
+
+# Federated Learning
+flwr>=1.7.0
+
+# Reinforcement Learning
+gymnasium>=0.29.0
+stable-baselines3>=2.2.0
+tensorboard>=2.14.0
+
+
+# API & Networking
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+httpx>=0.27.0
+pydantic>=2.0.0
+python-multipart>=0.0.9
+sse-starlette>=1.6.0
+aiosqlite>=0.19.0
+
+# Auth
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+
+# WebSockets
+websockets>=12.0
+
+# Orchestrator
+tenacity>=8.2.0
+pyyaml>=6.0
+
+# Schema validation
+jsonschema>=4.21.0
+
+# Baselines
+scikit-learn>=1.4.0
+
+# SDN (REAL mode only — comment out if not using Ryu)
+# ryu>=4.34
+
+# Optional pub/sub
+# redis>=5.0.0
+
+# Experiment logging
+# (csv and sqlite3 are stdlib — no extra package needed)
+
+# Dev / testing
+pytest>=8.0.0
