@@ -14,6 +14,10 @@ Action space: Discrete(3) — 0=direct, 1=satellite, 2=mesh
 Reward:
   reward = w1*throughput_norm - w2*delay_norm - w3*energy_norm - w4*loss_norm
   All terms normalised to [0, 1]. Weights from config/rl_config.yaml.
+
+Classes:
+  DronePathEnv          — synthetic random RF state (original, backward-compatible)
+  RealDataDronePathEnv  — replays rows from datasets/processed/test.csv
 """
 
 from pathlib import Path
@@ -21,6 +25,7 @@ from typing import Optional, Tuple
 
 import gymnasium as gym
 import numpy as np
+import pandas as pd
 import yaml
 
 _BASE = Path(__file__).parent.parent
@@ -213,3 +218,113 @@ class DronePathEnv(gym.Env):
             f"scores=[{','.join(f'{s:.2f}' for s in self._path_scores)}] | "
             f"action={PATH_NAMES[action]:9s} | reward={reward:+.3f}"
         )
+
+
+# ---------------------------------------------------------------------------
+# RealDataDronePathEnv — replays preprocessed dataset rows
+# ---------------------------------------------------------------------------
+
+class RealDataDronePathEnv(DronePathEnv):
+    """
+    Identical to DronePathEnv but drives RF state from a real dataset CSV
+    instead of random sampling.
+
+    On each reset(), a random window of max_steps rows is chosen from the CSV.
+    On each _evolve_rf_state(), the next row is consumed.
+    When the window is exhausted the episode terminates (or wraps around).
+
+    The CSV is expected to have columns:
+        rssi, pdr, sinr, latency, packet_loss, jammed
+    All values normalised to [0, 1] by preprocess.py.
+    """
+
+    def __init__(
+        self,
+        csv_path: Optional[Path] = None,
+        render_mode: Optional[str] = None,
+    ):
+        super().__init__(render_mode=render_mode)
+
+        # Default path from config
+        if csv_path is None:
+            configured = _RL_CFG.get("paths", {}).get("real_data_csv", "datasets/processed/test.csv")
+            csv_path = _BASE / configured
+
+        self._csv_path = csv_path
+        self._df: Optional[pd.DataFrame] = None
+        self._row_idx: int = 0
+        self._window_start: int = 0
+        self._loaded = False
+
+    def _load_data(self) -> None:
+        if self._loaded:
+            return
+        if not self._csv_path.exists():
+            raise FileNotFoundError(
+                f"Real data CSV not found: {self._csv_path}\n"
+                "Run: python datasets/preprocess.py"
+            )
+        self._df = pd.read_csv(self._csv_path)
+        # Keep only rows with all required columns
+        required = ["rssi", "pdr", "sinr", "latency", "packet_loss", "jammed"]
+        available = [c for c in required if c in self._df.columns]
+        self._df = self._df[available].dropna().reset_index(drop=True)
+        self._loaded = True
+        import logging
+        logging.getLogger(__name__).info(
+            "RealDataDronePathEnv loaded %d rows from %s",
+            len(self._df), self._csv_path.name,
+        )
+
+    def reset(
+        self, *, seed: Optional[int] = None, options: Optional[dict] = None
+    ) -> Tuple[np.ndarray, dict]:
+        super().reset(seed=seed, options=options)
+        self._load_data()
+
+        n = len(self._df)
+        # Pick a random starting row, leaving room for max_steps rows
+        max_start = max(0, n - self.max_steps - 1)
+        self._window_start = int(self.np_random.integers(0, max_start + 1))
+        self._row_idx = self._window_start
+        self._step = 0
+
+        # Seed path scores from first real row
+        self._apply_real_row()
+        obs = self._build_obs()
+        return obs, {}
+
+    def _apply_real_row(self) -> None:
+        """Set _path_scores and _jammed_paths from the current CSV row."""
+        if self._df is None or self._row_idx >= len(self._df):
+            # Wrap around
+        	self._row_idx = self._window_start
+
+        row = self._df.iloc[self._row_idx]
+        jammed_val = float(row.get("jammed", 0))
+
+        # SINR column gives the clearest signal quality indicator
+        sinr_norm = float(row.get("sinr", 0.5))  # already normalised [0,1]
+        # Path scores = threat probability = inverse of signal quality
+        # For simplicity broadcast the row's jamming state to all 3 paths
+        base_threat = jammed_val * (1.0 - sinr_norm) + (1.0 - jammed_val) * (sinr_norm * 0.1)
+
+        # Add small per-path jitter so paths aren't identical
+        noise = self.np_random.uniform(-0.05, 0.05, size=3).astype(np.float32)
+        self._path_scores = np.clip(
+            np.array([base_threat] * 3, dtype=np.float32) + noise, 0.0, 1.0
+        )
+        self._jammed_paths = self._path_scores > 0.5
+        self._row_idx += 1
+
+    def _evolve_rf_state(self) -> None:
+        """Override: consume next real dataset row instead of random sampling."""
+        self._apply_real_row()
+
+    def _get_latency_norm(self, action: int) -> float:
+        """Use real latency column when available."""
+        if self._df is not None and self._row_idx - 1 < len(self._df):
+            row = self._df.iloc[max(0, self._row_idx - 1)]
+            if "latency" in row.index:
+                return float(np.clip(row["latency"], 0.0, 1.0))  # already normalised
+        return super()._get_latency_norm(action)

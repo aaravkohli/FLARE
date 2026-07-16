@@ -1,8 +1,30 @@
 # =============================================================================
 # config/fl_config.yaml
-# Federated Learning hyperparameters and security settings.
+# Federated Learning hyperparameters — UPGRADED (FLARE v2)
+#
+# All new features are INDEPENDENTLY CONFIGURABLE via feature flags.
+# Set `enabled: false` on any section to disable it entirely (ablation study).
+#
+# Research references:
+#   - FedAvg:          McMahan et al., 2017. "Communication-Efficient Learning
+#                      of Deep Networks from Decentralized Data."
+#   - DP-SGD:          Abadi et al., 2016. "Deep Learning with Differential Privacy."
+#   - FedBuff:         Nguyen et al., 2022. "Federated Learning with Buffered
+#                      Asynchronous Aggregation."
+#   - pFedMe:          T. Dinh et al., 2020. "Personalized Federated Learning with
+#                      Moreau Envelopes."
+#   - Power-of-Choice: Lai et al., 2021. "Oort: Efficient Federated Learning via
+#                      Guided Participant Selection."
+#   - FedDF:           Lin et al., 2020. "Ensemble Distillation for Robust Model
+#                      Fusion in Federated Learning."
+#   - Top-K:           Alistarh et al., 2018. "QSGD: Communication-Efficient SGD."
+#   - SCAFFOLD:        Karimireddy et al., 2020. "SCAFFOLD: Stochastic Controlled
+#                      Averaging for Federated Learning."
 # =============================================================================
 
+# ---------------------------------------------------------------------------
+# Model architecture (backward compatible)
+# ---------------------------------------------------------------------------
 model:
   input_features: 5          # rssi, pdr, sinr, latency, packet_loss
   sequence_len: 10           # Time-window length fed to BiLSTM
@@ -12,34 +34,201 @@ model:
   num_paths: 3               # direct, satellite, mesh
   num_attack_classes: 5      # none, barrage, sweep, spot, unknown
 
+# ---------------------------------------------------------------------------
+# Local training
+# ---------------------------------------------------------------------------
 training:
-  local_epochs: 3            # Epochs per FL round on each client
-  batch_size: 32
-  learning_rate: 0.001
-  loss_weight_threat: 1.0    # Weight for BCE path-threat loss
-  loss_weight_attack: 0.5    # Weight for CrossEntropy attack-type loss
+  local_epochs: 5            # Epochs per FL round on each client
+  batch_size: 64
+  learning_rate: 0.0005
+  loss_weight_threat: 2.0    # BCE weight for path threat head
+  loss_weight_attack: 0.5    # CrossEntropy weight for attack type head
 
+# ---------------------------------------------------------------------------
+# Federation topology
+# ---------------------------------------------------------------------------
 federation:
-  num_rounds: 20             # Total FL rounds
-  min_clients: 2             # Minimum clients required to start a round
-  fraction_fit: 1.0          # Fraction of clients used in each round
+  num_rounds: 30
+  min_clients: 2
+  fraction_fit: 1.0
   server_address: "0.0.0.0:8090"
 
+# ---------------------------------------------------------------------------
+# Security (backward compatible — original 3-layer pipeline)
+# ---------------------------------------------------------------------------
 security:
-  clip_norm: 5.0             # Max L2 norm for gradient clipping
-  anomaly_z_threshold: 2.5   # Z-score threshold to flag poisoned updates
-  use_trimmed_mean: true     # Use trimmed mean instead of plain FedAvg
-  trim_ratio: 0.10           # Fraction to trim from each tail
+  clip_norm: 5.0             # L2 norm clip per client update (Layer 1)
+  anomaly_z_threshold: 2.5   # Z-score threshold for outlier exclusion (Layer 2)
+  use_trimmed_mean: true     # Trimmed mean vs FedAvg (Layer 3)
+  trim_ratio: 0.10
 
+# ---------------------------------------------------------------------------
+# [NEW] Differential Privacy
+# Reference: Abadi et al., 2016 (DP-SGD)
+# Reference: Mironov, 2017 (Rényi DP)
+#
+# Computational overhead: ~15% training slowdown on CPU (Opacus per-sample grads)
+# Memory overhead: ~2× model memory (per-sample gradient buffers)
+# ---------------------------------------------------------------------------
+differential_privacy:
+  enabled: true
+  # Client-side DP-SGD settings
+  client_side:
+    enabled: true
+    epsilon: 5.0             # Privacy budget per round (target ε ≈ 3–8)
+    delta: 1.0e-5            # Failure probability δ (typically 1/n_samples)
+    max_grad_norm: 1.0       # Per-sample gradient clipping norm C
+    noise_multiplier: 1.1    # σ = noise_multiplier (auto-computed if null)
+    # Rényi DP accounting
+    rdp_alpha_orders: [2, 4, 8, 16, 32, 64]
+  # Server-side post-aggregation Gaussian noise
+  server_side:
+    enabled: true
+    noise_scale: 0.01        # σ_server: small noise to protect aggregated update
+    sensitivity: 5.0         # Global sensitivity = clip_norm (from security section)
+
+# ---------------------------------------------------------------------------
+# [NEW] Model Compression + Communication-Efficient FL
+# Reference: Alistarh et al., 2018 (Top-K, QSGD)
+# Reference: Stich et al., 2018 (Error Feedback / Memory SGD)
+#
+# Computational overhead: negligible (<1% CPU on sparsify; sorting is O(d log d))
+# Communication reduction: ~100× at top_k_ratio=0.01
+# ---------------------------------------------------------------------------
+compression:
+  enabled: true
+  strategy: "topk"           # "topk" | "quantize" | "both" | "none"
+  # Top-K sparsification
+  topk:
+    ratio: 0.10              # Keep top 10% of gradient elements by magnitude
+    error_feedback: true     # Accumulate and add residual next round
+  # Quantization
+  quantize:
+    bits: 8                  # 8-bit quantization (float32 → int8)
+    stochastic: false        # Stochastic vs deterministic rounding
+
+# ---------------------------------------------------------------------------
+# [NEW] Trust Scores + Reputation Model
+# Reference: Cao et al., 2020. "FLTrust: Byzantine-robust Federated Learning."
+#
+# Computational overhead: O(n_clients) per round — negligible
+# ---------------------------------------------------------------------------
+trust:
+  enabled: true
+  alpha: 0.9                 # EMA decay factor for reputation update
+  tau_min: 0.2              # Minimum trust before quarantine
+  quarantine_rounds: 3       # Rounds to exclude a quarantined client
+  initial_trust: 1.0        # Starting trust for new clients
+  participation_bonus: 0.05  # Trust boost per consecutive participation
+
+# ---------------------------------------------------------------------------
+# [NEW] Adaptive Client Selection
+# Reference: Lai et al., 2021 (Power-of-Choice / Oort)
+# Reference: Auer et al., 2002 (UCB — Upper Confidence Bound)
+#
+# Computational overhead: O(n_candidates) scoring — negligible
+# ---------------------------------------------------------------------------
+client_selection:
+  enabled: true
+  strategy: "combined"       # "poco" | "ucb" | "combined" | "random"
+  # Power-of-Choice
+  poco:
+    candidate_multiplier: 2  # Sample d = K × candidate_multiplier candidates
+  # UCB exploration
+  ucb:
+    beta: 0.5                # Exploration bonus coefficient
+  # Combined
+  combined:
+    poco_weight: 0.6         # λ: weight of poco score in combined
+    ucb_weight: 0.4          # (1-λ): weight of ucb score in combined
+
+# ---------------------------------------------------------------------------
+# [NEW] Asynchronous FL (FedBuff-style emulation on top of Flower)
+# Reference: Nguyen et al., 2022 (FedBuff)
+#
+# Computational overhead: O(buffer_size) holding cost in RAM
+# ---------------------------------------------------------------------------
+async_fl:
+  enabled: false             # Off by default — enable for async experiments
+  buffer_size: 4             # K_async: aggregate when buffer reaches this size
+  max_staleness: 10          # Discard updates older than this many rounds
+  staleness_alpha: 1.0       # Staleness decay: weight = 1 / (staleness + 1)^α
+
+# ---------------------------------------------------------------------------
+# [NEW] Personalized Federated Learning (pFedMe)
+# Reference: T. Dinh et al., 2020 (pFedMe, Moreau Envelopes)
+#
+# Computational overhead: ~local_adapt_steps extra gradient steps per client
+# Memory overhead: 1 extra model copy per client
+# ---------------------------------------------------------------------------
+personalization:
+  enabled: true
+  lambda_prox: 0.1           # Proximal regularization strength λ
+  local_adapt_steps: 3       # Inner gradient steps for personalized model
+  head_only: true            # If true, only personalize the output heads
+
+# ---------------------------------------------------------------------------
+# [NEW] Knowledge Distillation (FedDF)
+# Reference: Lin et al., 2020 (FedDF, Ensemble Distillation)
+#
+# Computational overhead: KD run every kd_every_n_rounds on server
+# Memory overhead: holds all client models simultaneously for one pass
+# ---------------------------------------------------------------------------
+distillation:
+  enabled: true
+  temperature: 3.0           # Softmax temperature T for soft targets
+  kd_epochs: 5              # Distillation training epochs
+  kd_every_n_rounds: 10     # Run FedDF every N FL rounds (0 = every round)
+  proxy_samples: 500         # Synthetic RF sequences for proxy dataset
+  kd_lr: 0.001              # Learning rate for distillation step
+  alpha_kd: 0.7             # Weight for KD loss vs hard CE loss
+
+# ---------------------------------------------------------------------------
+# [NEW] Client Drift Detection (multi-signal)
+# Reference: Karimireddy et al., 2020 (SCAFFOLD — client drift formulation)
+#
+# Signal 1: Cosine similarity of consecutive gradient directions
+# Signal 2: KS test on RSSI distribution (existing, unified)
+# Signal 3: Loss ratio spike detection
+#
+# Computational overhead: O(d) cosine sim per client — negligible
+# ---------------------------------------------------------------------------
 drift_detection:
   enabled: true
-  ks_p_threshold: 0.05       # KS test p-value to declare concept drift
+  # KS test (existing, backward compatible)
+  ks_p_threshold: 0.05
+  # Cosine similarity
+  cosine:
+    enabled: true
+    threshold: 0.3            # Flag if cos_sim < 0.3 (strong direction change)
+  # Loss spike
+  loss_spike:
+    enabled: true
+    ratio_threshold: 2.0      # Flag if L_t / L_{t-1} > 2.0
+  # Combined drift score weights
+  weights:
+    cosine: 0.4
+    ks: 0.3
+    loss_spike: 0.3
+  # Threshold for combined drift score
+  combined_threshold: 0.5
+  # Action on drift detection
+  action: "flag"              # "flag" | "reset_momentum" | "increase_lr"
 
+# ---------------------------------------------------------------------------
+# Lifecycle / retraining (backward compatible)
+# ---------------------------------------------------------------------------
 lifecycle:
   retrain_interval_minutes: 60
   min_clients_for_retrain: 2
-  checkpoint_promotion_threshold: 0.85   # Minimum F1 to promote a checkpoint
+  checkpoint_promotion_threshold: 0.85
 
+# ---------------------------------------------------------------------------
+# Paths
+# ---------------------------------------------------------------------------
 paths:
   model_save: "models/fl_model.pth"
   checkpoint_save: "models/fl_model_checkpoint.pth"
+  metrics_csv: "results/fl_advanced_metrics.csv"
+  metrics_json: "results/fl_metrics_snapshot.json"
+  personalized_models: "models/personalized"

@@ -50,32 +50,52 @@ _JAMMED_RANGES = {
 }
 
 
-def _load_jam_state() -> Dict[str, Dict[str, bool]]:
-    """Load current jamming state from jam_state.json. Returns {drone_id: {path: is_jammed}}."""
-    default = {d: {p: False for p in PATHS} for d in DRONES}
+def _load_jam_state() -> dict:
+    """Load current jamming state from jam_state.json. Returns {drone_id: {profile: str, paths: [str]}}."""
+    default = {d: {"profile": "none", "paths": []} for d in DRONES}
     if not _JAM_STATE_FILE.exists():
         return default
     try:
         state = json.loads(_JAM_STATE_FILE.read_text())
-        # Ensure schema compatibility with old files
-        if "direct" in state and isinstance(state["direct"], bool):
-            return {d: state for d in DRONES}
+        # Compatibility handling for legacy binary structures
+        if isinstance(state, dict):
+            # If it's the old format where key is path and val is boolean
+            if "direct" in state and isinstance(state["direct"], bool):
+                jammed_paths = [p for p in PATHS if state[p]]
+                return {d: {"profile": "spot" if jammed_paths else "none", "paths": jammed_paths} for d in DRONES}
+            # If it's a nested dict of boolean paths
+            first_val = next(iter(state.values()))
+            if isinstance(first_val, dict) and "direct" in first_val and isinstance(first_val["direct"], bool):
+                new_state = {}
+                for d, paths_bool in state.items():
+                    jammed_paths = [p for p in PATHS if paths_bool.get(p, False)]
+                    new_state[d] = {"profile": "spot" if jammed_paths else "none", "paths": jammed_paths}
+                return new_state
         return state
     except (json.JSONDecodeError, OSError):
         return default
 
 
-def _sample_path_metrics(path: str, jammed: bool, rng: np.random.Generator,
+def _sample_path_metrics(path: str, jammed: bool, jam_profile: str, rng: np.random.Generator,
                          drone_offset: dict | None = None) -> dict:
-    """Sample one set of RF metrics for a path, normal or jammed, with per-drone offset."""
-    ranges = _JAMMED_RANGES[path] if jammed else _NORMAL_RANGES[path]
+    """Sample one set of RF metrics for a path, applying offset and specific EW jamming profile details."""
     offset = drone_offset or {"rssi": 0, "pdr": 0.0, "latency_factor": 1.0}
-
-    rssi        = float(np.clip(rng.uniform(*ranges["rssi"]) + offset["rssi"], -130, -20))
-    pdr         = float(np.clip(rng.uniform(*ranges["pdr"]) + offset["pdr"], 0.0, 1.0))
-    sinr        = float(rng.uniform(*ranges["sinr"]))
-    latency     = float(rng.uniform(*ranges["latency"]) * offset["latency_factor"])
-    packet_loss = float(np.clip(rng.uniform(*ranges["packet_loss"]), 0.0, 1.0))
+    
+    # Handle deceptive spoofing profile (subtle, deceptive degradation)
+    if jammed and jam_profile == "spoofing":
+        rssi        = float(np.clip(-70.0 + rng.uniform(-5.0, 5.0) + offset["rssi"], -130, -20))
+        pdr         = float(np.clip(0.82 + rng.uniform(-0.05, 0.05) + offset["pdr"], 0.0, 1.0))
+        sinr        = float(8.0 + rng.uniform(-2.0, 2.0))
+        latency     = float(np.clip((35.0 + rng.uniform(-10.0, 10.0)) * offset["latency_factor"], 0.0, 1000.0))
+        packet_loss = float(np.clip(0.08 + rng.uniform(-0.02, 0.02), 0.0, 1.0))
+    else:
+        # Default spot/barrage ranges
+        ranges = _JAMMED_RANGES[path] if jammed else _NORMAL_RANGES[path]
+        rssi        = float(np.clip(rng.uniform(*ranges["rssi"]) + offset["rssi"], -130, -20))
+        pdr         = float(np.clip(rng.uniform(*ranges["pdr"]) + offset["pdr"], 0.0, 1.0))
+        sinr        = float(rng.uniform(*ranges["sinr"]))
+        latency     = float(np.clip(rng.uniform(*ranges["latency"]) * offset["latency_factor"], 0.0, 1000.0))
+        packet_loss = float(np.clip(rng.uniform(*ranges["packet_loss"]), 0.0, 1.0))
 
     return {
         "path_id":     path,
@@ -89,19 +109,29 @@ def _sample_path_metrics(path: str, jammed: bool, rng: np.random.Generator,
 
 def generate_metrics(drone_id: str = "drone_1", seed: int | None = None) -> dict:
     """
-    Generate a single metrics snapshot for the given drone.
+    Generate a single metrics snapshot for the given drone, supporting advanced EW profiles.
     Conforms to schemas/metrics.json. Applies per-drone RF offset.
     """
     rng = np.random.default_rng(seed)
     jam_state = _load_jam_state()
-    # Default to unjammed if drone_id is unknown
-    drone_jam = jam_state.get(drone_id, {p: False for p in PATHS})
+    
+    drone_jam = jam_state.get(drone_id, {"profile": "none", "paths": []})
+    profile = drone_jam.get("profile", "none")
+    target_paths = set(drone_jam.get("paths", []))
     offset = _DRONE_OFFSET.get(drone_id, _DRONE_OFFSET["drone_1"])
+
+    # Expand active paths based on sweep/barrage logic
+    if profile == "barrage":
+        target_paths = set(PATHS)
+    elif profile == "sweep":
+        # Dynamic frequency/channel sweeping (changes active jammed path every 5 seconds)
+        active_idx = int(time.time() / 5.0) % len(PATHS)
+        target_paths = {PATHS[active_idx]}
 
     paths_data = []
     for path in PATHS:
-        is_jammed = drone_jam.get(path, False)
-        path_metrics = _sample_path_metrics(path, is_jammed, rng, offset)
+        is_jammed = (path in target_paths)
+        path_metrics = _sample_path_metrics(path, is_jammed, profile, rng, offset)
         paths_data.append(path_metrics)
 
     return {"drone_id": drone_id, "timestamp": time.time(), "paths": paths_data}
@@ -137,7 +167,7 @@ def metrics_to_tensor(metrics: dict, seq_len: int = 10) -> list:
 
         # Normalise to [0, 1] — explicit float32 to avoid silent float64 upcast
         mins  = np.array([-120.0, 0.0, -10.0,  0.0,   0.0], dtype=np.float32)
-        maxs  = np.array([ -40.0, 1.0,  30.0, 1000.0, 1.0], dtype=np.float32)
+        maxs  = np.array([ -20.0, 1.0,  30.0, 1000.0, 1.0], dtype=np.float32)
         feats = (feats - mins) / (maxs - mins + 1e-8)
         feats = np.clip(feats, 0.0, 1.0)
 

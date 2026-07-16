@@ -3,8 +3,21 @@ torch>=2.1.0
 numpy>=1.24.0
 scipy>=1.11.0
 
+# Data handling
+pandas>=2.0.0
+h5py>=3.9.0         # RadioML HDF5 parsing
+
+# Downloads & progress
+requests>=2.31.0
+tqdm>=4.66.0
+
+# Visualisation
+matplotlib>=3.7.0
+seaborn>=0.13.0
+
 # Federated Learning
 flwr>=1.7.0
+opacus>=1.4.0          # Differential Privacy (DP-SGD) — Abadi et al. 2016
 
 # Reinforcement Learning
 gymnasium>=0.29.0

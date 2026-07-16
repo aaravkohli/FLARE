@@ -26,15 +26,28 @@ VALID_PATHS = {"direct", "satellite", "mesh"}
 
 
 def _load_state() -> dict:
+    default = {d: {"profile": "none", "paths": []} for d in ["drone_1", "drone_2", "drone_3"]}
     if not _JAM_STATE_FILE.exists():
-        return {d: {p: False for p in VALID_PATHS} for d in ["drone_1", "drone_2", "drone_3"]}
+        return default
     try:
         state = json.loads(_JAM_STATE_FILE.read_text())
-        if "direct" in state and isinstance(state["direct"], bool):
-            return {d: state for d in ["drone_1", "drone_2", "drone_3"]}
+        # Compatibility handling
+        if isinstance(state, dict):
+            # Old style format
+            if "direct" in state and isinstance(state["direct"], bool):
+                jammed_paths = [p for p in VALID_PATHS if state[p]]
+                return {d: {"profile": "spot" if jammed_paths else "none", "paths": jammed_paths} for d in ["drone_1", "drone_2", "drone_3"]}
+            # Old nested format
+            first_val = next(iter(state.values()))
+            if isinstance(first_val, dict) and "direct" in first_val and isinstance(first_val["direct"], bool):
+                new_state = {}
+                for d, paths_bool in state.items():
+                    jammed_paths = [p for p in VALID_PATHS if paths_bool.get(p, False)]
+                    new_state[d] = {"profile": "spot" if jammed_paths else "none", "paths": jammed_paths}
+                return new_state
         return state
     except (json.JSONDecodeError, OSError):
-        return {d: {p: False for p in VALID_PATHS} for d in ["drone_1", "drone_2", "drone_3"]}
+        return default
 
 
 def _write_state(state: dict) -> None:
@@ -42,28 +55,31 @@ def _write_state(state: dict) -> None:
     _JAM_STATE_FILE.write_text(json.dumps(state, indent=2))
 
 
-def jam_paths(drone_id: str, paths: list[str], duration_s: float) -> None:
-    """Enable jamming on the specified paths for duration_s seconds for a specific drone."""
+def jam_paths(drone_id: str, paths: list[str], duration_s: float, profile: str = "spot") -> None:
+    """Enable jamming on the specified paths using the given EW profile for duration_s seconds for a specific drone."""
     invalid = set(paths) - VALID_PATHS
     if invalid:
         raise ValueError(f"Invalid path(s): {invalid}. Must be one of {VALID_PATHS}")
 
     state = _load_state()
-    if drone_id not in state:
-        state[drone_id] = {p: False for p in VALID_PATHS}
-        
-    for p in VALID_PATHS:
-        state[drone_id][p] = (p in paths)
+    if drone_id == "all":
+        from simulation.generator import DRONES
+        for d in DRONES:
+            state[d] = {"profile": profile, "paths": paths}
+    else:
+        if drone_id not in state:
+            state[drone_id] = {"profile": "none", "paths": []}
+        state[drone_id] = {"profile": profile, "paths": paths}
         
     _write_state(state)
-    logger.info("Jamming ACTIVE on %s for %s | Duration: %.1fs", paths, drone_id, duration_s)
+    logger.info("Jamming ACTIVE using profile '%s' on %s for %s | Duration: %.1fs", profile, paths, drone_id, duration_s)
 
     t0 = time.time()
     try:
         while time.time() - t0 < duration_s:
             elapsed = time.time() - t0
             remaining = duration_s - elapsed
-            logger.info("  [%s] Jamming... %.1fs / %.1fs (remaining: %.1fs)", drone_id, elapsed, duration_s, remaining)
+            logger.info("  [%s] Jamming (%s)... %.1fs / %.1fs", drone_id, profile, elapsed, duration_s)
             time.sleep(1.0)
     except KeyboardInterrupt:
         logger.info("Interrupted by user.")
@@ -77,12 +93,11 @@ def clear_jamming(drone_id: str = None) -> None:
     state = _load_state()
     
     if drone_id and drone_id != "all":
-        state[drone_id] = {p: False for p in VALID_PATHS}
+        state[drone_id] = {"profile": "none", "paths": []}
         logger.info("Jamming CLEARED for %s.", drone_id)
     else:
-        # Clear ALL drones in the known swarm
         for d in DRONES:
-            state[d] = {p: False for p in VALID_PATHS}
+            state[d] = {"profile": "none", "paths": []}
         logger.info("Jamming CLEARED — all paths restored for all %d drones.", len(DRONES))
         
     _write_state(state)

@@ -1,91 +1,14 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Anti-Jamming Drone System — Login</title>
-    <meta name="description" content="Secure login to the Autonomous Anti-Jamming Drone Communication System">
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-</head>
-<body class="auth-body">
-    <div class="background-effects">
-        <div class="glow glow-blue"></div>
-        <div class="glow glow-purple"></div>
-        <div class="grid-overlay"></div>
-    </div>
-
-    <div class="auth-container">
-        <div class="auth-panel glass-panel">
-            <div class="auth-logo">
-                <span class="logo-icon">📡</span>
-                <h1>Anti-Jamming System</h1>
-                <p class="auth-subtitle">Autonomous FL + RL + SDN Control Plane</p>
-            </div>
-
-            <form id="login-form" class="auth-form">
-                <div class="form-group">
-                    <label for="username">Username</label>
-                    <input type="text" id="username" name="username" value="admin" autocomplete="username" required>
-                </div>
-                <div class="form-group">
-                    <label for="password">Password</label>
-                    <input type="password" id="password" name="password" value="antijam2026" autocomplete="current-password" required>
-                </div>
-                <div id="login-error" class="error-msg hidden"></div>
-                <button type="submit" class="btn btn-primary btn-full" id="login-btn">
-                    <span id="login-text">Access Dashboard</span>
-                    <span id="login-spinner" class="spinner hidden"></span>
-                </button>
-            </form>
-
-            <p class="auth-hint">Default: <code>admin</code> / <code>antijam2026</code></p>
-        </div>
-    </div>
-
-    <script>
-        // Redirect if already logged in
-        if (localStorage.getItem('aj_token')) {
-            window.location.href = '/dashboard.html';
-        }
-
-        document.getElementById('login-form').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const btn = document.getElementById('login-btn');
-            const spinner = document.getElementById('login-spinner');
-            const loginText = document.getElementById('login-text');
-            const errorDiv = document.getElementById('login-error');
-
-            btn.disabled = true;
-            spinner.classList.remove('hidden');
-            loginText.classList.add('hidden');
-            errorDiv.classList.add('hidden');
-
-            const formData = new FormData();
-            formData.append('username', document.getElementById('username').value);
-            formData.append('password', document.getElementById('password').value);
-
-            try {
-                const res = await fetch('/auth/token', { method: 'POST', body: formData });
-                if (res.ok) {
-                    const data = await res.json();
-                    localStorage.setItem('aj_token', data.access_token);
-                    localStorage.setItem('aj_username', data.username);
-                    window.location.href = '/dashboard.html';
-                } else {
-                    const err = await res.json();
-                    errorDiv.textContent = err.detail || 'Login failed';
-                    errorDiv.classList.remove('hidden');
-                }
-            } catch (e) {
-                errorDiv.textContent = 'Connection error. Is the API running?';
-                errorDiv.classList.remove('hidden');
-            } finally {
-                btn.disabled = false;
-                spinner.classList.add('hidden');
-                loginText.classList.remove('hidden');
-            }
-        });
-    </script>
-</body>
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>frontend-react</title>
+    <script type="module" crossorigin src="/assets/index-D01JiEFk.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-VIt9Z1UW.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
 </html>

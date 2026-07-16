@@ -48,7 +48,7 @@ _SDN_CFG   = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
 
 MODE = _MODE_CFG["mode"]
 LOOP_INTERVAL = _MODE_CFG[MODE]["loop_interval_s"]
-SDN_HOST  = _SDN_CFG["controller"]["host"]
+SDN_HOST  = os.getenv("SDN_HOST", _SDN_CFG["controller"]["host"])
 SDN_PORT  = _SDN_CFG["controller"]["port"]
 SDN_URL   = f"http://{SDN_HOST}:{SDN_PORT}/sdn/route"
 SDN_TIMEOUT = _SDN_CFG["controller"]["timeout_s"]

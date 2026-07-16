@@ -98,6 +98,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - MODE=real
+      - SDN_HOST=sdn-controller
     depends_on:
       sdn-controller:
         condition: service_healthy
@@ -105,3 +106,18 @@ services:
     command: >
       sh -c "uvicorn api.server:app --host 0.0.0.0 --port 8000 &
              python -m orchestrator.loop"
+
+  # ── Mininet virtual network topology emulation ────────────────────────────
+  mininet:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.mininet
+    container_name: mininet
+    privileged: true
+    networks: [antijam-net]
+    volumes:
+      - logs:/app/logs
+    depends_on:
+      sdn-controller:
+        condition: service_healthy
+    restart: unless-stopped

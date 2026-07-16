@@ -58,28 +58,9 @@ def select_safe_path(requested: str, available: Optional[list] = None) -> str:
     return "fallback"
 
 
-def install_flow(datapath, path_name: str) -> None:
-    """
-    Install an OpenFlow 1.3 flow rule on the given datapath (switch)
-    to route traffic via the specified path's output port.
-
-    Args:
-        datapath:   Ryu datapath object (OpenFlow switch connection)
-        path_name:  One of 'direct', 'satellite', 'mesh', 'fallback'
-    """
+def _send_flow(datapath, priority, match, actions) -> None:
     ofproto = datapath.ofproto
     parser = datapath.ofproto_parser
-
-    out_port = _PORT_MAP.get(path_name, _PORT_MAP["fallback"])
-    priority = _PRIORITY_MAP.get(path_name, 10)
-
-    # Match all IPv4 traffic (simplified; production would match on src/dst)
-    match = parser.OFPMatch(eth_type=0x0800)
-
-    # Action: forward to the port assigned to this path
-    actions = [parser.OFPActionOutput(out_port)]
-
-    # Build and install the flow mod (hard timeout = 0 → permanent until overwritten)
     inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
     flow_mod = parser.OFPFlowMod(
         datapath=datapath,
@@ -92,32 +73,95 @@ def install_flow(datapath, path_name: str) -> None:
         flags=ofproto.OFPFF_SEND_FLOW_REM,
     )
     datapath.send_msg(flow_mod)
+
+
+def install_flow(datapath, path_name: str) -> None:
+    """
+    Install an OpenFlow 1.3 flow rule on the given datapath (switch)
+    to route traffic via the specified path's output port.
+
+    Args:
+        datapath:   Ryu datapath object (OpenFlow switch connection)
+        path_name:  One of 'direct', 'satellite', 'mesh', 'fallback'
+    """
+    dpid = datapath.id
+    parser = datapath.ofproto_parser
+
+    out_port = _PORT_MAP.get(path_name, _PORT_MAP["fallback"])
+    priority = _PRIORITY_MAP.get(path_name, 100)
+
+    if dpid == 1:
+        # Ingress switch (s1)
+        # Route from Drone (Port 4) -> Active Path out_port
+        match_drone = parser.OFPMatch(in_port=4)
+        actions_drone = [parser.OFPActionOutput(out_port)]
+        _send_flow(datapath, priority, match_drone, actions_drone)
+        
+        # Static rules from paths back to Drone
+        for p in [1, 2, 3]:
+            match_back = parser.OFPMatch(in_port=p)
+            actions_back = [parser.OFPActionOutput(4)]
+            _send_flow(datapath, 50, match_back, actions_back)
+
+    elif dpid == 5:
+        # Egress switch (s5)
+        # Route from Base Station (Port 4) -> Active Path out_port
+        match_bs = parser.OFPMatch(in_port=4)
+        actions_bs = [parser.OFPActionOutput(out_port)]
+        _send_flow(datapath, priority, match_bs, actions_bs)
+        
+        # Static rules from paths back to Base Station
+        for p in [1, 2, 3]:
+            match_back = parser.OFPMatch(in_port=p)
+            actions_back = [parser.OFPActionOutput(4)]
+            _send_flow(datapath, 50, match_back, actions_back)
+
+    elif dpid in [2, 3, 4]:
+        # Pipeline transit switches (s2, s3, s4)
+        # Route Port 1 <-> Port 2 bidirectionally
+        match_1 = parser.OFPMatch(in_port=1)
+        actions_1 = [parser.OFPActionOutput(2)]
+        _send_flow(datapath, 100, match_1, actions_1)
+
+        match_2 = parser.OFPMatch(in_port=2)
+        actions_2 = [parser.OFPActionOutput(1)]
+        _send_flow(datapath, 100, match_2, actions_2)
+
     logger.info(
-        "Flow installed: datapath=%s | path=%s | port=%d | priority=%d",
-        datapath.id, path_name, out_port, priority,
+        "Dynamic flow installed: datapath=%s (s%d) | path=%s | port=%d | priority=%d",
+        datapath.id, dpid, path_name, out_port, priority,
     )
 
 
 def install_fallback_rule(datapath) -> None:
     """
     Install a table-miss (lowest priority) rule directing all unmatched
-    traffic to the mesh (fallback) port. Called at switch connection.
+    traffic to the default port. Called at switch connection.
     """
-    ofproto = datapath.ofproto
+    dpid = datapath.id
     parser = datapath.ofproto_parser
-    fallback_port = _PORT_MAP["fallback"]
 
-    match = parser.OFPMatch()  # match-all
-    actions = [parser.OFPActionOutput(fallback_port)]
-    inst = [parser.OFPInstructionActions(ofproto.OFPIT_APPLY_ACTIONS, actions)]
-    flow_mod = parser.OFPFlowMod(
-        datapath=datapath,
-        priority=_PRIORITY_MAP["fallback"],
-        match=match,
-        instructions=inst,
-    )
-    datapath.send_msg(flow_mod)
+    if dpid == 1:
+        # Default route from Drone (Port 4) to fallback port (mesh, Port 3)
+        match = parser.OFPMatch(in_port=4)
+        actions = [parser.OFPActionOutput(3)]
+        _send_flow(datapath, 10, match, actions)
+    elif dpid == 5:
+        # Default route from Base Station (Port 4) to fallback port (mesh, Port 3)
+        match = parser.OFPMatch(in_port=4)
+        actions = [parser.OFPActionOutput(3)]
+        _send_flow(datapath, 10, match, actions)
+    elif dpid in [2, 3, 4]:
+        # Pipeline transit switches default pipe
+        match_1 = parser.OFPMatch(in_port=1)
+        actions_1 = [parser.OFPActionOutput(2)]
+        _send_flow(datapath, 10, match_1, actions_1)
+
+        match_2 = parser.OFPMatch(in_port=2)
+        actions_2 = [parser.OFPActionOutput(1)]
+        _send_flow(datapath, 10, match_2, actions_2)
+
     logger.info(
-        "Fallback table-miss rule installed: datapath=%s → port=%d",
-        datapath.id, fallback_port,
+        "Fallback table-miss rule installed: datapath=%s (s%d)",
+        datapath.id, dpid,
     )

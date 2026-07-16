@@ -1,22 +1,18 @@
 {
   "drone_1": {
-    "direct": false,
-    "satellite": false,
-    "mesh": false
+    "profile": "none",
+    "paths": []
   },
   "drone_2": {
-    "direct": false,
-    "satellite": false,
-    "mesh": false
+    "profile": "none",
+    "paths": []
   },
   "drone_3": {
-    "direct": false,
-    "satellite": false,
-    "mesh": false
+    "profile": "none",
+    "paths": []
   },
   "all": {
-    "satellite": false,
-    "mesh": false,
-    "direct": false
+    "profile": "none",
+    "paths": []
   }
 }

@@ -1,49 +1,189 @@
+# =============================================================================
+# FLARE — Comprehensive .gitignore
+# =============================================================================
+
+# =============================================================================
+# macOS
+# =============================================================================
 .DS_Store
+.DS_Store?
+._*
+.Spotlight-V8
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.AppleDouble
+*.LSOverride
+Icon
+
+# =============================================================================
+# Environment & Secrets
+# =============================================================================
 .env
 .env.*
+!.env.example
+*.secret
+secrets/
+config/secrets.yaml
 
-# Python bytecode and caches
+# =============================================================================
+# Python
+# =============================================================================
 __pycache__/
 *.py[cod]
+*$py.class
 *.pyo
 *.pyd
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.tox/
-.nox/
-.coverage
-.coverage.*
-htmlcov/
+*.so
 
 # Virtual environments
 venv/
 .venv/
 env/
 ENV/
+.virtualenv/
 
-# Logs and runtime output
-*.log
-*.out
-*.err
-logs/
-orchestrator_startup.log
-uvicorn_startup.log
-
-# Build and packaging artifacts
+# Distribution / packaging
 build/
 dist/
 *.egg-info/
 .eggs/
+*.whl
+*.tar.gz
+MANIFEST
 
-# Notebook checkpoints
+# Linters & type checkers
+.mypy_cache/
+.ruff_cache/
+.pytype/
+.pyre/
+
+# Testing
+.pytest_cache/
+.tox/
+.nox/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+nosetests.xml
+pytest.xml
+report.xml
+
+# Jupyter
 .ipynb_checkpoints/
+*.ipynb
 
-# Project-generated artifacts
-benchmarks/
-.benchmarks/
-models/
+# =============================================================================
+# Node / Frontend (frontend-react/)
+# =============================================================================
+node_modules/
+frontend-react/node_modules/
+frontend-react/dist/
+frontend-react/.vite/
+frontend-react/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+.pnpm-store/
+.yarn/
+
+# =============================================================================
+# ML / AI Artifacts
+# =============================================================================
+# Trained model weights — large binary files, not source code
+models/*.pth
+models/*.pt
+models/*.onnx
+models/*.zip
+models/rl_checkpoint_*.zip
+models/best_model.zip
+models/fl_model.pth
+models/rl_model.zip
+
+# RL training checkpoints
+rl/checkpoints/
+rl/logs/
+rl/tensorboard_logs/
+
+# Datasets — raw and processed (too large for git)
+datasets/raw/
+datasets/processed/
+datasets/DroneRF/
+datasets/RadioML*/
+DroneRF/
+RadioML*/
+
+# Results & evaluation outputs
+results/*.csv
+results/*.json
+results/plots/
 experiments/*.csv
+experiments/*.db
+experiments/evaluation_report.json
 
-# Editor settings
+# =============================================================================
+# Runtime Logs & Process Files
+# =============================================================================
+logs/
+*.log
+*.log.*
+*.out
+*.err
+orchestrator_startup.log
+uvicorn_startup.log
+.local_sim.pids
+
+# =============================================================================
+# Static Frontend Build (generated from source, not source itself)
+# =============================================================================
+frontend/
+# Note: frontend-react/src/ IS tracked (source)
+#       frontend-react/dist/ is NOT tracked (build output)
+
+# =============================================================================
+# Database Files (runtime state)
+# =============================================================================
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# =============================================================================
+# Docker
+# =============================================================================
+docker/volumes/
+docker/.env
+
+# =============================================================================
+# Benchmarks & Profiling
+# =============================================================================
+.benchmarks/
+benchmarks/
+*.prof
+*.pstats
+
+# =============================================================================
+# Editor & IDE
+# =============================================================================
 .vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+
+# =============================================================================
+# Misc
+# =============================================================================
+*.pid
+*.seed
+*.tmp
+*.temp
+tmp/
+temp/
+.cache/

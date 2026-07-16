@@ -2,11 +2,13 @@
 rl/train.py — [REAL]
 DQN training script using Stable-Baselines3.
 
-Trains a Double DQN policy against DronePathEnv and saves the model
-to models/rl_model.zip.
+Trains a Double DQN policy against DronePathEnv (synthetic) or
+RealDataDronePathEnv (real dataset) and saves to models/rl_model.zip.
 
 Usage:
-  python rl/train.py [--timesteps 50000]
+  python rl/train.py                    # synthetic env, 100k steps
+  python rl/train.py --real-data        # real dataset env, 100k steps
+  python rl/train.py --timesteps 50000  # custom step count
 """
 
 import argparse
@@ -23,7 +25,7 @@ from stable_baselines3 import DQN
 from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
 from stable_baselines3.common.monitor import Monitor
 
-from rl.env import DronePathEnv
+from rl.env import DronePathEnv, RealDataDronePathEnv
 
 _BASE = Path(__file__).parent.parent
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
@@ -37,12 +39,15 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s [RL-TRAIN] %(message
 logger = logging.getLogger(__name__)
 
 
-def train(total_timesteps: int = _TRAIN_CFG["total_timesteps"]):
+def train(
+    total_timesteps: int = _TRAIN_CFG["total_timesteps"],
+    use_real_data: bool = False,
+):
     # Training environment
-    train_env = Monitor(DronePathEnv())
-
-    # Evaluation environment (separate instance)
-    eval_env = Monitor(DronePathEnv())
+    EnvClass = RealDataDronePathEnv if use_real_data else DronePathEnv
+    logger.info("Using environment: %s", EnvClass.__name__)
+    train_env = Monitor(EnvClass())
+    eval_env  = Monitor(EnvClass())
 
     # Only enable TensorBoard logging if the package is installed
     try:
@@ -99,8 +104,10 @@ def train(total_timesteps: int = _TRAIN_CFG["total_timesteps"]):
 def main():
     parser = argparse.ArgumentParser(description="RL DQN Training")
     parser.add_argument("--timesteps", type=int, default=_TRAIN_CFG["total_timesteps"])
+    parser.add_argument("--real-data", action="store_true",
+                        help="Use RealDataDronePathEnv (requires datasets/processed/test.csv)")
     args = parser.parse_args()
-    train(total_timesteps=args.timesteps)
+    train(total_timesteps=args.timesteps, use_real_data=args.real_data)
 
 
 if __name__ == "__main__":

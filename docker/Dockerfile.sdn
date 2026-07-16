@@ -4,7 +4,8 @@ FROM python:3.9-slim
 WORKDIR /app
 RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 
-RUN pip install --no-cache-dir ryu fastapi uvicorn pyyaml
+RUN pip install --no-cache-dir --upgrade "setuptools<58"
+RUN pip install --no-cache-dir "eventlet==0.30.2" ryu fastapi uvicorn pyyaml
 
 COPY sdn/ sdn/
 COPY config/ config/
