@@ -1,14 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  ResponsiveContainer,
-  AreaChart,
-  Area,
-  XAxis,
-  YAxis,
-  Tooltip,
-  CartesianGrid
-} from 'recharts';
-import {
   Activity,
   AlertTriangle,
   Database,
@@ -16,7 +7,6 @@ import {
   Server,
   Shield,
   ShieldAlert,
-  Zap,
   Wifi,
   WifiOff,
   Lock,
@@ -31,6 +21,10 @@ import {
 } from 'lucide-react';
 import './App.css';
 
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
+const TelemetryCharts = React.lazy(() => import('./TelemetryCharts'));
+
 // Type definitions
 interface MetricDetail {
   path_id: string;
@@ -41,6 +35,18 @@ interface MetricDetail {
   packet_loss: number;
 }
 
+interface GpsInfo {
+  latitude: number;
+  longitude: number;
+  drift_m: number;
+}
+
+interface EwStatus {
+  active_attack: string | null;
+  jammed_paths: string[];
+}
+
+// Matches the new generator.py output: paths is an array, not a keyed dict
 interface TelemetryPayload {
   type: string;
   timestamp: number;
@@ -53,15 +59,13 @@ interface TelemetryPayload {
   metrics: {
     drone_id: string;
     timestamp: number;
-    metrics: {
-      direct: MetricDetail;
-      satellite: MetricDetail;
-      mesh: MetricDetail;
-    };
+    paths: MetricDetail[];
+    gps?: GpsInfo;
+    ew_status?: EwStatus;
   };
 }
 
-interface ChartDataPoint {
+export interface ChartDataPoint {
   time: string;
   rssi_direct: number;
   rssi_satellite: number;
@@ -81,7 +85,7 @@ interface ChartDataPoint {
 function App() {
   // Auth state
   const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('antijam2026');
+  const [password, setPassword] = useState('');
   const [token, setToken] = useState<string | null>(null);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
@@ -93,10 +97,11 @@ function App() {
   const [threatLevel, setThreatLevel] = useState<string>('LOW');
   const [reward, setReward] = useState<number>(0.0);
   const [step, setStep] = useState<number>(0);
-  const systemMode = 'REAL';
+  const [systemMode, setSystemMode] = useState<string>('UNKNOWN');
+  const [sdnController, setSdnController] = useState<string>('UNKNOWN');
 
   // Telemetry details
-  const [telemetry, setTelemetry] = useState<TelemetryPayload['metrics']['metrics'] | null>(null);
+  const [telemetry, setTelemetry] = useState<Record<string, MetricDetail> | null>(null);
   const [history, setHistory] = useState<ChartDataPoint[]>([]);
 
   // Control action states
@@ -129,24 +134,28 @@ function App() {
   const [isSavingConfig, setIsSavingConfig] = useState(false);
 
   const wsRef = useRef<WebSocket | null>(null);
-
-  // Auto-login on mount
-  useEffect(() => {
-    handleLogin();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const reconnectTimerRef = useRef<number | null>(null);
+  const shouldReconnectRef = useRef(false);
 
   // Set up WebSocket connection when authenticated
   useEffect(() => {
     if (!token) return;
 
+    shouldReconnectRef.current = true;
     connectWebSocket();
+    fetchSystemHealth();
     fetchFlConfig();
     fetchFlMetrics();
 
     return () => {
+      shouldReconnectRef.current = false;
+      if (reconnectTimerRef.current !== null) {
+        window.clearTimeout(reconnectTimerRef.current);
+        reconnectTimerRef.current = null;
+      }
       if (wsRef.current) {
         wsRef.current.close();
+        wsRef.current = null;
       }
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -156,6 +165,23 @@ function App() {
   const addLog = (msg: string) => {
     const timeStr = new Date().toLocaleTimeString();
     setStatusLog(prev => [`[${timeStr}] ${msg}`, ...prev.slice(0, 49)]);
+  };
+
+  const fetchSystemHealth = async () => {
+    try {
+      const res = await fetch(`${API_BASE_URL}/health`);
+      if (!res.ok) return;
+      const data = await res.json();
+      setSystemMode(String(data.mode || 'unknown').toUpperCase());
+      setSdnController(
+        data.sdn_controller === 'mock' ? 'Mock SDN' :
+        data.sdn_controller === 'ryu' ? 'Ryu OpenFlow v1.3' :
+        String(data.sdn_controller || 'unknown')
+      );
+    } catch {
+      setSystemMode('UNKNOWN');
+      setSdnController('UNAVAILABLE');
+    }
   };
 
   // JWT Login
@@ -168,7 +194,7 @@ function App() {
       params.append('username', username);
       params.append('password', password);
 
-      const res = await fetch('http://localhost:8000/auth/token', {
+      const res = await fetch(`${API_BASE_URL}/auth/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: params
@@ -193,10 +219,11 @@ function App() {
     setWsStatus('connecting');
     addLog('Connecting to command loop telemetry stream...');
 
-    const ws = new WebSocket('ws://localhost:8000/ws');
+    const ws = new WebSocket(`${WS_BASE_URL}/ws`);
     wsRef.current = ws;
 
     ws.onopen = () => {
+      ws.send(JSON.stringify({ type: 'auth', token }));
       setWsStatus('connected');
       addLog('WebSocket link established. Receiving real-time RF payload.');
     };
@@ -270,8 +297,10 @@ function App() {
 
     ws.onclose = () => {
       setWsStatus('disconnected');
-      addLog('WebSocket link closed. Attempting reconnect in 3s...');
-      setTimeout(connectWebSocket, 3000);
+      if (shouldReconnectRef.current) {
+        addLog('WebSocket link closed. Attempting reconnect in 3s...');
+        reconnectTimerRef.current = window.setTimeout(connectWebSocket, 3000);
+      }
     };
 
     ws.onerror = () => {
@@ -286,7 +315,7 @@ function App() {
     addLog(`Transmitting tactical jamming carrier (${jamProfile.toUpperCase()}) on path [${path.toUpperCase()}]...`);
 
     try {
-      const res = await fetch('http://localhost:8000/jam', {
+      const res = await fetch(`${API_BASE_URL}/jam`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -323,7 +352,7 @@ function App() {
   const fetchFlConfig = async () => {
     if (!token) return;
     try {
-      const res = await fetch('http://localhost:8000/api/fl/config', {
+      const res = await fetch(`${API_BASE_URL}/api/fl/config`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -339,7 +368,7 @@ function App() {
   const fetchFlMetrics = async () => {
     if (!token) return;
     try {
-      const res = await fetch('http://localhost:8000/api/fl/metrics', {
+      const res = await fetch(`${API_BASE_URL}/api/fl/metrics`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       if (res.ok) {
@@ -356,7 +385,7 @@ function App() {
     if (!token) return;
     setIsSavingConfig(true);
     try {
-      const res = await fetch('http://localhost:8000/api/fl/config', {
+      const res = await fetch(`${API_BASE_URL}/api/fl/config`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -382,8 +411,8 @@ function App() {
   const toggleByzantineCompromise = async (drone: string, currentlyCompromised: boolean) => {
     if (!token) return;
     const endpoint = currentlyCompromised 
-      ? `http://localhost:8000/swarm/restore/${drone}`
-      : `http://localhost:8000/swarm/compromise/${drone}`;
+      ? `${API_BASE_URL}/swarm/restore/${drone}`
+      : `${API_BASE_URL}/swarm/compromise/${drone}`;
       
     addLog(`Updating swarm trust profiles... updating trust state for [${drone.toUpperCase()}]`);
     try {
@@ -405,6 +434,29 @@ function App() {
     setActiveDrone(drone);
     setHistory([]);
     addLog(`Swapped active interface to [${drone.toUpperCase()}]. Recalibrating gauges.`);
+  };
+
+  const downloadReport = async () => {
+    if (!token) return;
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/report/generate`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error('Report generation failed');
+
+      const reportBlob = await response.blob();
+      const reportUrl = URL.createObjectURL(reportBlob);
+      const link = document.createElement('a');
+      link.href = reportUrl;
+      link.download = 'flare-evaluation-report.html';
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(reportUrl);
+      addLog('Evaluation report generated securely.');
+    } catch (err: any) {
+      addLog(`Error generating report: ${err.message}`);
+    }
   };
 
   // Helpers for progress bar coloring
@@ -535,11 +587,11 @@ function App() {
           <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#111218] border border-gray-800 text-xs">
             <Server className="w-3.5 h-3.5 text-blue-400" />
             <span className="text-gray-300 font-medium">SDN: </span>
-            <span className="text-blue-400 font-semibold uppercase">Ryu OpenFlow v1.3</span>
+            <span className="text-blue-400 font-semibold">{sdnController}</span>
           </div>
 
           <button
-            onClick={() => window.open(`http://localhost:8000/api/report/generate?token=${token}`, '_blank')}
+            onClick={downloadReport}
             className="px-3 py-1.5 rounded-xl bg-blue-950/20 border border-blue-500/20 hover:bg-blue-950/40 text-blue-400 text-xs font-semibold transition-colors cursor-pointer flex items-center gap-1.5"
           >
             <FileText className="w-3.5 h-3.5" />
@@ -627,7 +679,7 @@ function App() {
               <Activity className="w-4 h-4 text-blue-400" />
               Live Flow Map & SDN Path Topology
             </h2>
-            <p className="text-xs text-gray-400">Animated packet flow vectors representing routing rules installed by Ryu OpenFlow controller</p>
+            <p className="text-xs text-gray-400">Animated packet flow vectors representing routing rules installed by {sdnController}</p>
           </div>
 
           {/* SVG Map Container */}
@@ -968,6 +1020,17 @@ function App() {
                   <option value="barrage">Barrage Jamming (All Paths)</option>
                   <option value="sweep">Sweep Jamming (Dynamic Sweep)</option>
                   <option value="spoofing">Deceptive Spoofing (Subtle Attack)</option>
+                  <option value="reactive">Reactive Jamming (Dynamic Sensing)</option>
+                  <option value="adaptive">Adaptive RL Jamming (Cognitive EW)</option>
+                  <option value="smart">Smart Jamming (Control Target)</option>
+                  <option value="fhss">FHSS Mitigation (Hopping Defense)</option>
+                  <option value="gps_spoofing">GPS Spoofing (Position Drift)</option>
+                  <option value="replay">Telemetry Replay (State Freeze)</option>
+                  <option value="dos">Denial of Service (Link Flood)</option>
+                  <option value="sybil">Sybil Swarm Attack (Fake Nodes)</option>
+                  <option value="model_poisoning">Model Poisoning (Weight Hijack)</option>
+                  <option value="data_poisoning">Data Poisoning (Label Flip)</option>
+                  <option value="backdoor">Backdoor Trojan Trigger</option>
                 </select>
               </div>
 
@@ -1013,76 +1076,9 @@ function App() {
         </section>
       </div>
 
-      {/* TELEMETRY HISTORY CHARTS */}
-      <section className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        {/* RSSI & SINR Chart */}
-        <div className="glass-panel p-5 rounded-2xl border border-white/5">
-          <div className="mb-4">
-            <h2 className="font-bold text-gray-100 text-xs tracking-wider uppercase flex items-center gap-2">
-              <Zap className="w-4 h-4 text-blue-400" />
-              RF Signal Characteristics (RSSI & SINR)
-            </h2>
-            <p className="text-[10px] text-gray-500">Live scrolling wave analysis representing signal strength and SINR levels</p>
-          </div>
-
-          <div className="h-[220px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={history}>
-                <defs>
-                  <linearGradient id="colorRssi" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorSinr" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#a78bfa" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#a78bfa" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
-                <XAxis dataKey="time" stroke="#4b5563" fontSize={9} tickLine={false} />
-                <YAxis stroke="#4b5563" fontSize={9} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#111218', borderColor: '#1f2937' }} />
-                <Area type="monotone" name="RSSI Direct" dataKey="rssi_direct" stroke="#3b82f6" strokeWidth={1.5} fillOpacity={1} fill="url(#colorRssi)" />
-                <Area type="monotone" name="SINR Direct" dataKey="sinr_direct" stroke="#a78bfa" strokeWidth={1.5} fillOpacity={1} fill="url(#colorSinr)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-
-        {/* Latency & Loss Chart */}
-        <div className="glass-panel p-5 rounded-2xl border border-white/5">
-          <div className="mb-4">
-            <h2 className="font-bold text-gray-100 text-xs tracking-wider uppercase flex items-center gap-2">
-              <Activity className="w-4 h-4 text-violet-400" />
-              Network Congestion (Latency & Loss)
-            </h2>
-            <p className="text-[10px] text-gray-500">Continuous telemetry of packet latency in milliseconds and packet drop ratios</p>
-          </div>
-
-          <div className="h-[220px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <AreaChart data={history}>
-                <defs>
-                  <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ec4899" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#ec4899" stopOpacity={0}/>
-                  </linearGradient>
-                  <linearGradient id="colorLoss" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.2}/>
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#1f2937" vertical={false} />
-                <XAxis dataKey="time" stroke="#4b5563" fontSize={9} tickLine={false} />
-                <YAxis stroke="#4b5563" fontSize={9} tickLine={false} />
-                <Tooltip contentStyle={{ backgroundColor: '#111218', borderColor: '#1f2937' }} />
-                <Area type="monotone" name="Latency Direct" dataKey="latency_direct" stroke="#ec4899" strokeWidth={1.5} fillOpacity={1} fill="url(#colorLatency)" />
-                <Area type="monotone" name="Packet Loss Direct" dataKey="loss_direct" stroke="#f59e0b" strokeWidth={1.5} fillOpacity={1} fill="url(#colorLoss)" />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
-        </div>
-      </section>
+      <React.Suspense fallback={<div className="glass-panel h-[300px] mb-6 rounded-2xl animate-pulse" />}>
+        <TelemetryCharts history={history} />
+      </React.Suspense>
 
       {/* FLARE V2 FEDERATED LEARNING CONFIGURATION & PRIVACY CONTROL CENTER */}
       {flConfig && (

@@ -1,15 +1,18 @@
 {
   "drone_1": {
     "profile": "none",
-    "paths": []
+    "paths": [],
+    "gps_drift": 0.0
   },
   "drone_2": {
     "profile": "none",
-    "paths": []
+    "paths": [],
+    "gps_drift": 0.0
   },
   "drone_3": {
     "profile": "none",
-    "paths": []
+    "paths": [],
+    "gps_drift": 0.0
   },
   "all": {
     "profile": "none",

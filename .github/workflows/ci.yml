@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    name: Python correctness and security tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          python -m pip install -r requirements.txt
+
+      - name: Compile first-party Python modules
+        run: >-
+          python -m compileall -q
+          api fl orchestrator rl scripts sdn simulation tests
+
+      - name: Run regression suite
+        env:
+          AJ_ENV: test
+        run: >-
+          python -m pytest -q
+          tests/test_api_client.py
+          tests/test_phase1_regressions.py
+          tests/test_phase2_security.py
+          tests/test_phase3_ml_correctness.py
+          tests/test_phase4_performance.py
+
+  frontend:
+    name: Frontend lint and build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: frontend-react
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: frontend-react/package-lock.json
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Lint frontend
+        run: npm run lint
+
+      - name: Build frontend
+        env:
+          VITE_API_BASE_URL: http://localhost:8000
+        run: npm run build
+
+  deployment-config:
+    name: Validate Docker Compose configuration
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Validate development composition
+        run: docker compose -f docker-compose.dev.yml config --quiet
+
+      - name: Validate production composition
+        env:
+          AJ_SECRET_KEY: ci-production-secret-key-at-least-32-characters
+          AJ_ADMIN_PASSWORD: ci-production-password
+          AJ_CORS_ORIGINS: https://example.com
+          AJ_SDN_TOKEN: ci-sdn-token-at-least-24-characters
+          AJ_SENSOR_API_URL: http://sensor.example:9000
+          VITE_API_BASE_URL: https://api.example.com
+        run: docker compose -f docker-compose.prod.yml config --quiet

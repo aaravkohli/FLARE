@@ -130,8 +130,8 @@ class PrivacyAccountant:
 
 
 # ---------------------------------------------------------------------------
-# Client-Side DP: Gradient Perturbation
-# (Used when Opacus is not available or as a lightweight fallback)
+# Non-private gradient perturbation research helpers
+# (Not used as a fallback for the Opacus client path)
 # ---------------------------------------------------------------------------
 
 def clip_per_sample_gradients(
@@ -140,10 +140,9 @@ def clip_per_sample_gradients(
 ) -> float:
     """
     Clip each sample's gradient to max_grad_norm in L2 norm.
-    This is the per-sample clipping step of DP-SGD (Abadi 2016, Algorithm 1).
-
-    NOTE: Full DP-SGD requires per-sample gradients (via Opacus).
-    This function clips the *aggregated* gradient as a fallback.
+    Despite the legacy function name, this clips one aggregated batch gradient,
+    not per-sample gradients. It is retained for experimentation only and does
+    not establish a differential-privacy guarantee.
 
     Equation:
         g̃ = g / max(1, ||g||₂ / C)
@@ -195,7 +194,7 @@ def apply_client_dp_step(
     noise_multiplier: float,
 ) -> float:
     """
-    Full client-side DP-SGD step: clip + noise.
+    Aggregated-gradient clipping/noise experiment; not formal DP-SGD.
     Call this AFTER loss.backward() and BEFORE optimizer.step().
 
     Returns the gradient norm before clipping (for accounting).
@@ -257,7 +256,7 @@ def make_opacus_private_engine(
     target_delta: float,
     max_grad_norm: float,
     epochs: int,
-) -> Tuple[nn.Module, torch.optim.Optimizer, object, float]:
+) -> Tuple[nn.Module, torch.optim.Optimizer, object, object, float]:
     """
     Wrap a model and optimizer with Opacus for full DP-SGD.
 
@@ -274,18 +273,18 @@ def make_opacus_private_engine(
         epochs:         Number of training epochs (for noise calibration).
 
     Returns:
-        (private_model, private_optimizer, privacy_engine, noise_multiplier)
+        (private_model, private_optimizer, private_loader, privacy_engine,
+        noise_multiplier)
 
     Reference: Opacus documentation, make_private_with_epsilon()
     """
     try:
         from opacus import PrivacyEngine
-    except ImportError:
-        logger.warning(
-            "Opacus not installed. Falling back to manual DP-SGD. "
-            "Install with: pip install opacus>=1.4.0"
-        )
-        return model, optimizer, None, 1.0
+    except ImportError as exc:
+        raise RuntimeError(
+            "Opacus is required for client-side DP-SGD; aggregated-gradient "
+            "noise is not treated as a privacy-preserving fallback"
+        ) from exc
 
     privacy_engine = PrivacyEngine()
     private_model, private_optimizer, private_loader = privacy_engine.make_private_with_epsilon(
@@ -302,7 +301,13 @@ def make_opacus_private_engine(
         "Opacus DP-SGD initialized: ε=%.2f, δ=%.2e, C=%.2f, σ=%.4f",
         target_epsilon, target_delta, max_grad_norm, noise_multiplier,
     )
-    return private_model, private_optimizer, privacy_engine, noise_multiplier
+    return (
+        private_model,
+        private_optimizer,
+        private_loader,
+        privacy_engine,
+        noise_multiplier,
+    )
 
 
 # ---------------------------------------------------------------------------

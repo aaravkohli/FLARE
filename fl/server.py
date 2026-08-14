@@ -2,12 +2,12 @@
 fl/server.py — Upgraded FL Server  [FLARE v2]
 
 Flower FL server integrating all FLARE v2 components:
-  1. Adaptive Client Selection (Power-of-Choice + UCB)
+  1. Optional client-selection metrics (PoCo + UCB utility is opt-in)
   2. Trust + Reputation Engine (EMA scoring, quarantine)
   3. Client Drift Detection (cosine, KS, loss spike)
   4. 5-Layer Secure Aggregation (clip + Z-score + trimmed mean + trust + DP)
   5. Knowledge Distillation (FedDF, every N rounds)
-  6. Personalized FL support (pFedMe server-side update)
+  6. Client-local personalization metrics
   7. Async FL Buffer (FedBuff emulation)
   8. Centralized Metrics Tracking (CSV + JSON)
 
@@ -91,12 +91,12 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
     FLARE v2 Federated Averaging Strategy.
 
     Extends Flower's FedAvg with the full FLARE v2 pipeline:
-      - Adaptive client selection (PoCo + UCB)
+      - Optional client-selection metrics (PoCo + UCB utility)
       - Trust scoring and quarantine
       - Multi-signal drift detection
       - 5-layer secure aggregation
       - FedDF knowledge distillation (periodic)
-      - pFedMe server update (if personalization enabled)
+      - Client-local personalization metrics
       - FedBuff async buffer (if async mode enabled)
       - Centralized metrics tracking
 
@@ -105,7 +105,9 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
 
     def __init__(self, initial_parameters: Parameters, **kwargs):
         super().__init__(initial_parameters=initial_parameters, **kwargs)
-        self._global_weights: Optional[List[np.ndarray]] = None
+        self._global_weights: Optional[List[np.ndarray]] = parameters_to_ndarrays(
+            initial_parameters
+        )
 
         # Initialize v2 components (guarded by feature flags)
         self._init_trust()
@@ -230,7 +232,7 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
           3. Drift detection per client
           4. Quarantine filtering
           5. Secure aggregation (5-layer)
-          6. pFedMe server update (if personalization enabled)
+          6. Record client-local personalization metrics
           7. Knowledge distillation (if scheduled)
           8. Save model
           9. Evaluate on test set
@@ -268,6 +270,15 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             persona_metrics_list.append({
                 "persona_delta": m.get("persona_delta", 0.0),
                 "personal_loss": m.get("personal_loss", 0.0),
+            })
+
+        private_metrics = [
+            m for m in client_metrics_list if int(m.get("dp_enabled", 0)) == 1
+        ]
+        if private_metrics:
+            self._metrics.update_privacy({
+                "epsilon": max(float(m.get("dp_epsilon", 0.0)) for m in private_metrics),
+                "delta": max(float(m.get("dp_delta", 0.0)) for m in private_metrics),
             })
 
         # Step 2: Trust update
@@ -330,7 +341,9 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             return None, {}
 
         # Step 5: Use current global weights as baseline for clipping
-        baseline = self._global_weights if self._global_weights else client_weights[0]
+        baseline = self._global_weights
+        if baseline is None:
+            raise RuntimeError("Global aggregation baseline is not initialized")
 
         # Server-side DP config
         server_dp_cfg = _DP_CFG.get("server_side", {})
@@ -356,12 +369,11 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
 
         self._global_weights = aggregated
 
-        # Step 6: pFedMe server update
+        # Step 6: client-local personalization metrics
         if _PERSONA_CFG.get("enabled", False) and persona_metrics_list:
-            from fl.personalization import aggregate_for_personalization
-            # Note: in a real pFedMe deployment, clients send personalized weights.
-            # Here we use the standard weights as an approximation (head_only mode).
-            pass  # Full pFedMe server update would require personalized weight reports
+            # Personal models remain client-local. They are measured here but are
+            # intentionally not substituted for the federated update.
+            logger.debug("Client-local personalization metrics recorded for round %d", server_round)
 
         # Step 7: Knowledge Distillation (FedDF)
         kd_metrics = None
@@ -420,6 +432,7 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
         self._metrics.update_bulk({
             "threat_f1": eval_metrics.get("threat_f1"),
             "attack_accuracy": eval_metrics.get("attack_accuracy"),
+            "confidence_brier": eval_metrics.get("confidence_brier"),
             "round_loss": float(sum(client_losses) / max(len(client_losses), 1)),
             "clients_used": audit["used"],
             "clients_excluded": len(audit["excluded"]),
@@ -488,7 +501,7 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             y_a_t = torch.tensor(y_a_list, dtype=torch.long)
 
             model.eval()
-            preds_j, preds_a = [], []
+            preds_j, preds_a, confidences = [], [], []
             loader = DataLoader(TensorDataset(X_t, y_j_t, y_a_t), batch_size=256)
             with torch.no_grad():
                 for xb, _, _ in loader:
@@ -496,29 +509,50 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
                     threat_score = out.path_scores.mean(dim=1).numpy()
                     preds_j.extend((threat_score > 0.5).astype(int).tolist())
                     preds_a.extend(out.attack_logits.argmax(dim=1).numpy().tolist())
+                    confidences.extend(out.confidence.squeeze(-1).numpy().tolist())
 
             threat_f1 = float(f1_score(y_j_list, preds_j, average="macro", zero_division=0))
             atk_acc = float(accuracy_score(y_a_list, preds_a))
+            correctness = 0.5 * (
+                (np.asarray(preds_j) == np.asarray(y_j_list)).astype(np.float32)
+                + (np.asarray(preds_a) == np.asarray(y_a_list)).astype(np.float32)
+            )
+            confidence_brier = float(np.mean(
+                (np.asarray(confidences, dtype=np.float32) - correctness) ** 2
+            ))
 
             logger.info(
-                "Round %d eval | threat_F1=%.4f | attack_acc=%.4f",
-                server_round, threat_f1, atk_acc,
+                "Round %d eval | threat_F1=%.4f | attack_acc=%.4f | confidence_brier=%.4f",
+                server_round, threat_f1, atk_acc, confidence_brier,
             )
 
             # Legacy CSV (backward compatibility)
             csv_path = _RESULTS / "fl_round_metrics.csv"
             mode = "w" if server_round == 1 else "a"
             with open(csv_path, mode, newline="") as f:
-                writer = csv.DictWriter(f, fieldnames=["round", "threat_f1", "attack_accuracy"])
+                writer = csv.DictWriter(
+                    f,
+                    fieldnames=[
+                        "round",
+                        "threat_f1",
+                        "attack_accuracy",
+                        "confidence_brier",
+                    ],
+                )
                 if mode == "w":
                     writer.writeheader()
                 writer.writerow({
                     "round": server_round,
                     "threat_f1": round(threat_f1, 4),
                     "attack_accuracy": round(atk_acc, 4),
+                    "confidence_brier": round(confidence_brier, 4),
                 })
 
-            return {"threat_f1": threat_f1, "attack_accuracy": atk_acc}
+            return {
+                "threat_f1": threat_f1,
+                "attack_accuracy": atk_acc,
+                "confidence_brier": confidence_brier,
+            }
 
         except Exception as exc:
             logger.warning("Test-set evaluation failed (round %d): %s", server_round, exc)
@@ -552,6 +586,10 @@ def run_server(num_rounds: int = _FED_CFG["num_rounds"]):
         min_available_clients=_FED_CFG["min_clients"],
         fraction_fit=_FED_CFG["fraction_fit"],
         fraction_evaluate=1.0,
+        on_fit_config_fn=lambda server_round: {
+            "server_round": server_round,
+            "total_rounds": num_rounds,
+        },
     )
 
     logger.info(

@@ -303,20 +303,27 @@ class GradientCompressor:
             sparse, masks = topk_sparsify(deltas_to_compress, ratio=self.topk_ratio)
             payload = {"sparse": sparse, "masks": masks}
             meta = {"strategy": "topk"}
-            compressed_bytes = sum(s.nbytes for s in sparse)  # masks are binary
+            kept = sum(int(np.count_nonzero(mask)) for mask in masks)
+            # Estimated sparse wire format: float value + int32 flat index.
+            compressed_bytes = kept * (4 + 4)
 
         elif self.strategy == "quantize":
             quantized = quantize_weights(deltas_to_compress, bits=self.quantize_bits)
             payload = {"quantized": quantized}
             meta = {"strategy": "quantize"}
-            compressed_bytes = sum(ql.data_int8.nbytes for ql in quantized)
+            compressed_bytes = sum(
+                ql.data_int8.nbytes + 8 + 4 * len(ql.shape)
+                for ql in quantized
+            )
 
         elif self.strategy == "both":
             sparse, masks = topk_sparsify(deltas_to_compress, ratio=self.topk_ratio)
             quantized = quantize_weights(sparse, bits=self.quantize_bits)
             payload = {"quantized": quantized, "masks": masks}
             meta = {"strategy": "both"}
-            compressed_bytes = sum(ql.data_int8.nbytes for ql in quantized)
+            kept = sum(int(np.count_nonzero(mask)) for mask in masks)
+            # Estimated sparse wire format: int8 value + int32 flat index.
+            compressed_bytes = kept * (1 + 4) + 8 * len(quantized)
 
         else:  # "none"
             payload = {"weights": weight_deltas}
@@ -329,9 +336,12 @@ class GradientCompressor:
             "original_bytes": original_bytes,
             "compressed_bytes": compressed_bytes,
             "compression_ratio": round(ratio, 2),
+            # Flower still receives reconstructed dense ndarrays. These figures
+            # estimate a future sparse/quantized codec rather than measured wire bytes.
+            "wire_compression_applied": False,
         }
         logger.info(
-            "[%s] Compression: %s | %.2f KB → %.2f KB (%.1f×)",
+            "[%s] Simulated compression: %s | %.2f KB → est. %.2f KB (%.1f×)",
             self.client_id, self.strategy,
             original_bytes / 1024, compressed_bytes / 1024, ratio,
         )

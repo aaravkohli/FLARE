@@ -98,7 +98,7 @@ launch_service "FL-Client-3" "venv/bin/python fl/client.py --client_id drone_3 -
 launch_service "Mock-SDN" "venv/bin/python sdn/mock_sdn.py" "logs/mock_sdn.log"
 
 # 4. Start API Server (FastAPI)
-launch_service "API-Server" "venv/bin/python -m uvicorn api.server:app --host 0.0.0.0 --port 8000" "logs/api_server.log"
+launch_service "API-Server" "venv/bin/python -m uvicorn api.server:app --host 127.0.0.1 --port 8000" "logs/api_server.log"
 
 # 5. Start Orchestrator Control Loop
 launch_service "Orchestrator-Loop" "venv/bin/python -m orchestrator.loop" "logs/orchestrator.log"

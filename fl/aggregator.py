@@ -52,15 +52,20 @@ def clip_weights_by_norm(
     This limits the maximum influence any single client can have,
     reducing the impact of poisoned updates and bounding global sensitivity.
     """
-    clipped = []
-    for w, b in zip(weights, baseline):
-        delta = w - b
-        norm = np.linalg.norm(delta)
-        if norm > max_norm:
-            delta = delta * (max_norm / norm)
-            logger.debug("Clipped weight delta: %.4f → %.4f", norm, max_norm)
-        clipped.append(b + delta)
-    return clipped
+    if len(weights) != len(baseline):
+        raise ValueError("Client and baseline weight lists must have the same length")
+    if max_norm <= 0:
+        raise ValueError("max_norm must be positive")
+
+    deltas = [w - b for w, b in zip(weights, baseline)]
+    global_norm = float(np.sqrt(sum(
+        np.sum(delta.astype(np.float64) ** 2)
+        for delta in deltas
+    )))
+    scale = min(1.0, max_norm / max(global_norm, 1e-12))
+    if scale < 1.0:
+        logger.debug("Clipped global client delta: %.4f → %.4f", global_norm, max_norm)
+    return [b + delta * scale for delta, b in zip(deltas, baseline)]
 
 
 # ---------------------------------------------------------------------------
@@ -141,7 +146,12 @@ def trimmed_mean(
         raise ValueError("No weights to aggregate.")
 
     n = len(all_weights)
-    k = max(1, int(n * trim_ratio))  # number to drop from each tail
+    if not 0.0 <= trim_ratio < 0.5:
+        raise ValueError("trim_ratio must be in [0, 0.5)")
+    k = int(n * trim_ratio)  # number to drop from each tail
+
+    if k == 0:
+        return fedavg(all_weights)
 
     aggregated = []
     for layer_idx in range(len(all_weights[0])):

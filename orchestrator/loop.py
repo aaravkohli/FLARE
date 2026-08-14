@@ -22,6 +22,8 @@ Usage:
 
 import asyncio
 import csv
+from contextlib import closing
+from functools import partial
 import json
 import logging
 import os
@@ -46,12 +48,16 @@ _MODE_CFG  = yaml.safe_load((_BASE / "config" / "mode.yaml").read_text())
 _FL_CFG    = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
 _SDN_CFG   = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
 
-MODE = _MODE_CFG["mode"]
+MODE = os.getenv("MODE", _MODE_CFG["mode"]).strip().lower()
+if MODE not in _MODE_CFG or MODE not in {"simulation", "real"}:
+    raise RuntimeError("MODE must be either 'simulation' or 'real'")
 LOOP_INTERVAL = _MODE_CFG[MODE]["loop_interval_s"]
 SDN_HOST  = os.getenv("SDN_HOST", _SDN_CFG["controller"]["host"])
 SDN_PORT  = _SDN_CFG["controller"]["port"]
 SDN_URL   = f"http://{SDN_HOST}:{SDN_PORT}/sdn/route"
 SDN_TIMEOUT = _SDN_CFG["controller"]["timeout_s"]
+SDN_API_TOKEN = os.getenv("AJ_SDN_TOKEN", "antijam-development-sdn-token")
+SENSOR_API_URL = os.getenv("AJ_SENSOR_API_URL", "http://localhost:9000").rstrip("/")
 
 # Experiment session
 RUN_ID = str(uuid.uuid4())[:8]
@@ -95,6 +101,18 @@ _CSV_FIELDS = [
     "threat_level", "reward", "recovery_ms", "packet_loss",
     "fl_confidence", "attack_type",
 ]
+_DB_COLUMNS = [
+    "run_id", "timestamp", "step", "drone_id", "action_id", "path_name",
+    "threat_level", "reward", "recovery_ms", "packet_loss",
+    "fl_confidence", "attack_type",
+]
+_PATH_NAMES = ["direct", "satellite", "mesh"]
+
+
+def _connect_db() -> sqlite3.Connection:
+    conn = sqlite3.connect(_DB_PATH, timeout=5.0)
+    conn.execute("PRAGMA busy_timeout = 5000")
+    return conn
 
 def _init_experiment_store():
     # CSV header
@@ -102,33 +120,50 @@ def _init_experiment_store():
         csv.DictWriter(f, fieldnames=_CSV_FIELDS).writeheader()
 
     # SQLite table
-    conn = sqlite3.connect(_DB_PATH)
-    conn.execute("""
-        CREATE TABLE IF NOT EXISTS runs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            run_id TEXT, timestamp REAL, step INTEGER, drone_id TEXT,
-            action_id INTEGER, path_name TEXT, threat_level TEXT,
-            reward REAL, recovery_ms REAL, packet_loss REAL,
-            fl_confidence REAL, attack_type TEXT
-        )
-    """)
-    conn.commit()
-    conn.close()
+    with closing(_connect_db()) as conn:
+        with conn:
+            conn.execute("PRAGMA journal_mode = WAL")
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS runs (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    run_id TEXT, timestamp REAL, step INTEGER, drone_id TEXT,
+                    action_id INTEGER, path_name TEXT, threat_level TEXT,
+                    reward REAL, recovery_ms REAL, packet_loss REAL,
+                    fl_confidence REAL, attack_type TEXT
+                )
+            """)
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_runs_drone_id_id "
+                "ON runs (drone_id, id DESC)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_runs_run_id_step "
+                "ON runs (run_id, step)"
+            )
 
 
 def _log_experiment(row: dict):
-    # CSV
-    with open(_CSV_PATH, "a", newline="") as f:
-        csv.DictWriter(f, fieldnames=_CSV_FIELDS).writerow(row)
+    """Compatibility wrapper for callers that persist one row."""
+    _log_experiments([row])
 
-    # SQLite
-    conn = sqlite3.connect(_DB_PATH)
-    conn.execute(
-        "INSERT INTO runs VALUES (NULL,?,?,?,?,?,?,?,?,?,?,?,?)",
-        [row[k] for k in _CSV_FIELDS],
-    )
-    conn.commit()
-    conn.close()
+
+def _log_experiments(rows: list[dict]) -> None:
+    """Persist one control-loop batch with one CSV open and one DB transaction."""
+    if not rows:
+        return
+
+    with open(_CSV_PATH, "a", newline="") as f:
+        csv.DictWriter(f, fieldnames=_CSV_FIELDS).writerows(rows)
+
+    placeholders = ",".join("?" for _ in _DB_COLUMNS)
+    columns = ",".join(_DB_COLUMNS)
+    values = [[row[column] for column in _DB_COLUMNS] for row in rows]
+    with closing(_connect_db()) as conn:
+        with conn:
+            conn.executemany(
+                f"INSERT INTO runs ({columns}) VALUES ({placeholders})",
+                values,
+            )
 
 
 # ---------------------------------------------------------------------------
@@ -153,44 +188,56 @@ def _fl_infer(model, metrics: dict) -> dict:
     Run FL model inference on the given metrics snapshot.
     Returns threat_scores dict.
     """
-    from simulation.generator import metrics_to_tensor
-    sequences = metrics_to_tensor(metrics, seq_len=_FL_CFG["model"]["sequence_len"])
+    return _fl_infer_batch(model, {"single": metrics})["single"]
 
-    # Predict for each path individually (one sequence per path)
-    path_scores = []
-    confidences = []
-    attack_types = []
 
-    from fl.model import ATTACK_CLASSES
-    with torch.no_grad():
-        for i, seq in enumerate(sequences):
-            # Explicit float32 cast — numpy may upcast to float64 during normalisation
-            x = torch.tensor(seq, dtype=torch.float32).unsqueeze(0)  # [1, T, 5]
-            out = model(x)
-            
-            # Extract raw score
-            score = float(out.path_scores.squeeze().mean().item())
-            
-            # Heuristic boost for simulation: if PDR is heavily degraded, ensure threat is HIGH
-            # Feature index 1 is PDR, and it's normalised. But we can check raw metrics.
-            raw_pdr = metrics["paths"][i]["pdr"]
-            if raw_pdr < 0.4:
-                score = max(score, 0.95)
-                
-            path_scores.append(score)
-            confidences.append(float(out.confidence.squeeze().item()))
-            attack_idx = int(out.attack_logits.argmax(dim=-1).item())
-            attack_types.append(ATTACK_CLASSES[attack_idx])
-
-    # Dominant attack type (most common across paths)
+def _fl_infer_batch(model, metrics_by_drone: dict[str, dict]) -> dict[str, dict]:
+    """Run every drone/path sequence in one model forward pass."""
     from collections import Counter
-    dominant_attack = Counter(attack_types).most_common(1)[0][0]
-    avg_confidence = float(np.mean(confidences))
+    from fl.model import ATTACK_CLASSES
+    from simulation.generator import metrics_to_tensor
+
+    entries: list[tuple[str, int]] = []
+    sequences = []
+    for drone_id, metrics in metrics_by_drone.items():
+        for path_index, sequence in enumerate(
+            metrics_to_tensor(metrics, seq_len=_FL_CFG["model"]["sequence_len"])
+        ):
+            entries.append((drone_id, path_index))
+            sequences.append(sequence)
+
+    if not sequences:
+        return {}
+
+    x = torch.tensor(np.stack(sequences), dtype=torch.float32)
+    with torch.no_grad():
+        output = model(x)
+
+    raw_scores = output.path_scores.mean(dim=1).cpu().numpy()
+    confidences = output.confidence.squeeze(-1).cpu().numpy()
+    attack_indices = output.attack_logits.argmax(dim=1).cpu().numpy()
+
+    grouped = {
+        drone_id: {"path_scores": [], "confidences": [], "attack_types": []}
+        for drone_id in metrics_by_drone
+    }
+    for batch_index, (drone_id, path_index) in enumerate(entries):
+        score = float(raw_scores[batch_index])
+        if metrics_by_drone[drone_id]["paths"][path_index]["pdr"] < 0.4:
+            score = max(score, 0.95)
+        grouped[drone_id]["path_scores"].append(score)
+        grouped[drone_id]["confidences"].append(float(confidences[batch_index]))
+        grouped[drone_id]["attack_types"].append(
+            ATTACK_CLASSES[int(attack_indices[batch_index])]
+        )
 
     return {
-        "path_scores": path_scores,
-        "confidence": avg_confidence,
-        "attack_type": dominant_attack,
+        drone_id: {
+            "path_scores": values["path_scores"],
+            "confidence": float(np.mean(values["confidences"])),
+            "attack_type": Counter(values["attack_types"]).most_common(1)[0][0],
+        }
+        for drone_id, values in grouped.items()
     }
 
 
@@ -218,7 +265,12 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str)
         try:
             if delay:
                 await asyncio.sleep(delay)
-            resp = await client.post(SDN_URL, json=payload, timeout=SDN_TIMEOUT)
+            resp = await client.post(
+                SDN_URL,
+                json=payload,
+                headers={"Authorization": f"Bearer {SDN_API_TOKEN}"},
+                timeout=SDN_TIMEOUT,
+            )
             resp.raise_for_status()
             return resp.json()
         except (httpx.HTTPError, httpx.TimeoutException) as e:
@@ -243,15 +295,29 @@ class Orchestrator:
         self._last_good_decision = {d: None for d in self.DRONES}
         self._last_good_ts = {d: 0.0 for d in self.DRONES}
 
-        # RL agent
+        # Keep independent stateful RL wrappers per drone. A single shared wrapper
+        # would leak previous-action/reward state between drone decisions.
+        self._rl_agents = {}
         rl_path = _BASE / "models" / "rl_model.zip"
         if rl_path.exists():
             from rl.agent import RLAgent
-            self._rl_agent = RLAgent(str(rl_path))
-            logger.info("RL agent loaded.")
+            try:
+                for drone_id in self.DRONES:
+                    self._rl_agents[drone_id] = RLAgent(str(rl_path))
+            except Exception as exc:
+                # A stale or incompatible checkpoint must not take down the
+                # sensing/control loop. Keep all drones on the deterministic
+                # greedy policy rather than leaving a partially loaded fleet.
+                self._rl_agents.clear()
+                logger.warning(
+                    "RL checkpoint could not be loaded (%s). Using greedy fallback.",
+                    exc,
+                )
+            else:
+                logger.info("RL agents loaded for %d drones.", len(self._rl_agents))
         else:
-            self._rl_agent = None
             logger.warning("RL model not found. Using greedy fallback.")
+        self._prev_rewards = {drone_id: 0.0 for drone_id in self.DRONES}
 
         _init_experiment_store()
         logger.info("Orchestrator started | run_id=%s | mode=%s | interval=%.1fs",
@@ -276,46 +342,88 @@ class Orchestrator:
                 return round((time.time() - prev_t) * 1000, 1)
         return None
 
-    async def _run_step(self, client: httpx.Client) -> None:
+    async def _collect_metrics(self, client: httpx.AsyncClient) -> dict[str, dict]:
+        if MODE == "simulation":
+            from simulation.generator import generate_swarm_metrics
+            return generate_swarm_metrics()
+
+        async def fetch_one(drone_id: str) -> tuple[str, dict]:
+            try:
+                response = await client.get(
+                    f"{SENSOR_API_URL}/metrics",
+                    params={"drone_id": drone_id},
+                    timeout=1.0,
+                )
+                response.raise_for_status()
+                return drone_id, response.json()
+            except Exception as exc:
+                logger.warning(
+                    "Live metrics unavailable for %s (%s). Using synthetic fallback.",
+                    drone_id,
+                    exc,
+                )
+                from simulation.generator import generate_metrics
+                return drone_id, generate_metrics(drone_id)
+
+        pairs = await asyncio.gather(*(fetch_one(drone_id) for drone_id in self.DRONES))
+        return dict(pairs)
+
+    async def _run_step(self, client: httpx.AsyncClient) -> None:
         self._step += 1
         t_start = time.time()
-        
-        for drone_id in self.DRONES:
-            # Step 1: Collect metrics
-            if MODE == "simulation":
-                from simulation.generator import generate_metrics
-                metrics = generate_metrics(drone_id=drone_id)
-            else:
-                # REAL mode: fetch from live sensor endpoint
-                try:
-                    resp = client.get(f"http://localhost:9000/metrics?drone_id={drone_id}", timeout=1.0)
-                    metrics = resp.json()
-                except Exception:
-                    logger.warning("Live metrics unavailable for %s. Using synthetic fallback.", drone_id)
-                    from simulation.generator import generate_metrics
-                    metrics = generate_metrics(drone_id)
+        metrics_by_drone = await self._collect_metrics(client)
 
-            # Step 2: FL inference
-            try:
-                async with asyncio.timeout(0.5):
-                    loop = asyncio.get_event_loop()
-                    if self._fl_model:
-                        threat = await loop.run_in_executor(None, _fl_infer, self._fl_model, metrics)
-                    else:
-                        threat = _random_threat_scores()
-            except asyncio.TimeoutError:
-                logger.warning("FL inference timed out for %s. Using random.", drone_id)
-                threat = _random_threat_scores()
+        try:
+            async with asyncio.timeout(0.5):
+                if self._fl_model:
+                    threats_by_drone = await asyncio.to_thread(
+                        _fl_infer_batch,
+                        self._fl_model,
+                        metrics_by_drone,
+                    )
+                else:
+                    threats_by_drone = {
+                        drone_id: _random_threat_scores()
+                        for drone_id in self.DRONES
+                    }
+        except asyncio.TimeoutError:
+            logger.warning("Batched FL inference timed out. Using random scores.")
+            threats_by_drone = {
+                drone_id: _random_threat_scores()
+                for drone_id in self.DRONES
+            }
+
+        rows = []
+        for drone_id in self.DRONES:
+            metrics = metrics_by_drone[drone_id]
+            threat = threats_by_drone[drone_id]
 
             path_scores = threat["path_scores"]
+            max_latencies = [100.0, 300.0, 600.0]
+            path_latencies = [
+                min(1.0, max(0.0, metrics["paths"][idx]["latency"] / max_latencies[idx]))
+                for idx in range(3)
+            ]
+            path_losses = [
+                min(1.0, max(0.0, metrics["paths"][idx]["packet_loss"]))
+                for idx in range(3)
+            ]
 
             # Step 3: RL decision
             try:
                 async with asyncio.timeout(0.1):
-                    loop = asyncio.get_event_loop()
-                    if self._rl_agent:
+                    loop = asyncio.get_running_loop()
+                    rl_agent = self._rl_agents.get(drone_id)
+                    if rl_agent:
+                        predict = partial(
+                            rl_agent.predict,
+                            path_scores,
+                            reward=self._prev_rewards[drone_id],
+                            path_latencies=path_latencies,
+                            path_losses=path_losses,
+                        )
                         decision = await loop.run_in_executor(
-                            None, self._rl_agent.predict, path_scores
+                            None, predict
                         )
                     else:
                         decision = self._greedy_decision(path_scores)
@@ -324,27 +432,39 @@ class Orchestrator:
                 decision = self._greedy_decision(path_scores)
 
             action_id  = decision["action_id"]
-            path_name  = decision["path_name"]
+            requested_path = decision["path_name"]
             threat_lvl = decision.get("threat_level", "UNKNOWN")
 
             # Graceful degradation: use last known good if stale
             current_ts = time.time()
             if self._last_good_decision[drone_id] and (current_ts - self._last_good_ts[drone_id] > 5.0):
                 logger.warning("Decision cache stale (>5s) for %s. Using fallback.", drone_id)
-                path_name = "mesh"
+                requested_path = "mesh"
+                action_id = _PATH_NAMES.index(requested_path)
 
             # Step 4: Push to SDN
             sdn_ok = False
+            path_name = self._prev_path[drone_id] or requested_path
             try:
-                sdn_resp = await _push_to_sdn(client, path_name, drone_id)
+                sdn_resp = await _push_to_sdn(client, requested_path, drone_id)
                 sdn_ok = True
-                self._last_good_decision[drone_id] = decision
+                installed_path = sdn_resp.get("installed_path", requested_path)
+                path_name = installed_path if installed_path in _PATH_NAMES else requested_path
+                action_id = _PATH_NAMES.index(path_name)
+                self._last_good_decision[drone_id] = {
+                    **decision,
+                    "action_id": action_id,
+                    "path_name": path_name,
+                }
                 self._last_good_ts[drone_id] = current_ts
             except Exception as e:
                 logger.error("SDN push failed for %s: %s. Maintaining current path.", drone_id, e)
+                if path_name in _PATH_NAMES:
+                    action_id = _PATH_NAMES.index(path_name)
 
             # Step 5: Metrics
             reward = self._compute_reward(path_scores, action_id)
+            self._prev_rewards[drone_id] = reward
             recovery = self._recovery_ms(drone_id, path_name)
             packet_loss = round(metrics["paths"][action_id]["packet_loss"], 4)
 
@@ -362,12 +482,14 @@ class Orchestrator:
                 "fl_confidence": round(threat["confidence"], 4),
                 "attack_type":  threat["attack_type"],
             }
-            _log_experiment(row)
+            rows.append(row)
 
             # Update path tracking
-            if path_name != self._prev_path[drone_id]:
+            if sdn_ok and path_name != self._prev_path[drone_id]:
                 self._prev_path[drone_id] = path_name
                 self._prev_path_time[drone_id] = current_ts
+
+        await asyncio.to_thread(_log_experiments, rows)
 
         elapsed_ms = round((time.time() - t_start) * 1000, 1)
         logger.info("step=%d | processed %d drones | elapsed=%s ms", self._step, len(self.DRONES), elapsed_ms)

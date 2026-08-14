@@ -3,12 +3,15 @@ FROM python:3.11-slim
 WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir flwr numpy scipy pyyaml pandas jsonschema
+    pip install --no-cache-dir flwr numpy scipy pyyaml pandas jsonschema \
+    scikit-learn opacus
 
 COPY fl/ fl/
 COPY config/ config/
 COPY schemas/ schemas/
 
 ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 CMD ["python", "fl/server.py", "--rounds", "20"]

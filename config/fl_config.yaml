@@ -7,14 +7,14 @@ client_selection:
   combined:
     poco_weight: 0.6
     ucb_weight: 0.4
-  enabled: true
+  enabled: false
   poco:
     candidate_multiplier: 2
   strategy: combined
   ucb:
     beta: 0.5
 compression:
-  enabled: true
+  enabled: false
   quantize:
     bits: 8
     stochastic: false
@@ -25,7 +25,7 @@ compression:
 differential_privacy:
   client_side:
     delta: 1.0e-05
-    enabled: true
+    enabled: false
     epsilon: 5.0
     max_grad_norm: 1.0
     noise_multiplier: 1.1
@@ -36,7 +36,7 @@ differential_privacy:
     - 16
     - 32
     - 64
-  enabled: true
+  enabled: false
   server_side:
     enabled: true
     noise_scale: 0.01
@@ -102,6 +102,7 @@ training:
   learning_rate: 0.0005
   local_epochs: 5
   loss_weight_attack: 0.5
+  loss_weight_confidence: 0.2
   loss_weight_threat: 2.0
 trust:
   alpha: 0.9

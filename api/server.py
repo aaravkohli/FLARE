@@ -8,15 +8,17 @@ Endpoints:
   GET  /metrics/live     — latest raw RF metrics snapshot (protected)
   GET  /metrics/history  — last N decisions from SQLite for charting (protected)
   POST /jam              — trigger jamming simulation (protected)
-  GET  /stream           — SSE stream of orchestrator decisions (public for UI)
-  WS   /ws               — WebSocket stream of decisions (for future clients)
+  GET  /stream           — protected SSE stream of orchestrator decisions
+  WS   /ws               — authenticated WebSocket telemetry stream
 """
 
 import asyncio
 import json
 import logging
+import math
 import os
 import sys
+import tempfile
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -37,13 +39,15 @@ from fastapi import (
     WebSocket,
     WebSocketDisconnect,
     status,
+    Query,
     Request,
 )
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from fastapi.staticfiles import StaticFiles
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from pydantic import BaseModel, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sse_starlette.sse import EventSourceResponse
 
 _BASE = Path(__file__).parent.parent
@@ -55,25 +59,44 @@ logger = logging.getLogger(__name__)
 # Auth Configuration
 # ---------------------------------------------------------------------------
 
-# IMPORTANT: In production, set this via environment variable and rotate it!
-SECRET_KEY = os.getenv("AJ_SECRET_KEY", "antijam-super-secret-key-change-in-prod-2026")
+APP_ENV = os.getenv("AJ_ENV", "development").strip().lower()
+IS_PRODUCTION = APP_ENV in {"production", "prod"}
+_DEVELOPMENT_SECRET = "antijam-development-secret-do-not-use-in-production"
+SECRET_KEY = os.getenv("AJ_SECRET_KEY", _DEVELOPMENT_SECRET)
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 8  # 8-hour sessions
 
-pwd_context = CryptContext(schemes=["sha256_crypt"], deprecated="auto")
+if IS_PRODUCTION and (
+    SECRET_KEY == _DEVELOPMENT_SECRET or len(SECRET_KEY) < 32
+):
+    raise RuntimeError(
+        "AJ_SECRET_KEY must be set to a unique value of at least 32 characters "
+        "when AJ_ENV=production"
+    )
+
+ADMIN_USERNAME = os.getenv("AJ_ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.getenv("AJ_ADMIN_PASSWORD", "antijam2026")
+if IS_PRODUCTION and "AJ_ADMIN_PASSWORD" not in os.environ:
+    raise RuntimeError("AJ_ADMIN_PASSWORD must be set when AJ_ENV=production")
+
+pwd_context = CryptContext(schemes=["pbkdf2_sha256"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
-# Simple in-memory user store — in production, use a DB
-# Passwords are sha256_crypt hashed. Default: admin/antijam2026
+# Simple in-memory user store — production deployments should use a persistent
+# identity provider. The local-development default is admin/antijam2026.
 _USERS: dict = {}  # filled at module load below
+_login_failures: Dict[str, List[float]] = {}
+LOGIN_WINDOW_SECONDS = 60
+LOGIN_MAX_FAILURES = 5
+_DUMMY_PASSWORD_HASH = pwd_context.hash("invalid-user-password-placeholder")
 
 
 def _build_users():
-    """Build hashed user store at startup to avoid bcrypt 72-byte bug."""
+    """Build the configured operator account without storing plaintext hashes."""
     return {
-        "admin": {
-            "username": "admin",
-            "hashed_password": pwd_context.hash("antijam2026"),
+        ADMIN_USERNAME: {
+            "username": ADMIN_USERNAME,
+            "hashed_password": pwd_context.hash(ADMIN_PASSWORD),
             "role": "admin",
         }
     }
@@ -92,7 +115,7 @@ def _create_access_token(data: dict, expires_delta: Optional[timedelta] = None) 
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+def _authenticate_token(token: str) -> dict:
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid or expired token",
@@ -112,9 +135,22 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
     return user
 
 
+async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
+    return _authenticate_token(token)
+
+
+async def require_admin(user: dict = Depends(get_current_user)) -> dict:
+    if user.get("role") != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin role required")
+    return user
+
+
 # ---------------------------------------------------------------------------
 # Pydantic Models
 # ---------------------------------------------------------------------------
+
+VALID_DRONE_IDS = {"drone_1", "drone_2", "drone_3"}
+VALID_JAM_DRONE_IDS = VALID_DRONE_IDS | {"all"}
 
 
 class Token(BaseModel):
@@ -124,6 +160,8 @@ class Token(BaseModel):
 
 
 class PredictRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     path_scores: List[float]
     drone_id: str = "drone_1"
     prev_reward: float = 0.0
@@ -134,9 +172,23 @@ class PredictRequest(BaseModel):
         if len(v) != 3:
             raise ValueError("path_scores must have exactly 3 values (direct, satellite, mesh)")
         for s in v:
-            if not (0.0 <= s <= 1.0):
+            if not math.isfinite(s) or not (0.0 <= s <= 1.0):
                 raise ValueError(f"All scores must be in [0, 1], got {s}")
         return v
+
+    @field_validator("drone_id")
+    @classmethod
+    def validate_drone_id(cls, value):
+        if value not in VALID_DRONE_IDS:
+            raise ValueError(f"drone_id must be one of {sorted(VALID_DRONE_IDS)}")
+        return value
+
+    @field_validator("prev_reward")
+    @classmethod
+    def validate_prev_reward(cls, value):
+        if not math.isfinite(value):
+            raise ValueError("prev_reward must be finite")
+        return value
 
 
 class PredictResponse(BaseModel):
@@ -153,21 +205,70 @@ class HealthResponse(BaseModel):
     rl_loaded: bool
     fl_loaded: bool
     uptime_s: float
+    mode: str
+    sdn_controller: str
     version: str = "2.0.0"
 
 
 class JamRequest(BaseModel):
-    paths: List[str]
-    duration: float = 10.0
+    model_config = ConfigDict(extra="forbid")
+
+    paths: List[str] = Field(default_factory=list, max_length=3)
+    duration: float = Field(default=10.0, ge=0.0, le=3600.0)
     drone_id: str = "drone_1"
     profile: str = "spot"
+
+    @field_validator("paths")
+    @classmethod
+    def validate_paths(cls, paths):
+        from simulation.jammer import VALID_PATHS
+        if len(paths) != len(set(paths)):
+            raise ValueError("paths must not contain duplicates")
+        invalid = set(paths) - VALID_PATHS
+        if invalid:
+            raise ValueError(f"Unknown paths: {sorted(invalid)}")
+        return paths
+
+    @field_validator("duration")
+    @classmethod
+    def validate_duration(cls, value):
+        if not math.isfinite(value):
+            raise ValueError("duration must be finite")
+        return value
+
+    @field_validator("drone_id")
+    @classmethod
+    def validate_jam_drone_id(cls, value):
+        if value not in VALID_JAM_DRONE_IDS:
+            raise ValueError(f"drone_id must be one of {sorted(VALID_JAM_DRONE_IDS)}")
+        return value
+
+    @field_validator("profile")
+    @classmethod
+    def validate_profile(cls, value):
+        from simulation.jammer import VALID_PROFILES
+        if value not in VALID_PROFILES:
+            raise ValueError(f"profile must be one of {sorted(VALID_PROFILES)}")
+        return value
+
+    @model_validator(mode="after")
+    def validate_profile_paths(self):
+        pathless_profiles = {
+            "none", "barrage", "sweep", "gps_spoofing", "sybil",
+            "model_poisoning", "data_poisoning", "backdoor",
+        }
+        if self.profile not in pathless_profiles and not self.paths:
+            raise ValueError(f"profile '{self.profile}' requires at least one target path")
+        if self.profile == "none" and self.paths:
+            raise ValueError("profile 'none' must not include target paths")
+        return self
 
 
 # ---------------------------------------------------------------------------
 # Global State
 # ---------------------------------------------------------------------------
 
-_rl_agent = None
+_rl_agents: Dict[str, Any] = {}
 _fl_model = None
 _start_time = time.time()
 _last_jam_time: Dict[str, float] = {}  # drone_id -> timestamp of last jam request
@@ -182,14 +283,17 @@ _compromised_drones: Set[str] = set()  # Set of compromised drones (Byzantine te
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _rl_agent, _fl_model
+    global _rl_agents, _fl_model
 
     rl_model_path = _BASE / "models" / "rl_model.zip"
     if rl_model_path.exists():
         try:
             from rl.agent import RLAgent
-            _rl_agent = RLAgent(str(rl_model_path))
-            logger.info("RL agent loaded.")
+            _rl_agents = {
+                drone_id: RLAgent(str(rl_model_path))
+                for drone_id in sorted(VALID_DRONE_IDS)
+            }
+            logger.info("RL agents loaded for %d drones.", len(_rl_agents))
         except Exception as e:
             logger.warning("Failed to load RL agent: %s. Using greedy fallback.", e)
     else:
@@ -225,8 +329,6 @@ async def lifespan(app: FastAPI):
 # FastAPI App
 # ---------------------------------------------------------------------------
 
-from fastapi.middleware.cors import CORSMiddleware
-
 app = FastAPI(
     title="Anti-Jamming Drone System API",
     description="Production-ready API for autonomous anti-jamming FL+RL+SDN pipeline",
@@ -236,13 +338,28 @@ app = FastAPI(
     redoc_url="/api/redoc",
 )
 
-# Enable CORS for frontend development
+_default_cors_origins = (
+    "" if IS_PRODUCTION else "http://localhost:5173,http://127.0.0.1:5173"
+)
+_cors_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "AJ_CORS_ORIGINS",
+        _default_cors_origins,
+    ).split(",")
+    if origin.strip()
+]
+if IS_PRODUCTION and not _cors_origins:
+    raise RuntimeError("AJ_CORS_ORIGINS must contain at least one trusted origin in production")
+if "*" in _cors_origins:
+    raise RuntimeError("AJ_CORS_ORIGINS must list explicit trusted origins; wildcard CORS is disabled")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type"],
 )
 
 
@@ -252,15 +369,34 @@ app.add_middleware(
 
 
 @app.post("/auth/token", response_model=Token, tags=["Auth"])
-async def login(form_data: OAuth2PasswordRequestForm = Depends()):
+async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends()):
     """Authenticate and retrieve a JWT bearer token."""
+    client_id = request.client.host if request.client else "unknown"
+    now = time.monotonic()
+    failures = [
+        failed_at
+        for failed_at in _login_failures.get(client_id, [])
+        if now - failed_at < LOGIN_WINDOW_SECONDS
+    ]
+    if len(failures) >= LOGIN_MAX_FAILURES:
+        raise HTTPException(
+            status_code=status.HTTP_429_TOO_MANY_REQUESTS,
+            detail="Too many failed login attempts; try again later",
+            headers={"Retry-After": str(LOGIN_WINDOW_SECONDS)},
+        )
+
     user = _USERS.get(form_data.username)
-    if not user or not _verify_password(form_data.password, user["hashed_password"]):
+    password_hash = user["hashed_password"] if user else _DUMMY_PASSWORD_HASH
+    password_valid = _verify_password(form_data.password, password_hash)
+    if not user or not password_valid:
+        failures.append(now)
+        _login_failures[client_id] = failures
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect username or password",
             headers={"WWW-Authenticate": "Bearer"},
         )
+    _login_failures.pop(client_id, None)
     token = _create_access_token(
         data={"sub": user["username"]},
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
@@ -281,17 +417,26 @@ def _greedy_predict(path_scores: List[float]) -> dict:
     return {"action_id": action, "path_name": paths[action], "threat_level": level}
 
 
-VALID_DRONE_IDS = {"drone_1", "drone_2", "drone_3"}
-
-
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health():
     """Public liveness check — no auth required."""
+    configured_mode = os.getenv("MODE")
+    if configured_mode is None:
+        mode_path = _BASE / "config" / "mode.yaml"
+        mode_config = yaml.safe_load(mode_path.read_text()) if mode_path.exists() else {}
+        configured_mode = mode_config.get("mode", "unknown")
+    runtime_mode = configured_mode.strip().lower()
+    sdn_controller = os.getenv(
+        "AJ_SDN_MODE",
+        "mock" if runtime_mode == "simulation" else "ryu",
+    ).strip().lower()
     return HealthResponse(
         status="ok",
-        rl_loaded=_rl_agent is not None,
+        rl_loaded=len(_rl_agents) == len(VALID_DRONE_IDS),
         fl_loaded=_fl_model is not None,
         uptime_s=round(time.time() - _start_time, 2),
+        mode=runtime_mode,
+        sdn_controller=sdn_controller,
     )
 
 
@@ -323,9 +468,10 @@ async def predict(
         except Exception as e:
             logger.debug("FL inference failed: %s", e)
 
-    if _rl_agent is not None:
+    rl_agent = _rl_agents.get(req.drone_id)
+    if rl_agent is not None:
         try:
-            decision = _rl_agent.predict(path_scores, reward=req.prev_reward)
+            decision = rl_agent.predict(path_scores, reward=req.prev_reward)
         except Exception as e:
             logger.warning("RL predict failed: %s. Using greedy.", e)
             decision = _greedy_predict(path_scores)
@@ -394,7 +540,7 @@ async def swarm_all_metrics(
 
 @app.get("/metrics/history", tags=["Metrics"])
 async def metrics_history(
-    limit: int = 60,
+    limit: int = Query(default=60, ge=1, le=1000),
     _: dict = Depends(get_current_user),
 ) -> dict:
     """Return last `limit` orchestrator decisions for charting. Requires JWT auth."""
@@ -435,44 +581,28 @@ def _clear_jamming_after(drone_id: str, duration: float, request_time: float):
 async def trigger_jamming(
     req: JamRequest,
     bg_tasks: BackgroundTasks,
-    _: dict = Depends(get_current_user),
+    _: dict = Depends(require_admin),
 ):
     """Trigger or clear jamming. Requires JWT auth."""
-    from simulation.jammer import jam_paths, clear_jamming, VALID_PATHS
+    from simulation.generator import DRONES
+    from simulation.jammer import clear_jamming, set_jamming_state
 
-    if not all(p in VALID_PATHS for p in req.paths):
-        raise HTTPException(
-            status_code=400,
-            detail=f"Paths must be subset of {VALID_PATHS}",
-        )
-
-    if not req.paths:
+    if req.profile == "none":
         clear_jamming(req.drone_id)
-        # Update last_jam_time to cancel any pending auto-clears
         now = time.time()
         targets = DRONES if req.drone_id == "all" else [req.drone_id]
         for t in targets:
             _last_jam_time[t] = now
         return {"status": "cleared", "drone_id": req.drone_id}
 
-    # Set state directly instead of using the blocking jam_paths function
-    from simulation.jammer import _load_state, _write_state
-    from simulation.generator import DRONES
-    state = _load_state()
-
-    targets = DRONES if req.drone_id == "all" else [req.drone_id]
-    
-    for target_id in targets:
-        state[target_id] = {"profile": req.profile, "paths": req.paths}
-            
-    _write_state(state)
+    targets = set_jamming_state(req.drone_id, req.paths, req.profile)
     
     req_time = time.time()
     for t in targets:
         _last_jam_time[t] = req_time
         
     bg_tasks.add_task(_clear_jamming_after, req.drone_id, req.duration, req_time)
-    return {"status": "jamming", "drone_id": req.drone_id, "paths": req.paths, "duration": req.duration}
+    return {"status": "jamming", "drone_id": req.drone_id, "paths": req.paths, "duration": req.duration, "profile": req.profile}
 
 
 # ---------------------------------------------------------------------------
@@ -480,7 +610,7 @@ async def trigger_jamming(
 # ---------------------------------------------------------------------------
 
 @app.post("/swarm/compromise/{drone_id}", tags=["Control"])
-async def compromise_drone(drone_id: str, _: dict = Depends(get_current_user)):
+async def compromise_drone(drone_id: str, _: dict = Depends(require_admin)):
     """Mark a drone as compromised (triggers simulated Byzantine model poisoning)."""
     from simulation.generator import DRONES
     if drone_id not in DRONES:
@@ -491,8 +621,10 @@ async def compromise_drone(drone_id: str, _: dict = Depends(get_current_user)):
 
 
 @app.post("/swarm/restore/{drone_id}", tags=["Control"])
-async def restore_drone(drone_id: str, _: dict = Depends(get_current_user)):
+async def restore_drone(drone_id: str, _: dict = Depends(require_admin)):
     """Restore a previously compromised drone to healthy status."""
+    if drone_id not in VALID_DRONE_IDS:
+        raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
     if drone_id in _compromised_drones:
         _compromised_drones.remove(drone_id)
     logger.info("Byzantine fault cleared: %s RESTORED to normal operations.", drone_id)
@@ -513,32 +645,98 @@ async def get_fl_config(_: dict = Depends(get_current_user)):
         cfg = yaml.safe_load(cfg_path.read_text())
         return cfg
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read FL config: {e}")
+        logger.exception("Failed to read FL config")
+        raise HTTPException(status_code=500, detail="Failed to read FL config") from e
+
+def _validate_config_patch(patch: Any, current: Any, path: str = "config") -> None:
+    """Reject unknown keys, shape changes, non-finite numbers, and type changes."""
+    if not isinstance(patch, dict) or not patch:
+        raise HTTPException(status_code=422, detail="Configuration patch must be a non-empty object")
+    if not isinstance(current, dict):
+        raise HTTPException(status_code=422, detail=f"{path} is not an object")
+
+    for key, value in patch.items():
+        child_path = f"{path}.{key}"
+        if key not in current:
+            raise HTTPException(status_code=422, detail=f"Unknown configuration key: {child_path}")
+        expected = current[key]
+        if isinstance(expected, dict):
+            if not isinstance(value, dict):
+                raise HTTPException(status_code=422, detail=f"{child_path} must be an object")
+            _validate_config_patch(value, expected, child_path)
+        elif isinstance(expected, bool):
+            if not isinstance(value, bool):
+                raise HTTPException(status_code=422, detail=f"{child_path} must be a boolean")
+        elif isinstance(expected, int) and not isinstance(expected, bool):
+            if isinstance(value, bool) or not isinstance(value, int):
+                raise HTTPException(status_code=422, detail=f"{child_path} must be an integer")
+            if not math.isfinite(float(value)):
+                raise HTTPException(status_code=422, detail=f"{child_path} must be finite")
+        elif isinstance(expected, float):
+            if isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise HTTPException(status_code=422, detail=f"{child_path} must be numeric")
+            if not math.isfinite(float(value)):
+                raise HTTPException(status_code=422, detail=f"{child_path} must be finite")
+        elif not isinstance(value, type(expected)):
+            raise HTTPException(
+                status_code=422,
+                detail=f"{child_path} must have type {type(expected).__name__}",
+            )
+
+
+def _deep_merge(current: dict, patch: dict) -> dict:
+    for key, value in patch.items():
+        if isinstance(value, dict):
+            _deep_merge(current[key], value)
+        elif isinstance(current[key], float) and isinstance(value, (int, float)):
+            # JSON has no integer-vs-float distinction for values such as 1.0.
+            # Preserve the schema implied by the existing YAML configuration.
+            current[key] = float(value)
+        else:
+            current[key] = value
+    return current
+
+
+def _write_yaml_atomic(path: Path, value: dict) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temp_path: Optional[Path] = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            prefix=f".{path.name}.",
+            suffix=".tmp",
+            dir=path.parent,
+            delete=False,
+        ) as temp_file:
+            yaml.safe_dump(value, temp_file, default_flow_style=False, sort_keys=False)
+            temp_file.flush()
+            os.fsync(temp_file.fileno())
+            temp_path = Path(temp_file.name)
+        os.replace(temp_path, path)
+    finally:
+        if temp_path is not None and temp_path.exists():
+            temp_path.unlink()
+
 
 @app.post("/api/fl/config", tags=["Federated Learning"])
-async def update_fl_config(new_config: dict, _: dict = Depends(get_current_user)):
+async def update_fl_config(new_config: dict, _: dict = Depends(require_admin)):
     """Update the Federated Learning config in config/fl_config.yaml."""
     cfg_path = _BASE / "config" / "fl_config.yaml"
     try:
-        current_cfg = {}
-        if cfg_path.exists():
-            current_cfg = yaml.safe_load(cfg_path.read_text()) or {}
-        
-        # Deep merge helper to merge nested dictionaries
-        def deep_merge(dict1, dict2):
-            for k, v in dict2.items():
-                if k in dict1 and isinstance(dict1[k], dict) and isinstance(v, dict):
-                    deep_merge(dict1[k], v)
-                else:
-                    dict1[k] = v
-            return dict1
-
-        updated_cfg = deep_merge(current_cfg, new_config)
-        cfg_path.write_text(yaml.dump(updated_cfg, default_flow_style=False))
+        if not cfg_path.exists():
+            raise HTTPException(status_code=404, detail="FL config file not found")
+        current_cfg = yaml.safe_load(cfg_path.read_text(encoding="utf-8")) or {}
+        _validate_config_patch(new_config, current_cfg)
+        updated_cfg = _deep_merge(current_cfg, new_config)
+        _write_yaml_atomic(cfg_path, updated_cfg)
         logger.info("FL config updated dynamically via API.")
         return {"status": "success", "config": updated_cfg}
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to update FL config: {e}")
+        logger.exception("Failed to update FL config")
+        raise HTTPException(status_code=500, detail="Failed to update FL config") from e
 
 @app.get("/api/fl/metrics", tags=["Federated Learning"])
 async def get_fl_metrics(_: dict = Depends(get_current_user)):
@@ -553,6 +751,7 @@ async def get_fl_metrics(_: dict = Depends(get_current_user)):
                 "round": 0,
                 "threat_f1": 0.0,
                 "attack_accuracy": 0.0,
+                "confidence_brier": None,
                 "round_loss": 0.0,
                 "privacy_epsilon": 0.0,
                 "privacy_delta": 1e-5,
@@ -571,33 +770,15 @@ async def get_fl_metrics(_: dict = Depends(get_current_user)):
         with open(metrics_path, "r") as f:
             return json.load(f)
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Failed to read FL metrics: {e}")
+        logger.exception("Failed to read FL metrics")
+        raise HTTPException(status_code=500, detail="Failed to read FL metrics") from e
 
 
 @app.get("/api/report/generate", tags=["Report"])
 async def generate_evaluation_report(
-    request: Request,
-    token: Optional[str] = None,
+    _: dict = Depends(require_admin),
 ):
     """Generate and export a premium Capstone Evaluation Report in HTML format."""
-    # Custom token extraction (from query parameter ?token=... or standard auth headers)
-    auth_token = token
-    if not auth_token:
-        auth_header = request.headers.get("authorization")
-        if auth_header and auth_header.startswith("Bearer "):
-            auth_token = auth_header.split(" ")[1]
-            
-    if not auth_token:
-        raise HTTPException(status_code=401, detail="Authentication token required")
-        
-    try:
-        payload = jwt.decode(auth_token, SECRET_KEY, algorithms=[ALGORITHM])
-        username = payload.get("sub")
-        if not username or username not in _USERS:
-            raise HTTPException(status_code=401, detail="Invalid token")
-    except JWTError:
-        raise HTTPException(status_code=401, detail="Invalid or expired token")
-
     from fastapi.responses import HTMLResponse
     db_path = _BASE / "experiments" / "experiment.db"
     
@@ -605,7 +786,6 @@ async def generate_evaluation_report(
     total_steps = 0
     path_dist = {"direct": 0, "satellite": 0, "mesh": 0}
     avg_reward = 0.0
-    avg_latency = 0.0
     avg_loss = 0.0
     
     if db_path.exists():
@@ -640,13 +820,13 @@ async def generate_evaluation_report(
         except Exception as e:
             logger.error("Report database read failed: %s", e)
             
-    # Safe defaults if db is empty/new
-    if total_steps < 10:
-        total_steps = 1852
-        path_dist = {"direct": 93.4, "mesh": 5.2, "satellite": 1.4}
-        avg_reward = 0.8247
-        avg_loss = 1.25
-        avg_latency = 22.45
+    has_sufficient_data = total_steps >= 10
+    report_notice = (
+        "Metrics below were calculated from recorded experiment data."
+        if has_sufficient_data
+        else "Insufficient experiment data: fewer than 10 recorded decisions are available. "
+             "No demonstration values have been substituted."
+    )
 
     # 2. Build premium HTML template
     html_content = f"""
@@ -756,6 +936,14 @@ async def generate_evaluation_report(
                 text-transform: uppercase;
                 letter-spacing: 1px;
             }}
+            .notice {{
+                margin-bottom: 24px;
+                padding: 12px 16px;
+                border-radius: 10px;
+                color: var(--text);
+                background: rgba(59,130,246,0.08);
+                border: 1px solid rgba(59,130,246,0.25);
+            }}
             h2 {{
                 font-size: 20px;
                 font-weight: 700;
@@ -831,6 +1019,8 @@ async def generate_evaluation_report(
                 </div>
             </header>
 
+            <div class="notice">{report_notice}</div>
+
             <div class="grid">
                 <div class="stat-box">
                     <div class="stat-label">Total Steps Run</div>
@@ -851,7 +1041,7 @@ async def generate_evaluation_report(
             </div>
 
             <h2>1. System Performance Overview</h2>
-            <p>The FLARE (Federated Learning & Reinforcement Learning Anti-Jamming Swarm Router) system has successfully completed the simulation session. The Reinforcement Learning path optimization algorithm converges on the Direct path during baseline operations to minimize link latency and energy consumption, falling back autonomously to mesh/satellite relay configurations during jamming injection events.</p>
+            <p>This report summarizes the experiment decisions currently stored by FLARE. Path distribution and averages are descriptive values from the available records; they are not model-accuracy or convergence claims.</p>
 
             <h2>2. Communication Link Interface Path Distribution</h2>
             <table>
@@ -890,7 +1080,7 @@ async def generate_evaluation_report(
             </table>
 
             <h2>3. Secure Aggregation Audit Summary</h2>
-            <p>Federated Learning model weight aggregation uses secure Byzantine-robust defenses. When outliers are detected (e.g. from compromised nodes), the server applies L2 gradient clipping and computes parameter Z-scores to isolate poisoned models. Aggregation automatically employs a Trimmed-Mean strategy to filter out tail parameter updates, maintaining the stability of the global BiLSTM threat classifier.</p>
+            <p>The configured aggregation pipeline can apply update clipping, anomaly filtering, trust-weighted or robust averaging, and server-side noise. The exact method used in a round must be verified from the exported FL round metrics rather than inferred from this report.</p>
 
             <footer>
                 Capstone Project Team 2 — Grade Evaluation Deliverable. Compiled dynamically at {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}.
@@ -935,28 +1125,25 @@ def _calculate_xai_attributions(model, path_metrics: dict | None) -> dict:
         feats_norm = (feats - mins) / (maxs - mins + 1e-8)
         feats_norm = np.clip(feats_norm, 0.0, 1.0)
         
-        # Build base sequence tensor of shape [1, 10, 5]
+        # Build one base sequence and five feature-ablation variants, then run
+        # all six in a single model call.
         seq = np.tile(feats_norm, (10, 1)).astype(np.float32)
-        x_base = torch.tensor(seq, dtype=torch.float32).unsqueeze(0)
-        
-        with torch.no_grad():
-            out_base = model(x_base)
-            p_base = float(out_base.path_scores.squeeze().mean().item())
-            
-        # Perturbation cycle
-        influences = []
+        variants = [seq]
         for j in range(5):
             seq_pert = seq.copy()
             seq_pert[:, j] = 0.0  # Ablate feature
-            x_pert = torch.tensor(seq_pert, dtype=torch.float32).unsqueeze(0)
-            
-            with torch.no_grad():
-                out_pert = model(x_pert)
-                p_pert = float(out_pert.path_scores.squeeze().mean().item())
-                
-            # Delta study
-            influence = abs(p_base - p_pert)
-            influences.append(influence + 0.02)  # tiny offset to ensure nonzero display
+            variants.append(seq_pert)
+
+        x_batch = torch.tensor(np.stack(variants), dtype=torch.float32)
+        with torch.no_grad():
+            output = model(x_batch)
+            predictions = output.path_scores.mean(dim=1).cpu().numpy()
+
+        p_base = float(predictions[0])
+        influences = [
+            abs(p_base - float(p_pert)) + 0.02
+            for p_pert in predictions[1:]
+        ]
             
         total = sum(influences)
         if total > 0:
@@ -999,59 +1186,51 @@ async def _broadcast_to_ws(data: dict):
 
 async def telemetry_broadcaster():
     """Periodically fetch metrics and broadcast to all connected WebSocket clients."""
-    from simulation.generator import generate_metrics
+    from simulation.generator import generate_swarm_metrics
     db_path = _BASE / "experiments" / "experiment.db"
-    
+
     while True:
         try:
             if _ws_clients:
-                # Default decision
-                decision = {
-                    "path_name": "direct",
-                    "threat_level": "LOW",
-                    "reward": 0.0,
-                    "step": 0
+                decisions = {
+                    drone_id: {
+                        "path_name": "direct",
+                        "threat_level": "LOW",
+                        "reward": 0.0,
+                        "step": 0,
+                    }
+                    for drone_id in sorted(VALID_DRONE_IDS)
                 }
                 if db_path.exists():
                     try:
                         async with aiosqlite.connect(db_path) as db:
                             db.row_factory = aiosqlite.Row
                             cursor = await db.execute(
-                                "SELECT * FROM runs WHERE drone_id = 'drone_1' ORDER BY id DESC LIMIT 1"
+                                "SELECT * FROM runs WHERE id IN "
+                                "(SELECT MAX(id) FROM runs GROUP BY drone_id)"
                             )
-                            row = await cursor.fetchone()
-                            if row:
-                                decision = {
+                            for row in await cursor.fetchall():
+                                decisions[row["drone_id"]] = {
                                     "path_name": row["path_name"],
                                     "threat_level": row["threat_level"],
                                     "reward": row["reward"],
-                                    "step": row["step"]
+                                    "step": row["step"],
                                 }
                     except Exception as e:
                         logger.debug("WS telemetry DB read error: %s", e)
-                
-                # Generate live metrics
-                metrics = generate_metrics(drone_id="drone_1")
-                
-                # Calculate local XAI attributions for active path
-                active_path = decision.get("path_name", "direct")
-                active_path_metrics = None
-                if metrics and "paths" in metrics:
-                    for p in metrics["paths"]:
-                        if p.get("path_id") == active_path:
-                            active_path_metrics = p
-                            break
-                    if not active_path_metrics and metrics["paths"]:
-                        active_path_metrics = metrics["paths"][0]
-                
-                xai_attributions = _calculate_xai_attributions(_fl_model, active_path_metrics)
-                
-                # Generate Byzantine audit status logs
+
+                swarm_metrics = generate_swarm_metrics()
+                from simulation.generator import _load_jam_state
+                jam_state = _load_jam_state()
+
                 import numpy as np
                 byzantine_status = []
-                for drone in ["drone_1", "drone_2", "drone_3"]:
-                    is_comp = drone in _compromised_drones
-                    anomaly_score = 3.8 + np.random.uniform(0.5, 1.5) if is_comp else 0.3 + np.random.uniform(0.1, 0.4)
+                for drone in sorted(VALID_DRONE_IDS):
+                    drone_jam = jam_state.get(drone, {"profile": "none"})
+                    profile = drone_jam.get("profile", "none")
+                    is_comp = drone in _compromised_drones or profile in ["model_poisoning", "data_poisoning"]
+
+                    anomaly_score = 4.2 + np.random.uniform(0.5, 1.5) if is_comp else 0.2 + np.random.uniform(0.1, 0.3)
                     byzantine_status.append({
                         "drone_id": drone,
                         "status": "COMPROMISED" if is_comp else "NORMAL",
@@ -1060,7 +1239,6 @@ async def telemetry_broadcaster():
                         "action": "REJECTED" if is_comp else "ACCEPTED"
                     })
 
-                # Generate live FL metrics snapshot if available
                 fl_metrics = None
                 fl_metrics_path = _BASE / "results" / "fl_metrics_snapshot.json"
                 if fl_metrics_path.exists():
@@ -1070,28 +1248,42 @@ async def telemetry_broadcaster():
                     except Exception:
                         pass
 
-                # Merge and broadcast
-                payload = {
-                    "type": "telemetry",
-                    "timestamp": time.time(),
-                    "decision": decision,
-                    "metrics": metrics,
-                    "xai": xai_attributions,
-                    "byzantine": byzantine_status,
-                    "fl_metrics": fl_metrics
-                }
-                await _broadcast_to_ws(payload)
+                for drone_id in sorted(VALID_DRONE_IDS):
+                    decision = decisions[drone_id]
+                    metrics = swarm_metrics[drone_id]
+                    active_path = decision.get("path_name", "direct")
+                    paths = metrics.get("paths", [])
+                    active_path_metrics = next(
+                        (
+                            path
+                            for path in paths
+                            if path.get("path_id") == active_path
+                        ),
+                        paths[0] if paths else None,
+                    )
+                    await _broadcast_to_ws({
+                        "type": "telemetry",
+                        "timestamp": time.time(),
+                        "decision": decision,
+                        "metrics": metrics,
+                        "xai": _calculate_xai_attributions(
+                            _fl_model,
+                            active_path_metrics,
+                        ),
+                        "byzantine": byzantine_status,
+                        "fl_metrics": fl_metrics,
+                    })
         except Exception as e:
             logger.error("Telemetry broadcaster error: %s", e)
-        
+
         await asyncio.sleep(1.0)
 
 
 @app.get("/stream", tags=["Stream"])
-async def stream_decisions():
+async def stream_decisions(_: dict = Depends(get_current_user)):
     """
     SSE stream of live orchestrator decisions.
-    Public (no auth) so the browser dashboard can connect without CORS complications.
+    Requires a bearer token. Streaming clients must support Authorization headers.
     """
     async def event_generator():
         db_path = _BASE / "experiments" / "experiment.db"
@@ -1109,8 +1301,6 @@ async def stream_decisions():
                             last_id = row["id"]
                             payload = dict(row)
                             yield {"event": "decision", "data": json.dumps(payload)}
-                            # Also broadcast to WS clients
-                            await _broadcast_to_ws(payload)
                 except Exception as e:
                     logger.debug("SSE DB read error: %s", e)
             await asyncio.sleep(0.5)
@@ -1122,9 +1312,21 @@ async def stream_decisions():
 async def websocket_endpoint(websocket: WebSocket):
     """
     WebSocket endpoint for real-time orchestrator decisions.
-    Designed for future native clients (mobile apps, Unity-based simulators, etc.)
+    The first client message must be JSON: {"type": "auth", "token": "..."}.
     """
     await websocket.accept()
+    try:
+        auth_message = await asyncio.wait_for(websocket.receive_json(), timeout=5.0)
+        if not isinstance(auth_message, dict):
+            raise ValueError("Invalid WebSocket auth message")
+        if auth_message.get("type") != "auth" or not isinstance(auth_message.get("token"), str):
+            raise ValueError("Missing WebSocket auth message")
+        _authenticate_token(auth_message["token"])
+    except (asyncio.TimeoutError, ValueError, HTTPException, json.JSONDecodeError):
+        await websocket.close(code=4401, reason="Authentication required")
+        return
+
+    await websocket.send_json({"type": "auth", "status": "ok"})
     _ws_clients.append(websocket)
     logger.info("WebSocket client connected. Total: %d", len(_ws_clients))
     try:
@@ -1132,7 +1334,8 @@ async def websocket_endpoint(websocket: WebSocket):
             # Keep-alive: wait for any client message (ping)
             await websocket.receive_text()
     except WebSocketDisconnect:
-        _ws_clients.remove(websocket)
+        if websocket in _ws_clients:
+            _ws_clients.remove(websocket)
         logger.info("WebSocket client disconnected. Total: %d", len(_ws_clients))
 
 
@@ -1140,9 +1343,22 @@ async def websocket_endpoint(websocket: WebSocket):
 # Static Files — mounted LAST so API routes take priority
 # ---------------------------------------------------------------------------
 
-frontend_dir = _BASE / "frontend"
-frontend_dir.mkdir(exist_ok=True)
-app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+configured_static_dir = os.getenv("AJ_STATIC_DIR")
+frontend_dir = (
+    Path(configured_static_dir)
+    if configured_static_dir
+    else _BASE / "frontend-react" / "dist"
+)
+if (frontend_dir / "index.html").is_file():
+    app.mount("/", StaticFiles(directory=str(frontend_dir), html=True), name="frontend")
+else:
+    @app.get("/", include_in_schema=False)
+    async def api_root() -> dict:
+        return {
+            "service": "FLARE API",
+            "docs": "/api/docs",
+            "health": "/health",
+        }
 
 
 if __name__ == "__main__":

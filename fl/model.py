@@ -24,6 +24,22 @@ ThreatOutput = namedtuple("ThreatOutput", ["path_scores", "confidence", "attack_
 ATTACK_CLASSES = ["none", "barrage", "sweep", "spot", "unknown"]
 
 
+def confidence_correctness_target(
+    output: ThreatOutput,
+    y_threat: torch.Tensor,
+    y_attack: torch.Tensor,
+) -> torch.Tensor:
+    """Build a detached [0, 1] target from current threat/attack correctness."""
+    with torch.no_grad():
+        threat_correct = (
+            (output.path_scores >= 0.5) == (y_threat >= 0.5)
+        ).float().mean(dim=1)
+        attack_correct = (
+            output.attack_logits.argmax(dim=1) == y_attack
+        ).float()
+        return 0.5 * (threat_correct + attack_correct)
+
+
 class AttentionPool(nn.Module):
     """Additive (Bahdanau-style) attention over the time dimension."""
 
@@ -120,7 +136,7 @@ class BiLSTMAttention(nn.Module):
         with torch.no_grad():
             out = self.forward(x)
             attack_idx = int(out.attack_logits.argmax(dim=-1).item())
-            # Confidence from prediction entropy (lower entropy = higher confidence)
+            # The confidence head is trained to estimate current prediction correctness.
             conf_val = float(out.confidence.squeeze().item())
             return {
                 "path_scores": out.path_scores.squeeze().tolist(),

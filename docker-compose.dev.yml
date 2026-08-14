@@ -4,14 +4,11 @@
 # No Open vSwitch or real RF hardware required.
 # =============================================================================
 
-version: "3.9"
-
 networks:
   antijam-net:
     driver: bridge
 
 volumes:
-  models:
   experiments:
   logs:
 
@@ -27,7 +24,7 @@ services:
     ports:
       - "8090:8090"
     volumes:
-      - models:/app/models
+      - ${MODEL_DIR:-./models}:/app/models
     environment:
       - PYTHONPATH=/app
     healthcheck:
@@ -45,7 +42,7 @@ services:
     container_name: fl-client-1
     networks: [antijam-net]
     volumes:
-      - models:/app/models
+      - ${MODEL_DIR:-./models}:/app/models
     environment:
       - PYTHONPATH=/app
     command: python fl/client.py --client_id drone_1 --server_address fl-server:8090
@@ -60,7 +57,7 @@ services:
     container_name: fl-client-2
     networks: [antijam-net]
     volumes:
-      - models:/app/models
+      - ${MODEL_DIR:-./models}:/app/models
     environment:
       - PYTHONPATH=/app
     command: python fl/client.py --client_id drone_2 --server_address fl-server:8090
@@ -75,7 +72,7 @@ services:
     container_name: fl-client-3
     networks: [antijam-net]
     volumes:
-      - models:/app/models
+      - ${MODEL_DIR:-./models}:/app/models
     environment:
       - PYTHONPATH=/app
     command: python fl/client.py --client_id drone_3 --server_address fl-server:8090 --jammed
@@ -96,41 +93,75 @@ services:
       - logs:/app/logs
     environment:
       - PYTHONPATH=/app
+      - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 3
 
-  # ── API + Orchestrator ────────────────────────────────────────────────────
-  api-orchestrator:
+  # ── API ───────────────────────────────────────────────────────────────────
+  api:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
-    container_name: api-orchestrator
+    container_name: flare-api
     networks: [antijam-net]
     ports:
       - "8000:8000"
     volumes:
-      - models:/app/models
+      - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
       - logs:/app/logs
     environment:
       - PYTHONPATH=/app
-      - MODE=simulation
-    depends_on:
-      mock-sdn:
-        condition: service_healthy
+      - AJ_SECRET_KEY=${AJ_SECRET_KEY:-antijam-development-secret-do-not-use-in-production}
+      - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
+      - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:-antijam2026}
+      - AJ_CORS_ORIGINS=${AJ_CORS_ORIGINS:-http://localhost:5173}
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 20s
-    # Run both API server and orchestrator loop via a small entrypoint
-    command: >
-      sh -c "uvicorn api.server:app --host 0.0.0.0 --port 8000 &
-             python -m orchestrator.loop"
+    command: uvicorn api.server:app --host 0.0.0.0 --port 8000
+
+  # ── Orchestrator ──────────────────────────────────────────────────────────
+  orchestrator:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.api
+    container_name: flare-orchestrator
+    networks: [antijam-net]
+    volumes:
+      - ${MODEL_DIR:-./models}:/app/models:ro
+      - experiments:/app/experiments
+      - logs:/app/logs
+    environment:
+      - PYTHONPATH=/app
+      - MODE=simulation
+      - SDN_HOST=mock-sdn
+      - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
+    depends_on:
+      mock-sdn:
+        condition: service_healthy
+    command: python -m orchestrator.loop
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+    container_name: flare-frontend
+    networks: [antijam-net]
+    ports:
+      - "5173:80"
+    depends_on:
+      api:
+        condition: service_healthy
 
   # ── Redis (optional pub/sub) ───────────────────────────────────────────────
   redis:

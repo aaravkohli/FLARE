@@ -1,5 +1,6 @@
 node_modules/
 frontend-react/node_modules/
+frontend-react/dist/
 datasets/
 models/
 experiments/
@@ -18,3 +19,6 @@ venv/
 results/
 .pytest_cache/
 .benchmarks/
+mininet-wifi/
+ns-3-dev/
+.local_sim.pids

@@ -181,7 +181,7 @@ def test_input_validation(token):
     check("jam extreme duration → handled (200 or 422)", code in (200, 422), f"got {code}")
     # Clear if it went through
     if code == 200:
-        _req("POST", "/jam", data={"paths": [], "duration": 0}, headers=auth)
+        _req("POST", "/jam", data={"paths": [], "duration": 0, "profile": "none"}, headers=auth)
 
     # history endpoint: limit injection
     for bad_limit in [-1, 0, 100001, "'; DROP TABLE runs; --", "999999999"]:
@@ -223,7 +223,7 @@ def test_race_conditions(token):
     [t.start() for t in threads]
     [t.join() for t in threads]
     check("Concurrent jam requests all handled", len(errors) == 0, f"Errors: {errors}")
-    _req("POST", "/jam", data={"paths": [], "duration": 0}, headers=auth)  # clear
+    _req("POST", "/jam", data={"paths": [], "duration": 0, "profile": "none"}, headers=auth)  # clear
 
     # Concurrent metric reads
     read_errors = []
@@ -277,7 +277,7 @@ def test_dos_resilience(token):
 
     # Large limit on history endpoint
     code, data = _req("GET", "/metrics/history?limit=10000", headers=auth)
-    check("Huge history limit returns 200 (clamped or all rows)", code == 200, f"got {code}")
+    check("Huge history limit is rejected by the 1000-row cap", code == 422, f"got {code}")
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -314,20 +314,21 @@ def test_swarm(token):
     check("Drone 2 metrics OK", code2 == 200 and "paths" in m2, f"got {code2}")
     check("Drone 3 metrics OK", code3 == 200 and "paths" in m3, f"got {code3}")
 
-    if code1 == 200 and code2 == 200:
-        # Compare median over 5 samples to reduce stochastic noise
-        rssi1_vals = [_req("GET", "/metrics/live?drone_id=drone_1", headers=auth)[1]["paths"][0]["rssi"] for _ in range(5)]
-        rssi2_vals = [_req("GET", "/metrics/live?drone_id=drone_2", headers=auth)[1]["paths"][0]["rssi"] for _ in range(5)]
-        median1 = sorted(rssi1_vals)[2]
-        median2 = sorted(rssi2_vals)[2]
-        check("Drone 2 median RSSI weaker than Drone 1", median2 < median1, f"drone1 median={median1:.1f}, drone2 median={median2:.1f}")
+    if code1 == 200 and code2 == 200 and code3 == 200:
+        # Use the same random draw for each drone so this verifies only the
+        # configured per-drone offset instead of occasionally failing because
+        # five unrelated uniform samples happen to overlap.
+        from simulation.generator import generate_metrics
 
-    if code2 == 200 and code3 == 200:
-        rssi2_vals = [_req("GET", "/metrics/live?drone_id=drone_2", headers=auth)[1]["paths"][0]["rssi"] for _ in range(5)]
-        rssi3_vals = [_req("GET", "/metrics/live?drone_id=drone_3", headers=auth)[1]["paths"][0]["rssi"] for _ in range(5)]
-        median2 = sorted(rssi2_vals)[2]
-        median3 = sorted(rssi3_vals)[2]
-        check("Drone 3 median RSSI weakest", median3 < median2, f"drone2 median={median2:.1f}, drone3 median={median3:.1f}")
+        direct_rssi = {
+            drone_id: generate_metrics(drone_id, seed=2026)["paths"][0]["rssi"]
+            for drone_id in ("drone_1", "drone_2", "drone_3")
+        }
+        check(
+            "Drone RSSI offsets are ordered deterministically",
+            direct_rssi["drone_1"] > direct_rssi["drone_2"] > direct_rssi["drone_3"],
+            f"RSSI values={direct_rssi}",
+        )
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -338,7 +339,7 @@ def test_jam_roundtrip(token):
     auth = {"Authorization": f"Bearer {token}"}
 
     # Clear first
-    _req("POST", "/jam", data={"paths": [], "duration": 0}, headers=auth)
+    _req("POST", "/jam", data={"paths": [], "duration": 0, "profile": "none"}, headers=auth)
     time.sleep(0.3)
 
     # Check baseline is LOW
@@ -358,7 +359,7 @@ def test_jam_roundtrip(token):
     check("Jammed PDR < 0.4 (jamming active)", jammed_pdr < 0.4, f"PDR={jammed_pdr:.2f}")
 
     # Clear jamming
-    _req("POST", "/jam", data={"paths": [], "duration": 0}, headers=auth)
+    _req("POST", "/jam", data={"paths": [], "duration": 0, "profile": "none"}, headers=auth)
     time.sleep(0.5)
     code, m = _req("GET", "/metrics/live?drone_id=drone_1", headers=auth)
     cleared_pdr = m["paths"][0]["pdr"] if code == 200 else 0
@@ -381,7 +382,7 @@ def test_jam_all(token):
         check(f"  {did} is jammed (PDR={pdr:.2f})", pdr < 0.4)
 
     # Clear 'all'
-    _req("POST", "/jam", data={"paths": [], "duration": 0, "drone_id": "all"}, headers=auth)
+    _req("POST", "/jam", data={"paths": [], "duration": 0, "drone_id": "all", "profile": "none"}, headers=auth)
     time.sleep(0.5)
     for did in ["drone_1", "drone_2", "drone_3"]:
         _, m = _req("GET", f"/metrics/live?drone_id={did}", headers=auth)

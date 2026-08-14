@@ -4,8 +4,8 @@ fl/client.py — Upgraded FL Client  [FLARE v2]
 Flower federated learning client running on each simulated drone node.
 
 New in FLARE v2:
-  - Client-side DP-SGD (Opacus or manual gradient perturbation)
-  - Gradient compression before upload (Top-K + quantization)
+  - Client-side DP-SGD through a persistent Opacus privacy engine
+  - Local compression-error simulation (Top-K + quantization)
   - Personalized model adaptation (pFedMe Moreau envelope)
   - Multi-signal drift reporting to server
   - Privacy budget tracking per client
@@ -31,6 +31,7 @@ References:
 """
 
 import argparse
+import hashlib
 import logging
 import sys
 import time
@@ -49,7 +50,13 @@ import yaml
 import json
 import pandas as pd
 
-from fl.model import BiLSTMAttention, build_model, get_model_weights, set_model_weights
+from fl.model import (
+    BiLSTMAttention,
+    build_model,
+    confidence_correctness_target,
+    get_model_weights,
+    set_model_weights,
+)
 
 # ---------------------------------------------------------------------------
 # Config
@@ -58,6 +65,7 @@ _BASE = Path(__file__).parent.parent
 _FL_CFG = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
 _MODEL_CFG = _FL_CFG["model"]
 _TRAIN_CFG = _FL_CFG["training"]
+_FED_CFG = _FL_CFG["federation"]
 _DRIFT_CFG = _FL_CFG["drift_detection"]
 _DP_CFG = _FL_CFG.get("differential_privacy", {})
 _COMP_CFG = _FL_CFG.get("compression", {})
@@ -96,31 +104,38 @@ def load_local_data(
         y_threat : [N, 3] binary threat labels per path
         y_attack : [N]    attack class index
     """
-    rng = np.random.default_rng(seed=hash(client_id) % (2**32))
+    seed = int.from_bytes(
+        hashlib.sha256(client_id.encode("utf-8")).digest()[:8],
+        byteorder="big",
+    )
+    rng = np.random.default_rng(seed=seed)
 
     X_list, y_threat_list, y_attack_list = [], [], []
+    attack_ranges = {
+        1: ((-112.0, -96.0), (0.00, 0.20), (-7.0, 0.0), (450.0, 900.0), (0.65, 0.98)),
+        2: ((-104.0, -88.0), (0.15, 0.45), (-2.0, 7.0), (220.0, 650.0), (0.35, 0.80)),
+        3: ((-98.0, -82.0), (0.25, 0.55), (1.0, 10.0), (130.0, 450.0), (0.25, 0.65)),
+        4: ((-110.0, -80.0), (0.05, 0.60), (-5.0, 12.0), (100.0, 850.0), (0.20, 0.90)),
+    }
+
     for _ in range(num_samples):
-        jammed_paths = rng.choice([True, False], size=3, p=[0.3, 0.7])
-        if jammed:
-            jammed_paths = np.array([True, False, False])
+        path_jammed = bool(jammed or rng.random() < 0.3)
+        attack_idx = int(rng.integers(1, 5)) if path_jammed else 0
+        if path_jammed:
+            ranges = attack_ranges[attack_idx]
+            rssi, pdr, sinr, latency, packet_loss = [
+                rng.uniform(low, high) for low, high in ranges
+            ]
+        else:
+            rssi = rng.uniform(-75.0, -40.0)
+            pdr = rng.uniform(0.7, 1.0)
+            sinr = rng.uniform(10.0, 30.0)
+            latency = rng.uniform(5.0, 80.0)
+            packet_loss = rng.uniform(0.0, 0.1)
 
-        step = []
-        for path_jammed in jammed_paths:
-            if path_jammed:
-                rssi = rng.uniform(-110.0, -85.0)
-                pdr = rng.uniform(0.0, 0.4)
-                sinr = rng.uniform(-5.0, 5.0)
-                latency = rng.uniform(200.0, 800.0)
-                packet_loss = rng.uniform(0.3, 0.9)
-            else:
-                rssi = rng.uniform(-75.0, -40.0)
-                pdr = rng.uniform(0.7, 1.0)
-                sinr = rng.uniform(10.0, 30.0)
-                latency = rng.uniform(5.0, 80.0)
-                packet_loss = rng.uniform(0.0, 0.1)
-            step.extend([rssi, pdr, sinr, latency, packet_loss])
-
-        feats_single = np.array(step)[:5].astype(np.float32)
+        feats_single = np.array(
+            [rssi, pdr, sinr, latency, packet_loss], dtype=np.float32
+        )
         mins = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
         maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
         feats_norm = (feats_single - mins) / (maxs - mins + 1e-8)
@@ -128,12 +143,9 @@ def load_local_data(
         seq_arr = np.tile(feats_norm, (seq_len, 1)).astype(np.float32)
 
         X_list.append(seq_arr)
-        y_threat_list.append(jammed_paths.astype(np.float32))
-
-        if jammed_paths.any():
-            attack_idx = rng.integers(1, 5)
-        else:
-            attack_idx = 0
+        # Runtime evaluates one path at a time and averages the three threat
+        # outputs, so all three heads receive the observed path's label.
+        y_threat_list.append(np.full(3, float(path_jammed), dtype=np.float32))
         y_attack_list.append(attack_idx)
 
     X = torch.tensor(np.stack(X_list), dtype=torch.float32)
@@ -256,8 +268,8 @@ class DroneFlClient(fl.client.NumPyClient):
     Upgraded Flower NumPyClient for a single drone node.
 
     New in FLARE v2:
-      - Optional DP-SGD training (client-side Gaussian mechanism)
-      - Optional gradient compression before upload
+      - Optional Opacus DP-SGD training (client-side Gaussian mechanism)
+      - Optional compression-error simulation before dense Flower upload
       - Optional personalized model adaptation (pFedMe)
       - Multi-signal drift score reporting
       - Privacy budget tracking
@@ -361,17 +373,12 @@ class DroneFlClient(fl.client.NumPyClient):
         else:
             self._persona_manager = None
 
-        # Privacy accountant
-        if self._dp_enabled:
-            from fl.privacy import PrivacyAccountant
-            self._privacy_accountant = PrivacyAccountant(
-                noise_multiplier=dp_client_cfg.get("noise_multiplier", 1.1),
-                sample_rate=_TRAIN_CFG["batch_size"] / max(len(self.X), 1),
-                delta=dp_client_cfg.get("delta", 1e-5),
-                alphas=dp_client_cfg.get("rdp_alpha_orders", None),
-            )
-        else:
-            self._privacy_accountant = None
+        # Training objects are initialized lazily on the first fit call because
+        # the server supplies the actual federation round count in fit config.
+        self._optimizer: Optional[torch.optim.Optimizer] = None
+        self._train_loader = None
+        self._privacy_engine = None
+        self._using_opacus = False
 
         # Drift state (for cosine similarity tracking)
         self._prev_grad_flat: Optional[np.ndarray] = None
@@ -380,6 +387,69 @@ class DroneFlClient(fl.client.NumPyClient):
     # -----------------------------------------------------------------------
     # Flower API
     # -----------------------------------------------------------------------
+
+    def _setup_training(self, config: dict) -> None:
+        """Create one persistent optimizer/private engine for all FL rounds."""
+        if self._optimizer is not None:
+            return
+
+        dataset = TensorDataset(self.X, self.y_threat, self.y_attack)
+        loader = DataLoader(
+            dataset,
+            batch_size=_TRAIN_CFG["batch_size"],
+            shuffle=True,
+        )
+
+        if self._dp_enabled:
+            try:
+                from opacus.validators import ModuleValidator
+            except ImportError as exc:
+                raise RuntimeError(
+                    "Client-side DP was requested, but Opacus is not installed. "
+                    "Install requirements.txt or disable differential_privacy.client_side."
+                ) from exc
+
+            if not ModuleValidator.is_valid(self.model):
+                self.model = ModuleValidator.fix(self.model).to(self.device)
+
+        optimizer = torch.optim.Adam(
+            self.model.parameters(),
+            lr=_TRAIN_CFG["learning_rate"],
+        )
+
+        if self._dp_enabled:
+            from fl.privacy import make_opacus_private_engine
+
+            dp_cfg = _DP_CFG.get("client_side", {})
+            total_rounds = max(
+                1,
+                int(config.get("total_rounds", _FED_CFG["num_rounds"])),
+            )
+            (
+                self.model,
+                self._optimizer,
+                self._train_loader,
+                self._privacy_engine,
+                noise_multiplier,
+            ) = make_opacus_private_engine(
+                model=self.model,
+                optimizer=optimizer,
+                data_loader=loader,
+                target_epsilon=dp_cfg.get("epsilon", 5.0),
+                target_delta=dp_cfg.get("delta", 1e-5),
+                max_grad_norm=dp_cfg.get("max_grad_norm", 1.0),
+                epochs=_TRAIN_CFG["local_epochs"] * total_rounds,
+            )
+            self._using_opacus = True
+            logger.info(
+                "[%s] Opacus DP-SGD activated for %d expected FL rounds (sigma=%.4f)",
+                self.client_id,
+                total_rounds,
+                noise_multiplier,
+            )
+        else:
+            self._optimizer = optimizer
+            self._train_loader = loader
 
     def get_parameters(self, config: dict) -> List[np.ndarray]:
         return get_model_weights(self.model)
@@ -391,61 +461,40 @@ class DroneFlClient(fl.client.NumPyClient):
         Local training pipeline (FLARE v2):
           1. Set global model weights
           2. Check concept drift
-          3. (If DP enabled) wrap with DP-SGD
+          3. (On the first private round) initialize persistent Opacus DP-SGD
           4. Train for local_epochs
           5. (If personalization enabled) run pFedMe adaptation
-          6. (If compression enabled) compress weight deltas
+          6. (If compression enabled) simulate lossy weight-delta compression
           7. Report multi-signal drift + privacy metrics
         """
         set_model_weights(self.model, parameters)
+        self._setup_training(config)
 
         # Step 2: Concept drift check
         drift = check_concept_drift(self._rssi_values)
 
         # Step 3: DP-SGD setup
         dp_client_cfg = _DP_CFG.get("client_side", {})
-        dp_epsilon, dp_delta = None, None
-        use_opacus = self._dp_enabled
+        dp_eps, dp_delta = None, None
+        optimizer = self._optimizer
+        loader = self._train_loader
+        if optimizer is None or loader is None:
+            raise RuntimeError("Training components were not initialized")
 
-        optimizer = torch.optim.Adam(self.model.parameters(), lr=_TRAIN_CFG["learning_rate"])
+        # Reset Adam momentum between federated rounds while retaining the
+        # Opacus accountant and privacy hooks across the full federation.
+        optimizer.state.clear()
         bce_loss = nn.BCELoss()
         ce_loss = nn.CrossEntropyLoss()
+        confidence_loss = nn.MSELoss()
         w_threat = _TRAIN_CFG["loss_weight_threat"]
         w_attack = _TRAIN_CFG["loss_weight_attack"]
-
-        dataset = TensorDataset(self.X, self.y_threat, self.y_attack)
-        loader = DataLoader(dataset, batch_size=_TRAIN_CFG["batch_size"], shuffle=True)
-
-        # Attempt Opacus wrapping (with fallback)
-        privacy_engine = None
-        if use_opacus:
-            try:
-                from fl.privacy import make_opacus_private_engine
-                private_model, private_optimizer, privacy_engine, noise_mult = make_opacus_private_engine(
-                    model=self.model,
-                    optimizer=optimizer,
-                    data_loader=loader,
-                    target_epsilon=dp_client_cfg.get("epsilon", 5.0),
-                    target_delta=dp_client_cfg.get("delta", 1e-5),
-                    max_grad_norm=dp_client_cfg.get("max_grad_norm", 1.0),
-                    epochs=_TRAIN_CFG["local_epochs"],
-                )
-                if privacy_engine is not None:
-                    self.model = private_model
-                    optimizer = private_optimizer
-                    logger.info("[%s] Opacus DP-SGD activated", self.client_id)
-                else:
-                    use_opacus = False  # Fallback to manual
-            except Exception as exc:
-                logger.warning("[%s] Opacus initialization failed: %s. Using manual DP.", self.client_id, exc)
-                use_opacus = False
+        w_confidence = _TRAIN_CFG.get("loss_weight_confidence", 0.2)
 
         # Step 4: Local training loop
         self.model.train()
         epoch_loss = 0.0
         n_batches = 0
-        total_grad_norm = 0.0
-
         for epoch in range(_TRAIN_CFG["local_epochs"]):
             for xb, yb_threat, yb_attack in loader:
                 xb = xb.to(self.device)
@@ -455,20 +504,23 @@ class DroneFlClient(fl.client.NumPyClient):
                 out = self.model(xb)
                 loss_threat = bce_loss(out.path_scores, yb_threat)
                 loss_attack = ce_loss(out.attack_logits, yb_attack)
-                loss = w_threat * loss_threat + w_attack * loss_attack
+                confidence_target = confidence_correctness_target(
+                    out,
+                    yb_threat,
+                    yb_attack,
+                )
+                loss_confidence = confidence_loss(
+                    out.confidence.squeeze(-1),
+                    confidence_target,
+                )
+                loss = (
+                    w_threat * loss_threat
+                    + w_attack * loss_attack
+                    + w_confidence * loss_confidence
+                )
 
                 optimizer.zero_grad()
                 loss.backward()
-
-                # Manual DP-SGD (fallback if Opacus unavailable)
-                if self._dp_enabled and not use_opacus and privacy_engine is None:
-                    from fl.privacy import apply_client_dp_step
-                    grad_norm = apply_client_dp_step(
-                        self.model,
-                        max_grad_norm=dp_client_cfg.get("max_grad_norm", 1.0),
-                        noise_multiplier=dp_client_cfg.get("noise_multiplier", 1.1),
-                    )
-                    total_grad_norm += grad_norm
 
                 optimizer.step()
                 epoch_loss += loss.item()
@@ -483,16 +535,15 @@ class DroneFlClient(fl.client.NumPyClient):
         avg_loss = epoch_loss / max(n_batches, 1)
 
         # Privacy accounting
-        if self._privacy_accountant is not None:
-            self._privacy_accountant.step(n_batches)
-            dp_eps, dp_delta = self._privacy_accountant.compute_epsilon()
-            logger.info("[%s] DP budget used: ε=%.4f, δ=%.2e", self.client_id, dp_eps, dp_delta)
-        elif privacy_engine is not None:
-            try:
-                dp_eps = privacy_engine.get_epsilon(delta=dp_client_cfg.get("delta", 1e-5))
-                dp_delta = dp_client_cfg.get("delta", 1e-5)
-            except Exception:
-                dp_eps, dp_delta = None, None
+        if self._privacy_engine is not None:
+            dp_delta = dp_client_cfg.get("delta", 1e-5)
+            dp_eps = self._privacy_engine.get_epsilon(delta=dp_delta)
+            logger.info(
+                "[%s] Cumulative Opacus budget: ε=%.4f, δ=%.2e",
+                self.client_id,
+                dp_eps,
+                dp_delta,
+            )
 
         # Step 5: Personalization (pFedMe adaptation)
         persona_metrics = {}
@@ -544,9 +595,13 @@ class DroneFlClient(fl.client.NumPyClient):
             # DP metrics
             "dp_epsilon": float(dp_eps) if dp_eps is not None else 0.0,
             "dp_delta": float(dp_delta) if dp_delta is not None else 0.0,
+            "dp_enabled": int(self._using_opacus),
             # Compression metrics
             "compression_ratio": compression_stats.get("compression_ratio", 1.0),
             "bytes_saved": compression_stats.get("original_bytes", 0) - compression_stats.get("compressed_bytes", 0),
+            "original_bytes": compression_stats.get("original_bytes", 0),
+            "compressed_bytes": compression_stats.get("compressed_bytes", 0),
+            "wire_compression_applied": 0,
             # Personalization
             "persona_delta": persona_metrics.get("persona_delta", 0.0),
             "personal_loss": persona_metrics.get("personal_loss", 0.0),

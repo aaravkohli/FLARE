@@ -72,7 +72,7 @@ _CSV_COLUMNS = [
     # Round metadata
     "round", "timestamp", "wall_time_s",
     # Core FL
-    "threat_f1", "attack_accuracy", "round_loss", "clients_used", "clients_excluded",
+    "threat_f1", "attack_accuracy", "confidence_brier", "round_loss", "clients_used", "clients_excluded",
     # Privacy
     "privacy_epsilon", "privacy_delta",
     # Compression

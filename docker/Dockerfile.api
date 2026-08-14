@@ -9,12 +9,16 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir \
     torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir \
-    fastapi uvicorn httpx tenacity \
+    fastapi "uvicorn[standard]" httpx tenacity \
     stable-baselines3 gymnasium \
-    flwr numpy scipy pyyaml jsonschema scikit-learn
+    numpy scipy pyyaml jsonschema scikit-learn pandas \
+    python-multipart sse-starlette aiosqlite \
+    "python-jose[cryptography]" "passlib[bcrypt]"
 
 COPY . .
 ENV PYTHONPATH=/app
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 # Create required directories
 RUN mkdir -p models logs experiments

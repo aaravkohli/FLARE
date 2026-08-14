@@ -93,14 +93,7 @@ pnpm-debug.log*
 # ML / AI Artifacts
 # =============================================================================
 # Trained model weights — large binary files, not source code
-models/*.pth
-models/*.pt
-models/*.onnx
-models/*.zip
-models/rl_checkpoint_*.zip
-models/best_model.zip
-models/fl_model.pth
-models/rl_model.zip
+models/
 
 # RL training checkpoints
 rl/checkpoints/
@@ -114,6 +107,10 @@ datasets/DroneRF/
 datasets/RadioML*/
 DroneRF/
 RadioML*/
+
+# External simulator source trees — install/build separately, not project source
+mininet-wifi/
+ns-3-dev/
 
 # Results & evaluation outputs
 results/*.csv
@@ -134,13 +131,6 @@ logs/
 orchestrator_startup.log
 uvicorn_startup.log
 .local_sim.pids
-
-# =============================================================================
-# Static Frontend Build (generated from source, not source itself)
-# =============================================================================
-frontend/
-# Note: frontend-react/src/ IS tracked (source)
-#       frontend-react/dist/ is NOT tracked (build output)
 
 # =============================================================================
 # Database Files (runtime state)

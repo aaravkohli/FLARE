@@ -18,7 +18,9 @@ NOTE: This module requires a real OpenFlow-capable switch.
       For simulation mode, use sdn/mock_sdn.py instead.
 """
 
+import hmac
 import logging
+import os
 
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
 from ryu.base import app_manager
@@ -34,6 +36,16 @@ from sdn.flow_manager import install_fallback_rule, install_flow, select_safe_pa
 logger = logging.getLogger(__name__)
 
 _KNOWN_DATAPATHS: dict = {}  # dpid → datapath object
+VALID_PATHS = {"direct", "satellite", "mesh", "fallback"}
+VALID_DRONES = {"drone_1", "drone_2", "drone_3"}
+_DEVELOPMENT_SDN_TOKEN = "antijam-development-sdn-token"
+SDN_API_TOKEN = os.getenv("AJ_SDN_TOKEN", _DEVELOPMENT_SDN_TOKEN)
+if os.getenv("AJ_ENV", "development").lower() in {"production", "prod"} and (
+    SDN_API_TOKEN == _DEVELOPMENT_SDN_TOKEN or len(SDN_API_TOKEN) < 24
+):
+    raise RuntimeError(
+        "AJ_SDN_TOKEN must be set to a unique value of at least 24 characters in production"
+    )
 
 
 class AntiJammingController(app_manager.RyuApp):
@@ -102,24 +114,53 @@ class SDNRestController(ControllerBase):
         super().__init__(req, link, data, **config)
         self.controller: AntiJammingController = data[AntiJammingController.__name__]
 
+    @staticmethod
+    def _authorized(req) -> bool:
+        scheme, _, supplied_token = req.headers.get("Authorization", "").partition(" ")
+        return (
+            scheme.lower() == "bearer"
+            and bool(supplied_token)
+            and hmac.compare_digest(supplied_token, SDN_API_TOKEN)
+        )
+
+    @staticmethod
+    def _unauthorized_response() -> Response:
+        return Response(
+            status=401,
+            content_type="application/json",
+            body=json.dumps({"error": "Invalid SDN service token"}).encode(),
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+
     @route("sdn", "/sdn/route", methods=["POST"])
     def install_route(self, req, **kwargs):
+        if not self._authorized(req):
+            return self._unauthorized_response()
         try:
             body = json.loads(req.body)
         except json.JSONDecodeError:
             return Response(status=400, json={"error": "Invalid JSON"})
 
-        path_name = body.get("path_name", "mesh")
-        drone_id  = body.get("drone_id", "drone_1")
+        path_name = body.get("path_name")
+        drone_id = body.get("drone_id", "drone_1")
+        if path_name not in VALID_PATHS or drone_id not in VALID_DRONES:
+            return Response(
+                status=422,
+                content_type="application/json",
+                body=json.dumps({"error": "Invalid path_name or drone_id"}).encode(),
+            )
 
         result = self.controller.apply_routing_decision(path_name, drone_id)
         return Response(
+            status=200 if result.get("status") == "ok" else 503,
             content_type="application/json",
             body=json.dumps(result).encode(),
         )
 
     @route("sdn", "/sdn/flows", methods=["GET"])
     def get_flows(self, req, **kwargs):
+        if not self._authorized(req):
+            return self._unauthorized_response()
         switches = {str(k): "connected" for k in _KNOWN_DATAPATHS}
         return Response(
             content_type="application/json",

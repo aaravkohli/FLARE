@@ -128,11 +128,19 @@ def evaluate_fl_model(model_path: Path, test_csv: Path) -> dict:
     threat_acc  = float(accuracy_score(y_j_list, preds_j))
     atk_acc     = float(accuracy_score(y_a_list, preds_a))
     mean_conf   = float(np.mean(confs))
+    correctness = 0.5 * (
+        (np.asarray(preds_j) == np.asarray(y_j_list)).astype(np.float32)
+        + (np.asarray(preds_a) == np.asarray(y_a_list)).astype(np.float32)
+    )
+    confidence_brier = float(np.mean(
+        (np.asarray(confs, dtype=np.float32) - correctness) ** 2
+    ))
 
     logger.info("Threat detection  — F1: %.4f | Prec: %.4f | Rec: %.4f | Acc: %.4f",
                 threat_f1, threat_prec, threat_rec, threat_acc)
     logger.info("Attack type acc   — %.4f", atk_acc)
     logger.info("Mean confidence   — %.4f", mean_conf)
+    logger.info("Confidence Brier — %.4f (lower is better)", confidence_brier)
 
     # Confusion matrix plot
     _plot_confusion_matrix(y_j_list, preds_j, labels=["normal", "jammed"])
@@ -152,6 +160,7 @@ def evaluate_fl_model(model_path: Path, test_csv: Path) -> dict:
             "recall":     threat_rec,
             "accuracy":   threat_acc,
             "mean_confidence": mean_conf,
+            "confidence_brier": confidence_brier,
             "classification_report": report,
         },
         "attack_classification": {

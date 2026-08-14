@@ -12,6 +12,8 @@ Usage:
 """
 
 import logging
+import hmac
+import os
 import sys
 import time
 from pathlib import Path
@@ -21,8 +23,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import uvicorn
 import yaml
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel, field_validator
+from fastapi import Depends, FastAPI, Header, HTTPException, status
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 _BASE = Path(__file__).parent.parent
 _SDN_CFG = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
@@ -30,6 +32,15 @@ _MOCK_CFG = _SDN_CFG.get("mock", {})
 _FAILOVER = _SDN_CFG["failover_priority"]
 
 VALID_PATHS = {"direct", "satellite", "mesh", "fallback"}
+VALID_DRONES = {"drone_1", "drone_2", "drone_3"}
+_DEVELOPMENT_SDN_TOKEN = "antijam-development-sdn-token"
+SDN_API_TOKEN = os.getenv("AJ_SDN_TOKEN", _DEVELOPMENT_SDN_TOKEN)
+if os.getenv("AJ_ENV", "development").lower() in {"production", "prod"} and (
+    SDN_API_TOKEN == _DEVELOPMENT_SDN_TOKEN or len(SDN_API_TOKEN) < 24
+):
+    raise RuntimeError(
+        "AJ_SDN_TOKEN must be set to a unique value of at least 24 characters in production"
+    )
 
 # Setup logging
 Path(_BASE / "logs").mkdir(exist_ok=True)
@@ -52,10 +63,12 @@ _available_paths = {"direct", "satellite", "mesh"}  # All paths up by default
 
 
 class RouteRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
     path_name: str
-    action_id: int
+    action_id: int = Field(ge=0, le=2)
     drone_id: str = "drone_1"
-    priority: int = 100
+    priority: int = Field(default=100, ge=1, le=65535)
 
     @field_validator("path_name")
     @classmethod
@@ -64,6 +77,13 @@ class RouteRequest(BaseModel):
             raise ValueError(f"Invalid path: {v}. Must be one of {VALID_PATHS}")
         return v
 
+    @field_validator("drone_id")
+    @classmethod
+    def validate_drone(cls, value):
+        if value not in VALID_DRONES:
+            raise ValueError(f"Invalid drone_id: {value}. Must be one of {VALID_DRONES}")
+        return value
+
 
 class RouteResponse(BaseModel):
     status: str
@@ -71,6 +91,21 @@ class RouteResponse(BaseModel):
     flow_priority: int
     timestamp: float
     note: str
+
+
+def require_sdn_token(authorization: str | None = Header(default=None)) -> None:
+    scheme, _, supplied_token = (authorization or "").partition(" ")
+    authenticated = (
+        scheme.lower() == "bearer"
+        and bool(supplied_token)
+        and hmac.compare_digest(supplied_token, SDN_API_TOKEN)
+    )
+    if not authenticated:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid SDN service token",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
 
 
 def _select_safe_path(requested: str) -> str:
@@ -87,7 +122,10 @@ def _select_safe_path(requested: str) -> str:
 
 
 @app.post("/sdn/route", response_model=RouteResponse)
-async def install_route(req: RouteRequest) -> RouteResponse:
+async def install_route(
+    req: RouteRequest,
+    _: None = Depends(require_sdn_token),
+) -> RouteResponse:
     """
     Simulate installing a flow rule on the virtual switch.
     Implements deterministic failover if the requested path is unavailable.
@@ -118,13 +156,16 @@ async def install_route(req: RouteRequest) -> RouteResponse:
 
 
 @app.get("/sdn/flows")
-async def get_flow_table() -> dict:
+async def get_flow_table(_: None = Depends(require_sdn_token)) -> dict:
     """Return current simulated flow table."""
     return {"flow_table": _flow_table, "available_paths": list(_available_paths)}
 
 
 @app.post("/sdn/simulate/fail/{path}")
-async def simulate_path_failure(path: str) -> dict:
+async def simulate_path_failure(
+    path: str,
+    _: None = Depends(require_sdn_token),
+) -> dict:
     """Mark a path as unavailable (for testing failover)."""
     if path not in VALID_PATHS:
         raise HTTPException(status_code=400, detail=f"Unknown path: {path}")
@@ -134,7 +175,10 @@ async def simulate_path_failure(path: str) -> dict:
 
 
 @app.post("/sdn/simulate/restore/{path}")
-async def simulate_path_restore(path: str) -> dict:
+async def simulate_path_restore(
+    path: str,
+    _: None = Depends(require_sdn_token),
+) -> dict:
     """Restore a previously failed path."""
     _available_paths.add(path)
     logger.info("Path '%s' RESTORED.", path)
