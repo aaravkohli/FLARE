@@ -5,6 +5,7 @@ Endpoints:
   POST /auth/token       — login, returns JWT token
   POST /predict          — accepts path_scores, returns best path (protected)
   GET  /health           — liveness check (public)
+  GET  /ready            — SDN data-plane readiness (public)
   GET  /metrics/live     — latest raw RF metrics snapshot (protected)
   GET  /metrics/history  — last N decisions from SQLite for charting (protected)
   POST /jam              — trigger jamming simulation (protected)
@@ -29,6 +30,7 @@ from typing import List, Optional, Dict, Any, Set
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import aiosqlite
+import httpx
 import torch
 import uvicorn
 import yaml
@@ -42,6 +44,7 @@ from fastapi import (
     status,
     Query,
     Request,
+    Response,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -56,6 +59,7 @@ from rl.safety import constrain_route_action, resolve_safety_config
 
 _BASE = Path(__file__).parent.parent
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
+_SDN_CFG = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
 _SAFETY_THRESHOLD, _ALL_UNSAFE_BEHAVIOR = resolve_safety_config(
     _RL_CFG.get("safety", {})
 )
@@ -223,6 +227,22 @@ class HealthResponse(BaseModel):
     mode: str
     sdn_controller: str
     version: str = "2.0.0"
+
+
+class SDNReadiness(BaseModel):
+    mode: str
+    ready: bool
+    status: str
+    connected_switches: int = 0
+    expected_switches: int = 0
+    available_paths: Dict[str, List[str]] = Field(default_factory=dict)
+    error: Optional[str] = None
+
+
+class ReadinessResponse(BaseModel):
+    status: str
+    ready: bool
+    sdn: SDNReadiness
 
 
 class JamRequest(BaseModel):
@@ -564,9 +584,7 @@ def _greedy_predict(path_scores: List[float]) -> dict:
     }
 
 
-@app.get("/health", response_model=HealthResponse, tags=["System"])
-async def health():
-    """Public liveness check — no auth required."""
+def _runtime_mode_and_sdn_controller() -> tuple[str, str]:
     configured_mode = os.getenv("MODE")
     if configured_mode is None:
         mode_path = _BASE / "config" / "mode.yaml"
@@ -577,6 +595,69 @@ async def health():
         "AJ_SDN_MODE",
         "mock" if runtime_mode == "simulation" else "ryu",
     ).strip().lower()
+    return runtime_mode, sdn_controller
+
+
+async def _fetch_sdn_readiness() -> SDNReadiness:
+    """Fetch and normalize the active controller's readiness contract."""
+    _, sdn_controller = _runtime_mode_and_sdn_controller()
+    controller_cfg = _SDN_CFG.get("controller", {})
+    host = os.getenv("SDN_HOST", str(controller_cfg.get("host", "127.0.0.1")))
+    port = int(os.getenv("SDN_PORT", str(controller_cfg.get("port", 8080))))
+    timeout_s = float(
+        os.getenv("AJ_SDN_READINESS_TIMEOUT", str(controller_cfg.get("timeout_s", 1.0)))
+    )
+
+    try:
+        async with httpx.AsyncClient(timeout=timeout_s) as client:
+            controller_response = await client.get(f"http://{host}:{port}/ready")
+        payload = controller_response.json()
+        if not isinstance(payload, dict):
+            raise ValueError("controller returned a non-object response")
+    except (httpx.HTTPError, ValueError, TypeError) as exc:
+        logger.warning("SDN readiness check failed: %s", exc)
+        return SDNReadiness(
+            mode=sdn_controller,
+            ready=False,
+            status="unreachable",
+            error="SDN readiness endpoint is unavailable",
+        )
+
+    topology = payload.get("topology")
+    if not isinstance(topology, dict):
+        topology = {}
+    connected = topology.get("connected_switches", [])
+    expected = topology.get("expected_switches", [])
+    available_paths = topology.get("available_paths", {})
+    if not isinstance(available_paths, dict):
+        available_paths = {}
+    routable_paths = {"direct", "satellite", "mesh"}
+
+    controller_ready = bool(topology.get("ready", payload.get("ready", False)))
+    ready = (
+        controller_response.status_code == status.HTTP_200_OK
+        and controller_ready
+    )
+    return SDNReadiness(
+        mode=str(payload.get("mode", sdn_controller)),
+        ready=ready,
+        status="ready" if ready else str(payload.get("status", "not_ready")),
+        connected_switches=len(connected) if isinstance(connected, list) else 0,
+        expected_switches=len(expected) if isinstance(expected, list) else 0,
+        available_paths={
+            str(drone_id): [
+                str(path) for path in paths if str(path) in routable_paths
+            ]
+            for drone_id, paths in available_paths.items()
+            if drone_id in VALID_DRONE_IDS and isinstance(paths, list)
+        },
+    )
+
+
+@app.get("/health", response_model=HealthResponse, tags=["System"])
+async def health():
+    """Public liveness check — no auth required."""
+    runtime_mode, sdn_controller = _runtime_mode_and_sdn_controller()
     return HealthResponse(
         status="ok",
         rl_loaded=len(_rl_agents) == len(VALID_DRONE_IDS),
@@ -584,6 +665,19 @@ async def health():
         uptime_s=round(time.time() - _start_time, 2),
         mode=runtime_mode,
         sdn_controller=sdn_controller,
+    )
+
+
+@app.get("/ready", response_model=ReadinessResponse, tags=["System"])
+async def readiness(response: Response) -> ReadinessResponse:
+    """Dependency readiness check; returns 503 until the SDN data plane is usable."""
+    sdn = await _fetch_sdn_readiness()
+    if not sdn.ready:
+        response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    return ReadinessResponse(
+        status="ready" if sdn.ready else "not_ready",
+        ready=sdn.ready,
+        sdn=sdn,
     )
 
 

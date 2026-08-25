@@ -46,6 +46,15 @@ interface EwStatus {
   jammed_paths: string[];
 }
 
+interface SdnReadinessState {
+  ready: boolean;
+  status: string;
+  connected_switches: number;
+  expected_switches: number;
+  available_paths: Record<string, string[]>;
+  error?: string | null;
+}
+
 // Matches the new generator.py output: paths is an array, not a keyed dict
 interface TelemetryPayload {
   type: string;
@@ -106,6 +115,7 @@ function App() {
   const [noSafeRoute, setNoSafeRoute] = useState<boolean>(false);
   const [systemMode, setSystemMode] = useState<string>('UNKNOWN');
   const [sdnController, setSdnController] = useState<string>('UNKNOWN');
+  const [sdnReadiness, setSdnReadiness] = useState<SdnReadinessState | null>(null);
 
   // Telemetry details
   const [telemetry, setTelemetry] = useState<Record<string, MetricDetail> | null>(null);
@@ -154,8 +164,10 @@ function App() {
     fetchSystemHealth();
     fetchFlConfig();
     fetchFlMetrics();
+    const healthTimer = window.setInterval(fetchSystemHealth, 5000);
 
     return () => {
+      window.clearInterval(healthTimer);
       shouldReconnectRef.current = false;
       if (reconnectTimerRef.current !== null) {
         window.clearTimeout(reconnectTimerRef.current);
@@ -178,7 +190,7 @@ function App() {
   const fetchSystemHealth = async () => {
     try {
       const res = await fetch(`${API_BASE_URL}/health`);
-      if (!res.ok) return;
+      if (!res.ok) throw new Error('API health check failed');
       const data = await res.json();
       setSystemMode(String(data.mode || 'unknown').toUpperCase());
       setSdnController(
@@ -189,6 +201,29 @@ function App() {
     } catch {
       setSystemMode('UNKNOWN');
       setSdnController('UNAVAILABLE');
+    }
+
+    try {
+      const res = await fetch(`${API_BASE_URL}/ready`);
+      const data = await res.json();
+      if (!data?.sdn) throw new Error('Invalid readiness response');
+      setSdnReadiness({
+        ready: Boolean(data.sdn.ready && res.ok),
+        status: String(data.sdn.status || 'not_ready'),
+        connected_switches: Number(data.sdn.connected_switches || 0),
+        expected_switches: Number(data.sdn.expected_switches || 0),
+        available_paths: data.sdn.available_paths || {},
+        error: data.sdn.error || null
+      });
+    } catch {
+      setSdnReadiness({
+        ready: false,
+        status: 'unreachable',
+        connected_switches: 0,
+        expected_switches: 0,
+        available_paths: {},
+        error: 'Readiness check unavailable'
+      });
     }
   };
 
@@ -482,6 +517,12 @@ function App() {
     return 'bg-rose-500';
   };
 
+  const routeNames = ['direct', 'satellite', 'mesh'];
+  const activeAvailablePaths = sdnReadiness?.available_paths?.[activeDrone] || [];
+  const unavailablePaths = sdnReadiness?.ready
+    ? routeNames.filter(path => !activeAvailablePaths.includes(path))
+    : routeNames;
+
   // Unauthenticated view
   if (!token) {
     return (
@@ -594,10 +635,14 @@ function App() {
           </div>
 
           {/* Controller Mode */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#111218] border border-gray-800 text-xs">
-            <Server className="w-3.5 h-3.5 text-blue-400" />
+          <div className={`flex items-center gap-2 px-3 py-1.5 rounded-xl bg-[#111218] border text-xs ${
+            sdnReadiness?.ready ? 'border-emerald-500/20' : 'border-amber-500/30'
+          }`}>
+            <Server className={`w-3.5 h-3.5 ${sdnReadiness?.ready ? 'text-emerald-400' : 'text-amber-400'}`} />
             <span className="text-gray-300 font-medium">SDN: </span>
-            <span className="text-blue-400 font-semibold">{sdnController}</span>
+            <span className={sdnReadiness?.ready ? 'text-emerald-400 font-semibold' : 'text-amber-400 font-semibold'}>
+              {sdnController} · {sdnReadiness?.ready ? 'READY' : sdnReadiness ? 'NOT READY' : 'CHECKING'}
+            </span>
           </div>
 
           <button
@@ -618,6 +663,40 @@ function App() {
       </header>
 
       {/* SWARM DRONE SELECTOR CARDS */}
+      {sdnReadiness && !sdnReadiness.ready && (
+        <div
+          role="alert"
+          className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-500/40 bg-amber-950/30 p-4 text-amber-100"
+        >
+          <WifiOff className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+          <div>
+            <p className="text-sm font-bold uppercase tracking-wide">SDN data plane not ready</p>
+            <p className="mt-1 text-xs text-amber-100/80">
+              Routing changes are unavailable while the controller reports {sdnReadiness.error || sdnReadiness.status.replace('_', ' ')}
+              {sdnReadiness.expected_switches > 0
+                ? ` (${sdnReadiness.connected_switches}/${sdnReadiness.expected_switches} switches connected).`
+                : '.'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {sdnReadiness?.ready && unavailablePaths.length > 0 && (
+        <div
+          role="status"
+          className="mb-6 flex items-start gap-3 rounded-2xl border border-amber-500/30 bg-amber-950/20 p-4 text-amber-100"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
+          <div>
+            <p className="text-sm font-bold uppercase tracking-wide">Reduced path availability</p>
+            <p className="mt-1 text-xs text-amber-100/80">
+              {unavailablePaths.map(path => path.toUpperCase()).join(', ')} unavailable for {activeDrone.toUpperCase()}.
+              Available routes: {activeAvailablePaths.map(path => path.toUpperCase()).join(', ') || 'none'}.
+            </p>
+          </div>
+        </div>
+      )}
+
       {noSafeRoute && (
         <div
           role="alert"

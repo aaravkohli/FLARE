@@ -113,6 +113,9 @@ services:
     environment:
       - PYTHONPATH=/app
       - AJ_ENV=production
+      - MODE=real
+      - AJ_SDN_MODE=ryu
+      - SDN_HOST=sdn-controller
       - AJ_SECRET_KEY=${AJ_SECRET_KEY:?Set AJ_SECRET_KEY}
       - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
       - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:?Set AJ_ADMIN_PASSWORD}
@@ -139,6 +142,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - MODE=real
+      - AJ_SDN_MODE=ryu
       - SDN_HOST=sdn-controller
       - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:?Set AJ_SDN_TOKEN}
       - AJ_SENSOR_API_URL=${AJ_SENSOR_API_URL:?Set AJ_SENSOR_API_URL}

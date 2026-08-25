@@ -115,6 +115,9 @@ services:
       - logs:/app/logs
     environment:
       - PYTHONPATH=/app
+      - MODE=simulation
+      - AJ_SDN_MODE=mock
+      - SDN_HOST=mock-sdn
       - AJ_SECRET_KEY=${AJ_SECRET_KEY:-antijam-development-secret-do-not-use-in-production}
       - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
       - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:-antijam2026}
@@ -141,6 +144,7 @@ services:
     environment:
       - PYTHONPATH=/app
       - MODE=simulation
+      - AJ_SDN_MODE=mock
       - SDN_HOST=mock-sdn
       - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
     depends_on:

@@ -210,6 +210,28 @@ async def health() -> dict:
     return {"status": "ok", "mode": "mock", "flows": len(_flow_table)}
 
 
+@app.get("/ready")
+async def readiness() -> dict:
+    """Expose the same readiness shape as the real controller."""
+    available_paths = [
+        path for path in ROUTABLE_PATHS if path in _available_paths
+    ]
+    return {
+        "status": "ready",
+        "mode": "mock",
+        "topology": {
+            "ready": True,
+            "expected_switches": [],
+            "connected_switches": [],
+            "inventory_complete_switches": [],
+            "ports": {},
+            "available_paths": {
+                drone_id: available_paths for drone_id in sorted(VALID_DRONES)
+            },
+        },
+    }
+
+
 if __name__ == "__main__":
     port = _SDN_CFG["controller"]["port"]
     logger.info("Mock SDN controller starting on port %d", port)
