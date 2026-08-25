@@ -27,6 +27,7 @@ from fastapi import Depends, FastAPI, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from sdn.route_contract import (
+    ROUTABLE_PATHS,
     VALID_DRONES,
     VALID_PATHS,
     action_id_for_path,
@@ -79,8 +80,8 @@ class RouteRequest(BaseModel):
     @field_validator("path_name")
     @classmethod
     def validate_path(cls, v):
-        if v not in VALID_PATHS:
-            raise ValueError(f"Invalid path: {v}. Must be one of {VALID_PATHS}")
+        if v not in ROUTABLE_PATHS:
+            raise ValueError(f"Invalid path: {v}. Must be one of {ROUTABLE_PATHS}")
         return v
 
     @field_validator("drone_id")

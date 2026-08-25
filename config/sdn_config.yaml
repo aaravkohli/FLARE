@@ -7,6 +7,19 @@ controller:
   host: "127.0.0.1"
   port: 8080
   timeout_s: 1.0
+  barrier_timeout_s: 1.0
+
+# Expected wired topology used by the Ryu controller. A route is not reported
+# ready until every switch has connected and returned its port inventory.
+topology:
+  expected_dpids: [1, 2, 3, 4, 5]
+  ingress_dpid: 1
+  egress_dpid: 5
+  base_station_port: 4
+  transit_dpids:
+    direct: 2
+    satellite: 3
+    mesh: 4
 
 # Deterministic failover priority order.
 # System walks this list top-to-bottom until an available path is found.

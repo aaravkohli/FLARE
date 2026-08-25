@@ -76,7 +76,7 @@ The repository does not contain a formal product brief. Based on the implementat
 
 ### Latest verified state
 
-The most recent full host-native stack verification was performed on **2026-08-15**. A focused correctness follow-up on **2026-08-25** added the SDN route-contract and deployment checks described below. These are reproducibility snapshots, not benchmark or production-readiness claims.
+The most recent full host-native stack verification was performed on **2026-08-15**. A correctness follow-up on **2026-08-25** added the SDN route contract and exercised the Ryu controller against a privileged five-switch/three-drone Mininet topology. These are reproducibility snapshots, not benchmark or production-readiness claims.
 
 | Area | Verified result |
 |---|---|
@@ -90,11 +90,12 @@ The most recent full host-native stack verification was performed on **2026-08-1
 | Electronic-warfare controls | Jam activation/expiry, compromise, restore, and SDN route-state behavior passed |
 | Persistence | SQLite rows include a validated canonical decision event; authenticated live/swarm API telemetry was verified byte-for-structure against persisted event snapshots |
 | Frontend | Login/error handling, live status, drone selection, charts, attack controls, compromise/restore, configuration save, report export, and terminal lock were exercised in a real browser with no console errors |
-| Python tests | 114 regression tests passed on 2026-08-25; the earlier full-stack run also passed all 80 live API/adversarial checks plus the EW and FL API integration scripts |
+| Python tests | 128 regression tests passed on 2026-08-25; the earlier full-stack run also passed all 80 live API/adversarial checks plus the EW and FL API integration scripts |
 | Frontend checks | Clean install, lint, production build, and dependency audit passed; `npm audit` reported zero vulnerabilities |
+| SDN/OpenFlow integration | Ryu imported and started in its Python 3.9 image; all five Mininet switches supplied port inventories; direct and satellite updates received five barrier replies; the ingress flow table showed live packet counters on the commanded output; taking the direct port down caused acknowledged failover to satellite |
 | Deployment definitions | Development and production Compose files passed `docker compose config --quiet` validation |
 
-The verification exercised ns-3 packet delivery over three independent point-to-point paths, but it did **not** exercise real Ryu/OpenFlow datapaths, privileged Mininet/Mininet-WiFi, a wireless ns-3 PHY/swarm topology, physical radios, or container image builds. Docker configuration was validated, but a Docker daemon was not available during the test. See [Limitations and known issues](#limitations-and-known-issues) for the resulting boundaries.
+The verification now covers wired Ryu/OpenFlow and privileged Mininet plus ns-3 packet delivery over three independent point-to-point paths. It still does **not** cover Mininet-WiFi, a wireless ns-3 PHY/swarm topology, physical radios, or a clean rebuild of every container image. The current controller source was loaded read-only into the existing local Ryu image; a fresh rebuild was attempted but stopped when Docker Hub metadata retrieval remained unavailable. See [Limitations and known issues](#limitations-and-known-issues) for the resulting boundaries.
 
 ## Architecture
 
@@ -346,6 +347,7 @@ Capstone/
 │   ├── flow_manager.py             # Flow installation, priorities, and failover
 │   ├── mock_sdn.py                 # In-memory SDN HTTP API
 │   ├── route_contract.py            # Canonical path/action/drone mapping
+│   ├── topology_state.py            # Switch inventory and per-route port availability
 │   ├── mininet_topo.py             # Wired three-route Mininet topology
 │   └── mininet_wifi_topo.py        # Ad-hoc Wi-Fi topology and netem attacks
 ├── simulation/
@@ -369,7 +371,8 @@ Capstone/
 │   ├── test_phase8_synchronized_rl_traces.py # Trace contract/replay/split regressions
 │   ├── test_phase9_ns3_packet_traces.py # Raw packet contract/conversion/filter regressions
 │   ├── test_phase10_constrained_routing.py # Route constraints and mixture-provenance regressions
-│   └── test_phase11_sdn_correctness.py # SDN contract, replacement, and real-data deployment guards
+│   ├── test_phase11_sdn_correctness.py # SDN contract, replacement, and real-data deployment guards
+│   └── test_phase12_sdn_readiness.py # Switch/port readiness and failover regressions
 ├── mininet-wifi/                   # Vendored external Mininet-WiFi source tree
 ├── ns-3-dev/                       # Vendored external ns-3 source tree and scratch program
 ├── docker-compose.dev.yml          # Development composition
@@ -498,7 +501,7 @@ For replay and robustness work, `rl/traces.py` defines the strict `synchronized_
 
 ### 4. SDN application
 
-For local work, `sdn/mock_sdn.py` accepts the route and remembers independent state per drone. `sdn/route_contract.py` gives path/action pairs one shared definition and both controllers reject mismatches. With Ryu, `sdn/controller.py` delegates flow construction to `sdn/flow_manager.py` and installs OpenFlow rules on connected datapaths. At the ingress/egress switches, output ports 1, 2, and 3 represent direct, satellite, and mesh. Dynamic rules match each configured drone MAC independently, delete current and legacy route priorities before replacement, and retain lower-priority mesh fallback rules. Transit switches receive bidirectional forwarding rules.
+For local work, `sdn/mock_sdn.py` accepts the route and remembers independent state per drone. `sdn/route_contract.py` gives path/action pairs one shared definition and both controllers reject mismatches. With Ryu, `sdn/controller.py` delegates flow construction to `sdn/flow_manager.py` and installs OpenFlow rules on connected datapaths. `sdn/topology_state.py` requires all expected switches and port inventories, derives per-drone route availability from OpenFlow port state, and fails closed while topology state is incomplete. At the ingress/egress switches, output ports 1, 2, and 3 represent direct, satellite, and mesh. Dynamic rules match each configured drone MAC independently, delete current and legacy route priorities before replacement, and retain lower-priority mesh fallback rules. Transit switches receive bidirectional forwarding rules. After each update, the controller waits for OpenFlow barrier replies from all five switches before reporting success.
 
 The wired Mininet topology connects three drone hosts to the ingress switch and uses three middle switches with representative link properties:
 
@@ -834,7 +837,7 @@ curl -X POST http://localhost:8080/sdn/route \
   -d '{"drone_id":"drone_1","path_name":"mesh","action_id":2}'
 ```
 
-The Ryu controller exposes the principal `/sdn/route`, `/sdn/flows`, and `/health` operations and applies per-drone rules to connected OpenFlow datapaths. `path_name` and `action_id` must agree (`direct=0`, `satellite=1`, `mesh=2`); responses include both the normalized installed path and installed action. Both mock and Ryu implementations require the same `AJ_SDN_TOKEN` bearer value for route and flow operations; health remains public for liveness probes.
+The Ryu controller additionally exposes `/ready`. `/health` remains a liveness check, while `/ready` returns `503` until all expected switches have supplied port inventories. `/sdn/flows` includes the measured topology snapshot and acknowledged per-drone routes. `path_name` and `action_id` must agree (`direct=0`, `satellite=1`, `mesh=2`); successful responses include the installed action, measured available paths, and acknowledged switch IDs. Both mock and Ryu implementations require the same `AJ_SDN_TOKEN` bearer value for route and flow operations; health/readiness remain public for probes.
 
 ## Authentication and security
 
@@ -1188,7 +1191,7 @@ Selects `dqn` or `sac` and contains training/environment hyperparameters. Runtim
 
 ### `config/sdn_config.yaml`
 
-Defines controller address, route-to-port mapping, priorities, and fallback ordering. Keep port IDs consistent with the topology. The current Ryu availability selector assumes paths are available unless told otherwise; it does not measure link health itself.
+Defines controller address and barrier timeout, expected switch IDs, route-to-port/transit mapping, priorities, drone access ports, and failover ordering. Keep these IDs consistent with `sdn/mininet_topo.py`. Ryu now fails closed until port-description replies arrive and updates route availability from OpenFlow port-status events. This detects administrative/link-down state, but it is not an active packet-loss, latency, throughput, or end-to-end reachability probe.
 
 ### JSON schemas
 
@@ -1257,7 +1260,7 @@ GitHub Actions runs the complete Python regression suite, compiles the first-par
 
 ### Current verification notes
 
-The regression set currently contains **114 passing tests**. `tests/test_api_client.py` provides a real token fixture and works both as a pytest module and through its standalone `run_all_tests()` entry point.
+The regression set currently contains **128 passing tests**. `tests/test_api_client.py` provides a real token fixture and works both as a pytest module and through its standalone `run_all_tests()` entry point.
 
 | Suite | Principal coverage |
 |---|---|
@@ -1272,8 +1275,11 @@ The regression set currently contains **114 passing tests**. `tests/test_api_cli
 | `tests/test_phase9_ns3_packet_traces.py` | Raw packet contract/version checks, exact counter-derived loss/throughput validation, stable raw provenance, QoS-risk conversion, and mixed-scenario replay filtering |
 | `tests/test_phase10_constrained_routing.py` | Safe masks, deterministic overrides, explicit all-routes-unsafe state, schema consistency, mixture determinism/counts, fingerprints, and disjoint provenance |
 | `tests/test_phase11_sdn_correctness.py` | Canonical path/action validation, response consistency, independent per-drone state, legacy-rule replacement, fallback delivery, and fail-closed production real-data configuration |
+| `tests/test_phase12_sdn_readiness.py` | Complete switch/port inventory requirements, path-isolated failures, per-drone access failures, reconnect behavior, port flag interpretation, and controller-only route rejection |
 
 With the complete local stack running, `tests/test_adversarial.py` passed **80 of 80 checks**, and the EW and FL API integration scripts also passed. Together they cover authenticated live requests, invalid-input rejection, concurrency, telemetry history, jammer lifecycle, compromise/restore controls, FL metrics, and SDN state. The adversarial checks use seeded comparisons where path ordering is asserted, avoiding flaky conclusions from small overlapping random samples; the history endpoint deliberately rejects requests above its secure `limit=1000` cap.
+
+The 2026-08-25 privileged SDN smoke test used the existing local Python 3.9/Ryu image with the current `sdn/` and `config/` directories mounted read-only. `/ready` remained `503` without switches and became `200` only after DPIDs 1–5 returned port descriptions. Direct and satellite route commands were acknowledged by all five barriers. `ovs-ofctl` confirmed that drone 1's priority-100 rule changed from output port 1 to 2 while packet counters advanced. Administratively disabling the direct ingress port removed direct from measured availability and made a new direct request fail over to satellite. This validates the wired test topology, not wireless or hardware behavior.
 
 The production frontend was also tested through the browser rather than only compiled. The original full test covered failed and successful login, WebSocket `ONLINE` state, all-drone telemetry, drone selection, both Recharts visualizations, jamming with automatic expiry, Byzantine compromise/restore, FL configuration save, HTML report export, and terminal lock. A 2026-08-15 follow-up specifically verified that switching from Drone 1 to Drone 2 updates the active card and RF values without reconnecting, while WebSocket data came from canonical events. The browser console contained no errors. Runtime labels correctly changed to `SIMULATION Mode` and `Mock SDN` based on `/health` metadata instead of hard-coded text.
 
@@ -1482,9 +1488,9 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 - FastAPI and the Nginx frontend are deployable separately, but there is no same-origin reverse-proxy configuration for combining UI and API under one public hostname.
 - API configuration writes do not hot-reload every consumer.
 - Multiple process-local singletons make horizontal API scaling inconsistent.
-- The path/action command is now validated end to end and Ryu rules are replaced per drone, but the REST success response still confirms controller submission rather than an OpenFlow barrier acknowledgement.
+- The path/action command is validated end to end, Ryu rules are replaced per drone, and success requires OpenFlow barrier replies from every expected switch. A barrier proves the switch processed preceding messages; it does not prove packets traversed the intended physical path.
 - Live sensor calls use a short fixed timeout and fall back to simulation; the event exposes this as `synthetic_fallback` and `live_sensor_unavailable`, but there is not yet an alerting pipeline.
-- The route availability/failover model does not measure real link health.
+- Route availability now consumes OpenFlow switch/port state, but it does not actively measure packet delivery, latency, throughput, congestion, or RF quality.
 
 ### Operational and security limitations
 
@@ -1492,7 +1498,7 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 - SQLite/CSV storage is unbounded and has no migration/retention system.
 - Compose is a validated deployment baseline, not an orchestrated, resource-limited, highly available production platform.
 - CI covers the complete Python regression suite, frontend compilation, and configuration validation, but not container image builds, real Ryu/OpenFlow behavior, or large-dataset training.
-- The last end-to-end verification used host-native processes. Compose syntax was validated, but container images were not built because a Docker daemon was unavailable.
+- The Ryu/Mininet integration was exercised with existing local images and current source mounts. A clean controller rebuild did not complete because Docker Hub base-image metadata retrieval stalled, so reproducible fresh-image construction remains unverified.
 - No production observability, model registry, or rollback mechanism is present.
 - Mininet and the point-to-point ns-3 integration are experiments rather than a validated wireless or hardware-in-the-loop environment.
 - No root-level project license is present, so redistribution/use terms for the application code are not currently defined in this repository. Dataset licenses must also be reviewed at their original sources.
@@ -1504,7 +1510,7 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 1. Reprocess representative RadioML/DroneRF sources, retrain FL under `grouped_temporal_v1`, and report group-held-out results with dataset/config hashes and confidence intervals.
 2. Extend the new point-to-point packet tier into a timestamp-aligned wireless/multi-hop ns-3 or Mininet-WiFi experiment, then replace proxy threat scores with representative three-path RF measurements and repeat the three-training-seed study.
 3. Calibrate the temporal model's confidence head and define thresholds on a held-out deployment-like set.
-4. Add privileged OpenFlow integration coverage for barrier acknowledgement, real link availability/failover, and three simultaneous drone traffic streams; extend streaming coverage for disconnect/backpressure cases.
+4. Automate the privileged Ryu/Mininet smoke in a suitable CI runner, add independent simultaneous route commands for all three drones, add active path probes, and extend streaming coverage for disconnect/backpressure cases.
 5. Obtain independently verified client/server privacy accounting for the exact participation and restart policy.
 6. Either wire selection, personalized server updates, async buffering, and advanced DQN options into runtime or remove their configuration switches.
 7. Add a retention/archival policy and a general schema migration framework beyond the current additive `event_json` upgrade.
@@ -1517,7 +1523,7 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 - Iterate on the documented mixture and reward using a pre-registered promotion criterion, then evaluate once on new packet seeds/profiles that were not used to choose a candidate.
 - Build repeatable experiment manifests with seeds, dataset hashes, config snapshots, and confidence intervals.
 - Complete a packet-level ns-3 swarm model and hardware/OpenFlow testbed.
-- Expose measured OpenFlow datapath connectivity and controller readiness rather than configuration-derived controller identity alone.
+- Propagate the Ryu controller's measured datapath readiness through FastAPI and the dashboard rather than showing only configuration-derived controller identity.
 - Add reproducible report manifests containing model, dataset, seed, and configuration hashes.
 
 ### Security and operations work
