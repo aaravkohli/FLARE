@@ -118,6 +118,7 @@ services:
       - MODE=simulation
       - AJ_SDN_MODE=mock
       - SDN_HOST=mock-sdn
+      - AJ_READINESS_HISTORY_LIMIT=${AJ_READINESS_HISTORY_LIMIT:-100}
       - AJ_SECRET_KEY=${AJ_SECRET_KEY:-antijam-development-secret-do-not-use-in-production}
       - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
       - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:-antijam2026}

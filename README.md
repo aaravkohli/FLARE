@@ -90,9 +90,9 @@ The most recent full host-native stack verification was performed on **2026-08-1
 | Electronic-warfare controls | Jam activation/expiry, compromise, restore, and SDN route-state behavior passed |
 | Persistence | SQLite rows include a validated canonical decision event; authenticated live/swarm API telemetry was verified byte-for-structure against persisted event snapshots |
 | Frontend | The authenticated dashboard workflow—login/error handling, live API/WebSocket status, drone selection, charts, attack controls, compromise/restore, configuration save, report export, and terminal lock—was exercised in a real browser with no console errors. The newer SDN-readiness UI passed lint/production build and its live API contract was verified separately; the latest browser smoke covered the unauthenticated login surface |
-| Python tests | 133 regression tests passed on 2026-08-25; the earlier full-stack run also passed all 80 live API/adversarial checks plus the EW and FL API integration scripts |
+| Python tests | 138 regression tests passed on 2026-08-25; the earlier full-stack run also passed all 80 live API/adversarial checks plus the EW and FL API integration scripts |
 | Frontend checks | Clean install, lint, production build, and dependency audit passed; `npm audit` reported zero vulnerabilities |
-| SDN/OpenFlow integration | Ryu imported and started in its Python 3.9 image; all five Mininet switches supplied port inventories; direct and satellite updates received five barrier replies; the ingress flow table showed live packet counters on the commanded output; taking the direct port down caused acknowledged failover to satellite |
+| SDN/OpenFlow integration | Ryu imported and started in its Python 3.9 image; all five Mininet switches supplied port inventories; concurrent direct/satellite/mesh commands for the three drones received five barrier replies each; ingress, transit, and return-flow packet counters advanced; taking the direct port down caused acknowledged failover to satellite without changing the other drones' routes |
 | Deployment definitions | Development and production Compose files passed `docker compose config --quiet` validation |
 
 The verification now covers wired Ryu/OpenFlow and privileged Mininet plus ns-3 packet delivery over three independent point-to-point paths. It still does **not** cover Mininet-WiFi, a wireless ns-3 PHY/swarm topology, physical radios, or a clean rebuild of every container image. The current controller source was loaded read-only into the existing local Ryu image; a fresh rebuild was attempted but stopped when Docker Hub metadata retrieval remained unavailable. See [Limitations and known issues](#limitations-and-known-issues) for the resulting boundaries.
@@ -263,6 +263,7 @@ Capstone/
 ├── .env.example                    # Documented, non-secret environment template
 ├── api/
 │   ├── __init__.py
+│   ├── readiness_history.py       # Bounded, deduplicated SDN transition history
 │   └── server.py                  # FastAPI application and all public/protected endpoints
 ├── baselines/
 │   ├── __init__.py
@@ -342,7 +343,7 @@ Capstone/
 │   ├── migrate_experiment_db.py    # Dry-run/backup-first repair for historical DB rows
 │   ├── rl_seed_study.py             # Multi-training-seed/OOD DQN robustness study
 │   ├── test_model_with_ns3.py      # Evaluate the deployed DQN on packet-derived traces
-│   └── sdn_smoke_test.sh           # Disposable privileged Ryu/Mininet failover test
+│   └── sdn_smoke_test.sh           # Privileged concurrent-route/data-plane/failover test
 ├── sdn/
 │   ├── controller.py               # Ryu OpenFlow 1.3 REST controller
 │   ├── flow_manager.py             # Flow installation, priorities, and failover
@@ -374,7 +375,8 @@ Capstone/
 │   ├── test_phase10_constrained_routing.py # Route constraints and mixture-provenance regressions
 │   ├── test_phase11_sdn_correctness.py # SDN contract, replacement, and real-data deployment guards
 │   ├── test_phase12_sdn_readiness.py # Switch/port readiness and failover regressions
-│   └── test_phase13_system_readiness.py # API/controller readiness contract regressions
+│   ├── test_phase13_system_readiness.py # API/controller readiness contract regressions
+│   └── test_phase14_operational_readiness.py # Transition history and alert regressions
 ├── .github/workflows/
 │   ├── ci.yml                      # Python, frontend, and Compose checks
 │   └── sdn-integration.yml         # Path-filtered privileged SDN integration tier
@@ -797,6 +799,7 @@ curl http://localhost:8000/swarm/status \
 | `POST /auth/token` | Public, throttled | Verify the configured operator credentials and issue an 8-hour JWT | OAuth2 form fields `username`, `password` | `{access_token, token_type, username}`; used by React |
 | `GET /health` | Public | Liveness, model readiness, runtime mode, and SDN implementation | None | Health JSON |
 | `GET /ready` | Public | Check whether the configured SDN data plane is currently usable | None | `200` when ready; otherwise `503`, with a reduced controller summary, switch counts, and per-drone available paths |
+| `GET /ready/history` | Bearer | Read recent meaningful SDN readiness/degradation transitions | Optional `limit` from 1–100 | Newest-first bounded process-local events with severity, message, switch progress, and unavailable paths |
 | `POST /predict` | Bearer | Choose a constrained executable route from supplied threat scores | JSON with three `path_scores` in `[0,1]`, optional `drone_id`, `prev_reward` | Action/path, original policy action, safe mask, override flag, threshold, reason, and `no_safe_route` state |
 | `GET /metrics/live` | Bearer | Return the latest decision-driving telemetry for one drone | `drone_id` query parameter | Canonical three-path telemetry; explicitly sourced fallback before events exist |
 | `GET /swarm/status` | Bearer | Latest recorded state for every drone | None | Per-drone installed/requested route, outcome, SDN status, event ID, and fallback metadata when canonical data exists |
@@ -818,6 +821,7 @@ Important request behaviors:
 - `/metrics/live`, `/swarm/metrics`, SSE, and WebSocket output preserve telemetry provenance. `synthetic` and `live` passed through the control loop; `synthetic_fallback` indicates a failed real sensor; `legacy_api_fallback` indicates that the API had no canonical event to serve.
 - When fresh orchestrator events are available, `/jam` waits for the next affected control-cycle event to contain the requested attack state before responding. This prevents an immediate metrics read from observing the previous cycle; if the orchestrator is absent or stale, the endpoint skips the wait and still updates the simulator state.
 - `/metrics/history` uses parameterized SQL and bounds `limit` to 1–1000.
+- `/ready` records only readiness state changes, not every dashboard poll. `/ready/history` is authenticated, bounded, newest-first, and process-local; identical observations are deduplicated and recovery is a separate event.
 - `/api/fl/config` rejects unknown keys, shape/type changes, and non-finite numbers, then uses atomic replacement. Services still load much of their configuration only at import/startup, so restart relevant services to apply changes reliably.
 - Compromise/restore endpoints affect an in-memory dashboard set; they do not compromise or restore a Flower client.
 - The report endpoint explicitly displays an insufficient-data notice when fewer than ten rows exist and never substitutes demonstration statistics.
@@ -990,6 +994,7 @@ Use `npm ci` for a reproducible installation from the committed lockfile. Use `n
 | `SDN_HOST` | API and orchestrator | `config/sdn_config.yaml` host, normally loopback | Set to the mock/Ryu service DNS name in containers |
 | `SDN_PORT` | FastAPI readiness probe | `config/sdn_config.yaml` controller port, normally `8080` | Override only when the API reaches SDN on a nonstandard port |
 | `AJ_SDN_READINESS_TIMEOUT` | FastAPI readiness probe | Controller `timeout_s`, normally `1.0` second | Keep bounded so readiness checks cannot exhaust API workers |
+| `AJ_READINESS_HISTORY_LIMIT` | FastAPI | `100`, clamped to 10–1000 | Bounds in-memory readiness transitions per API process; use centralized observability for multi-worker persistence |
 | `VITE_API_BASE_URL` | React build | `http://localhost:8000` | Set to the externally reachable API base before `npm run build` |
 | `MODE` | Orchestrator | Falls back to `config/mode.yaml` | Set to exactly `simulation` or `real`; environment value takes precedence |
 | `MODEL_DIR` | Docker Compose | `./models` | Host directory bind-mounted into model producers/consumers |
@@ -1270,7 +1275,7 @@ GitHub Actions runs the complete Python regression suite, compiles the first-par
 
 ### Current verification notes
 
-The regression set currently contains **133 passing tests**. `tests/test_api_client.py` provides a real token fixture and works both as a pytest module and through its standalone `run_all_tests()` entry point.
+The regression set currently contains **138 passing tests**. `tests/test_api_client.py` provides a real token fixture and works both as a pytest module and through its standalone `run_all_tests()` entry point.
 
 | Suite | Principal coverage |
 |---|---|
@@ -1287,10 +1292,11 @@ The regression set currently contains **133 passing tests**. `tests/test_api_cli
 | `tests/test_phase11_sdn_correctness.py` | Canonical path/action validation, response consistency, independent per-drone state, legacy-rule replacement, fallback delivery, and fail-closed production real-data configuration |
 | `tests/test_phase12_sdn_readiness.py` | Complete switch/port inventory requirements, path-isolated failures, per-drone access failures, reconnect behavior, port flag interpretation, and controller-only route rejection |
 | `tests/test_phase13_system_readiness.py` | Mock/Ryu readiness normalization, API `200`/`503` semantics, safe topology reduction, switch counts, and per-drone path availability |
+| `tests/test_phase14_operational_readiness.py` | Transition deduplication, degradation/recovery severity, bounded eviction, current alert responses, and authenticated newest-first history |
 
 With the complete local stack running, `tests/test_adversarial.py` passed **80 of 80 checks**, and the EW and FL API integration scripts also passed. Together they cover authenticated live requests, invalid-input rejection, concurrency, telemetry history, jammer lifecycle, compromise/restore controls, FL metrics, and SDN state. The adversarial checks use seeded comparisons where path ordering is asserted, avoiding flaky conclusions from small overlapping random samples; the history endpoint deliberately rejects requests above its secure `limit=1000` cap.
 
-The 2026-08-25 privileged SDN smoke test used the existing local Python 3.9/Ryu image with the current `sdn/` and `config/` directories mounted read-only. `/ready` remained `503` without switches and became `200` only after DPIDs 1–5 returned port descriptions. Direct and satellite route commands were acknowledged by all five barriers. `ovs-ofctl` confirmed that drone 1's priority-100 rule changed from output port 1 to 2 while packet counters advanced. Administratively disabling the direct ingress port removed direct from measured availability and made a new direct request fail over to satellite. The new reusable `scripts/sdn_smoke_test.sh` repeated the readiness, five-switch direct-route acknowledgement, link-disable, and satellite-failover checks successfully; it creates uniquely named temporary Docker resources and removes them on exit. This validates the wired test topology, not wireless or hardware behavior.
+The 2026-08-25 privileged SDN smoke test used the existing local Python 3.9/Ryu image with the current `sdn/` and `config/` directories mounted read-only. `/ready` remained `503` without switches and became `200` only after DPIDs 1–5 returned port descriptions. The reusable `scripts/sdn_smoke_test.sh` now submits direct, satellite, and mesh commands concurrently for drones 1–3, requires every response to contain all five barrier acknowledgements, verifies the controller retained the three independent routes, and checks the expected output ports. It then requires nonzero live packet counters on all three ingress flows, all three transit switches, and all three per-drone return flows. Administratively disabling the direct ingress port removes direct from measured availability; a new direct request for drone 1 must receive acknowledged satellite failover, new packet counters must advance, and drones 2–3 must retain their routes. The script creates uniquely named temporary Docker resources and removes them on exit. This validates traffic in the wired test topology, not wireless or hardware behavior, and packet counters are not continuous production probes.
 
 The production frontend was also tested through the browser rather than only compiled. The original full test covered failed and successful login, WebSocket `ONLINE` state, all-drone telemetry, drone selection, both Recharts visualizations, jamming with automatic expiry, Byzantine compromise/restore, FL configuration save, HTML report export, and terminal lock. A 2026-08-15 follow-up specifically verified that switching from Drone 1 to Drone 2 updates the active card and RF values without reconnecting, while WebSocket data came from canonical events. The browser console contained no errors. Runtime labels correctly changed to `SIMULATION Mode` and `Mock SDN` based on `/health` metadata instead of hard-coded text. For the readiness phase, lint and the production build passed, `/health` and `/ready` were exercised against live local services, and the unauthenticated login surface rendered without console warnings; an authenticated browser regression of the new readiness/degraded banners remains to be added.
 
@@ -1500,12 +1506,12 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 
 - The dashboard now receives every drone, but the backend still performs per-drone XAI and emits three messages per telemetry interval.
 - Canonical events are stored as JSON beside denormalized summary columns; this is easy to migrate but duplicates some values and provides limited SQL queryability inside the event.
-- The dashboard polls the API's normalized SDN readiness every five seconds and displays switch progress and per-drone route loss; this is control-plane state rather than an active packet-delivery probe.
+- The dashboard polls the API's normalized SDN readiness every five seconds, displays switch progress and per-drone route loss, and shows the five most recent deduplicated state changes. The history is bounded and process-local, and runtime readiness remains control-plane state rather than an active packet-delivery probe.
 - FastAPI and the Nginx frontend are deployable separately, but there is no same-origin reverse-proxy configuration for combining UI and API under one public hostname.
 - API configuration writes do not hot-reload every consumer.
 - Multiple process-local singletons make horizontal API scaling inconsistent.
 - The path/action command is validated end to end, Ryu rules are replaced per drone, and success requires OpenFlow barrier replies from every expected switch. A barrier proves the switch processed preceding messages; it does not prove packets traversed the intended physical path.
-- Live sensor calls use a short fixed timeout and fall back to simulation; the event exposes this as `synthetic_fallback` and `live_sensor_unavailable`, but there is not yet an alerting pipeline.
+- Live sensor calls use a short fixed timeout and fall back to simulation; the event exposes this as `synthetic_fallback` and `live_sensor_unavailable`, but there is no external alert delivery or centralized observability pipeline.
 - Route availability now consumes OpenFlow switch/port state, but it does not actively measure packet delivery, latency, throughput, congestion, or RF quality.
 
 ### Operational and security limitations
@@ -1526,7 +1532,7 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 1. Reprocess representative RadioML/DroneRF sources, retrain FL under `grouped_temporal_v1`, and report group-held-out results with dataset/config hashes and confidence intervals.
 2. Extend the new point-to-point packet tier into a timestamp-aligned wireless/multi-hop ns-3 or Mininet-WiFi experiment, then replace proxy threat scores with representative three-path RF measurements and repeat the three-training-seed study.
 3. Calibrate the temporal model's confidence head and define thresholds on a held-out deployment-like set.
-4. Extend the automated privileged Ryu/Mininet smoke with independent simultaneous route commands for all three drones, active packet-delivery probes, and streaming disconnect/backpressure coverage.
+4. Extend the automated privileged Ryu/Mininet smoke beyond packet-counter assertions with timed loss/latency probes, repeated link flaps, and streaming disconnect/backpressure coverage.
 5. Obtain independently verified client/server privacy accounting for the exact participation and restart policy.
 6. Either wire selection, personalized server updates, async buffering, and advanced DQN options into runtime or remove their configuration switches.
 7. Add a retention/archival policy and a general schema migration framework beyond the current additive `event_json` upgrade.

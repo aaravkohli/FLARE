@@ -6,6 +6,7 @@ Endpoints:
   POST /predict          — accepts path_scores, returns best path (protected)
   GET  /health           — liveness check (public)
   GET  /ready            — SDN data-plane readiness (public)
+  GET  /ready/history    — recent SDN readiness transitions (protected)
   GET  /metrics/live     — latest raw RF metrics snapshot (protected)
   GET  /metrics/history  — last N decisions from SQLite for charting (protected)
   POST /jam              — trigger jamming simulation (protected)
@@ -25,7 +26,7 @@ import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Set
+from typing import List, Optional, Dict, Any, Set, Literal
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -55,6 +56,7 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator, model_valida
 from sse_starlette.sse import EventSourceResponse
 
 from schemas.decision_event import DecisionEvent
+from api.readiness_history import ReadinessHistory
 from rl.safety import constrain_route_action, resolve_safety_config
 
 _BASE = Path(__file__).parent.parent
@@ -239,10 +241,31 @@ class SDNReadiness(BaseModel):
     error: Optional[str] = None
 
 
+class ReadinessTransition(BaseModel):
+    timestamp: float
+    severity: Literal["info", "warning", "critical"]
+    message: str
+    mode: str
+    ready: bool
+    status: str
+    connected_switches: int
+    expected_switches: int
+    available_paths: Dict[str, List[str]]
+    unavailable_paths: Dict[str, List[str]]
+    error: Optional[str] = None
+
+
 class ReadinessResponse(BaseModel):
     status: str
     ready: bool
     sdn: SDNReadiness
+    alert: ReadinessTransition
+
+
+class ReadinessHistoryResponse(BaseModel):
+    events: List[ReadinessTransition]
+    count: int
+    capacity: int
 
 
 class JamRequest(BaseModel):
@@ -322,6 +345,17 @@ _xai_metric_history = {
     for drone_id in VALID_DRONE_IDS
 }
 _xai_last_event_ids: Dict[str, str] = {}
+
+try:
+    _READINESS_HISTORY_LIMIT = int(os.getenv("AJ_READINESS_HISTORY_LIMIT", "100"))
+except ValueError as exc:
+    raise RuntimeError("AJ_READINESS_HISTORY_LIMIT must be an integer") from exc
+_READINESS_HISTORY_LIMIT = max(10, min(_READINESS_HISTORY_LIMIT, 1000))
+_readiness_history = ReadinessHistory(
+    max_entries=_READINESS_HISTORY_LIMIT,
+    drone_ids=VALID_DRONE_IDS,
+    route_names=("direct", "satellite", "mesh"),
+)
 
 _RUN_SUMMARY_COLUMNS = (
     "id, run_id, timestamp, step, drone_id, action_id, path_name, "
@@ -672,12 +706,37 @@ async def health():
 async def readiness(response: Response) -> ReadinessResponse:
     """Dependency readiness check; returns 503 until the SDN data plane is usable."""
     sdn = await _fetch_sdn_readiness()
+    alert = ReadinessTransition.model_validate(
+        _readiness_history.record(sdn.model_dump())
+    )
     if not sdn.ready:
         response.status_code = status.HTTP_503_SERVICE_UNAVAILABLE
     return ReadinessResponse(
         status="ready" if sdn.ready else "not_ready",
         ready=sdn.ready,
         sdn=sdn,
+        alert=alert,
+    )
+
+
+@app.get(
+    "/ready/history",
+    response_model=ReadinessHistoryResponse,
+    tags=["System"],
+)
+async def readiness_history(
+    limit: int = Query(default=20, ge=1, le=100),
+    _: dict = Depends(get_current_user),
+) -> ReadinessHistoryResponse:
+    """Return newest-first in-process SDN readiness transitions for operators."""
+    events = [
+        ReadinessTransition.model_validate(event)
+        for event in _readiness_history.snapshot(limit=limit)
+    ]
+    return ReadinessHistoryResponse(
+        events=events,
+        count=len(events),
+        capacity=_readiness_history.max_entries,
     )
 
 
@@ -1716,6 +1775,7 @@ else:
             "service": "FLARE API",
             "docs": "/api/docs",
             "health": "/health",
+            "readiness": "/ready",
         }
 
 

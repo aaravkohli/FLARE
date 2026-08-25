@@ -46,6 +46,17 @@ interface EwStatus {
   jammed_paths: string[];
 }
 
+interface ReadinessTransition {
+  timestamp: number;
+  severity: 'info' | 'warning' | 'critical';
+  message: string;
+  ready: boolean;
+  status: string;
+  connected_switches: number;
+  expected_switches: number;
+  unavailable_paths: Record<string, string[]>;
+}
+
 interface SdnReadinessState {
   ready: boolean;
   status: string;
@@ -53,6 +64,7 @@ interface SdnReadinessState {
   expected_switches: number;
   available_paths: Record<string, string[]>;
   error?: string | null;
+  alert?: ReadinessTransition;
 }
 
 // Matches the new generator.py output: paths is an array, not a keyed dict
@@ -116,6 +128,7 @@ function App() {
   const [systemMode, setSystemMode] = useState<string>('UNKNOWN');
   const [sdnController, setSdnController] = useState<string>('UNKNOWN');
   const [sdnReadiness, setSdnReadiness] = useState<SdnReadinessState | null>(null);
+  const [readinessHistory, setReadinessHistory] = useState<ReadinessTransition[]>([]);
 
   // Telemetry details
   const [telemetry, setTelemetry] = useState<Record<string, MetricDetail> | null>(null);
@@ -213,7 +226,8 @@ function App() {
         connected_switches: Number(data.sdn.connected_switches || 0),
         expected_switches: Number(data.sdn.expected_switches || 0),
         available_paths: data.sdn.available_paths || {},
-        error: data.sdn.error || null
+        error: data.sdn.error || null,
+        alert: data.alert
       });
     } catch {
       setSdnReadiness({
@@ -224,6 +238,20 @@ function App() {
         available_paths: {},
         error: 'Readiness check unavailable'
       });
+    }
+
+    if (token) {
+      try {
+        const historyResponse = await fetch(`${API_BASE_URL}/ready/history?limit=5`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        if (historyResponse.ok) {
+          const historyData = await historyResponse.json();
+          setReadinessHistory(Array.isArray(historyData.events) ? historyData.events : []);
+        }
+      } catch {
+        // Preserve the last known transition history during transient API failures.
+      }
     }
   };
 
@@ -672,10 +700,13 @@ function App() {
           <div>
             <p className="text-sm font-bold uppercase tracking-wide">SDN data plane not ready</p>
             <p className="mt-1 text-xs text-amber-100/80">
-              Routing changes are unavailable while the controller reports {sdnReadiness.error || sdnReadiness.status.replace('_', ' ')}
-              {sdnReadiness.expected_switches > 0
-                ? ` (${sdnReadiness.connected_switches}/${sdnReadiness.expected_switches} switches connected).`
-                : '.'}
+              {sdnReadiness.alert?.message || (
+                `Routing changes are unavailable while the controller reports ${sdnReadiness.error || sdnReadiness.status.replace('_', ' ')}${
+                  sdnReadiness.expected_switches > 0
+                    ? ` (${sdnReadiness.connected_switches}/${sdnReadiness.expected_switches} switches connected).`
+                    : '.'
+                }`
+              )}
             </p>
           </div>
         </div>
@@ -695,6 +726,42 @@ function App() {
             </p>
           </div>
         </div>
+      )}
+
+      {readinessHistory.length > 0 && (
+        <section className="mb-6 rounded-2xl border border-white/5 bg-[#111218] p-4">
+          <div className="mb-3 flex items-center justify-between gap-3">
+            <h2 className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-gray-200">
+              <Activity className="h-4 w-4 text-blue-400" />
+              Recent SDN state changes
+            </h2>
+            <span className="text-[10px] uppercase tracking-wider text-gray-500">
+              Process-local history
+            </span>
+          </div>
+          <div className="space-y-2">
+            {readinessHistory.map((event, index) => (
+              <div
+                key={`${event.timestamp}-${index}`}
+                className="flex flex-col gap-1 rounded-xl border border-white/5 bg-black/10 px-3 py-2 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex items-center gap-2 text-xs text-gray-300">
+                  <span className={`h-2 w-2 shrink-0 rounded-full ${
+                    event.severity === 'critical'
+                      ? 'bg-rose-500'
+                      : event.severity === 'warning'
+                        ? 'bg-amber-400'
+                        : 'bg-emerald-400'
+                  }`} />
+                  <span>{event.message}</span>
+                </div>
+                <time className="pl-4 text-[10px] text-gray-500 sm:pl-0">
+                  {new Date(event.timestamp * 1000).toLocaleTimeString()}
+                </time>
+              </div>
+            ))}
+          </div>
+        </section>
       )}
 
       {noSafeRoute && (
