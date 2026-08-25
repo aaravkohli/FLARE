@@ -23,4 +23,4 @@ COPY config/ config/
 
 # Expose nothing by default (Ryu connects outbound to 6633)
 # We will start OVS and the custom topology script
-ENTRYPOINT ["/bin/bash", "-c", "service openvswitch-switch start && (pgrep ovs-vswitchd || ovs-vswitchd --pidfile --detach) && python3 sdn/mininet_topo.py"]
+ENTRYPOINT ["/bin/bash", "-c", "(service openvswitch-switch start || true) && (pgrep ovs-vswitchd || ovs-vswitchd --pidfile --detach) && python3 sdn/mininet_topo.py"]
