@@ -22,6 +22,10 @@ compression:
   topk:
     error_feedback: true
     ratio: 0.1
+data:
+  sequence_stride: 1
+  split_seed: 42
+  test_fraction: 0.2
 differential_privacy:
   client_side:
     delta: 1.0e-05

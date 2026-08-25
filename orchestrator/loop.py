@@ -22,8 +22,10 @@ Usage:
 
 import asyncio
 import csv
+from collections import deque
 from contextlib import closing
 from functools import partial
+import hashlib
 import json
 import logging
 import os
@@ -43,10 +45,28 @@ import numpy as np
 import torch
 import yaml
 
+from schemas.decision_event import DecisionEvent, TelemetrySnapshot
+from sdn.route_contract import (
+    action_id_for_path,
+    normalize_installed_path,
+    validate_route_action,
+)
+from rl.reward import (
+    MAX_LATENCY_MS,
+    PATH_NAMES as SHARED_PATH_NAMES,
+    REWARD_DEFINITION,
+    RewardBreakdown,
+    compute_routing_reward,
+)
+from rl.safety import constrain_route_action, resolve_safety_config
+
 _BASE = Path(__file__).parent.parent
 _MODE_CFG  = yaml.safe_load((_BASE / "config" / "mode.yaml").read_text())
 _FL_CFG    = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
 _SDN_CFG   = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
+_RL_CFG    = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
+_SAFETY_CFG = _RL_CFG.get("safety", {})
+_SAFETY_THRESHOLD, _ALL_UNSAFE_BEHAVIOR = resolve_safety_config(_SAFETY_CFG)
 
 MODE = os.getenv("MODE", _MODE_CFG["mode"]).strip().lower()
 if MODE not in _MODE_CFG or MODE not in {"simulation", "real"}:
@@ -104,15 +124,27 @@ _CSV_FIELDS = [
 _DB_COLUMNS = [
     "run_id", "timestamp", "step", "drone_id", "action_id", "path_name",
     "threat_level", "reward", "recovery_ms", "packet_loss",
-    "fl_confidence", "attack_type",
+    "fl_confidence", "attack_type", "event_json",
 ]
-_PATH_NAMES = ["direct", "satellite", "mesh"]
+_PATH_NAMES = list(SHARED_PATH_NAMES)
 
 
 def _connect_db() -> sqlite3.Connection:
     conn = sqlite3.connect(_DB_PATH, timeout=5.0)
     conn.execute("PRAGMA busy_timeout = 5000")
     return conn
+
+
+def _file_sha256(path: Path) -> Optional[str]:
+    """Return a stable checkpoint identifier without loading the artifact."""
+    if not path.exists():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return f"sha256:{digest.hexdigest()}"
+
 
 def _init_experiment_store():
     # CSV header
@@ -129,9 +161,15 @@ def _init_experiment_store():
                     run_id TEXT, timestamp REAL, step INTEGER, drone_id TEXT,
                     action_id INTEGER, path_name TEXT, threat_level TEXT,
                     reward REAL, recovery_ms REAL, packet_loss REAL,
-                    fl_confidence REAL, attack_type TEXT
+                    fl_confidence REAL, attack_type TEXT, event_json TEXT
                 )
             """)
+            columns = {
+                row[1]
+                for row in conn.execute("PRAGMA table_info(runs)").fetchall()
+            }
+            if "event_json" not in columns:
+                conn.execute("ALTER TABLE runs ADD COLUMN event_json TEXT")
             conn.execute(
                 "CREATE INDEX IF NOT EXISTS idx_runs_drone_id_id "
                 "ON runs (drone_id, id DESC)"
@@ -153,11 +191,16 @@ def _log_experiments(rows: list[dict]) -> None:
         return
 
     with open(_CSV_PATH, "a", newline="") as f:
-        csv.DictWriter(f, fieldnames=_CSV_FIELDS).writerows(rows)
+        csv.DictWriter(f, fieldnames=_CSV_FIELDS).writerows(
+            [
+                {field: row.get(field) for field in _CSV_FIELDS}
+                for row in rows
+            ]
+        )
 
     placeholders = ",".join("?" for _ in _DB_COLUMNS)
     columns = ",".join(_DB_COLUMNS)
-    values = [[row[column] for column in _DB_COLUMNS] for row in rows]
+    values = [[row.get(column) for column in _DB_COLUMNS] for row in rows]
     with closing(_connect_db()) as conn:
         with conn:
             conn.executemany(
@@ -174,13 +217,27 @@ def _load_fl_model():
     """Load the global FL model. Returns None if not yet trained."""
     model_path = _BASE / _FL_CFG["paths"]["model_save"]
     if not model_path.exists():
-        logger.warning("FL model not found at %s. Using random threat scores.", model_path)
+        logger.warning("FL model not found at %s. Using heuristic threat scores.", model_path)
         return None
-    from fl.model import build_model
-    model = build_model(_FL_CFG["model"])
-    model.load_state_dict(torch.load(model_path, map_location="cpu"))
-    model.eval()
-    return model
+    try:
+        from fl.checkpoint import validate_fl_checkpoint_metadata
+        from fl.model import build_model
+
+        validate_fl_checkpoint_metadata(
+            model_path,
+            model_config=_FL_CFG["model"],
+            data_config=_FL_CFG.get("data", {}),
+        )
+        model = build_model(_FL_CFG["model"])
+        model.load_state_dict(torch.load(model_path, map_location="cpu"))
+        model.eval()
+        return model
+    except Exception as exc:
+        logger.warning(
+            "FL checkpoint could not be loaded (%s). Using heuristic threat scores.",
+            exc,
+        )
+        return None
 
 
 def _fl_infer(model, metrics: dict) -> dict:
@@ -191,7 +248,11 @@ def _fl_infer(model, metrics: dict) -> dict:
     return _fl_infer_batch(model, {"single": metrics})["single"]
 
 
-def _fl_infer_batch(model, metrics_by_drone: dict[str, dict]) -> dict[str, dict]:
+def _fl_infer_batch(
+    model,
+    metrics_by_drone: dict[str, dict],
+    histories_by_drone: Optional[dict[str, list[dict]]] = None,
+) -> dict[str, dict]:
     """Run every drone/path sequence in one model forward pass."""
     from collections import Counter
     from fl.model import ATTACK_CLASSES
@@ -201,7 +262,11 @@ def _fl_infer_batch(model, metrics_by_drone: dict[str, dict]) -> dict[str, dict]
     sequences = []
     for drone_id, metrics in metrics_by_drone.items():
         for path_index, sequence in enumerate(
-            metrics_to_tensor(metrics, seq_len=_FL_CFG["model"]["sequence_len"])
+            metrics_to_tensor(
+                metrics,
+                seq_len=_FL_CFG["model"]["sequence_len"],
+                history=(histories_by_drone or {}).get(drone_id),
+            )
         ):
             entries.append((drone_id, path_index))
             sequences.append(sequence)
@@ -223,7 +288,13 @@ def _fl_infer_batch(model, metrics_by_drone: dict[str, dict]) -> dict[str, dict]
     }
     for batch_index, (drone_id, path_index) in enumerate(entries):
         score = float(raw_scores[batch_index])
-        if metrics_by_drone[drone_id]["paths"][path_index]["pdr"] < 0.4:
+        path_name = _PATH_NAMES[path_index]
+        current_path = next(
+            path
+            for path in metrics_by_drone[drone_id]["paths"]
+            if path["path_id"] == path_name
+        )
+        if current_path["pdr"] < 0.4:
             score = max(score, 0.95)
         grouped[drone_id]["path_scores"].append(score)
         grouped[drone_id]["confidences"].append(float(confidences[batch_index]))
@@ -236,17 +307,33 @@ def _fl_infer_batch(model, metrics_by_drone: dict[str, dict]) -> dict[str, dict]
             "path_scores": values["path_scores"],
             "confidence": float(np.mean(values["confidences"])),
             "attack_type": Counter(values["attack_types"]).most_common(1)[0][0],
+            "source": "fl_model",
         }
         for drone_id, values in grouped.items()
     }
 
 
-def _random_threat_scores() -> dict:
-    """Fallback when FL model unavailable."""
+def _heuristic_threat_scores(metrics: dict) -> dict:
+    """Deterministic, inspectable fallback when learned FL inference is unavailable."""
+    scores = []
+    for path in metrics["paths"]:
+        rssi_severity = float(np.clip((-40.0 - float(path["rssi"])) / 80.0, 0.0, 1.0))
+        sinr_severity = float(np.clip((20.0 - float(path["sinr"])) / 30.0, 0.0, 1.0))
+        score = (
+            0.15 * rssi_severity
+            + 0.25 * (1.0 - float(path["pdr"]))
+            + 0.15 * sinr_severity
+            + 0.15 * min(float(path["latency"]) / 1000.0, 1.0)
+            + 0.30 * float(path["packet_loss"])
+        )
+        if float(path["pdr"]) < 0.4:
+            score = max(score, 0.95)
+        scores.append(float(np.clip(score, 0.0, 1.0)))
     return {
-        "path_scores": list(np.random.uniform(0.0, 0.5, 3).tolist()),
-        "confidence": 0.5,
+        "path_scores": scores,
+        "confidence": 0.4,
         "attack_type": "unknown",
+        "source": "heuristic_fallback",
     }
 
 
@@ -259,7 +346,11 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str)
     POST routing decision to SDN controller.
     Retries up to 3 times with exponential backoff using native async.
     """
-    payload = {"path_name": path_name, "drone_id": drone_id, "action_id": 0}
+    payload = {
+        "path_name": path_name,
+        "drone_id": drone_id,
+        "action_id": action_id_for_path(path_name),
+    }
     last_err = None
     for attempt, delay in enumerate([0.0, 0.1, 0.4]):
         try:
@@ -272,7 +363,19 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str)
                 timeout=SDN_TIMEOUT,
             )
             resp.raise_for_status()
-            return resp.json()
+            result = resp.json()
+            reported_path = result.get("installed_path")
+            if reported_path is None:
+                raise RuntimeError("SDN response omitted installed_path")
+            installed_path = normalize_installed_path(reported_path)
+            installed_action_id = result.get(
+                "installed_action_id",
+                action_id_for_path(installed_path),
+            )
+            validate_route_action(installed_path, installed_action_id)
+            result["installed_path"] = installed_path
+            result["installed_action_id"] = installed_action_id
+            return result
         except (httpx.HTTPError, httpx.TimeoutException) as e:
             last_err = e
             logger.warning("SDN push attempt %d failed: %s", attempt + 1, e)
@@ -287,6 +390,9 @@ class Orchestrator:
     def __init__(self):
         self._running = True
         self._fl_model = _load_fl_model()
+        self._fl_model_id = _file_sha256(
+            _BASE / _FL_CFG["paths"]["model_save"]
+        ) if self._fl_model is not None else None
         self._step = 0
         
         self.DRONES = ["drone_1", "drone_2", "drone_3"]
@@ -294,11 +400,17 @@ class Orchestrator:
         self._prev_path_time = {d: None for d in self.DRONES}
         self._last_good_decision = {d: None for d in self.DRONES}
         self._last_good_ts = {d: 0.0 for d in self.DRONES}
+        sequence_len = int(_FL_CFG["model"]["sequence_len"])
+        self._metric_history = {
+            drone_id: deque(maxlen=sequence_len)
+            for drone_id in self.DRONES
+        }
 
         # Keep independent stateful RL wrappers per drone. A single shared wrapper
         # would leak previous-action/reward state between drone decisions.
         self._rl_agents = {}
         rl_path = _BASE / "models" / "rl_model.zip"
+        self._rl_model_id = _file_sha256(rl_path)
         if rl_path.exists():
             from rl.agent import RLAgent
             try:
@@ -324,14 +436,47 @@ class Orchestrator:
                     RUN_ID, MODE, LOOP_INTERVAL)
 
     def _greedy_decision(self, path_scores: list) -> dict:
-        action = int(min(range(3), key=lambda i: path_scores[i]))
+        policy_action = int(min(range(3), key=lambda i: path_scores[i]))
+        constrained = constrain_route_action(
+            policy_action,
+            path_scores,
+            threat_threshold=_SAFETY_THRESHOLD,
+        )
+        action = constrained.action_id
         paths = ["direct", "satellite", "mesh"]
-        return {"action_id": action, "path_name": paths[action]}
+        max_score = max(path_scores)
+        threat_level = "HIGH" if max_score >= 0.7 else ("MEDIUM" if max_score >= 0.4 else "LOW")
+        return {
+            "action_id": action,
+            "path_name": paths[action],
+            "threat_level": threat_level,
+            "decision_source": "greedy_fallback",
+            "observation": None,
+            "safety_override": constrained.safety_override,
+            "original_action_id": policy_action,
+            "safe_action_mask": list(constrained.safe_action_mask),
+            "no_safe_route": constrained.no_safe_route,
+            "constraint_reason": constrained.constraint_reason,
+            "safety_threshold": constrained.threat_threshold,
+            "all_unsafe_behavior": constrained.all_unsafe_behavior,
+        }
 
-    def _compute_reward(self, path_scores: list, action: int) -> float:
-        """Simplified reward for logging (full reward computed in RL env)."""
-        threat = path_scores[action]
-        return round(1.0 - threat - 0.1 * action, 4)  # penalise higher-index paths slightly
+    def _compute_reward(
+        self,
+        path_scores: list,
+        path_latencies: list,
+        path_losses: list,
+        action: int,
+        previous_action: Optional[int],
+    ) -> RewardBreakdown:
+        """Use the exact reward implementation used by the training environment."""
+        return compute_routing_reward(
+            action,
+            path_scores,
+            path_latencies,
+            path_losses,
+            previous_action=previous_action,
+        )
 
     def _recovery_ms(self, drone_id: str, new_path: str) -> Optional[float]:
         """Return recovery time in ms if path switched, else None."""
@@ -355,7 +500,10 @@ class Orchestrator:
                     timeout=1.0,
                 )
                 response.raise_for_status()
-                return drone_id, response.json()
+                metrics = response.json()
+                metrics["source"] = "live"
+                validated = TelemetrySnapshot.model_validate(metrics)
+                return drone_id, validated.model_dump()
             except Exception as exc:
                 logger.warning(
                     "Live metrics unavailable for %s (%s). Using synthetic fallback.",
@@ -363,7 +511,9 @@ class Orchestrator:
                     exc,
                 )
                 from simulation.generator import generate_metrics
-                return drone_id, generate_metrics(drone_id)
+                metrics = generate_metrics(drone_id)
+                metrics["source"] = "synthetic_fallback"
+                return drone_id, metrics
 
         pairs = await asyncio.gather(*(fetch_one(drone_id) for drone_id in self.DRONES))
         return dict(pairs)
@@ -372,7 +522,20 @@ class Orchestrator:
         self._step += 1
         t_start = time.time()
         metrics_by_drone = await self._collect_metrics(client)
+        if not hasattr(self, "_metric_history"):
+            sequence_len = int(_FL_CFG["model"]["sequence_len"])
+            self._metric_history = {
+                drone_id: deque(maxlen=sequence_len)
+                for drone_id in self.DRONES
+            }
+        for drone_id, metrics in metrics_by_drone.items():
+            self._metric_history[drone_id].append(metrics)
+        histories_by_drone = {
+            drone_id: list(history)
+            for drone_id, history in self._metric_history.items()
+        }
 
+        fl_fallback_reason = "fl_model_unavailable" if not self._fl_model else None
         try:
             async with asyncio.timeout(0.5):
                 if self._fl_model:
@@ -380,16 +543,18 @@ class Orchestrator:
                         _fl_infer_batch,
                         self._fl_model,
                         metrics_by_drone,
+                        histories_by_drone,
                     )
                 else:
                     threats_by_drone = {
-                        drone_id: _random_threat_scores()
+                        drone_id: _heuristic_threat_scores(metrics_by_drone[drone_id])
                         for drone_id in self.DRONES
                     }
-        except asyncio.TimeoutError:
-            logger.warning("Batched FL inference timed out. Using random scores.")
+        except Exception as exc:
+            logger.warning("Batched FL inference failed (%s). Using heuristic scores.", exc)
+            fl_fallback_reason = "fl_inference_failed"
             threats_by_drone = {
-                drone_id: _random_threat_scores()
+                drone_id: _heuristic_threat_scores(metrics_by_drone[drone_id])
                 for drone_id in self.DRONES
             }
 
@@ -397,11 +562,21 @@ class Orchestrator:
         for drone_id in self.DRONES:
             metrics = metrics_by_drone[drone_id]
             threat = threats_by_drone[drone_id]
+            fallback_reasons = []
+            if metrics.get("source") == "synthetic_fallback":
+                fallback_reasons.append("live_sensor_unavailable")
+            if threat.get("source") == "heuristic_fallback":
+                fallback_reasons.append(fl_fallback_reason or "fl_inference_unavailable")
 
             path_scores = threat["path_scores"]
-            max_latencies = [100.0, 300.0, 600.0]
             path_latencies = [
-                min(1.0, max(0.0, metrics["paths"][idx]["latency"] / max_latencies[idx]))
+                min(
+                    1.0,
+                    max(
+                        0.0,
+                        metrics["paths"][idx]["latency"] / MAX_LATENCY_MS[idx],
+                    ),
+                )
                 for idx in range(3)
             ]
             path_losses = [
@@ -410,6 +585,7 @@ class Orchestrator:
             ]
 
             # Step 3: RL decision
+            rl_fallback_reason = "rl_model_unavailable"
             try:
                 async with asyncio.timeout(0.1):
                     loop = asyncio.get_running_loop()
@@ -427,11 +603,24 @@ class Orchestrator:
                         )
                     else:
                         decision = self._greedy_decision(path_scores)
-            except asyncio.TimeoutError:
-                logger.warning("RL inference timed out for %s. Using greedy.", drone_id)
+            except Exception as exc:
+                logger.warning("RL inference failed for %s (%s). Using greedy.", drone_id, exc)
+                rl_fallback_reason = "rl_inference_failed"
                 decision = self._greedy_decision(path_scores)
 
-            action_id  = decision["action_id"]
+            if decision.get("decision_source") == "greedy_fallback":
+                fallback_reasons.append(rl_fallback_reason)
+            if decision.get("safety_override"):
+                fallback_reasons.append("rl_safety_override")
+            if decision.get("no_safe_route"):
+                fallback_reasons.append("no_safe_route")
+
+            requested_action_id = decision["action_id"]
+            policy_action_id = int(
+                decision.get("original_action_id", requested_action_id)
+            )
+            policy_path = _PATH_NAMES[policy_action_id]
+            action_id = requested_action_id
             requested_path = decision["path_name"]
             threat_lvl = decision.get("threat_level", "UNKNOWN")
 
@@ -441,52 +630,150 @@ class Orchestrator:
                 logger.warning("Decision cache stale (>5s) for %s. Using fallback.", drone_id)
                 requested_path = "mesh"
                 action_id = _PATH_NAMES.index(requested_path)
+                requested_action_id = action_id
+                fallback_reasons.append("decision_cache_stale")
 
             # Step 4: Push to SDN
             sdn_ok = False
-            path_name = self._prev_path[drone_id] or requested_path
+            sdn_resp = None
+            sdn_error = None
+            installed_path = self._prev_path[drone_id]
             try:
                 sdn_resp = await _push_to_sdn(client, requested_path, drone_id)
                 sdn_ok = True
-                installed_path = sdn_resp.get("installed_path", requested_path)
-                path_name = installed_path if installed_path in _PATH_NAMES else requested_path
-                action_id = _PATH_NAMES.index(path_name)
+                reported_path = sdn_resp.get("installed_path", requested_path)
+                installed_path = reported_path if reported_path in _PATH_NAMES else requested_path
+                action_id = _PATH_NAMES.index(installed_path)
                 self._last_good_decision[drone_id] = {
                     **decision,
                     "action_id": action_id,
-                    "path_name": path_name,
+                    "path_name": installed_path,
                 }
                 self._last_good_ts[drone_id] = current_ts
             except Exception as e:
+                sdn_error = str(e)
+                fallback_reasons.append("sdn_update_failed")
                 logger.error("SDN push failed for %s: %s. Maintaining current path.", drone_id, e)
-                if path_name in _PATH_NAMES:
-                    action_id = _PATH_NAMES.index(path_name)
+                if installed_path in _PATH_NAMES:
+                    action_id = _PATH_NAMES.index(installed_path)
+
+            # Legacy summary rows require a path even before the first successful
+            # controller write. The canonical event keeps that state explicit by
+            # leaving installed_path/action_id null when no route is known.
+            effective_path = installed_path or requested_path
+            effective_action_id = _PATH_NAMES.index(effective_path)
 
             # Step 5: Metrics
-            reward = self._compute_reward(path_scores, action_id)
+            previous_action = (
+                _PATH_NAMES.index(self._prev_path[drone_id])
+                if self._prev_path[drone_id] in _PATH_NAMES
+                else None
+            )
+            reward_breakdown = self._compute_reward(
+                path_scores,
+                path_latencies,
+                path_losses,
+                effective_action_id,
+                previous_action,
+            )
+            reward = reward_breakdown.total
             self._prev_rewards[drone_id] = reward
-            recovery = self._recovery_ms(drone_id, path_name)
-            packet_loss = round(metrics["paths"][action_id]["packet_loss"], 4)
+            recovery = self._recovery_ms(drone_id, effective_path)
+            packet_loss = round(metrics["paths"][effective_action_id]["packet_loss"], 4)
+            route_changed = sdn_ok and installed_path != self._prev_path[drone_id]
+
+            event = DecisionEvent.model_validate({
+                "event_id": f"{RUN_ID}:{self._step}:{drone_id}",
+                "run_id": RUN_ID,
+                "step": self._step,
+                "timestamp": current_ts,
+                "drone_id": drone_id,
+                "mode": MODE,
+                "telemetry": metrics,
+                "inference": {
+                    "path_scores": path_scores,
+                    "confidence": threat["confidence"],
+                    "attack_type": threat["attack_type"],
+                    "source": threat.get("source", "fl_model"),
+                    "model_id": (
+                        self._fl_model_id
+                        if threat.get("source") == "fl_model"
+                        else None
+                    ),
+                },
+                "decision": {
+                    "source": decision.get("decision_source", "rl_model"),
+                    "model_id": (
+                        self._rl_model_id
+                        if decision.get("decision_source") == "rl_model"
+                        else None
+                    ),
+                    "policy_action_id": policy_action_id,
+                    "policy_path": policy_path,
+                    "requested_action_id": requested_action_id,
+                    "requested_path": requested_path,
+                    "installed_action_id": (
+                        _PATH_NAMES.index(installed_path)
+                        if installed_path is not None
+                        else None
+                    ),
+                    "installed_path": installed_path,
+                    "threat_level": threat_lvl,
+                    "observation": decision.get("observation"),
+                    "safety_override": bool(decision.get("safety_override", False)),
+                    "safe_action_mask": decision.get(
+                        "safe_action_mask", [True, True, True]
+                    ),
+                    "no_safe_route": bool(decision.get("no_safe_route", False)),
+                    "constraint_reason": decision.get("constraint_reason"),
+                    "safety_threshold": float(
+                        decision.get("safety_threshold", 0.8)
+                    ),
+                    "all_unsafe_behavior": decision.get(
+                        "all_unsafe_behavior", "least_risk_route"
+                    ),
+                    "route_changed": route_changed,
+                },
+                "sdn": {
+                    "applied": sdn_ok,
+                    "response": sdn_resp,
+                    "error": sdn_error,
+                },
+                "outcome": {
+                    "reward": reward,
+                    "reward_definition": REWARD_DEFINITION,
+                    "reward_components": reward_breakdown.as_dict(),
+                    "path": effective_path,
+                    "estimated": installed_path is None,
+                    "recovery_ms": recovery,
+                    "packet_loss": packet_loss,
+                },
+                "timing": {
+                    "tick_elapsed_ms": (time.time() - t_start) * 1000.0,
+                },
+                "fallback_reasons": fallback_reasons,
+            })
 
             row = {
                 "timestamp":    round(current_ts, 3),
                 "run_id":       RUN_ID,
                 "step":         self._step,
                 "drone_id":     drone_id,
-                "action_id":    action_id,
-                "path_name":    path_name,
+                "action_id":    effective_action_id,
+                "path_name":    effective_path,
                 "threat_level": threat_lvl,
                 "reward":       reward,
                 "recovery_ms":  recovery,
                 "packet_loss":  packet_loss,
                 "fl_confidence": round(threat["confidence"], 4),
                 "attack_type":  threat["attack_type"],
+                "event_json": event.model_dump_json(),
             }
             rows.append(row)
 
             # Update path tracking
-            if sdn_ok and path_name != self._prev_path[drone_id]:
-                self._prev_path[drone_id] = path_name
+            if route_changed:
+                self._prev_path[drone_id] = installed_path
                 self._prev_path_time[drone_id] = current_ts
 
         await asyncio.to_thread(_log_experiments, rows)

@@ -200,10 +200,13 @@ def download_dronerf() -> bool:
 # Synthetic fallback generator (used by preprocess.py when real data missing)
 # ---------------------------------------------------------------------------
 
-def generate_synthetic_fallback(n_samples: int = 50000) -> None:
+def generate_synthetic_fallback(
+    n_samples: int = 50000,
+    *,
+    overwrite: bool = False,
+) -> None:
     """
-    Generate a high-fidelity synthetic fallback CSV that faithfully reflects
-    the RadioML + DroneRF distributions but requires no download.
+    Generate deterministic synthetic fallback RF-KPI traces without downloads.
     Saved to datasets/raw/synthetic_fallback.csv
     """
     import numpy as np
@@ -211,7 +214,7 @@ def generate_synthetic_fallback(n_samples: int = 50000) -> None:
 
     rng = np.random.default_rng(42)
     out_path = _RAW / "synthetic_fallback.csv"
-    if out_path.exists():
+    if out_path.exists() and not overwrite:
         logger.info("Synthetic fallback already exists: %s", out_path)
         return
 
@@ -220,10 +223,28 @@ def generate_synthetic_fallback(n_samples: int = 50000) -> None:
     records = []
     attack_types = ["none", "barrage", "sweep", "spot", "unknown"]
 
-    for _ in range(n_samples):
-        # Randomly assign jamming condition (40% jammed, reflects real-world ratio)
-        jammed = rng.random() < 0.4
-        attack_type = rng.choice(attack_types[1:]) if jammed else "none"
+    trace_length = 50
+    trace_jammed = False
+    trace_attack_type = "none"
+    trace_path = "direct"
+    trace_drone_id = "drone_1"
+    for sample_index in range(n_samples):
+        trace_position = sample_index % trace_length
+        if trace_position == 0 or rng.random() < 0.08:
+            trace_jammed = bool(rng.random() < 0.4)
+            trace_attack_type = (
+                str(rng.choice(attack_types[1:])) if trace_jammed else "none"
+            )
+        if trace_position == 0:
+            # A trace represents one physical client/path stream. Changing
+            # identity inside it would fragment the temporal window.
+            trace_path = str(rng.choice(["direct", "satellite", "mesh"]))
+            trace_drone_id = str(
+                rng.choice(["drone_1", "drone_2", "drone_3"])
+            )
+
+        jammed = trace_jammed
+        attack_type = trace_attack_type
         snr_db = rng.uniform(-20, 30)
 
         if jammed:
@@ -242,9 +263,6 @@ def generate_synthetic_fallback(n_samples: int = 50000) -> None:
             packet_loss = rng.uniform(0.0, 0.08)
             snr_db = rng.uniform(5, 30)
 
-        path = rng.choice(["direct", "satellite", "mesh"])
-        drone_id = rng.choice(["drone_1", "drone_2", "drone_3"])
-
         records.append({
             "rssi": round(rssi, 2),
             "pdr": round(pdr, 4),
@@ -254,8 +272,11 @@ def generate_synthetic_fallback(n_samples: int = 50000) -> None:
             "snr_db": round(snr_db, 2),
             "jammed": int(jammed),
             "attack_type": attack_type,
-            "path": path,
-            "drone_id": drone_id,
+            "path": trace_path,
+            "drone_id": trace_drone_id,
+            "source": "synthetic",
+            "sequence_group": f"synthetic:trace={sample_index // trace_length}",
+            "sequence_index": trace_position,
         })
 
     df = pd.DataFrame(records)
@@ -273,10 +294,15 @@ def main():
     parser.add_argument("--skip-dronerf", action="store_true")
     parser.add_argument("--synthetic-only", action="store_true",
                         help="Skip all downloads, generate synthetic fallback only")
+    parser.add_argument(
+        "--force-synthetic",
+        action="store_true",
+        help="Replace an existing generated fallback with temporal trace data",
+    )
     args = parser.parse_args()
 
     if args.synthetic_only:
-        generate_synthetic_fallback()
+        generate_synthetic_fallback(overwrite=args.force_synthetic)
         logger.info("Done — synthetic fallback only.")
         return
 
@@ -297,7 +323,7 @@ def main():
         logger.info("Skipping DroneRF download.")
 
     # Always generate synthetic fallback so preprocess.py always has something to work with
-    generate_synthetic_fallback()
+    generate_synthetic_fallback(overwrite=args.force_synthetic)
 
     logger.info("=" * 50)
     for name, ok in results.items():

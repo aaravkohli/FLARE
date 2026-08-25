@@ -116,6 +116,7 @@ ns-3-dev/
 results/*.csv
 results/*.json
 results/plots/
+results/.plot_cache/
 experiments/*.csv
 experiments/*.db
 experiments/evaluation_report.json

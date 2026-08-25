@@ -4,7 +4,7 @@ Comprehensive evaluation of trained FL + RL models.
 
 Loads:
   - models/fl_model.pth     (BiLSTM threat detector)
-  - models/best_model.zip   (DQN path selector) or models/rl_model.zip
+  - models/rl_model.zip     (deployed validation-best DQN path selector)
   - datasets/processed/test.csv  (held-out evaluation data)
 
 Computes and saves:
@@ -15,15 +15,24 @@ Computes and saves:
       rl_reward_curve.png    (if rl tensorboard log exists)
       feature_importance.png
 
+RL policies are compared on identical seeded ``DronePathEnv`` traces because
+the tabular FL test CSV does not contain synchronized observations for all
+three routes. A second robustness suite uses versioned synchronized three-path
+CSV traces for in-distribution, persistent, barrage, and smart-jammer cases.
+If a packet-derived ns-3 trace exists, a third suite evaluates the same policy
+on validated UDP delivery, delay, and loss measurements.
+
 Usage:
   python scripts/evaluate.py [--model-path models/fl_model.pth]
-                             [--rl-model-path models/best_model.zip]
+                             [--rl-model-path models/rl_model.zip]
                              [--test-csv datasets/processed/test.csv]
+                             [--n-episodes 50] [--rl-eval-seed 42000]
 """
 
 import argparse
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -40,8 +49,13 @@ _RESULTS  = _BASE / "results"
 _PLOTS    = _RESULTS / "plots"
 _RESULTS.mkdir(parents=True, exist_ok=True)
 _PLOTS.mkdir(parents=True, exist_ok=True)
+_PLOT_CACHE = _RESULTS / ".plot_cache"
+_PLOT_CACHE.mkdir(parents=True, exist_ok=True)
+os.environ.setdefault("MPLCONFIGDIR", str(_PLOT_CACHE / "matplotlib"))
+os.environ.setdefault("XDG_CACHE_HOME", str(_PLOT_CACHE))
 
-FEATURE_COLS = ["rssi", "pdr", "sinr", "latency", "packet_loss"]
+from fl.data import build_temporal_windows
+
 ATTACK_CLASSES = ["none", "barrage", "sweep", "spot", "unknown"]
 
 
@@ -64,13 +78,25 @@ def evaluate_fl_model(model_path: Path, test_csv: Path) -> dict:
 
     fl_cfg = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
     model_cfg = fl_cfg["model"]
+    data_cfg = fl_cfg.get("data", {})
     seq_len = model_cfg["sequence_len"]
 
-    from fl.model import build_model, set_model_weights
+    from fl.checkpoint import validate_fl_checkpoint_metadata
+    from fl.model import build_model
 
     if not model_path.exists():
         logger.error("FL model not found: %s", model_path)
         return {"error": f"Model not found: {model_path}"}
+
+    try:
+        validate_fl_checkpoint_metadata(
+            model_path,
+            model_config=model_cfg,
+            data_config=data_cfg,
+        )
+    except Exception as exc:
+        logger.error("FL checkpoint is incompatible: %s", exc)
+        return {"error": str(exc)}
 
     # Select device
     if torch.backends.mps.is_available():
@@ -90,24 +116,17 @@ def evaluate_fl_model(model_path: Path, test_csv: Path) -> dict:
         logger.error("Test CSV not found: %s", test_csv)
         return {"error": f"Test CSV not found: {test_csv}"}
 
-    df = pd.read_csv(test_csv)
-    df = df.dropna(subset=FEATURE_COLS + ["jammed"]).reset_index(drop=True)
-    feats   = df[FEATURE_COLS].values.astype(np.float32)
-    jammed  = df["jammed"].values.astype(np.int8)
-    atk_col = "attack_class" if "attack_class" in df.columns else None
-
-    # Build sequences by tile-repeating each individual row
-    X_list, y_j_list, y_a_list = [], [], []
-    for i in range(len(feats)):
-        window = np.tile(feats[i], (seq_len, 1))  # [seq_len, 5]
-        X_list.append(window)
-        y_j_list.append(int(jammed[i]))
-        y_a_list.append(int(df[atk_col].values[i]) if atk_col else 0)
-
-    if not X_list:
+    windows = build_temporal_windows(
+        pd.read_csv(test_csv),
+        seq_len,
+        stride=int(data_cfg.get("sequence_stride", 1)),
+    )
+    if not len(windows):
         return {"error": "No sequences could be built from test CSV"}
 
-    X_t = torch.tensor(np.stack(X_list), dtype=torch.float32)
+    X_t = torch.tensor(windows.features, dtype=torch.float32)
+    y_j_list = windows.threat_labels[:, 0].astype(np.int8).tolist()
+    y_a_list = windows.attack_labels.tolist()
     loader = DataLoader(TensorDataset(X_t), batch_size=512)
 
     preds_j, preds_a, confs = [], [], []
@@ -166,7 +185,7 @@ def evaluate_fl_model(model_path: Path, test_csv: Path) -> dict:
         "attack_classification": {
             "accuracy": atk_acc,
         },
-        "num_test_sequences": len(X_list),
+        "num_test_sequences": len(windows),
         "device": str(device),
     }
 
@@ -175,71 +194,189 @@ def evaluate_fl_model(model_path: Path, test_csv: Path) -> dict:
 # RL Model Evaluation
 # ---------------------------------------------------------------------------
 
-def evaluate_rl_model(rl_model_path: Path, test_csv: Path, n_episodes: int = 20) -> dict:
-    """Evaluate DQN policy on RealDataDronePathEnv."""
-    try:
-        from stable_baselines3 import DQN
-        from rl.env import RealDataDronePathEnv, DronePathEnv
-    except ImportError as e:
-        logger.error("RL dependencies missing: %s", e)
-        return {"error": str(e)}
-
+def evaluate_rl_model(
+    rl_model_path: Path,
+    test_csv: Path,
+    n_episodes: int = 50,
+    base_seed: int = 42_000,
+) -> dict:
+    """Compare the deployable DQN and baselines on identical seeded traces."""
+    del test_csv  # FL held-out rows are not synchronized three-path RL traces.
     if not rl_model_path.exists():
         logger.warning("RL model not found: %s — skipping RL evaluation", rl_model_path)
         return {"skipped": True, "reason": f"Model not found: {rl_model_path}"}
 
-    model = DQN.load(str(rl_model_path))
+    try:
+        import yaml
+        from rl.evaluation import evaluate_dqn_checkpoint
 
-    # Choose env: real data if CSV available, else synthetic
-    if test_csv.exists():
-        env = RealDataDronePathEnv(csv_path=test_csv)
-        env_name = "RealDataDronePathEnv"
-    else:
-        env = DronePathEnv()
-        env_name = "DronePathEnv (synthetic fallback)"
-    logger.info("RL evaluation env: %s", env_name)
+        rl_cfg = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
+        env_cfg = rl_cfg["environment"]
+        evaluation = evaluate_dqn_checkpoint(
+            rl_model_path,
+            observation_dim=env_cfg["obs_dim"],
+            action_count=env_cfg["num_paths"],
+            max_episode_steps=env_cfg["max_steps"],
+            n_episodes=n_episodes,
+            base_seed=base_seed,
+            threat_threshold=float(
+                rl_cfg.get("safety", {}).get("threat_threshold", 0.8)
+            ),
+        )
+    except Exception as exc:
+        logger.error("RL checkpoint is incompatible or evaluation failed: %s", exc)
+        return {"skipped": True, "reason": str(exc)}
 
-    episode_rewards, episode_lengths = [], []
-    actions_taken = []
+    runtime = evaluation["policies"]["dqn_runtime"]
+    greedy = evaluation["policies"]["greedy_lowest_threat"]
+    logger.info(
+        "RL runtime reward: %.4f ± %.4f (95%% CI); paired delta vs greedy: %.4f",
+        runtime["mean_episode_reward"],
+        runtime["reward_95ci_half_width"],
+        runtime["paired_reward_delta_vs_greedy"]["mean"],
+    )
+    logger.info("Greedy reward: %.4f", greedy["mean_episode_reward"])
+    return evaluation
 
-    for ep in range(n_episodes):
-        obs, _ = env.reset()
-        done = False
-        ep_reward = 0.0
-        ep_len = 0
-        while not done:
-            action, _ = model.predict(obs, deterministic=True)
-            obs, reward, terminated, truncated, info = env.step(int(action))
-            ep_reward += reward
-            ep_len += 1
-            actions_taken.append(int(action))
-            done = terminated or truncated
-        episode_rewards.append(ep_reward)
-        episode_lengths.append(ep_len)
 
-    mean_reward = float(np.mean(episode_rewards))
-    std_reward  = float(np.std(episode_rewards))
-    logger.info("RL mean reward: %.4f ± %.4f", mean_reward, std_reward)
+def evaluate_rl_trace_suite(
+    rl_model_path: Path,
+    *,
+    n_episodes: int = 50,
+    generation_seed: int = 52_000,
+) -> dict:
+    """Generate and evaluate deterministic synchronized-path stress traces."""
+    if not rl_model_path.exists():
+        return {"skipped": True, "reason": f"Model not found: {rl_model_path}"}
 
-    action_counts = {f"path_{i}": actions_taken.count(i) for i in range(3)}
-    path_names = ["direct", "satellite", "mesh"]
-    action_pct = {path_names[i]: round(action_counts[f"path_{i}"] / len(actions_taken) * 100, 1)
-                  for i in range(3)}
-    logger.info("Action distribution: %s", action_pct)
+    try:
+        import yaml
+        from rl.evaluation import evaluate_dqn_trace_suite
+        from rl.traces import (
+            ROBUSTNESS_SCENARIOS,
+            generate_synchronized_trace,
+            write_synchronized_trace,
+        )
 
-    # RL reward curve from round metrics
-    _plot_rl_reward_curve(episode_rewards)
+        rl_cfg = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
+        env_cfg = rl_cfg["environment"]
+        trace_dir = _BASE / "datasets" / "processed" / "rl_evaluation_traces"
+        trace_paths = {}
+        for scenario_index, scenario in enumerate(ROBUSTNESS_SCENARIOS):
+            scenario_seed = generation_seed + scenario_index * 10_000
+            frame = generate_synchronized_trace(
+                scenario=scenario,
+                n_episodes=n_episodes,
+                steps_per_episode=int(env_cfg["max_steps"]),
+                base_seed=scenario_seed,
+            )
+            trace_paths[scenario] = write_synchronized_trace(
+                frame,
+                trace_dir / f"{scenario}.csv",
+            )
 
-    return {
-        "mean_episode_reward":   mean_reward,
-        "std_episode_reward":    std_reward,
-        "min_episode_reward":    float(np.min(episode_rewards)),
-        "max_episode_reward":    float(np.max(episode_rewards)),
-        "mean_episode_length":   float(np.mean(episode_lengths)),
-        "action_distribution_pct": action_pct,
-        "n_episodes":            n_episodes,
-        "env":                   env_name,
-    }
+        result = evaluate_dqn_trace_suite(
+            rl_model_path,
+            trace_paths,
+            observation_dim=int(env_cfg["obs_dim"]),
+            action_count=int(env_cfg["num_paths"]),
+            max_episode_steps=int(env_cfg["max_steps"]),
+            n_episodes=n_episodes,
+            # Explicit consecutive seeds enumerate every generated episode.
+            base_seed=0,
+            threat_threshold=float(
+                rl_cfg.get("safety", {}).get("threat_threshold", 0.8)
+            ),
+        )
+    except Exception as exc:
+        logger.error("RL synchronized trace evaluation failed: %s", exc)
+        return {"skipped": True, "reason": str(exc)}
+
+    for scenario, evaluation in result["scenarios"].items():
+        runtime = evaluation["policies"]["dqn_runtime"]
+        delta = runtime["paired_reward_delta_vs_greedy"]
+        logger.info(
+            "RL trace %-16s reward %.4f ± %.4f; delta vs greedy %.4f ± %.4f",
+            scenario,
+            runtime["mean_episode_reward"],
+            runtime["reward_95ci_half_width"],
+            delta["mean"],
+            delta["95ci_half_width"],
+        )
+    return result
+
+
+def evaluate_rl_ns3_packet_suite(
+    rl_model_path: Path,
+    packet_trace_path: Path,
+    *,
+    n_episodes: int = 50,
+) -> dict:
+    """Evaluate the DQN on every scenario in a packet-derived ns-3 trace."""
+    if not rl_model_path.exists():
+        return {"skipped": True, "reason": f"Model not found: {rl_model_path}"}
+    if not packet_trace_path.exists():
+        return {
+            "skipped": True,
+            "reason": f"Packet-derived trace not found: {packet_trace_path}",
+        }
+
+    try:
+        import yaml
+        from rl.evaluation import evaluate_dqn_trace_suite
+        from rl.traces import load_synchronized_trace, trace_fingerprint
+
+        frame = load_synchronized_trace(packet_trace_path)
+        if not frame["source"].astype(str).str.startswith("ns3:packet-level:").all():
+            raise ValueError("packet suite trace contains a non-ns-3 source")
+        scenario_counts = (
+            frame.groupby("scenario")["episode_id"].nunique().to_dict()
+        )
+        available_episodes = min(scenario_counts.values())
+        evaluated_episodes = min(n_episodes, available_episodes)
+        if evaluated_episodes < 2:
+            raise ValueError(
+                "packet suite requires at least two episodes per scenario, "
+                f"found {scenario_counts}"
+            )
+
+        rl_cfg = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
+        env_cfg = rl_cfg["environment"]
+        result = evaluate_dqn_trace_suite(
+            rl_model_path,
+            {scenario: packet_trace_path for scenario in sorted(scenario_counts)},
+            observation_dim=int(env_cfg["obs_dim"]),
+            action_count=int(env_cfg["num_paths"]),
+            max_episode_steps=int(env_cfg["max_steps"]),
+            n_episodes=evaluated_episodes,
+            base_seed=0,
+            threat_threshold=float(
+                rl_cfg.get("safety", {}).get("threat_threshold", 0.8)
+            ),
+        )
+        result["packet_trace_protocol"] = {
+            "trace_path": str(packet_trace_path.resolve()),
+            "trace_sha256": trace_fingerprint(frame),
+            "scenario_episode_counts": scenario_counts,
+            "evaluated_episodes_per_scenario": evaluated_episodes,
+            "threat_source": "qos-risk proxy, not FL inference",
+        }
+    except Exception as exc:
+        logger.error("RL ns-3 packet-trace evaluation failed: %s", exc)
+        return {"skipped": True, "reason": str(exc)}
+
+    for scenario, evaluation in result["scenarios"].items():
+        runtime = evaluation["policies"]["dqn_runtime"]
+        delta = runtime["paired_reward_delta_vs_greedy"]
+        logger.info(
+            "RL ns-3 %-16s reward %.4f ± %.4f; delta vs greedy %.4f ± %.4f",
+            scenario,
+            runtime["mean_episode_reward"],
+            runtime["reward_95ci_half_width"],
+            delta["mean"],
+            delta["95ci_half_width"],
+        )
+    return result
 
 
 # ---------------------------------------------------------------------------
@@ -380,23 +517,70 @@ def _plot_rl_reward_curve(episode_rewards):
 # ---------------------------------------------------------------------------
 
 def main():
+    import yaml
+
+    rl_config = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
     parser = argparse.ArgumentParser(description="Evaluate FL + RL models")
     parser.add_argument("--model-path",    type=Path, default=_BASE / "models/fl_model.pth")
-    parser.add_argument("--rl-model-path", type=Path, default=_BASE / "models/best_model.zip")
+    parser.add_argument("--rl-model-path", type=Path, default=_BASE / "models/rl_model.zip")
     parser.add_argument("--test-csv",      type=Path, default=_BASE / "datasets/processed/test.csv")
-    parser.add_argument("--n-episodes",    type=int,  default=20)
+    parser.add_argument("--n-episodes",    type=int,  default=50)
+    parser.add_argument("--rl-eval-seed",  type=int,  default=42_000)
+    parser.add_argument("--rl-trace-seed", type=int,  default=52_000)
+    parser.add_argument(
+        "--ns3-trace",
+        type=Path,
+        default=_BASE / rl_config["paths"]["ns3_trace_csv"],
+    )
+    parser.add_argument(
+        "--skip-rl-trace-suite",
+        action="store_true",
+        help="Skip synchronized in-distribution and stress trace evaluation",
+    )
+    parser.add_argument(
+        "--skip-ns3-packet-suite",
+        action="store_true",
+        help="Skip evaluation of the generated packet-level ns-3 trace",
+    )
     args = parser.parse_args()
 
-    # Try best_model first, fall back to rl_model
+    if args.n_episodes < 2:
+        parser.error("--n-episodes must be at least 2")
+
     rl_path = args.rl_model_path
-    if not rl_path.exists():
-        rl_path = _BASE / "models/rl_model.zip"
 
     logger.info("═══ FL Model Evaluation ═══")
     fl_metrics = evaluate_fl_model(args.model_path, args.test_csv)
 
     logger.info("═══ RL Model Evaluation ═══")
-    rl_metrics = evaluate_rl_model(rl_path, args.test_csv, n_episodes=args.n_episodes)
+    rl_metrics = evaluate_rl_model(
+        rl_path,
+        args.test_csv,
+        n_episodes=args.n_episodes,
+        base_seed=args.rl_eval_seed,
+    )
+
+    logger.info("═══ RL Synchronized Trace Robustness Suite ═══")
+    rl_trace_metrics = (
+        {"skipped": True, "reason": "disabled by --skip-rl-trace-suite"}
+        if args.skip_rl_trace_suite
+        else evaluate_rl_trace_suite(
+            rl_path,
+            n_episodes=args.n_episodes,
+            generation_seed=args.rl_trace_seed,
+        )
+    )
+
+    logger.info("═══ RL Packet-Level ns-3 Trace Suite ═══")
+    rl_ns3_metrics = (
+        {"skipped": True, "reason": "disabled by --skip-ns3-packet-suite"}
+        if args.skip_ns3_packet_suite
+        else evaluate_rl_ns3_packet_suite(
+            rl_path,
+            args.ns3_trace,
+            n_episodes=args.n_episodes,
+        )
+    )
 
     logger.info("═══ Baseline Comparison ═══")
     baseline_metrics = evaluate_baselines(args.test_csv)
@@ -408,6 +592,8 @@ def main():
     report = {
         "fl_model": fl_metrics,
         "rl_model": rl_metrics,
+        "rl_trace_suite": rl_trace_metrics,
+        "rl_ns3_packet_suite": rl_ns3_metrics,
         "baselines": baseline_metrics,
     }
 
@@ -424,9 +610,43 @@ def main():
         print(f"  FL Threat F1          : {td.get('f1_macro', 'N/A'):.4f}")
         print(f"  FL Threat Accuracy    : {td.get('accuracy', 'N/A'):.4f}")
         print(f"  FL Attack Type Acc    : {fl_metrics.get('attack_classification', {}).get('accuracy', 'N/A'):.4f}")
-    if "mean_episode_reward" in rl_metrics:
-        print(f"  RL Mean Reward        : {rl_metrics['mean_episode_reward']:.4f} ± {rl_metrics['std_episode_reward']:.4f}")
-        print(f"  RL Action Dist        : {rl_metrics.get('action_distribution_pct', {})}")
+    if "policies" in rl_metrics:
+        runtime = rl_metrics["policies"]["dqn_runtime"]
+        greedy = rl_metrics["policies"]["greedy_lowest_threat"]
+        delta = runtime["paired_reward_delta_vs_greedy"]
+        print(
+            "  RL Runtime Reward     : "
+            f"{runtime['mean_episode_reward']:.4f} ± "
+            f"{runtime['reward_95ci_half_width']:.4f} (95% CI)"
+        )
+        print(f"  Greedy Reward         : {greedy['mean_episode_reward']:.4f}")
+        print(
+            "  Paired Delta vs Greedy: "
+            f"{delta['mean']:.4f} ± {delta['95ci_half_width']:.4f}"
+        )
+        print(f"  RL Action Dist        : {runtime['action_distribution_pct']}")
+    if "scenarios" in rl_trace_metrics:
+        print("  Synchronized trace suite:")
+        for scenario, evaluation in rl_trace_metrics["scenarios"].items():
+            runtime = evaluation["policies"]["dqn_runtime"]
+            delta = runtime["paired_reward_delta_vs_greedy"]
+            print(
+                f"    {scenario:<16}: reward "
+                f"{runtime['mean_episode_reward']:.4f} ± "
+                f"{runtime['reward_95ci_half_width']:.4f}; "
+                f"Δgreedy {delta['mean']:+.4f}"
+            )
+    if "scenarios" in rl_ns3_metrics:
+        print("  Packet-level ns-3 suite:")
+        for scenario, evaluation in rl_ns3_metrics["scenarios"].items():
+            runtime = evaluation["policies"]["dqn_runtime"]
+            delta = runtime["paired_reward_delta_vs_greedy"]
+            print(
+                f"    {scenario:<16}: reward "
+                f"{runtime['mean_episode_reward']:.4f} ± "
+                f"{runtime['reward_95ci_half_width']:.4f}; "
+                f"Δgreedy {delta['mean']:+.4f}"
+            )
     if baseline_metrics:
         print(f"  Baseline Random F1    : {baseline_metrics.get('random_f1', 'N/A'):.4f}")
         print(f"  Baseline RSSI F1      : {baseline_metrics.get('rssi_thresh_f1') or 'N/A'}")

@@ -32,12 +32,17 @@ from webob import Response
 import json
 
 from sdn.flow_manager import install_fallback_rule, install_flow, select_safe_path
+from sdn.route_contract import (
+    VALID_DRONES,
+    VALID_PATHS,
+    action_id_for_path,
+    normalize_installed_path,
+    validate_route_action,
+)
 
 logger = logging.getLogger(__name__)
 
 _KNOWN_DATAPATHS: dict = {}  # dpid → datapath object
-VALID_PATHS = {"direct", "satellite", "mesh", "fallback"}
-VALID_DRONES = {"drone_1", "drone_2", "drone_3"}
 _DEVELOPMENT_SDN_TOKEN = "antijam-development-sdn-token"
 SDN_API_TOKEN = os.getenv("AJ_SDN_TOKEN", _DEVELOPMENT_SDN_TOKEN)
 if os.getenv("AJ_ENV", "development").lower() in {"production", "prod"} and (
@@ -94,15 +99,22 @@ class AntiJammingController(app_manager.RyuApp):
             logger.error("No switches connected! Cannot install flow rules.")
             return {"status": "error", "reason": "no_switches"}
 
-        safe_path = select_safe_path(path_name)
+        controller_path = select_safe_path(path_name)
+        installed_path = normalize_installed_path(controller_path)
 
         for dpid, datapath in _KNOWN_DATAPATHS.items():
-            install_flow(datapath, safe_path)
+            install_flow(datapath, installed_path, drone_id)
 
-        logger.info("Routing applied: path=%s | switches=%d", safe_path, len(_KNOWN_DATAPATHS))
+        logger.info(
+            "Routing applied: drone=%s | path=%s | switches=%d",
+            drone_id,
+            installed_path,
+            len(_KNOWN_DATAPATHS),
+        )
         return {
             "status": "ok",
-            "installed_path": safe_path,
+            "installed_path": installed_path,
+            "installed_action_id": action_id_for_path(installed_path),
             "switches_updated": len(_KNOWN_DATAPATHS),
         }
 
@@ -143,11 +155,20 @@ class SDNRestController(ControllerBase):
 
         path_name = body.get("path_name")
         drone_id = body.get("drone_id", "drone_1")
+        action_id = body.get("action_id")
         if path_name not in VALID_PATHS or drone_id not in VALID_DRONES:
             return Response(
                 status=422,
                 content_type="application/json",
                 body=json.dumps({"error": "Invalid path_name or drone_id"}).encode(),
+            )
+        try:
+            validate_route_action(path_name, action_id)
+        except ValueError as exc:
+            return Response(
+                status=422,
+                content_type="application/json",
+                body=json.dumps({"error": str(exc)}).encode(),
             )
 
         result = self.controller.apply_routing_decision(path_name, drone_id)

@@ -19,7 +19,8 @@ Reward Function:
 
 Classes:
   DronePathEnv          — Synthetic random RF state (upgraded to 14-dim)
-  RealDataDronePathEnv  — Replays preprocessed test.csv (upgraded to 14-dim)
+  SynchronizedTraceDronePathEnv — Strict, versioned three-path CSV replay
+  RealDataDronePathEnv  — Compatibility name for synchronized trace replay
 """
 
 from __future__ import annotations
@@ -33,20 +34,25 @@ import numpy as np
 import pandas as pd
 import yaml
 
+from rl.reward import (
+    MAX_LATENCY_MS,
+    PATH_NAMES as SHARED_PATH_NAMES,
+    REWARD_DEFINITION,
+    RewardBreakdown,
+    compute_routing_reward,
+)
+from rl.traces import load_synchronized_trace, trace_fingerprint
+
 logger = logging.getLogger(__name__)
 
 _BASE = Path(__file__).parent.parent
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
 _ENV_CFG = _RL_CFG["environment"]
-_REW_CFG = _RL_CFG["reward"]
 
-PATH_NAMES = ["direct", "satellite", "mesh"]
-
-# Normalised energy cost per path proxy: direct < satellite < mesh
-_ENERGY_COST = np.array([0.2, 0.6, 0.9], dtype=np.float32)
+PATH_NAMES = list(SHARED_PATH_NAMES)
 
 # Max latency per path for normalisation (ms)
-_MAX_LATENCY = np.array([100.0, 300.0, 600.0], dtype=np.float32)
+_MAX_LATENCY = np.array(MAX_LATENCY_MS, dtype=np.float32)
 
 
 # ---------------------------------------------------------------------------
@@ -70,13 +76,6 @@ class DronePathEnv(gym.Env):
         self.obs_dim = _ENV_CFG["obs_dim"]          # 14
         self.num_paths = _ENV_CFG["num_paths"]      # 3
 
-        # Reward weights
-        self.w1 = float(_REW_CFG["w_throughput"])
-        self.w2 = float(_REW_CFG["w_delay"])
-        self.w3 = float(_REW_CFG["w_energy"])
-        self.w4 = float(_REW_CFG["w_loss"])
-        self.w_switch = float(_REW_CFG.get("w_switch", 0.15))
-
         # Spaces
         self.observation_space = gym.spaces.Box(
             low=np.array([0.0] * 12 + [-np.inf, 0.0], dtype=np.float32),
@@ -89,7 +88,7 @@ class DronePathEnv(gym.Env):
         self._path_scores: np.ndarray = np.zeros(3, dtype=np.float32)      # threat scores
         self._path_latencies: np.ndarray = np.zeros(3, dtype=np.float32)   # normalised latencies
         self._path_losses: np.ndarray = np.zeros(3, dtype=np.float32)      # normalised losses
-        self._prev_action: int = 0
+        self._prev_action: Optional[int] = None
         self._prev_reward: float = 0.0
         self._step: int = 0
         self._jammed_paths: np.ndarray = np.zeros(3, dtype=bool)
@@ -97,7 +96,8 @@ class DronePathEnv(gym.Env):
     def _build_obs(self) -> np.ndarray:
         """Assemble the 14-dimensional state observation."""
         prev_action_onehot = np.zeros(3, dtype=np.float32)
-        prev_action_onehot[self._prev_action] = 1.0
+        if self._prev_action is not None:
+            prev_action_onehot[self._prev_action] = 1.0
 
         step_norm = np.array([self._step / self.max_steps], dtype=np.float32)
 
@@ -122,7 +122,10 @@ class DronePathEnv(gym.Env):
             self._path_latencies[i] = float(self._get_latency_norm(i, self._path_scores[i]))
             self._path_losses[i] = float(np.clip(self._path_scores[i] * 0.8 + self.np_random.uniform(0.0, 0.05), 0.0, 1.0))
 
-        self._prev_action = 0
+        # An all-zero action vector explicitly represents "no previous route".
+        # Encoding Direct here would disagree with the first-step reward, which
+        # correctly has no switching penalty.
+        self._prev_action = None
         self._prev_reward = 0.0
         self._step = 0
         self._jammed_paths = np.zeros(3, dtype=bool)
@@ -133,31 +136,41 @@ class DronePathEnv(gym.Env):
     def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
         assert self.action_space.contains(action), f"Invalid action {action}"
 
-        # Evolve RF state (only in default training/synthetic mode)
-        self._evolve_rf_state()
-
-        # Compute reward
-        reward = self._compute_reward(action)
+        # Score the state the policy actually observed. Advancing RF conditions
+        # first would assign credit using an unseen, randomly sampled state.
+        reward_breakdown = self._reward_breakdown(action)
+        reward = reward_breakdown.total
+        decision_path_scores = self._path_scores.copy()
+        decision_path_latencies = self._path_latencies.copy()
+        decision_path_losses = self._path_losses.copy()
+        decision_jammed_paths = self._jammed_paths.copy()
 
         # Update environment state trackers
         self._prev_action = action
         self._prev_reward = reward
         self._step += 1
 
+        # Evolve RF state after scoring to produce the next observation.
+        self._evolve_rf_state()
         obs = self._build_obs()
         terminated = self._step >= self.max_steps
         info = {
             "path_name": PATH_NAMES[action],
             "reward": reward,
-            "jammed_paths": self._jammed_paths.tolist(),
-            "path_scores": self._path_scores.tolist(),
-            "latencies": self._path_latencies.tolist(),
-            "packet_losses": self._path_losses.tolist(),
+            "reward_definition": REWARD_DEFINITION,
+            "reward_components": reward_breakdown.as_dict(),
+            "jammed_paths": decision_jammed_paths.tolist(),
+            "path_scores": decision_path_scores.tolist(),
+            "latencies": decision_path_latencies.tolist(),
+            "packet_losses": decision_path_losses.tolist(),
+            "next_path_scores": self._path_scores.tolist(),
+            "next_latencies": self._path_latencies.tolist(),
+            "next_packet_losses": self._path_losses.tolist(),
             "step": self._step,
         }
 
         if self.render_mode == "human":
-            self._render_human(action, reward)
+            self._render_human(action, reward, decision_path_scores)
 
         return obs, reward, terminated, False, info
 
@@ -193,62 +206,70 @@ class DronePathEnv(gym.Env):
         return float(np.clip(base_lat / _MAX_LATENCY[path_idx], 0.0, 1.0))
 
     def _compute_reward(self, action: int) -> float:
-        """
-        reward = w1*throughput_norm - w2*delay_norm - w3*energy_norm - w4*loss_norm - w_switch*I(switch)
-        """
-        threat = float(self._path_scores[action])
+        """Compatibility wrapper returning the shared reward total."""
+        return self._reward_breakdown(action).total
 
-        # QoS components
-        throughput_norm = 1.0 - threat
-        delay_norm = float(self._path_latencies[action])
-        energy_norm = float(_ENERGY_COST[action])
-        loss_norm = float(self._path_losses[action])
-
-        # Base reward
-        reward = (
-            self.w1 * throughput_norm
-            - self.w2 * delay_norm
-            - self.w3 * energy_norm
-            - self.w4 * loss_norm
+    def _reward_breakdown(self, action: int) -> RewardBreakdown:
+        return compute_routing_reward(
+            action,
+            self._path_scores,
+            self._path_latencies,
+            self._path_losses,
+            previous_action=self._prev_action,
         )
 
-        # Switching penalty (prevents high-frequency route oscillation)
-        if self._step > 0 and action != self._prev_action:
-            reward -= self.w_switch
-
-        return float(reward)
-
-    def _render_human(self, action: int, reward: float) -> None:
+    def _render_human(
+        self,
+        action: int,
+        reward: float,
+        path_scores: Optional[np.ndarray] = None,
+    ) -> None:
+        displayed_scores = self._path_scores if path_scores is None else path_scores
         print(
             f"[ENV] step={self._step:4d} | "
-            f"threats=[{','.join(f'{s:.2f}' for s in self._path_scores)}] | "
+            f"threats=[{','.join(f'{s:.2f}' for s in displayed_scores)}] | "
             f"action={PATH_NAMES[action]:9s} | reward={reward:+.3f}"
         )
 
 
 # ---------------------------------------------------------------------------
-# Real Data Drone Path Environment (Replay Mode)
+# Synchronized Three-Path Trace Environment (Replay Mode)
 # ---------------------------------------------------------------------------
 
-class RealDataDronePathEnv(DronePathEnv):
+class SynchronizedTraceDronePathEnv(DronePathEnv):
     """
-    Replays RF characteristics from a real preprocessed dataset CSV,
-    scaled to the 14-dimensional state representation.
+    Replays complete direct/satellite/mesh state from a versioned trace CSV.
+
+    Unlike the historical single-row adapter, this environment never invents
+    route variants.  Every observation field comes from the same recorded or
+    generated timestep, and actions do not affect subsequent trace rows.
     """
 
     def __init__(
         self,
         csv_path: Optional[Path] = None,
         render_mode: Optional[str] = None,
+        *,
+        cycle_episodes: bool = False,
+        scenario: Optional[str] = None,
     ):
         super().__init__(render_mode=render_mode)
         if csv_path is None:
-            configured = _RL_CFG.get("paths", {}).get("real_data_csv", "datasets/processed/test.csv")
+            configured = _RL_CFG.get("paths", {}).get(
+                "synchronized_trace_csv",
+                "datasets/processed/rl_trace_iid_train.csv",
+            )
             csv_path = _BASE / configured
-        self._csv_path = csv_path
+        self._csv_path = Path(csv_path)
         self._df: Optional[pd.DataFrame] = None
-        self._row_idx: int = 0
-        self._window_start: int = 0
+        self._episode_rows: Optional[pd.DataFrame] = None
+        self._episode_ids: tuple[str, ...] = ()
+        self._episode_id: Optional[str] = None
+        self._episode_length: int = 0
+        self._trace_fingerprint: Optional[str] = None
+        self._cycle_episodes = bool(cycle_episodes)
+        self._scenario_filter = scenario
+        self._next_episode_index = 0
         self._loaded = False
 
     def _load_data(self) -> None:
@@ -256,17 +277,27 @@ class RealDataDronePathEnv(DronePathEnv):
             return
         if not self._csv_path.exists():
             raise FileNotFoundError(
-                f"Real data CSV not found: {self._csv_path}\n"
-                "Run: python datasets/preprocess.py"
+                f"Synchronized RL trace not found: {self._csv_path}\n"
+                "Run: python -m rl.traces --scenario iid"
             )
-        self._df = pd.read_csv(self._csv_path)
-        required = ["rssi", "pdr", "sinr", "latency", "packet_loss", "jammed"]
-        available = [c for c in required if c in self._df.columns]
-        self._df = self._df[available].dropna().reset_index(drop=True)
+        self._df = load_synchronized_trace(self._csv_path)
+        if self._scenario_filter is not None:
+            self._df = self._df[
+                self._df["scenario"] == self._scenario_filter
+            ].reset_index(drop=True)
+            if self._df.empty:
+                raise ValueError(
+                    f"trace {self._csv_path} does not contain scenario "
+                    f"{self._scenario_filter!r}"
+                )
+        self._episode_ids = tuple(self._df["episode_id"].drop_duplicates())
+        self._trace_fingerprint = trace_fingerprint(self._df)
         self._loaded = True
         logger.info(
-            "RealDataDronePathEnv loaded %d rows from %s",
-            len(self._df), self._csv_path.name,
+            "SynchronizedTraceDronePathEnv loaded %d rows across %d episodes from %s",
+            len(self._df),
+            len(self._episode_ids),
+            self._csv_path.name,
         )
 
     def reset(
@@ -275,44 +306,96 @@ class RealDataDronePathEnv(DronePathEnv):
         self._load_data()
         super().reset(seed=seed, options=options)
 
-        n = len(self._df)
-        max_start = max(0, n - self.max_steps - 1)
-        self._window_start = int(self.np_random.integers(0, max_start + 1))
-        self._row_idx = self._window_start
+        requested_episode = (options or {}).get("episode_id")
+        if requested_episode is not None:
+            requested_episode = str(requested_episode)
+            if requested_episode not in self._episode_ids:
+                raise ValueError(f"unknown trace episode_id {requested_episode!r}")
+            self._episode_id = requested_episode
+        else:
+            # Consecutive explicit seeds traverse each episode once before
+            # repeating, which makes paired evaluation complete and auditable.
+            # Unseeded training resets continue to sample from Gym's RNG.
+            if seed is not None:
+                selected_index = int(seed) % len(self._episode_ids)
+                self._next_episode_index = (
+                    selected_index + 1
+                ) % len(self._episode_ids)
+            elif self._cycle_episodes:
+                selected_index = self._next_episode_index
+                self._next_episode_index = (
+                    self._next_episode_index + 1
+                ) % len(self._episode_ids)
+            else:
+                selected_index = int(self.np_random.integers(0, len(self._episode_ids)))
+            self._episode_id = self._episode_ids[selected_index]
+
+        assert self._df is not None
+        self._episode_rows = self._df[
+            self._df["episode_id"] == self._episode_id
+        ].reset_index(drop=True)
+        self._episode_length = min(len(self._episode_rows), self.max_steps)
         self._step = 0
-
-        self._apply_real_row()
+        self._apply_trace_step(0)
         obs = self._build_obs()
-        return obs, {}
+        first_row = self._episode_rows.iloc[0]
+        return obs, {
+            "episode_id": self._episode_id,
+            "scenario": str(first_row["scenario"]),
+            "trace_source": str(first_row["source"]),
+            "trace_generation_seed": int(first_row["generation_seed"]),
+            "trace_fingerprint": self._trace_fingerprint,
+            "episode_steps": self._episode_length,
+        }
 
-    def _apply_real_row(self) -> None:
-        """Read and scale current CSV row to 14-dim observation fields."""
-        if self._df is None or self._row_idx >= len(self._df):
-            self._row_idx = self._window_start
-
-        row = self._df.iloc[self._row_idx]
-        jammed_val = float(row.get("jammed", 0))
-        sinr_norm = float(row.get("sinr", 0.5))
-
-        base_threat = jammed_val * (1.0 - sinr_norm) + (1.0 - jammed_val) * (sinr_norm * 0.1)
-
-        # Distribute threat and link features with small random path variations
-        noise = self.np_random.uniform(-0.05, 0.05, size=3).astype(np.float32)
-        self._path_scores = np.clip(np.array([base_threat] * 3, dtype=np.float32) + noise, 0.0, 1.0)
-        self._jammed_paths = self._path_scores > 0.5
-
-        # Latencies & Packet losses from dataset
-        lat_val = float(row.get("latency", 0.2))
-        loss_val = float(row.get("packet_loss", 0.1))
-
-        self._path_latencies = np.clip(np.array([lat_val] * 3, dtype=np.float32) + noise * 0.1, 0.0, 1.0)
-        self._path_losses = np.clip(np.array([loss_val] * 3, dtype=np.float32) + noise * 0.1, 0.0, 1.0)
-
-        self._row_idx += 1
+    def _apply_trace_step(self, trace_step: int) -> None:
+        """Load one synchronized row without interpolation or random variation."""
+        if self._episode_rows is None or trace_step >= self._episode_length:
+            return
+        row = self._episode_rows.iloc[trace_step]
+        self._path_scores = np.asarray(
+            [row[f"{path_name}_threat_score"] for path_name in PATH_NAMES],
+            dtype=np.float32,
+        )
+        self._path_latencies = np.asarray(
+            [row[f"{path_name}_latency_norm"] for path_name in PATH_NAMES],
+            dtype=np.float32,
+        )
+        self._path_losses = np.asarray(
+            [row[f"{path_name}_packet_loss"] for path_name in PATH_NAMES],
+            dtype=np.float32,
+        )
+        self._jammed_paths = np.asarray(
+            [bool(row[f"{path_name}_jammed"]) for path_name in PATH_NAMES],
+            dtype=bool,
+        )
 
     def _evolve_rf_state(self) -> None:
-        """Override evolve method to draw next row from preprocessed dataset."""
-        self._apply_real_row()
+        """Advance to the next synchronized row after scoring the current one."""
+        self._apply_trace_step(self._step)
+
+    def step(self, action: int) -> Tuple[np.ndarray, float, bool, bool, dict]:
+        observation, reward, terminated, truncated, info = super().step(action)
+        terminated = terminated or self._step >= self._episode_length
+        assert self._episode_rows is not None
+        decision_row = self._episode_rows.iloc[self._step - 1]
+        info.update({
+            "episode_id": self._episode_id,
+            "scenario": str(decision_row["scenario"]),
+            "trace_source": str(decision_row["source"]),
+            "trace_generation_seed": int(decision_row["generation_seed"]),
+            "trace_fingerprint": self._trace_fingerprint,
+            "trace_step": int(decision_row["step"]),
+        })
+        return observation, reward, terminated, truncated, info
+
+
+class RealDataDronePathEnv(SynchronizedTraceDronePathEnv):
+    """Backward-compatible name for strict synchronized trace replay.
+
+    The name is retained for imports only.  The environment no longer accepts
+    the single-link FL ``test.csv`` or synthesizes route variants from it.
+    """
 
 
 # ---------------------------------------------------------------------------

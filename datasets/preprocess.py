@@ -42,7 +42,7 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
+import yaml
 
 try:
     import rarfile
@@ -64,11 +64,34 @@ logger = logging.getLogger(__name__)
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
 _BASE    = Path(__file__).parent.parent
+sys.path.insert(0, str(_BASE))
+
+from fl.data import split_by_sequence_group
+
 _PROC    = _BASE / "datasets" / "processed"
 _PROC.mkdir(parents=True, exist_ok=True)
 
-RADIOML_HDF5  = _BASE / "RadioML 2018.01A " / "GOLD_XYZ_OSC.0001_1024.hdf5"
-DRONERF_ROOT  = _BASE / "DroneRF"
+_FL_CFG = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
+_DATA_CFG = _FL_CFG.get("data", {})
+_SEQUENCE_LEN = int(_FL_CFG["model"]["sequence_len"])
+
+_RADIOML_CANDIDATES = [
+    _BASE / "datasets" / "raw" / "GOLD_XYZ_OSC.0001_1024.hdf5",
+    _BASE / "RadioML 2018.01A" / "GOLD_XYZ_OSC.0001_1024.hdf5",
+    _BASE / "RadioML 2018.01A " / "GOLD_XYZ_OSC.0001_1024.hdf5",
+]
+RADIOML_HDF5 = next(
+    (candidate for candidate in _RADIOML_CANDIDATES if candidate.exists()),
+    _RADIOML_CANDIDATES[0],
+)
+_DRONERF_CANDIDATES = [
+    _BASE / "datasets" / "raw" / "DroneRF",
+    _BASE / "DroneRF",
+]
+DRONERF_ROOT = next(
+    (candidate for candidate in _DRONERF_CANDIDATES if candidate.exists()),
+    _DRONERF_CANDIDATES[0],
+)
 
 # ── Constants ─────────────────────────────────────────────────────────────────
 ATTACK_TYPES    = ["none", "barrage", "sweep", "spot", "unknown"]
@@ -181,6 +204,11 @@ def load_radioml(max_samples: int = 300_000) -> Optional[pd.DataFrame]:
         "path":        path_cycle,
         "drone_id":    drone_ids,
         "source":      "radioml",
+        "sequence_group": [
+            f"radioml:mod={int(modulation)}:snr={int(snr_value)}"
+            for modulation, snr_value in zip(mod_class, snr)
+        ],
+        "sequence_index": idx.astype(np.int64),
     })
     logger.info("  RadioML → %d rows, jammed=%.1f%%", len(df), 100*df["jammed"].mean())
     return df
@@ -334,7 +362,10 @@ def load_dronerf(
                     logger.debug("  Skipping %s: %s", csv_name, e)
                     continue
 
-                for line in text_lines:
+                sequence_group = (
+                    f"dronerf:{rar_path.relative_to(DRONERF_ROOT).as_posix()}:{csv_name}"
+                )
+                for line_index, line in enumerate(text_lines):
                     # Parse numeric values, skipping separator/header tokens
                     raw_vals = line.strip().split(",")
                     vals = []
@@ -370,6 +401,8 @@ def load_dronerf(
                             "path":        path_name,
                             "drone_id":    f"drone_{(len(records) % 3) + 1}",
                             "source":      "dronerf",
+                            "sequence_group": sequence_group,
+                            "sequence_index": line_index * 100 + w,
                         })
 
             rf.close()
@@ -423,8 +456,30 @@ def load_synthetic_fallback() -> pd.DataFrame:
     df = pd.read_csv(path)
     if "source" not in df.columns:
         df["source"] = "synthetic"
+    df = ensure_sequence_metadata(df)
     logger.info("Synthetic fallback → %d rows, jammed=%.1f%%", len(df), 100*df["jammed"].mean())
     return df
+
+
+def ensure_sequence_metadata(df: pd.DataFrame) -> pd.DataFrame:
+    """Backfill deterministic trace provenance for sources without captures."""
+    result = df.copy().reset_index(drop=True)
+    trace_length = max(_SEQUENCE_LEN * 5, _SEQUENCE_LEN)
+    if "sequence_group" not in result.columns:
+        sources = (
+            result["source"].astype(str)
+            if "source" in result.columns
+            else pd.Series(["unknown"] * len(result))
+        )
+        result["sequence_group"] = [
+            f"{source}:trace={row_index // trace_length}"
+            for row_index, source in enumerate(sources)
+        ]
+    if "sequence_index" not in result.columns:
+        result["sequence_index"] = result.groupby(
+            "sequence_group", sort=False, dropna=False
+        ).cumcount()
+    return result
 
 
 # ── Normalisation ─────────────────────────────────────────────────────────────
@@ -494,9 +549,8 @@ def preprocess(
         dfs.append(load_synthetic_fallback())
 
     # ── Merge & clean ──────────────────────────────────────────────────────
-    df_all = pd.concat(dfs, ignore_index=True)
+    df_all = ensure_sequence_metadata(pd.concat(dfs, ignore_index=True))
     df_all = df_all.dropna(subset=FEATURE_COLS + ["jammed"]).reset_index(drop=True)
-    df_all = df_all.sample(frac=1, random_state=42).reset_index(drop=True)
 
     sources = df_all["source"].unique().tolist() if "source" in df_all.columns else ["?"]
     logger.info(
@@ -512,10 +566,8 @@ def preprocess(
         print(json.dumps(stats, indent=2))
         return
 
-    # Save stats (raw values for reference)
+    # The split audit is added before this snapshot is written below.
     stats_path = _PROC / "dataset_stats.json"
-    stats_path.write_text(json.dumps(stats, indent=2))
-    logger.info("Stats saved → %s", stats_path)
 
     # ── Encode attack class ────────────────────────────────────────────────
     atk_map = {a: i for i, a in enumerate(ATTACK_TYPES)}
@@ -526,10 +578,29 @@ def preprocess(
     # ── Normalise features to [0, 1] ──────────────────────────────────────
     df_all = normalise_features(df_all)
 
-    # ── Stratified train / test split (80 / 20) ───────────────────────────
-    df_train, df_test = train_test_split(
-        df_all, test_size=0.2, random_state=42, stratify=df_all["jammed"],
+    # ── Group-disjoint train / test split ─────────────────────────────────
+    # Entire source captures/traces stay in one side, preventing overlapping
+    # sliding windows or adjacent frames from leaking into evaluation.
+    df_train, df_test = split_by_sequence_group(
+        df_all,
+        test_fraction=float(_DATA_CFG.get("test_fraction", 0.2)),
+        random_state=int(_DATA_CFG.get("split_seed", 42)),
     )
+
+    train_groups = set(df_train["sequence_group"].astype(str))
+    test_groups = set(df_test["sequence_group"].astype(str))
+    stats["temporal_contract"] = {
+        "sequence_length": _SEQUENCE_LEN,
+        "sequence_stride": int(_DATA_CFG.get("sequence_stride", 1)),
+        "group_column": "sequence_group",
+        "order_column": "sequence_index",
+        "train_groups": len(train_groups),
+        "test_groups": len(test_groups),
+        "group_overlap": len(train_groups & test_groups),
+        "test_fraction_rows": len(df_test) / max(len(df_all), 1),
+    }
+    stats_path.write_text(json.dumps(stats, indent=2))
+    logger.info("Stats and split audit saved → %s", stats_path)
 
     df_test.reset_index(drop=True).to_csv(_PROC / "test.csv", index=False)
     logger.info("Test set → %s  (%d rows)", _PROC / "test.csv", len(df_test))
@@ -538,15 +609,11 @@ def preprocess(
     for i, drone_id in enumerate(["drone_1", "drone_2", "drone_3"]):
         df_drone = df_train[df_train["drone_id"] == drone_id].copy()
 
-        # Pad to ~equal size if this partition is short
-        target = len(df_train) // 3
-        if len(df_drone) < target:
-            extra = (df_train[df_train["drone_id"] != drone_id]
-                     .sample(n=min(target - len(df_drone), len(df_train)),
-                             random_state=i + 10))
-            df_drone = pd.concat([df_drone, extra], ignore_index=True)
-
-        df_drone = df_drone.sample(frac=1, random_state=i*7).reset_index(drop=True)
+        # Preserve client ownership and temporal order. Do not copy rows from
+        # another drone merely to equalize partition sizes.
+        df_drone = df_drone.sort_values(
+            ["sequence_group", "sequence_index"], kind="stable"
+        ).reset_index(drop=True)
         out = _PROC / f"drone_{i+1}_train.csv"
         df_drone.to_csv(out, index=False)
         logger.info(

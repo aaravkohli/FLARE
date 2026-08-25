@@ -1,7 +1,7 @@
 {
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "RoutingDecision",
-  "description": "RL agent output: selected path and associated metrics",
+  "description": "Routing output: executable path, outcome metrics, and optional runtime-constraint state",
   "type": "object",
   "required": ["action_id", "path_name", "reward", "recovery_ms"],
   "additionalProperties": false,
@@ -16,6 +16,44 @@
       "type": "string",
       "enum": ["direct", "satellite", "mesh"],
       "description": "Selected communication path name"
+    },
+    "original_action_id": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2,
+      "description": "Action emitted by the learned/greedy policy before the runtime constraint"
+    },
+    "safety_override": {
+      "type": "boolean",
+      "description": "True when the executable action differs from original_action_id"
+    },
+    "safe_action_mask": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "items": {"type": "boolean"},
+      "description": "Safe status for direct, satellite, and mesh at the configured threshold"
+    },
+    "no_safe_route": {
+      "type": "boolean",
+      "description": "True when all three executable routes exceed the threat threshold"
+    },
+    "constraint_reason": {
+      "type": ["string", "null"],
+      "enum": [
+        "policy_route_above_threshold",
+        "all_routes_above_threshold",
+        null
+      ]
+    },
+    "safety_threshold": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1
+    },
+    "all_unsafe_behavior": {
+      "type": "string",
+      "enum": ["least_risk_route"]
     },
     "reward": {
       "type": "number",

@@ -23,12 +23,30 @@ port_map:
   mesh: 3
   fallback: 3    # fallback uses mesh port
 
-# Flow rule priorities (higher = preferred by switch)
+# Historical dynamic priorities are retained so the controller can delete rules
+# written by older versions. New dynamic routes all use the maximum value (100),
+# preventing path choice from leaving an older higher-priority route active.
 flow_priority:
   direct: 100
   satellite: 90
   mesh: 80
   fallback: 10   # lowest priority table-miss rule
+
+# Each drone is matched independently at the ingress/egress switches. The
+# access ports correspond to sdn/mininet_topo.py.
+drones:
+  drone_1:
+    index: 1
+    mac: "00:00:00:00:00:02"
+    access_port: 4
+  drone_2:
+    index: 2
+    mac: "00:00:00:00:00:03"
+    access_port: 5
+  drone_3:
+    index: 3
+    mac: "00:00:00:00:00:04"
+    access_port: 6
 
 mock:
   log_to_file: true

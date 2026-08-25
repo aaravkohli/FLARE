@@ -190,6 +190,7 @@ def generate_metrics(
     return {
         "drone_id": drone_id,
         "timestamp": time.time(),
+        "source": "synthetic",
         "paths": paths_data,
         "gps": {
             "latitude": round(lat, 6),
@@ -211,24 +212,54 @@ def generate_swarm_metrics() -> dict:
     }
 
 
-def metrics_to_tensor(metrics: dict, seq_len: int = 10) -> list:
+def _normalised_path_features(path_data: dict) -> np.ndarray:
+    features = np.array([
+        path_data["rssi"],
+        path_data["pdr"],
+        path_data["sinr"],
+        path_data["latency"],
+        path_data["packet_loss"],
+    ], dtype=np.float32)
+    mins = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
+    maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
+    return np.clip((features - mins) / (maxs - mins + 1e-8), 0.0, 1.0)
+
+
+def metrics_to_tensor(
+    metrics: dict,
+    seq_len: int = 10,
+    history: Optional[List[dict]] = None,
+) -> list:
+    """Convert chronological telemetry snapshots into one sequence per path.
+
+    ``history`` must be oldest-first and include the current snapshot. During
+    startup, the earliest available observation is left-padded until the rolling
+    buffer reaches ``seq_len``; subsequent calls contain genuine measurements.
+    Paths are returned in the canonical direct/satellite/mesh order even if a
+    live sensor supplies a different list order.
+    """
+    if seq_len < 1:
+        raise ValueError("seq_len must be at least 1")
+    snapshots = list(history[-seq_len:]) if history else [metrics]
+    if not snapshots:
+        snapshots = [metrics]
+
     result = []
-    for path_data in metrics["paths"]:
-        feats = np.array([
-            path_data["rssi"],
-            path_data["pdr"],
-            path_data["sinr"],
-            path_data["latency"],
-            path_data["packet_loss"],
-        ], dtype=np.float32)
+    for path_name in PATHS:
+        frames = []
+        for snapshot in snapshots:
+            paths_by_name = {
+                path_data.get("path_id"): path_data
+                for path_data in snapshot.get("paths", [])
+            }
+            path_data = paths_by_name.get(path_name)
+            if path_data is None:
+                raise ValueError(f"telemetry snapshot is missing path {path_name!r}")
+            frames.append(_normalised_path_features(path_data))
 
-        mins = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
-        maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
-        feats = (feats - mins) / (maxs - mins + 1e-8)
-        feats = np.clip(feats, 0.0, 1.0)
-
-        seq = np.tile(feats, (seq_len, 1)).astype(np.float32)
-        result.append(seq)
+        if len(frames) < seq_len:
+            frames = [frames[0]] * (seq_len - len(frames)) + frames
+        result.append(np.stack(frames).astype(np.float32))
     return result
 
 

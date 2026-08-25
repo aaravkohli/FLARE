@@ -41,13 +41,7 @@ jobs:
       - name: Run regression suite
         env:
           AJ_ENV: test
-        run: >-
-          python -m pytest -q
-          tests/test_api_client.py
-          tests/test_phase1_regressions.py
-          tests/test_phase2_security.py
-          tests/test_phase3_ml_correctness.py
-          tests/test_phase4_performance.py
+        run: python -m pytest -q
 
   frontend:
     name: Frontend lint and build
@@ -99,5 +93,6 @@ jobs:
           AJ_CORS_ORIGINS: https://example.com
           AJ_SDN_TOKEN: ci-sdn-token-at-least-24-characters
           AJ_SENSOR_API_URL: http://sensor.example:9000
+          PROCESSED_DATA_DIR: ./datasets/processed
           VITE_API_BASE_URL: https://api.example.com
         run: docker compose -f docker-compose.prod.yml config --quiet

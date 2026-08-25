@@ -39,7 +39,6 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import flwr as fl
 import numpy as np
-import pandas as pd
 import torch
 import yaml
 from flwr.common import (
@@ -52,6 +51,8 @@ from flwr.common import (
 from flwr.server.client_proxy import ClientProxy
 
 from fl.aggregator import secure_aggregate
+from fl.checkpoint import write_fl_checkpoint_metadata
+from fl.data import build_temporal_windows
 from fl.model import build_model, set_model_weights, get_model_weights
 
 # ---------------------------------------------------------------------------
@@ -72,6 +73,7 @@ _SEL_CFG = _FL_CFG.get("client_selection", {})
 _ASYNC_CFG = _FL_CFG.get("async_fl", {})
 _PERSONA_CFG = _FL_CFG.get("personalization", {})
 _KD_CFG = _FL_CFG.get("distillation", {})
+_DATA_CFG = _FL_CFG.get("data", {})
 
 _PROC = _BASE / "datasets" / "processed"
 _RESULTS = _BASE / "results"
@@ -413,7 +415,7 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             self._metrics.update_selection(self._selector.summary())
 
         # Step 8: Save model + evaluate
-        model = self._save_model(aggregated)
+        model = self._save_model(aggregated, server_round)
         eval_metrics: dict = {}
         if model is not None:
             eval_metrics = self._evaluate_on_test_set(model, server_round)
@@ -454,13 +456,24 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
 
         return ndarrays_to_parameters(aggregated), flower_metrics
 
-    def _save_model(self, weights: List[np.ndarray]) -> Optional[object]:
+    def _save_model(
+        self,
+        weights: List[np.ndarray],
+        server_round: int,
+    ) -> Optional[object]:
         """Save global model weights to fl_model.pth."""
         model = build_model(_MODEL_CFG)
         set_model_weights(model, weights)
         save_path = _BASE / _PATHS_CFG.get("model_save", "models/fl_model.pth")
         torch.save(model.state_dict(), save_path)
+        metadata_path = write_fl_checkpoint_metadata(
+            save_path,
+            model_config=_MODEL_CFG,
+            data_config=_DATA_CFG,
+            federation_round=server_round,
+        )
         logger.info("Global model saved → %s", save_path)
+        logger.info("Global model metadata saved → %s", metadata_path)
         return model
 
     def _evaluate_on_test_set(self, model, server_round: int) -> Dict[str, float]:
@@ -477,26 +490,19 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             from sklearn.metrics import f1_score, accuracy_score
             from torch.utils.data import DataLoader, TensorDataset
 
-            df = pd.read_csv(test_csv)
-            feature_cols = ["rssi", "pdr", "sinr", "latency", "packet_loss"]
-            df = df.dropna(subset=feature_cols + ["jammed"]).reset_index(drop=True)
+            import pandas as pd
 
-            seq_len = _MODEL_CFG["sequence_len"]
-            feats = df[feature_cols].values.astype("float32")
-            jammed = df["jammed"].values.astype("int8")
-            attack_col = "attack_class" if "attack_class" in df.columns else None
-
-            X_list, y_j_list, y_a_list = [], [], []
-            for i in range(len(feats)):
-                window = np.tile(feats[i], (seq_len, 1))
-                X_list.append(window)
-                y_j_list.append(jammed[i])
-                y_a_list.append(df[attack_col].values[i] if attack_col else 0)
-
-            if not X_list:
+            windows = build_temporal_windows(
+                pd.read_csv(test_csv),
+                _MODEL_CFG["sequence_len"],
+                stride=int(_DATA_CFG.get("sequence_stride", 1)),
+            )
+            if not len(windows):
                 return {}
 
-            X_t = torch.tensor(np.stack(X_list), dtype=torch.float32)
+            X_t = torch.tensor(windows.features, dtype=torch.float32)
+            y_j_list = windows.threat_labels[:, 0].astype(np.int8).tolist()
+            y_a_list = windows.attack_labels.tolist()
             y_j_t = torch.tensor(y_j_list, dtype=torch.float32)
             y_a_t = torch.tensor(y_a_list, dtype=torch.long)
 

@@ -3,16 +3,22 @@
   "title": "DroneRFMetrics",
   "description": "Per-drone RF metric snapshot across all 3 communication paths",
   "type": "object",
-  "required": ["drone_id", "timestamp", "paths"],
+  "required": ["drone_id", "timestamp", "source", "paths"],
   "additionalProperties": false,
   "properties": {
     "drone_id": {
       "type": "string",
+      "enum": ["drone_1", "drone_2", "drone_3"],
       "description": "Unique drone identifier"
     },
     "timestamp": {
       "type": "number",
       "description": "Unix epoch timestamp (seconds)"
+    },
+    "source": {
+      "type": "string",
+      "enum": ["synthetic", "live", "synthetic_fallback", "legacy_api_fallback"],
+      "description": "Provenance of this telemetry snapshot"
     },
     "paths": {
       "type": "array",
@@ -31,7 +37,7 @@
           },
           "rssi": {
             "type": "number",
-            "minimum": -120,
+            "minimum": -130,
             "maximum": 0,
             "description": "Received Signal Strength Indicator (dBm)"
           },
@@ -55,6 +61,32 @@
             "minimum": 0,
             "maximum": 1,
             "description": "Fraction of packets lost (0–1)"
+          }
+        }
+      }
+    },
+    "gps": {
+      "type": "object",
+      "required": ["latitude", "longitude", "drift_m"],
+      "additionalProperties": false,
+      "properties": {
+        "latitude": {"type": "number"},
+        "longitude": {"type": "number"},
+        "drift_m": {"type": "number", "minimum": 0}
+      }
+    },
+    "ew_status": {
+      "type": "object",
+      "required": ["active_attack", "jammed_paths"],
+      "additionalProperties": false,
+      "properties": {
+        "active_attack": {"type": ["string", "null"]},
+        "jammed_paths": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["direct", "satellite", "mesh"]
           }
         }
       }

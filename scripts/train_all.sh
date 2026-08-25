@@ -82,7 +82,7 @@ else
   if [ "$SYNTHETIC_ONLY" = true ]; then
     python datasets/preprocess.py --no-radioml --no-dronerf
   else
-    python datasets/preprocess.py --no-radioml
+    python datasets/preprocess.py
   fi
 fi
 
@@ -130,7 +130,19 @@ ok "FL training complete → models/fl_model.pth"
 
 # ── Step 4: RL Training ───────────────────────────────────────────────────────
 log "═══ STEP 4/5: RL Training ($RL_STEPS steps) ═══"
-python rl/train.py --timesteps "$RL_STEPS" --real-data
+python -m rl.traces \
+  --scenario iid \
+  --episodes 200 \
+  --steps 500 \
+  --seed 42 \
+  --output datasets/processed/rl_trace_iid_train.csv
+python -m rl.traces \
+  --scenario iid \
+  --episodes 50 \
+  --steps 500 \
+  --seed 42000 \
+  --output datasets/processed/rl_trace_iid_eval.csv
+python rl/train.py --timesteps "$RL_STEPS" --trace-data
 
 [ -f "models/rl_model.zip" ] || fail "RL model not saved."
 ok "RL training complete → models/rl_model.zip"

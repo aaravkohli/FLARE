@@ -4,9 +4,12 @@ environment:
   num_paths: 3
   obs_dim: 14
 paths:
+  final_model_save: models/rl_final_model.zip
   log_dir: logs/rl_tensorboard
   model_save: models/rl_model.zip
-  real_data_csv: datasets/processed/test.csv
+  ns3_trace_csv: datasets/processed/rl_trace_ns3.csv
+  synchronized_trace_csv: datasets/processed/rl_trace_iid_train.csv
+  synchronized_trace_eval_csv: datasets/processed/rl_trace_iid_eval.csv
   sac_model_save: models/rl_sac_model.pth
 reward:
   w_delay: 0.6
@@ -14,6 +17,12 @@ reward:
   w_loss: 0.8
   w_switch: 0.15
   w_throughput: 1.0
+safety:
+  # Scores above this value are not considered safe for normal routing.
+  threat_threshold: 0.8
+  # The SDN layer has no disconnect/hold action. Preserve connectivity via the
+  # lowest-threat route and expose the degraded state as no_safe_route=true.
+  all_unsafe_behavior: least_risk_route
 training:
   algo: dqn
   batch_size: 64
@@ -25,6 +34,9 @@ training:
   prioritized_replay: true
   prioritized_replay_alpha: 0.6
   prioritized_replay_beta0: 0.4
+  seed: 42
+  evaluation_episodes: 50
+  evaluation_seed: 42000
   sac:
     alpha_lr: 0.0003
     critic_lr: 0.0003

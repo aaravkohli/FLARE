@@ -55,14 +55,20 @@ interface TelemetryPayload {
     threat_level: string;
     reward: number;
     step: number;
+    no_safe_route?: boolean;
+    safety_override?: boolean;
+    constraint_reason?: string | null;
   };
   metrics: {
     drone_id: string;
     timestamp: number;
+    source: 'synthetic' | 'live' | 'synthetic_fallback' | 'legacy_api_fallback';
     paths: MetricDetail[];
     gps?: GpsInfo;
     ew_status?: EwStatus;
   };
+  event?: unknown;
+  telemetry_age_s?: number;
 }
 
 export interface ChartDataPoint {
@@ -97,6 +103,7 @@ function App() {
   const [threatLevel, setThreatLevel] = useState<string>('LOW');
   const [reward, setReward] = useState<number>(0.0);
   const [step, setStep] = useState<number>(0);
+  const [noSafeRoute, setNoSafeRoute] = useState<boolean>(false);
   const [systemMode, setSystemMode] = useState<string>('UNKNOWN');
   const [sdnController, setSdnController] = useState<string>('UNKNOWN');
 
@@ -136,6 +143,7 @@ function App() {
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<number | null>(null);
   const shouldReconnectRef = useRef(false);
+  const activeDroneRef = useRef(activeDrone);
 
   // Set up WebSocket connection when authenticated
   useEffect(() => {
@@ -238,11 +246,12 @@ function App() {
           const met = payload.metrics;
 
           // Check if payload matches active drone
-          if (met.drone_id === activeDrone) {
+          if (met.drone_id === activeDroneRef.current) {
             setActivePath(dec.path_name);
             setThreatLevel(dec.threat_level);
             setReward(dec.reward);
             setStep(dec.step);
+            setNoSafeRoute(Boolean(dec.no_safe_route));
 
             // Safely parse paths list from backend into direct/satellite/mesh key structure
             const pathsList = (met as any).paths || [];
@@ -431,6 +440,7 @@ function App() {
 
   // Switch Active Drone Selector
   const selectDrone = (drone: 'drone_1' | 'drone_2' | 'drone_3') => {
+    activeDroneRef.current = drone;
     setActiveDrone(drone);
     setHistory([]);
     addLog(`Swapped active interface to [${drone.toUpperCase()}]. Recalibrating gauges.`);
@@ -608,6 +618,21 @@ function App() {
       </header>
 
       {/* SWARM DRONE SELECTOR CARDS */}
+      {noSafeRoute && (
+        <div
+          role="alert"
+          className="mb-6 flex items-start gap-3 rounded-2xl border border-rose-500/40 bg-rose-950/30 p-4 text-rose-200"
+        >
+          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
+          <div>
+            <p className="text-sm font-bold uppercase tracking-wide">No safe route available</p>
+            <p className="mt-1 text-xs text-rose-200/80">
+              Every route exceeds the configured threat threshold. The SDN controller is preserving connectivity over the least-risk route ({activePath.toUpperCase()}) in degraded mode.
+            </p>
+          </div>
+        </div>
+      )}
+
       <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
         {(['drone_1', 'drone_2', 'drone_3'] as const).map((id) => {
           const isActive = activeDrone === id;

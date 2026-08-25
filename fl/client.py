@@ -57,6 +57,11 @@ from fl.model import (
     get_model_weights,
     set_model_weights,
 )
+from fl.data import (
+    FEATURE_COLS,
+    build_temporal_windows,
+    correlated_temporal_sequence,
+)
 
 # ---------------------------------------------------------------------------
 # Config
@@ -70,6 +75,7 @@ _DRIFT_CFG = _FL_CFG["drift_detection"]
 _DP_CFG = _FL_CFG.get("differential_privacy", {})
 _COMP_CFG = _FL_CFG.get("compression", {})
 _PERSONA_CFG = _FL_CFG.get("personalization", {})
+_DATA_CFG = _FL_CFG.get("data", {})
 _PROC = _BASE / "datasets" / "processed"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [CLIENT] %(message)s")
@@ -140,7 +146,7 @@ def load_local_data(
         maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
         feats_norm = (feats_single - mins) / (maxs - mins + 1e-8)
         feats_norm = np.clip(feats_norm, 0.0, 1.0)
-        seq_arr = np.tile(feats_norm, (seq_len, 1)).astype(np.float32)
+        seq_arr = correlated_temporal_sequence(feats_norm, seq_len, rng)
 
         X_list.append(seq_arr)
         # Runtime evaluates one path at a time and averages the three threat
@@ -161,15 +167,21 @@ def load_local_data(
 def load_real_data(
     client_id: str,
     seq_len: int = 10,
+    *,
+    allow_synthetic_fallback: bool = True,
 ) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     """
     Load real RF data for a single drone client from the preprocessed CSV.
-    Falls back to synthetic data if the CSV is not found.
+    Falls back to synthetic data only when ``allow_synthetic_fallback`` is true.
     """
     drone_num = "".join(filter(str.isdigit, client_id)) or "1"
     csv_path = _PROC / f"drone_{drone_num}_train.csv"
 
     if not csv_path.exists():
+        if not allow_synthetic_fallback:
+            raise FileNotFoundError(
+                f"Required real dataset for {client_id} was not found: {csv_path}"
+            )
         logger.warning(
             "[%s] Real data CSV not found: %s — falling back to synthetic.",
             client_id, csv_path,
@@ -182,47 +194,44 @@ def load_real_data(
         logger.debug("[%s] Using dataset stats from %s", client_id, stats_path)
 
     df = pd.read_csv(csv_path)
-    feature_cols = ["rssi", "pdr", "sinr", "latency", "packet_loss"]
     attack_col = "attack_class" if "attack_class" in df.columns else "jammed"
-    df = df.dropna(subset=feature_cols + ["jammed"]).reset_index(drop=True)
+    df = df.dropna(subset=[*FEATURE_COLS, "jammed"]).reset_index(drop=True)
 
-    if len(df) < seq_len + 1:
+    if len(df) < seq_len:
+        if not allow_synthetic_fallback:
+            raise ValueError(
+                f"Required real dataset {csv_path} has {len(df)} rows; "
+                f"at least {seq_len} are required"
+            )
         logger.warning("[%s] Too few rows in %s — falling back to synthetic.", client_id, csv_path)
         return load_local_data(client_id=client_id, seq_len=seq_len, num_samples=500)
 
-    feats = df[feature_cols].values.astype(np.float32)
-    _MINS = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
-    _MAXS = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
-    for i, col in enumerate(feature_cols):
-        col_min, col_max = feats[:, i].min(), feats[:, i].max()
-        if col_max > 1.01 or col_min < -0.01:
-            logger.info("[%s] Normalising column '%s' (range %.2f–%.2f)", client_id, col, col_min, col_max)
-            feats[:, i] = (feats[:, i] - _MINS[i]) / (_MAXS[i] - _MINS[i] + 1e-8)
-            feats[:, i] = np.clip(feats[:, i], 0.0, 1.0)
+    if attack_col != "attack_class":
+        df["attack_class"] = df[attack_col].astype(np.int64)
+    windows = build_temporal_windows(
+        df,
+        seq_len,
+        stride=int(_DATA_CFG.get("sequence_stride", 1)),
+    )
+    if not len(windows):
+        if not allow_synthetic_fallback:
+            raise ValueError(
+                f"Required real dataset {csv_path} has no complete temporal groups"
+            )
+        logger.warning(
+            "[%s] No complete temporal groups in %s — falling back to synthetic.",
+            client_id,
+            csv_path,
+        )
+        return load_local_data(client_id=client_id, seq_len=seq_len, num_samples=500)
 
-    jammed_arr = df["jammed"].values.astype(np.int8)
-    if attack_col in df.columns:
-        attack_arr = df[attack_col].values.astype(np.int64)
-    else:
-        attack_arr = jammed_arr.astype(np.int64)
-    attack_arr = np.clip(attack_arr, 0, len(ATTACK_CLASSES) - 1)
-
-    X_list, y_threat_list, y_attack_list = [], [], []
-    for i in range(len(feats)):
-        window = np.tile(feats[i], (seq_len, 1))
-        label = jammed_arr[i]
-        atk = attack_arr[i]
-        X_list.append(window)
-        y_threat_list.append(np.array([label, label, label], dtype=np.float32))
-        y_attack_list.append(atk)
-
-    X = torch.tensor(np.stack(X_list), dtype=torch.float32)
-    y_threat = torch.tensor(np.stack(y_threat_list), dtype=torch.float32)
-    y_attack = torch.tensor(np.array(y_attack_list), dtype=torch.long)
+    X = torch.tensor(windows.features, dtype=torch.float32)
+    y_threat = torch.tensor(windows.threat_labels, dtype=torch.float32)
+    y_attack = torch.tensor(windows.attack_labels, dtype=torch.long)
 
     logger.info(
         "[%s] Loaded %d sequences from %s (jammed=%.1f%%)",
-        client_id, len(X), csv_path.name, 100 * jammed_arr.mean(),
+        client_id, len(X), csv_path.name, 100 * float(windows.threat_labels[:, 0].mean()),
     )
     return X, y_threat, y_attack
 
@@ -286,6 +295,7 @@ class DroneFlClient(fl.client.NumPyClient):
         enable_dp: Optional[bool] = None,
         enable_compression: Optional[bool] = None,
         enable_personalization: Optional[bool] = None,
+        require_real_data: bool = False,
     ):
         self.client_id = client_id
         self.device = _get_device()
@@ -313,11 +323,15 @@ class DroneFlClient(fl.client.NumPyClient):
         self.model = build_model(_MODEL_CFG).to(self.device)
         self.jammed = jammed
         self.use_real_data = use_real_data
+        if require_real_data and not use_real_data:
+            raise ValueError("require_real_data requires use_real_data=True")
 
         # Load training data once
         if use_real_data:
             self.X, self.y_threat, self.y_attack = load_real_data(
-                client_id=client_id, seq_len=_MODEL_CFG["sequence_len"]
+                client_id=client_id,
+                seq_len=_MODEL_CFG["sequence_len"],
+                allow_synthetic_fallback=not require_real_data,
             )
         else:
             self.X, self.y_threat, self.y_attack = load_local_data(
@@ -658,6 +672,11 @@ def main():
     parser.add_argument("--server_address", type=str, default="127.0.0.1:8090")
     parser.add_argument("--jammed", action="store_true")
     parser.add_argument("--real", action="store_true")
+    parser.add_argument(
+        "--require-real-data",
+        action="store_true",
+        help="Fail startup instead of falling back when real data is missing or invalid",
+    )
     parser.add_argument("--dp", action="store_true", help="Enable client-side DP-SGD")
     parser.add_argument("--compress", action="store_true", help="Enable gradient compression")
     parser.add_argument("--persona", action="store_true", help="Enable personalized FL")
@@ -676,6 +695,7 @@ def main():
         enable_dp=args.dp or None,
         enable_compression=args.compress or None,
         enable_personalization=args.persona or None,
+        require_real_data=args.require_real_data,
     )
     fl.client.start_numpy_client(server_address=args.server_address, client=client)
 

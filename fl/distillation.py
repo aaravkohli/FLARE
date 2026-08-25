@@ -54,6 +54,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from torch.utils.data import DataLoader, TensorDataset
 
+from fl.data import correlated_temporal_sequence
+
 logger = logging.getLogger(__name__)
 
 
@@ -111,7 +113,7 @@ def generate_proxy_dataset(
         feats = np.array([rssi, pdr, sinr, latency, pkt_loss], dtype=np.float32)
         feats_norm = (feats - mins) / (maxs - mins + 1e-8)
         feats_norm = np.clip(feats_norm, 0.0, 1.0)
-        seq = np.tile(feats_norm, (seq_len, 1))
+        seq = correlated_temporal_sequence(feats_norm, seq_len, rng)
         X_list.append(seq)
 
     X = torch.tensor(np.stack(X_list), dtype=torch.float32)

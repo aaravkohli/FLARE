@@ -38,7 +38,8 @@ services:
     networks: [antijam-net]
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
-    command: python fl/client.py --client_id drone_1 --server_address fl-server:8090
+      - ${PROCESSED_DATA_DIR:?Set PROCESSED_DATA_DIR}:/app/datasets/processed:ro
+    command: python fl/client.py --client_id drone_1 --server_address fl-server:8090 --real --require-real-data
     restart: on-failure
     depends_on:
       fl-server:
@@ -51,7 +52,8 @@ services:
     networks: [antijam-net]
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
-    command: python fl/client.py --client_id drone_2 --server_address fl-server:8090
+      - ${PROCESSED_DATA_DIR:?Set PROCESSED_DATA_DIR}:/app/datasets/processed:ro
+    command: python fl/client.py --client_id drone_2 --server_address fl-server:8090 --real --require-real-data
     restart: on-failure
     depends_on:
       fl-server:
@@ -64,7 +66,8 @@ services:
     networks: [antijam-net]
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
-    command: python fl/client.py --client_id drone_3 --server_address fl-server:8090
+      - ${PROCESSED_DATA_DIR:?Set PROCESSED_DATA_DIR}:/app/datasets/processed:ro
+    command: python fl/client.py --client_id drone_3 --server_address fl-server:8090 --real --require-real-data
     restart: on-failure
     depends_on:
       fl-server:

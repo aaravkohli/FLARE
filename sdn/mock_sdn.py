@@ -24,15 +24,21 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import uvicorn
 import yaml
 from fastapi import Depends, FastAPI, Header, HTTPException, status
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+
+from sdn.route_contract import (
+    VALID_DRONES,
+    VALID_PATHS,
+    action_id_for_path,
+    normalize_installed_path,
+    validate_route_action,
+)
 
 _BASE = Path(__file__).parent.parent
 _SDN_CFG = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
 _MOCK_CFG = _SDN_CFG.get("mock", {})
 _FAILOVER = _SDN_CFG["failover_priority"]
 
-VALID_PATHS = {"direct", "satellite", "mesh", "fallback"}
-VALID_DRONES = {"drone_1", "drone_2", "drone_3"}
 _DEVELOPMENT_SDN_TOKEN = "antijam-development-sdn-token"
 SDN_API_TOKEN = os.getenv("AJ_SDN_TOKEN", _DEVELOPMENT_SDN_TOKEN)
 if os.getenv("AJ_ENV", "development").lower() in {"production", "prod"} and (
@@ -84,10 +90,16 @@ class RouteRequest(BaseModel):
             raise ValueError(f"Invalid drone_id: {value}. Must be one of {VALID_DRONES}")
         return value
 
+    @model_validator(mode="after")
+    def validate_route_contract(self):
+        validate_route_action(self.path_name, self.action_id)
+        return self
+
 
 class RouteResponse(BaseModel):
     status: str
     installed_path: str
+    installed_action_id: int
     flow_priority: int
     timestamp: float
     note: str
@@ -131,11 +143,17 @@ async def install_route(
     Implements deterministic failover if the requested path is unavailable.
     """
     safe_path = _select_safe_path(req.path_name)
-    priority = _SDN_CFG["flow_priority"].get(safe_path, 10)
+    installed_path = normalize_installed_path(safe_path)
+    installed_action_id = action_id_for_path(installed_path)
+    priority = max(
+        _SDN_CFG["flow_priority"][path]
+        for path in ("direct", "satellite", "mesh")
+    )
 
     # Update simulated flow table
     _flow_table[req.drone_id] = {
-        "path": safe_path,
+        "path": installed_path,
+        "action_id": installed_action_id,
         "priority": priority,
         "installed_at": time.time(),
     }
@@ -148,7 +166,8 @@ async def install_route(
 
     return RouteResponse(
         status="ok",
-        installed_path=safe_path,
+        installed_path=installed_path,
+        installed_action_id=installed_action_id,
         flow_priority=priority,
         timestamp=time.time(),
         note=note,

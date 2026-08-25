@@ -13,6 +13,7 @@ Endpoints:
 """
 
 import asyncio
+from collections import deque
 import json
 import logging
 import math
@@ -50,7 +51,14 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sse_starlette.sse import EventSourceResponse
 
+from schemas.decision_event import DecisionEvent
+from rl.safety import constrain_route_action, resolve_safety_config
+
 _BASE = Path(__file__).parent.parent
+_RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
+_SAFETY_THRESHOLD, _ALL_UNSAFE_BEHAVIOR = resolve_safety_config(
+    _RL_CFG.get("safety", {})
+)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [API] %(message)s")
 logger = logging.getLogger(__name__)
@@ -195,6 +203,13 @@ class PredictResponse(BaseModel):
     action_id: int
     path_name: str
     threat_level: str
+    original_action_id: int
+    safety_override: bool
+    safe_action_mask: List[bool]
+    no_safe_route: bool
+    constraint_reason: Optional[str] = None
+    safety_threshold: float
+    all_unsafe_behavior: str
     fl_confidence: Optional[float] = None
     attack_type: Optional[str] = None
     timestamp: float
@@ -274,6 +289,106 @@ _start_time = time.time()
 _last_jam_time: Dict[str, float] = {}  # drone_id -> timestamp of last jam request
 _ws_clients: List[WebSocket] = []  # Connected WebSocket clients
 _compromised_drones: Set[str] = set()  # Set of compromised drones (Byzantine test)
+_FL_SEQUENCE_LEN = int(
+    yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())["model"][
+        "sequence_len"
+    ]
+)
+_xai_metric_history = {
+    drone_id: {
+        path_name: deque(maxlen=_FL_SEQUENCE_LEN)
+        for path_name in ("direct", "satellite", "mesh")
+    }
+    for drone_id in VALID_DRONE_IDS
+}
+_xai_last_event_ids: Dict[str, str] = {}
+
+_RUN_SUMMARY_COLUMNS = (
+    "id, run_id, timestamp, step, drone_id, action_id, path_name, "
+    "threat_level, reward, recovery_ms, packet_loss, fl_confidence, attack_type"
+)
+
+
+async def _table_columns(db: aiosqlite.Connection, table: str) -> set[str]:
+    cursor = await db.execute(f"PRAGMA table_info({table})")
+    return {row[1] for row in await cursor.fetchall()}
+
+
+async def _latest_decision_events() -> Dict[str, dict]:
+    """Return the latest valid canonical event for each drone, if available."""
+    db_path = _BASE / "experiments" / "experiment.db"
+    if not db_path.exists():
+        return {}
+
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            if "event_json" not in await _table_columns(db, "runs"):
+                return {}
+            cursor = await db.execute(
+                "SELECT event_json FROM runs "
+                "WHERE event_json IS NOT NULL ORDER BY id DESC LIMIT 300"
+            )
+            rows = await cursor.fetchall()
+    except Exception as exc:
+        logger.debug("Canonical event DB read error: %s", exc)
+        return {}
+
+    events: Dict[str, dict] = {}
+    for (raw_event,) in rows:
+        try:
+            event = DecisionEvent.model_validate_json(raw_event)
+        except Exception as exc:
+            logger.warning("Ignoring invalid persisted decision event: %s", exc)
+            continue
+        if event.drone_id not in events:
+            events[event.drone_id] = event.model_dump(mode="json")
+        if len(events) == len(VALID_DRONE_IDS):
+            break
+    return events
+
+
+async def _latest_run_summaries() -> Dict[str, dict]:
+    """Read legacy summary columns without leaking the large event_json field."""
+    db_path = _BASE / "experiments" / "experiment.db"
+    if not db_path.exists():
+        return {}
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            db.row_factory = aiosqlite.Row
+            cursor = await db.execute(
+                f"SELECT {_RUN_SUMMARY_COLUMNS} FROM runs WHERE id IN "
+                "(SELECT MAX(id) FROM runs GROUP BY drone_id)"
+            )
+            rows = await cursor.fetchall()
+    except Exception as exc:
+        logger.debug("Experiment summary DB read error: %s", exc)
+        return {}
+    return {row["drone_id"]: dict(row) for row in rows}
+
+
+def _decision_summary_from_event(event: dict) -> dict:
+    decision = event["decision"]
+    outcome = event["outcome"]
+    return {
+        "path_name": decision["installed_path"] or decision["requested_path"],
+        "policy_path": decision["policy_path"],
+        "requested_path": decision["requested_path"],
+        "threat_level": decision["threat_level"],
+        "reward": outcome["reward"],
+        "step": event["step"],
+        "source": "canonical_event",
+        "event_id": event["event_id"],
+        "sdn_applied": event["sdn"]["applied"],
+        "fallback_reasons": event["fallback_reasons"],
+        "safety_override": decision.get("safety_override", False),
+        "safe_action_mask": decision.get("safe_action_mask", [True, True, True]),
+        "no_safe_route": decision.get("no_safe_route", False),
+        "constraint_reason": decision.get("constraint_reason"),
+        "safety_threshold": decision.get("safety_threshold", 0.8),
+        "all_unsafe_behavior": decision.get(
+            "all_unsafe_behavior", "least_risk_route"
+        ),
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -285,6 +400,15 @@ _compromised_drones: Set[str] = set()  # Set of compromised drones (Byzantine te
 async def lifespan(app: FastAPI):
     global _rl_agents, _fl_model
 
+    # Always rebuild the runtime wrappers from the currently validated artifact.
+    # This prevents an in-process lifespan restart from retaining agents loaded
+    # from a checkpoint that has since become missing or incompatible.
+    _rl_agents = {}
+    _fl_model = None
+    _xai_last_event_ids.clear()
+    for drone_history in _xai_metric_history.values():
+        for path_history in drone_history.values():
+            path_history.clear()
     rl_model_path = _BASE / "models" / "rl_model.zip"
     if rl_model_path.exists():
         try:
@@ -302,8 +426,14 @@ async def lifespan(app: FastAPI):
     fl_model_path = _BASE / "models" / "fl_model.pth"
     if fl_model_path.exists():
         try:
+            from fl.checkpoint import validate_fl_checkpoint_metadata
             from fl.model import build_model
             fl_cfg = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
+            validate_fl_checkpoint_metadata(
+                fl_model_path,
+                model_config=fl_cfg["model"],
+                data_config=fl_cfg.get("data", {}),
+            )
             _fl_model = build_model(fl_cfg["model"])
             _fl_model.load_state_dict(torch.load(fl_model_path, map_location="cpu"))
             _fl_model.eval()
@@ -410,11 +540,28 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
 
 
 def _greedy_predict(path_scores: List[float]) -> dict:
-    action = int(min(range(3), key=lambda i: path_scores[i]))
+    policy_action = int(min(range(3), key=lambda i: path_scores[i]))
+    constrained = constrain_route_action(
+        policy_action,
+        path_scores,
+        threat_threshold=_SAFETY_THRESHOLD,
+    )
+    action = constrained.action_id
     paths = ["direct", "satellite", "mesh"]
     max_score = max(path_scores)
     level = "HIGH" if max_score >= 0.7 else ("MEDIUM" if max_score >= 0.4 else "LOW")
-    return {"action_id": action, "path_name": paths[action], "threat_level": level}
+    return {
+        "action_id": action,
+        "path_name": paths[action],
+        "threat_level": level,
+        "original_action_id": policy_action,
+        "safety_override": constrained.safety_override,
+        "safe_action_mask": list(constrained.safe_action_mask),
+        "no_safe_route": constrained.no_safe_route,
+        "constraint_reason": constrained.constraint_reason,
+        "safety_threshold": constrained.threat_threshold,
+        "all_unsafe_behavior": constrained.all_unsafe_behavior,
+    }
 
 
 @app.get("/health", response_model=HealthResponse, tags=["System"])
@@ -450,23 +597,9 @@ async def predict(
     fl_confidence = None
     attack_type = None
 
-    if _fl_model is not None:
-        try:
-            import numpy as np
-            seq = np.tile(
-                np.array([[s, s, 1 - s, s * 100, s * 0.5]
-                           for s in path_scores[:1]], dtype=np.float32),
-                (10, 1),
-            )
-            x = torch.tensor(seq, dtype=torch.float32).unsqueeze(0)
-            with torch.no_grad():
-                out = _fl_model(x)
-            fl_confidence = float(out.confidence.squeeze().item())
-            attack_idx = int(out.attack_logits.argmax(dim=-1).item())
-            from fl.model import ATTACK_CLASSES
-            attack_type = ATTACK_CLASSES[attack_idx]
-        except Exception as e:
-            logger.debug("FL inference failed: %s", e)
+    # This endpoint receives already-computed threat scores, not the five raw RF
+    # features required by the FL model. Confidence/attack fields therefore stay
+    # null instead of being inferred from fabricated repeated telemetry.
 
     rl_agent = _rl_agents.get(req.drone_id)
     if rl_agent is not None:
@@ -482,6 +615,15 @@ async def predict(
         action_id=decision["action_id"],
         path_name=decision["path_name"],
         threat_level=decision["threat_level"],
+        original_action_id=decision.get("original_action_id", decision["action_id"]),
+        safety_override=bool(decision.get("safety_override", False)),
+        safe_action_mask=decision.get("safe_action_mask", [True, True, True]),
+        no_safe_route=bool(decision.get("no_safe_route", False)),
+        constraint_reason=decision.get("constraint_reason"),
+        safety_threshold=float(decision.get("safety_threshold", 0.8)),
+        all_unsafe_behavior=decision.get(
+            "all_unsafe_behavior", "least_risk_route"
+        ),
         fl_confidence=fl_confidence,
         attack_type=attack_type,
         timestamp=time.time(),
@@ -493,11 +635,18 @@ async def live_metrics(
     drone_id: str = "drone_1",
     _: dict = Depends(get_current_user),
 ) -> dict:
-    """Live RF metrics snapshot. Requires JWT auth."""
+    """Latest telemetry that actually drove a routing decision. Requires JWT auth."""
     if drone_id not in VALID_DRONE_IDS:
         raise HTTPException(status_code=400, detail=f"drone_id must be one of {sorted(VALID_DRONE_IDS)}")
+
+    events = await _latest_decision_events()
+    if drone_id in events:
+        return events[drone_id]["telemetry"]
+
     from simulation.generator import generate_metrics
-    return generate_metrics(drone_id=drone_id)
+    metrics = generate_metrics(drone_id=drone_id)
+    metrics["source"] = "legacy_api_fallback"
+    return metrics
 
 
 @app.get("/swarm/status", tags=["Swarm"])
@@ -505,27 +654,22 @@ async def swarm_status(
     _: dict = Depends(get_current_user),
 ) -> dict:
     """Return the last known decision for every drone in the swarm."""
-    db_path = _BASE / "experiments" / "experiment.db"
-    if not db_path.exists():
-        return {"drones": {}}
-
-    async with aiosqlite.connect(db_path) as db:
-        db.row_factory = aiosqlite.Row
-        # Get the latest row for each drone
-        cursor = await db.execute(
-            "SELECT * FROM runs WHERE id IN (SELECT MAX(id) FROM runs GROUP BY drone_id)"
-        )
-        rows = await cursor.fetchall()
-
-    result = {}
-    for row in rows:
-        result[row["drone_id"]] = {
+    events = await _latest_decision_events()
+    summaries = await _latest_run_summaries()
+    result = {
+        drone_id: {
             "path_name": row["path_name"],
             "threat_level": row["threat_level"],
             "reward": row["reward"],
             "step": row["step"],
-            "source": "orchestrator",
+            "source": "legacy_summary",
         }
+        for drone_id, row in summaries.items()
+    }
+    result.update({
+        drone_id: _decision_summary_from_event(event)
+        for drone_id, event in events.items()
+    })
     return {"drones": result}
 
 
@@ -533,9 +677,22 @@ async def swarm_status(
 async def swarm_all_metrics(
     _: dict = Depends(get_current_user),
 ) -> dict:
-    """Full RF telemetry for all drones in the swarm."""
+    """Latest decision-driving RF telemetry for all drones in the swarm."""
+    events = await _latest_decision_events()
+    result = {
+        drone_id: event["telemetry"]
+        for drone_id, event in events.items()
+    }
+    missing = VALID_DRONE_IDS - result.keys()
+    if not missing:
+        return result
+
     from simulation.generator import generate_swarm_metrics
-    return generate_swarm_metrics()
+    generated = generate_swarm_metrics()
+    for drone_id in missing:
+        generated[drone_id]["source"] = "legacy_api_fallback"
+        result[drone_id] = generated[drone_id]
+    return result
 
 
 @app.get("/metrics/history", tags=["Metrics"])
@@ -550,13 +707,29 @@ async def metrics_history(
 
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
+        columns = await _table_columns(db, "runs")
+        selected_columns = _RUN_SUMMARY_COLUMNS
+        if "event_json" in columns:
+            selected_columns += ", event_json"
         cursor = await db.execute(
-            "SELECT * FROM runs ORDER BY id DESC LIMIT ?", (limit,)
+            f"SELECT {selected_columns} FROM runs ORDER BY id DESC LIMIT ?",
+            (limit,),
         )
         rows = await cursor.fetchall()
 
     # Reverse so oldest-first for charting
-    result = [dict(r) for r in reversed(rows)]
+    result = []
+    for row in reversed(rows):
+        summary = dict(row)
+        raw_event = summary.pop("event_json", None)
+        if raw_event:
+            try:
+                summary["event"] = DecisionEvent.model_validate_json(raw_event).model_dump(
+                    mode="json"
+                )
+            except Exception as exc:
+                logger.warning("Ignoring invalid history decision event: %s", exc)
+        result.append(summary)
     return {"rows": result, "count": len(result)}
 
 
@@ -577,6 +750,46 @@ def _clear_jamming_after(drone_id: str, duration: float, request_time: float):
         logger.info("Skipping auto-clear for %s: newer request detected", drone_id)
 
 
+async def _wait_for_jam_visibility(
+    targets: List[str],
+    previous_events: Dict[str, dict],
+    expected_profile: Optional[str],
+    *,
+    timeout_s: float = 1.25,
+) -> bool:
+    """Wait until an active orchestrator persists the requested jammer state."""
+    now = time.time()
+    if any(
+        target not in previous_events
+        or now - float(previous_events[target]["timestamp"]) > 2.0
+        for target in targets
+    ):
+        return False
+
+    deadline = time.monotonic() + timeout_s
+    while time.monotonic() < deadline:
+        current_events = await _latest_decision_events()
+        visible = True
+        for target in targets:
+            current = current_events.get(target)
+            previous = previous_events.get(target)
+            if current is None or current.get("event_id") == previous.get("event_id"):
+                visible = False
+                break
+            active_attack = (
+                current.get("telemetry", {})
+                .get("ew_status", {})
+                .get("active_attack")
+            )
+            if active_attack != expected_profile:
+                visible = False
+                break
+        if visible:
+            return True
+        await asyncio.sleep(0.05)
+    return False
+
+
 @app.post("/jam", tags=["Control"])
 async def trigger_jamming(
     req: JamRequest,
@@ -587,12 +800,18 @@ async def trigger_jamming(
     from simulation.generator import DRONES
     from simulation.jammer import clear_jamming, set_jamming_state
 
+    targets = DRONES if req.drone_id == "all" else [req.drone_id]
+    previous_events = await _latest_decision_events()
     if req.profile == "none":
         clear_jamming(req.drone_id)
         now = time.time()
-        targets = DRONES if req.drone_id == "all" else [req.drone_id]
         for t in targets:
             _last_jam_time[t] = now
+        await _wait_for_jam_visibility(
+            targets,
+            previous_events,
+            None,
+        )
         return {"status": "cleared", "drone_id": req.drone_id}
 
     targets = set_jamming_state(req.drone_id, req.paths, req.profile)
@@ -602,7 +821,18 @@ async def trigger_jamming(
         _last_jam_time[t] = req_time
         
     bg_tasks.add_task(_clear_jamming_after, req.drone_id, req.duration, req_time)
-    return {"status": "jamming", "drone_id": req.drone_id, "paths": req.paths, "duration": req.duration, "profile": req.profile}
+    await _wait_for_jam_visibility(
+        targets,
+        previous_events,
+        req.profile,
+    )
+    return {
+        "status": "jamming",
+        "drone_id": req.drone_id,
+        "paths": req.paths,
+        "duration": req.duration,
+        "profile": req.profile,
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -1096,7 +1326,11 @@ async def generate_evaluation_report(
 # Explainable AI (XAI) Local Perturbation Engine
 # ---------------------------------------------------------------------------
 
-def _calculate_xai_attributions(model, path_metrics: dict | None) -> dict:
+def _calculate_xai_attributions(
+    model,
+    path_metrics: dict | None,
+    path_history: Optional[List[dict]] = None,
+) -> dict:
     """
     Calculate local feature attribution weights for the 5 RF metrics
     using input perturbation study on the current path metrics.
@@ -1110,24 +1344,27 @@ def _calculate_xai_attributions(model, path_metrics: dict | None) -> dict:
         return defaults
         
     try:
-        # Extract features
-        feats = np.array([
-            path_metrics.get("rssi", -50.0),
-            path_metrics.get("pdr", 0.9),
-            path_metrics.get("sinr", 20.0),
-            path_metrics.get("latency", 20.0),
-            path_metrics.get("packet_loss", 0.0),
-        ], dtype=np.float32)
-        
-        # Normalize (matches generator.py normalisation bounds)
+        # Normalize the oldest-first rolling path history. At startup, left-pad
+        # the earliest real observation until a full model sequence is available.
         mins  = np.array([-120.0, 0.0, -10.0,  0.0,   0.0], dtype=np.float32)
         maxs  = np.array([ -20.0, 1.0,  30.0, 1000.0, 1.0], dtype=np.float32)
-        feats_norm = (feats - mins) / (maxs - mins + 1e-8)
-        feats_norm = np.clip(feats_norm, 0.0, 1.0)
+        history = list(path_history or [path_metrics])[-_FL_SEQUENCE_LEN:]
+        frames = []
+        for snapshot in history:
+            features = np.array([
+                snapshot.get("rssi", -50.0),
+                snapshot.get("pdr", 0.9),
+                snapshot.get("sinr", 20.0),
+                snapshot.get("latency", 20.0),
+                snapshot.get("packet_loss", 0.0),
+            ], dtype=np.float32)
+            frames.append(np.clip((features - mins) / (maxs - mins + 1e-8), 0.0, 1.0))
+        if len(frames) < _FL_SEQUENCE_LEN:
+            frames = [frames[0]] * (_FL_SEQUENCE_LEN - len(frames)) + frames
+        seq = np.stack(frames).astype(np.float32)
         
         # Build one base sequence and five feature-ablation variants, then run
         # all six in a single model call.
-        seq = np.tile(feats_norm, (10, 1)).astype(np.float32)
         variants = [seq]
         for j in range(5):
             seq_pert = seq.copy()
@@ -1185,41 +1422,21 @@ async def _broadcast_to_ws(data: dict):
 
 
 async def telemetry_broadcaster():
-    """Periodically fetch metrics and broadcast to all connected WebSocket clients."""
-    from simulation.generator import generate_swarm_metrics
-    db_path = _BASE / "experiments" / "experiment.db"
+    """Broadcast the persisted telemetry/decision pair produced by the orchestrator."""
 
     while True:
         try:
             if _ws_clients:
-                decisions = {
-                    drone_id: {
-                        "path_name": "direct",
-                        "threat_level": "LOW",
-                        "reward": 0.0,
-                        "step": 0,
-                    }
-                    for drone_id in sorted(VALID_DRONE_IDS)
-                }
-                if db_path.exists():
-                    try:
-                        async with aiosqlite.connect(db_path) as db:
-                            db.row_factory = aiosqlite.Row
-                            cursor = await db.execute(
-                                "SELECT * FROM runs WHERE id IN "
-                                "(SELECT MAX(id) FROM runs GROUP BY drone_id)"
-                            )
-                            for row in await cursor.fetchall():
-                                decisions[row["drone_id"]] = {
-                                    "path_name": row["path_name"],
-                                    "threat_level": row["threat_level"],
-                                    "reward": row["reward"],
-                                    "step": row["step"],
-                                }
-                    except Exception as e:
-                        logger.debug("WS telemetry DB read error: %s", e)
+                events = await _latest_decision_events()
+                legacy_summaries = await _latest_run_summaries()
+                missing = VALID_DRONE_IDS - events.keys()
+                fallback_metrics: Dict[str, dict] = {}
+                if missing:
+                    from simulation.generator import generate_swarm_metrics
+                    fallback_metrics = generate_swarm_metrics()
+                    for drone_id in missing:
+                        fallback_metrics[drone_id]["source"] = "legacy_api_fallback"
 
-                swarm_metrics = generate_swarm_metrics()
                 from simulation.generator import _load_jam_state
                 jam_state = _load_jam_state()
 
@@ -1249,10 +1466,36 @@ async def telemetry_broadcaster():
                         pass
 
                 for drone_id in sorted(VALID_DRONE_IDS):
-                    decision = decisions[drone_id]
-                    metrics = swarm_metrics[drone_id]
+                    event = events.get(drone_id)
+                    if event is not None:
+                        decision = _decision_summary_from_event(event)
+                        metrics = event["telemetry"]
+                        message_timestamp = event["timestamp"]
+                    else:
+                        legacy = legacy_summaries.get(drone_id, {})
+                        decision = {
+                            "path_name": legacy.get("path_name", "direct"),
+                            "threat_level": legacy.get("threat_level", "UNKNOWN"),
+                            "reward": legacy.get("reward", 0.0),
+                            "step": legacy.get("step", 0),
+                            "source": "legacy_summary" if legacy else "api_fallback",
+                            "fallback_reasons": ["canonical_event_unavailable"],
+                        }
+                        metrics = fallback_metrics[drone_id]
+                        message_timestamp = metrics["timestamp"]
                     active_path = decision.get("path_name", "direct")
                     paths = metrics.get("paths", [])
+                    history_token = (
+                        event["event_id"]
+                        if event is not None
+                        else f"fallback:{message_timestamp}"
+                    )
+                    if _xai_last_event_ids.get(drone_id) != history_token:
+                        for path in paths:
+                            path_name = path.get("path_id")
+                            if path_name in _xai_metric_history[drone_id]:
+                                _xai_metric_history[drone_id][path_name].append(path)
+                        _xai_last_event_ids[drone_id] = history_token
                     active_path_metrics = next(
                         (
                             path
@@ -1263,12 +1506,15 @@ async def telemetry_broadcaster():
                     )
                     await _broadcast_to_ws({
                         "type": "telemetry",
-                        "timestamp": time.time(),
+                        "timestamp": message_timestamp,
                         "decision": decision,
                         "metrics": metrics,
+                        "event": event,
+                        "telemetry_age_s": max(0.0, time.time() - message_timestamp),
                         "xai": _calculate_xai_attributions(
                             _fl_model,
                             active_path_metrics,
+                            list(_xai_metric_history[drone_id][active_path]),
                         ),
                         "byzantine": byzantine_status,
                         "fl_metrics": fl_metrics,
@@ -1287,19 +1533,37 @@ async def stream_decisions(_: dict = Depends(get_current_user)):
     """
     async def event_generator():
         db_path = _BASE / "experiments" / "experiment.db"
-        last_id = -1
+        last_id: Optional[int] = None
         while True:
             if db_path.exists():
                 try:
                     async with aiosqlite.connect(db_path) as db:
                         db.row_factory = aiosqlite.Row
-                        cursor = await db.execute(
-                            "SELECT * FROM runs ORDER BY id DESC LIMIT 1"
-                        )
-                        row = await cursor.fetchone()
-                        if row and row["id"] > last_id:
+                        columns = await _table_columns(db, "runs")
+                        selected_columns = _RUN_SUMMARY_COLUMNS
+                        if "event_json" in columns:
+                            selected_columns += ", event_json"
+                        if last_id is None:
+                            cursor = await db.execute(
+                                f"SELECT {selected_columns} FROM runs "
+                                "ORDER BY id DESC LIMIT 3"
+                            )
+                            rows = list(reversed(await cursor.fetchall()))
+                        else:
+                            cursor = await db.execute(
+                                f"SELECT {selected_columns} FROM runs "
+                                "WHERE id > ? ORDER BY id ASC LIMIT 100",
+                                (last_id,),
+                            )
+                            rows = await cursor.fetchall()
+                        for row in rows:
                             last_id = row["id"]
                             payload = dict(row)
+                            raw_event = payload.pop("event_json", None)
+                            if raw_event:
+                                payload = DecisionEvent.model_validate_json(raw_event).model_dump(
+                                    mode="json"
+                                )
                             yield {"event": "decision", "data": json.dumps(payload)}
                 except Exception as e:
                     logger.debug("SSE DB read error: %s", e)
