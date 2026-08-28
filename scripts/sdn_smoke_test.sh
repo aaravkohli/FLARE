@@ -58,6 +58,26 @@ wait_for_command() {
   return 1
 }
 
+wait_for_topology() {
+  for _attempt in $(seq 1 60); do
+    if docker exec "$CONTROLLER_NAME" curl -fsS http://127.0.0.1:8080/ready \
+      >/dev/null 2>&1; then
+      echo "PASS: five-switch OpenFlow topology readiness"
+      return 0
+    fi
+
+    if [[ "$(docker inspect --format '{{.State.Running}}' "$MININET_NAME" 2>/dev/null || true)" != "true" ]]; then
+      echo "FAIL: Mininet container exited before the topology became ready" >&2
+      return 1
+    fi
+
+    sleep 1
+  done
+
+  echo "FAIL: timed out waiting for five-switch OpenFlow topology readiness" >&2
+  return 1
+}
+
 verify_route() {
   payload="$1"
   expected_path="$2"
@@ -229,8 +249,7 @@ docker run -d \
   "${mininet_mounts[@]}" \
   "$MININET_IMAGE" >/dev/null
 
-wait_for_command "five-switch OpenFlow topology readiness" \
-  docker exec "$CONTROLLER_NAME" curl -fsS http://127.0.0.1:8080/ready
+wait_for_topology
 
 request_route direct 0 drone_1 >"$RESULT_DIR/drone_1.json" &
 route_pid_1=$!

@@ -20,7 +20,8 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY sdn/ sdn/
 COPY config/ config/
+COPY docker/mininet-entrypoint.sh /usr/local/bin/mininet-entrypoint
+RUN chmod +x /usr/local/bin/mininet-entrypoint
 
-# Expose nothing by default (Ryu connects outbound to 6633)
-# We will start OVS and the custom topology script
-ENTRYPOINT ["/bin/bash", "-c", "service openvswitch-switch start && (pgrep ovs-vswitchd || ovs-vswitchd --pidfile --detach) && python3 sdn/mininet_topo.py"]
+# Ryu connects outbound to port 6633; this container exposes no listening port.
+ENTRYPOINT ["/usr/local/bin/mininet-entrypoint"]
