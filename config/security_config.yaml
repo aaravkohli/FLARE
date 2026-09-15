@@ -1,0 +1,31 @@
+evidence:
+  max_age_s: 3.0
+  real_controller_required: true
+  controller_endpoint: /sdn/evidence/{drone_id}
+  request_timeout_s: 2.0
+network_detection:
+  suspicious_threshold: 0.35
+  malicious_threshold: 0.72
+  critical_threshold: 0.90
+  history_alpha: 0.65
+  dos:
+    drop_ratio_threshold: 0.50
+    packet_rate_threshold: 250.0
+    latency_threshold_ms: 750.0
+    weights:
+      drop: 0.45
+      rate: 0.35
+      latency: 0.20
+  spoofing:
+    claim_gap_threshold: 0.25
+    duplicate_ratio_threshold: 0.20
+    weights:
+      identity: 0.60
+      claim_gap: 0.25
+      duplicate: 0.15
+response:
+  dos_suspicious: restricted
+  dos_malicious: control_only
+  spoofing_suspicious: restricted
+  spoofing_malicious: control_only
+  identity_mismatch: quarantined

@@ -31,6 +31,7 @@ from rl.traces import (
     write_synchronized_trace,
 )
 from rl.train import train_dqn
+from provenance import promote_run, write_experiment_run
 
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
 _ENV_CFG = _RL_CFG["environment"]
@@ -140,6 +141,7 @@ def main() -> None:
         action="store_true",
         help="Evaluate existing seed checkpoints without retraining",
     )
+    parser.add_argument("--promote", action="store_true")
     args = parser.parse_args()
 
     if len(set(args.seeds)) != len(args.seeds):
@@ -220,8 +222,39 @@ def main() -> None:
         "aggregate_across_training_seeds": _aggregate_seed_results(per_seed),
         "per_seed": per_seed,
     }
-    args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    checkpoint_inputs = []
+    for checkpoint in checkpoint_paths.values():
+        path = Path(checkpoint)
+        checkpoint_inputs.extend([path, path.with_name(f"{path.name}.metadata.json")])
+    run_artifact = write_experiment_run(
+        base=_BASE,
+        experiment="rl_seed_study",
+        protocol_version="synchronized_trace_dqn_seed_study_v1",
+        report=report,
+        seeds=args.seeds,
+        evidence_category="controlled_simulation",
+        config_paths=[Path("config/rl_config.yaml")],
+        checkpoint_paths=checkpoint_inputs,
+        dataset_paths=[args.training_trace, args.validation_trace, *scenario_paths.values()],
+        dataset_roles={
+            str(args.training_trace): "training",
+            str(args.validation_trace): "validation",
+            **{str(path): f"held_out_{name}" for name, path in scenario_paths.items()},
+        },
+        parameters={
+            "timesteps": args.timesteps,
+            "validation_episodes": args.validation_episodes,
+            "evaluation_episodes": args.evaluation_episodes,
+        },
+    )
+    if args.promote:
+        promote_run(
+            base=_BASE,
+            run_dir=run_artifact.run_dir,
+            published_path=args.report,
+            expected_experiment="rl_seed_study",
+            expected_protocol="synchronized_trace_dqn_seed_study_v1",
+        )
 
     print("\nTraining-seed robustness summary")
     for scenario, metrics in report["aggregate_across_training_seeds"].items():
@@ -231,7 +264,7 @@ def main() -> None:
             f"{metrics['std_reward_across_training_seeds']:.3f} across seeds; "
             f"Δgreedy {metrics['mean_paired_delta_vs_greedy']:+.3f}"
         )
-    print(f"Report: {args.report}")
+    print(f"Report: {run_artifact.report_path}")
 
 
 if __name__ == "__main__":

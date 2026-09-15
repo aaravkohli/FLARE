@@ -28,6 +28,16 @@ class ReadinessHistory:
         self._fingerprint: Optional[tuple] = None
         self._lock = threading.Lock()
 
+    def set_drone_ids(self, drone_ids: Iterable[str]) -> None:
+        """Refresh the fleet dimension after an authenticated enrollment."""
+        normalized = tuple(sorted(str(value) for value in drone_ids))
+        if not normalized:
+            raise ValueError("drone_ids must contain at least one drone")
+        with self._lock:
+            if normalized != self.drone_ids:
+                self.drone_ids = normalized
+                self._fingerprint = None
+
     def _normalize(self, state: Mapping) -> dict:
         available = state.get("available_paths", {})
         if not isinstance(available, Mapping):

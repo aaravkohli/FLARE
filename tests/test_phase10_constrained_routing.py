@@ -15,6 +15,7 @@ from rl.traces import (
     validate_disjoint_trace_files,
     write_synchronized_trace,
 )
+from schemas.contracts import ROUTING_STATE_V3
 from schemas.decision_event import DecisionTrace
 
 
@@ -65,6 +66,20 @@ def test_rl_agent_exposes_all_unsafe_state_while_preserving_three_actions():
     assert result["safe_action_mask"] == [False, False, False]
     assert result["safety_override"] is True
     assert result["no_safe_route"] is True
+
+
+def test_v3_agent_can_build_next_observation_after_hold_action():
+    agent = RLAgent.__new__(RLAgent)
+    agent.routing_contract = ROUTING_STATE_V3
+    agent._prev_action = 3
+    agent._prev_reward = 0.0
+    agent._step = 1
+    agent._max_steps = 500
+
+    observation = agent._build_obs([0.1, 0.2, 0.3])
+
+    assert observation.shape == (18,)
+    assert observation[9:12].tolist() == [0.0, 0.0, 0.0]
 
 
 def test_api_greedy_fallback_uses_same_explicit_constraint_contract():

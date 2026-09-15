@@ -18,6 +18,7 @@ from rl.reward import PATH_NAMES
 
 DEFAULT_THREAT_THRESHOLD = 0.8
 ALL_UNSAFE_BEHAVIOR = "least_risk_route"
+SUPPORTED_ALL_UNSAFE_BEHAVIORS = frozenset((ALL_UNSAFE_BEHAVIOR, "hold"))
 
 
 def resolve_safety_config(
@@ -29,10 +30,9 @@ def resolve_safety_config(
     if not math.isfinite(threshold) or threshold < 0.0 or threshold > 1.0:
         raise ValueError("safety.threat_threshold must be a finite value in [0, 1]")
     behavior = str(values.get("all_unsafe_behavior", ALL_UNSAFE_BEHAVIOR))
-    if behavior != ALL_UNSAFE_BEHAVIOR:
+    if behavior not in SUPPORTED_ALL_UNSAFE_BEHAVIORS:
         raise ValueError(
-            "safety.all_unsafe_behavior must be 'least_risk_route'; "
-            "the SDN layer does not implement another degraded action"
+            "safety.all_unsafe_behavior must be 'least_risk_route' or 'hold'"
         )
     return threshold, behavior
 
@@ -50,6 +50,10 @@ class ConstrainedRouteDecision:
     threat_threshold: float
     all_unsafe_behavior: str = ALL_UNSAFE_BEHAVIOR
 
+    @property
+    def network_action(self) -> str:
+        return "hold" if self.action_id == len(PATH_NAMES) else "forward"
+
     def as_dict(self) -> dict:
         return {
             "policy_action_id": self.policy_action_id,
@@ -60,6 +64,7 @@ class ConstrainedRouteDecision:
             "constraint_reason": self.constraint_reason,
             "safety_threshold": self.threat_threshold,
             "all_unsafe_behavior": self.all_unsafe_behavior,
+            "network_action": self.network_action,
         }
 
 
@@ -80,6 +85,8 @@ def constrain_route_action(
     path_scores: Sequence[float],
     *,
     threat_threshold: float = DEFAULT_THREAT_THRESHOLD,
+    all_unsafe_behavior: str = ALL_UNSAFE_BEHAVIOR,
+    allow_hold_action: bool = False,
 ) -> ConstrainedRouteDecision:
     """Apply the executable three-route safety policy.
 
@@ -92,8 +99,9 @@ def constrain_route_action(
     scores = validate_path_scores(path_scores)
     if isinstance(policy_action_id, bool) or not isinstance(policy_action_id, int):
         raise ValueError("policy_action_id must be an integer")
-    if policy_action_id < 0 or policy_action_id >= len(PATH_NAMES):
-        raise ValueError(f"policy_action_id must be in [0, {len(PATH_NAMES) - 1}]")
+    max_action = len(PATH_NAMES) if allow_hold_action else len(PATH_NAMES) - 1
+    if policy_action_id < 0 or policy_action_id > max_action:
+        raise ValueError(f"policy_action_id must be in [0, {max_action}]")
     threshold = float(threat_threshold)
     if not math.isfinite(threshold) or threshold < 0.0 or threshold > 1.0:
         raise ValueError("threat_threshold must be a finite value in [0, 1]")
@@ -105,8 +113,19 @@ def constrain_route_action(
         if is_safe
     ]
 
-    if not safe_actions:
-        action_id = min(range(len(scores)), key=scores.__getitem__)
+    if all_unsafe_behavior not in SUPPORTED_ALL_UNSAFE_BEHAVIORS:
+        raise ValueError("unsupported all_unsafe_behavior")
+
+    if policy_action_id == len(PATH_NAMES) and allow_hold_action:
+        action_id = policy_action_id
+        no_safe_route = not any(safe_action_mask)
+        constraint_reason = "all_routes_above_threshold" if no_safe_route else None
+    elif not safe_actions:
+        action_id = (
+            len(PATH_NAMES)
+            if all_unsafe_behavior == "hold"
+            else min(range(len(scores)), key=scores.__getitem__)
+        )
         no_safe_route = True
         constraint_reason = "all_routes_above_threshold"
     elif safe_action_mask[policy_action_id]:
@@ -126,4 +145,5 @@ def constrain_route_action(
         no_safe_route=no_safe_route,
         constraint_reason=constraint_reason,
         threat_threshold=threshold,
+        all_unsafe_behavior=all_unsafe_behavior,
     )

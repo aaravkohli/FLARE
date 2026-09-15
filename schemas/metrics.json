@@ -8,7 +8,7 @@
   "properties": {
     "drone_id": {
       "type": "string",
-      "enum": ["drone_1", "drone_2", "drone_3"],
+      "pattern": "^[a-z][a-z0-9_-]{2,63}$",
       "description": "Unique drone identifier"
     },
     "timestamp": {

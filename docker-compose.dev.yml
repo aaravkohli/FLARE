@@ -11,6 +11,9 @@ networks:
 volumes:
   experiments:
   logs:
+  fl-results:
+  byzantine-state:
+  fl-runtime:
 
 services:
 
@@ -25,6 +28,8 @@ services:
       - "8090:8090"
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
+      - fl-results:/app/results
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     environment:
       - PYTHONPATH=/app
     healthcheck:
@@ -34,48 +39,23 @@ services:
       retries: 5
       start_period: 15s
 
-  # ── FL Clients (3 simulated drones) ───────────────────────────────────────
-  fl-client-1:
+  # ── Fleet-aware FL client manager ─────────────────────────────────────────
+  fl-client-manager:
     build:
       context: .
       dockerfile: docker/Dockerfile.fl
-    container_name: fl-client-1
+    container_name: fl-client-manager
     networks: [antijam-net]
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
+      - byzantine-state:/app/runtime
+      - fl-runtime:/app/client-runtime
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     environment:
       - PYTHONPATH=/app
-    command: python fl/client.py --client_id drone_1 --server_address fl-server:8090
-    depends_on:
-      fl-server:
-        condition: service_healthy
-
-  fl-client-2:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.fl
-    container_name: fl-client-2
-    networks: [antijam-net]
-    volumes:
-      - ${MODEL_DIR:-./models}:/app/models
-    environment:
-      - PYTHONPATH=/app
-    command: python fl/client.py --client_id drone_2 --server_address fl-server:8090
-    depends_on:
-      fl-server:
-        condition: service_healthy
-
-  fl-client-3:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.fl
-    container_name: fl-client-3
-    networks: [antijam-net]
-    volumes:
-      - ${MODEL_DIR:-./models}:/app/models
-    environment:
-      - PYTHONPATH=/app
-    command: python fl/client.py --client_id drone_3 --server_address fl-server:8090 --jammed
+      - FLARE_BYZANTINE_STATE_PATH=/app/runtime/byzantine_state.json
+      - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
+    command: python -m fl.client_manager --server-address fl-server:8090 --status-path /app/client-runtime/fl_clients.json
     depends_on:
       fl-server:
         condition: service_healthy
@@ -91,6 +71,7 @@ services:
       - "8080:8080"
     volumes:
       - logs:/app/logs
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     environment:
       - PYTHONPATH=/app
       - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
@@ -113,6 +94,10 @@ services:
       - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
       - logs:/app/logs
+      - fl-results:/app/results:ro
+      - byzantine-state:/app/runtime
+      - fl-runtime:/app/client-runtime:ro
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml
     environment:
       - PYTHONPATH=/app
       - MODE=simulation
@@ -123,6 +108,8 @@ services:
       - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
       - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:-antijam2026}
       - AJ_CORS_ORIGINS=${AJ_CORS_ORIGINS:-http://localhost:5173}
+      - FLARE_BYZANTINE_STATE_PATH=/app/runtime/byzantine_state.json
+      - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
@@ -142,6 +129,7 @@ services:
       - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
       - logs:/app/logs
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     environment:
       - PYTHONPATH=/app
       - MODE=simulation

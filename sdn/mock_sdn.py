@@ -26,9 +26,14 @@ import yaml
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
+from fleet.registry import active_drone_ids, is_active_drone
+from fleet.registry import get_drone
+from sdn.evidence import ControllerEvidenceStore
+
 from sdn.route_contract import (
+    HOLD_PATH,
+    ROUTE_COMMANDS,
     ROUTABLE_PATHS,
-    VALID_DRONES,
     VALID_PATHS,
     action_id_for_path,
     normalize_installed_path,
@@ -67,28 +72,30 @@ app = FastAPI(title="Mock SDN Controller", version="1.0.0")
 # Simulated switch state
 _flow_table: dict = {}
 _available_paths = {"direct", "satellite", "mesh"}  # All paths up by default
+_containment_table: dict = {}
+_evidence_store = ControllerEvidenceStore(source="mock_sdn", independent=False)
 
 
 class RouteRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     path_name: str
-    action_id: int = Field(ge=0, le=2)
+    action_id: int = Field(ge=0, le=3)
     drone_id: str = "drone_1"
     priority: int = Field(default=100, ge=1, le=65535)
 
     @field_validator("path_name")
     @classmethod
     def validate_path(cls, v):
-        if v not in ROUTABLE_PATHS:
-            raise ValueError(f"Invalid path: {v}. Must be one of {ROUTABLE_PATHS}")
+        if v not in ROUTE_COMMANDS:
+            raise ValueError(f"Invalid path: {v}. Must be one of {ROUTE_COMMANDS}")
         return v
 
     @field_validator("drone_id")
     @classmethod
     def validate_drone(cls, value):
-        if value not in VALID_DRONES:
-            raise ValueError(f"Invalid drone_id: {value}. Must be one of {VALID_DRONES}")
+        if not is_active_drone(value):
+            raise ValueError(f"Invalid or disabled drone_id: {value}")
         return value
 
     @model_validator(mode="after")
@@ -104,6 +111,29 @@ class RouteResponse(BaseModel):
     flow_priority: int
     timestamp: float
     note: str
+
+
+class ContainmentRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    drone_id: str
+    mode: str
+    reason: str = "operator_request"
+
+    @field_validator("drone_id")
+    @classmethod
+    def validate_containment_drone(cls, value):
+        if not is_active_drone(value):
+            raise ValueError(f"Invalid drone_id: {value}")
+        return value
+
+    @field_validator("mode")
+    @classmethod
+    def validate_containment_mode(cls, value):
+        allowed = {"normal", "restricted", "control_only", "quarantined"}
+        if value not in allowed:
+            raise ValueError(f"mode must be one of {sorted(allowed)}")
+        return value
 
 
 def require_sdn_token(authorization: str | None = Header(default=None)) -> None:
@@ -143,6 +173,23 @@ async def install_route(
     Simulate installing a flow rule on the virtual switch.
     Implements deterministic failover if the requested path is unavailable.
     """
+    if req.path_name == HOLD_PATH:
+        _flow_table[req.drone_id] = {
+            "path": HOLD_PATH,
+            "action_id": 3,
+            "priority": 200,
+            "installed_at": time.time(),
+            "enforcement": "drop_data_plane",
+        }
+        return RouteResponse(
+            status="ok",
+            installed_path=HOLD_PATH,
+            installed_action_id=3,
+            flow_priority=200,
+            timestamp=time.time(),
+            note="FAIL-CLOSED HOLD",
+        )
+
     safe_path = _select_safe_path(req.path_name)
     installed_path = normalize_installed_path(safe_path)
     installed_action_id = action_id_for_path(installed_path)
@@ -175,10 +222,69 @@ async def install_route(
     )
 
 
+@app.post("/sdn/containment")
+async def apply_containment(
+    req: ContainmentRequest,
+    _: None = Depends(require_sdn_token),
+) -> dict:
+    """Apply an auditable simulation of the real controller containment rule."""
+    record = {
+        "drone_id": req.drone_id,
+        "mode": req.mode,
+        "reason": req.reason,
+        "applied_at": time.time(),
+        "enforcement": (
+            "allow_all"
+            if req.mode == "normal"
+            else "rate_limited_control_only"
+            if req.mode == "restricted"
+            else "control_only"
+            if req.mode == "control_only"
+            else "drop_all"
+        ),
+    }
+    _containment_table[req.drone_id] = record
+    return {"status": "ok", **record}
+
+
 @app.get("/sdn/flows")
 async def get_flow_table(_: None = Depends(require_sdn_token)) -> dict:
     """Return current simulated flow table."""
-    return {"flow_table": _flow_table, "available_paths": list(_available_paths)}
+    return {
+        "flow_table": _flow_table,
+        "containment": _containment_table,
+        "available_paths": list(_available_paths),
+    }
+
+
+@app.get("/sdn/evidence/{drone_id}")
+async def get_controller_evidence(
+    drone_id: str,
+    _: None = Depends(require_sdn_token),
+) -> dict:
+    """Expose mock-labelled evidence; it never counts as independent observation."""
+    if not is_active_drone(drone_id):
+        raise HTTPException(status_code=404, detail="Unknown drone_id")
+    snapshot = _evidence_store.snapshot(drone_id)
+    if not snapshot["available"]:
+        drone = get_drone(drone_id)
+        now = time.time()
+        return {
+            "available": True,
+            "controller_rx_packets": 0,
+            "controller_forwarded_packets": 0,
+            "controller_dropped_packets": 0,
+            "observed_source_mac": drone["mac"] if drone else None,
+            "expected_source_mac": drone["mac"] if drone else None,
+            "control_messages_per_s": 0.0,
+            "control_rate_observer": "mock_none",
+            "packet_rate_per_s": 0.0,
+            "controller_timestamp": now,
+            "supported_signals": ["mock_state_only"],
+            "source": "mock_sdn",
+            "independent": False,
+        }
+    return snapshot
 
 
 @app.post("/sdn/simulate/fail/{path}")
@@ -226,7 +332,7 @@ async def readiness() -> dict:
             "inventory_complete_switches": [],
             "ports": {},
             "available_paths": {
-                drone_id: available_paths for drone_id in sorted(VALID_DRONES)
+                drone_id: available_paths for drone_id in active_drone_ids()
             },
         },
     }

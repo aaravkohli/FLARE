@@ -101,12 +101,18 @@ rl/logs/
 rl/tensorboard_logs/
 
 # Datasets — raw and processed (too large for git)
+datasets/
 datasets/raw/
 datasets/processed/
 datasets/DroneRF/
 datasets/RadioML*/
 DroneRF/
 RadioML*/
+
+# Attached datasets and design artifacts
+/design-md/
+/flare-ui-refinement/
+/RadioML 2018.01A */
 
 # External simulator source trees — install/build separately, not project source
 mininet-wifi/
@@ -115,6 +121,13 @@ ns-3-dev/
 # Results & evaluation outputs
 results/*.csv
 results/*.json
+results/runs/
+results/*.provenance.json
+!results/byzantine_experiment.json
+!results/fl_resilience_matrix.csv
+!results/fl_resilience_matrix.json
+!results/network_security_experiment.json
+!results/network_security_experiment.json.provenance.json
 results/plots/
 results/.plot_cache/
 experiments/*.csv

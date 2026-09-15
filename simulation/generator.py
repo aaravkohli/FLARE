@@ -13,20 +13,14 @@ from typing import Dict, List, Optional
 
 import numpy as np
 
+from fleet.registry import active_drone_ids, get_drone
+
 logger = logging.getLogger(__name__)
 
 _BASE = Path(__file__).parent.parent
 _JAM_STATE_FILE = _BASE / "simulation" / "jam_state.json"
 
 PATHS = ["direct", "satellite", "mesh"]
-DRONES = ["drone_1", "drone_2", "drone_3"]
-
-# Drone geographic RF offsets
-_DRONE_OFFSET = {
-    "drone_1": {"rssi": 0, "pdr": 0.0, "latency_factor": 1.0},
-    "drone_2": {"rssi": -8, "pdr": -0.05, "latency_factor": 1.3},
-    "drone_3": {"rssi": -15, "pdr": -0.10, "latency_factor": 1.7},
-}
 
 # Normal baseline ranges
 _NORMAL_RANGES = {
@@ -44,7 +38,10 @@ _JAMMED_RANGES = {
 
 
 def _load_jam_state() -> dict:
-    default = {d: {"profile": "none", "paths": [], "gps_drift": 0.0} for d in DRONES}
+    default = {
+        drone_id: {"profile": "none", "paths": [], "gps_drift": 0.0}
+        for drone_id in active_drone_ids()
+    }
     if not _JAM_STATE_FILE.exists():
         return default
     try:
@@ -139,7 +136,15 @@ def generate_metrics(
     profile = drone_jam.get("profile", "none")
     target_paths = set(drone_jam.get("paths", []))
     gps_drift = float(drone_jam.get("gps_drift", 0.0))
-    offset = _DRONE_OFFSET.get(drone_id, _DRONE_OFFSET["drone_1"])
+    drone_record = get_drone(drone_id)
+    if drone_record is None:
+        raise ValueError(f"Unknown or disabled drone_id: {drone_id!r}")
+    rf_profile = drone_record["rf_profile"]
+    offset = {
+        "rssi": float(rf_profile["rssi_offset"]),
+        "pdr": float(rf_profile["pdr_offset"]),
+        "latency_factor": float(rf_profile["latency_factor"]),
+    }
 
     # Expand active paths based on sweep/barrage logic
     if profile == "barrage":
@@ -187,9 +192,42 @@ def generate_metrics(
         lat += gps_drift * 0.0001
         lon += gps_drift * 0.0001
 
+    snapshot_timestamp = time.time()
+    from simulation.insider_state import generate_insider_evidence
+
+    security_evidence = generate_insider_evidence(
+        drone_id, seed=seed, timestamp=snapshot_timestamp
+    )
+    security_evidence.update({
+        "controller_dropped_packets": max(
+            0,
+            security_evidence["controller_rx_packets"]
+            - security_evidence["controller_forwarded_packets"],
+        ),
+        "packet_rate_per_s": float(rng.uniform(20.0, 80.0)),
+        "observed_source_mac": drone_record["mac"],
+        "expected_source_mac": drone_record["mac"],
+        "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "simulation.generator",
+            "independent": False,
+            "collected_at": snapshot_timestamp,
+            "age_s": 0.0,
+        },
+    })
+    # These controlled signals are generated from the scenario, but the
+    # detector receives only the resulting counters/identity evidence. The
+    # profile remains out-of-band ground truth and is never a detector feature.
+    if profile == "dos":
+        security_evidence["controller_dropped_packets"] = int(rng.integers(100, 180))
+        security_evidence["controller_forwarded_packets"] = int(rng.integers(5, 20))
+        security_evidence["packet_rate_per_s"] = float(rng.uniform(500.0, 900.0))
+    elif profile == "spoofing":
+        security_evidence["observed_source_mac"] = "02:ff:ff:ff:ff:fe"
+
     return {
         "drone_id": drone_id,
-        "timestamp": time.time(),
+        "timestamp": snapshot_timestamp,
         "source": "synthetic",
         "paths": paths_data,
         "gps": {
@@ -200,7 +238,8 @@ def generate_metrics(
         "ew_status": {
             "active_attack": profile if profile != "none" else None,
             "jammed_paths": list(target_paths),
-        }
+        },
+        "security_evidence": security_evidence,
     }
 
 
@@ -208,7 +247,7 @@ def generate_swarm_metrics() -> dict:
     jam_state = _load_jam_state()
     return {
         drone_id: generate_metrics(drone_id=drone_id, jam_state=jam_state)
-        for drone_id in DRONES
+        for drone_id in active_drone_ids()
     }
 
 

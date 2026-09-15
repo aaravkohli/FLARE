@@ -9,6 +9,7 @@ import pytest
 
 import orchestrator.loop as orchestrator
 import fl.client as fl_client
+import fleet.registry as fleet_registry
 from sdn import flow_manager
 import sdn.mock_sdn as mock_sdn
 from sdn.route_contract import (
@@ -27,6 +28,7 @@ class FakeOfproto:
     OFPFC_DELETE_STRICT = 4
     OFPFF_SEND_FLOW_REM = 1
     OFPP_ANY = 0xFFFFFFFF
+    OFPP_CONTROLLER = 0xFFFFFFFD
     OFPG_ANY = 0xFFFFFFFF
 
 
@@ -189,6 +191,7 @@ def test_real_flow_replaces_legacy_priorities_and_matches_one_drone():
     assert all(
         message["match"] == {
             "type": "match",
+            "in_port": 5,
             "eth_src": "00:00:00:00:00:03",
         }
         for message in per_drone_deletes
@@ -223,6 +226,26 @@ def test_real_flow_rejects_unknown_drone_before_sending_messages():
     assert datapath.messages == []
 
 
+def test_restricted_control_traffic_follows_installed_route_not_normal_pipeline():
+    datapath = FakeDatapath(1)
+    flow_manager.install_containment(
+        datapath, "drone_1", "restricted", control_path="satellite"
+    )
+    allow = [
+        message for message in datapath.messages
+        if message.get("command") == FakeOfproto.OFPFC_ADD
+        and message.get("priority") == 300
+    ]
+    assert len(allow) == 1
+    assert allow[0]["match"]["udp_dst"] == 9000
+    assert _output_port(allow[0]) == 2
+
+    with pytest.raises(ValueError, match="installed forwarding route"):
+        flow_manager.install_containment(
+            FakeDatapath(1), "drone_1", "control_only"
+        )
+
+
 def test_fallback_rules_cover_every_drone_access_port():
     datapath = FakeDatapath(1)
     flow_manager.install_fallback_rule(datapath)
@@ -233,9 +256,8 @@ def test_fallback_rules_cover_every_drone_access_port():
         if "eth_dst" in message["match"]
     }
     assert destination_rules == {
-        "00:00:00:00:00:02": 4,
-        "00:00:00:00:00:03": 5,
-        "00:00:00:00:00:04": 6,
+        drone["mac"]: drone["access_port"]
+        for drone in fleet_registry.list_drones()
     }
 
 
@@ -267,15 +289,18 @@ def test_required_real_fl_data_never_falls_back_to_synthetic(tmp_path, monkeypat
         )
 
 
-def test_production_fl_clients_mount_and_require_real_data():
+def test_production_fl_client_manager_mounts_and_requires_real_data():
     compose_path = orchestrator._BASE / "docker-compose.prod.yml"
     compose = orchestrator.yaml.safe_load(compose_path.read_text())
 
-    for client_name in ("fl-client-1", "fl-client-2", "fl-client-3"):
-        service = compose["services"][client_name]
-        assert "--real" in service["command"]
-        assert "--require-real-data" in service["command"]
-        assert any(
-            volume.endswith(":/app/datasets/processed:ro")
-            for volume in service["volumes"]
-        )
+    service = compose["services"]["fl-client-manager"]
+    assert "--real" in service["command"]
+    assert "--require-real-data" in service["command"]
+    assert any(
+        volume.endswith(":/app/datasets/processed:ro")
+        for volume in service["volumes"]
+    )
+    assert any(
+        volume.endswith(":/app/config/fleet_registry.yaml:ro")
+        for volume in service["volumes"]
+    )

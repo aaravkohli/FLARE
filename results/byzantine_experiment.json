@@ -1,0 +1,288 @@
+{
+  "seeds": [
+    42
+  ],
+  "rounds_per_seed": 12,
+  "attack": "one noisy client plus one 20x sign-flip poisoned client",
+  "pooled_detection": {
+    "malicious_updates_submitted": 12,
+    "malicious_updates_detected": 12,
+    "malicious_updates_rejected": 12,
+    "benign_updates_submitted": 48,
+    "benign_updates_false_positive": 0,
+    "benign_updates_false_rejected": 0,
+    "recall": 1.0,
+    "precision": 1.0,
+    "benign_false_positive_rate": 0.0
+  },
+  "summary": {
+    "clean_fedavg_accuracy": {
+      "mean": 0.966,
+      "std": 0.0,
+      "min": 0.966,
+      "max": 0.966
+    },
+    "clean_fedavg_f1": {
+      "mean": 0.9624724061810155,
+      "std": 0.0,
+      "min": 0.9624724061810155,
+      "max": 0.9624724061810155
+    },
+    "attacked_fedavg_accuracy": {
+      "mean": 0.15,
+      "std": 0.0,
+      "min": 0.15,
+      "max": 0.15
+    },
+    "secure_accuracy": {
+      "mean": 0.97,
+      "std": 0.0,
+      "min": 0.97,
+      "max": 0.97
+    },
+    "attacked_fedavg_f1": {
+      "mean": 0.1090146750524109,
+      "std": 0.0,
+      "min": 0.1090146750524109,
+      "max": 0.1090146750524109
+    },
+    "secure_f1": {
+      "mean": 0.9671772428884027,
+      "std": 0.0,
+      "min": 0.9671772428884027,
+      "max": 0.9671772428884027
+    },
+    "fedavg_accuracy_degradation": {
+      "mean": 0.816,
+      "std": 0.0,
+      "min": 0.816,
+      "max": 0.816
+    },
+    "secure_accuracy_degradation": {
+      "mean": -0.0040000000000000036,
+      "std": 0.0,
+      "min": -0.0040000000000000036,
+      "max": -0.0040000000000000036
+    },
+    "secure_accuracy_gain": {
+      "mean": 0.82,
+      "std": 0.0,
+      "min": 0.82,
+      "max": 0.82
+    },
+    "secure_f1_gain": {
+      "mean": 0.8581625678359918,
+      "std": 0.0,
+      "min": 0.8581625678359918,
+      "max": 0.8581625678359918
+    },
+    "detection_recall": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "detection_precision": {
+      "mean": 1.0,
+      "std": 0.0,
+      "min": 1.0,
+      "max": 1.0
+    },
+    "benign_false_positive_rate": {
+      "mean": 0.0,
+      "std": 0.0,
+      "min": 0.0,
+      "max": 0.0
+    },
+    "malicious_trust": {
+      "mean": 0.011073,
+      "std": 0.0,
+      "min": 0.011073,
+      "max": 0.011073
+    },
+    "mean_benign_trust": {
+      "mean": 0.9674255,
+      "std": 0.0,
+      "min": 0.9674255,
+      "max": 0.9674255
+    }
+  },
+  "runs": [
+    {
+      "seed": 42,
+      "rounds": 12,
+      "attack": "one noisy client plus one 20x sign-flip poisoned client",
+      "clean_fedavg": {
+        "mode": "clean",
+        "accuracy": 0.966,
+        "f1": 0.9624724061810155,
+        "malicious_updates_submitted": 0,
+        "benign_updates_submitted": 48,
+        "malicious_updates_detected": 0,
+        "malicious_updates_rejected": 0,
+        "benign_updates_false_positive": 0,
+        "benign_updates_false_rejected": 0,
+        "malicious_client_id": "benchmark_client_5",
+        "noisy_client_id": "benchmark_client_4"
+      },
+      "attacked_fedavg": {
+        "mode": "fedavg_attack",
+        "accuracy": 0.15,
+        "f1": 0.1090146750524109,
+        "malicious_updates_submitted": 12,
+        "benign_updates_submitted": 48,
+        "malicious_updates_detected": 0,
+        "malicious_updates_rejected": 0,
+        "benign_updates_false_positive": 0,
+        "benign_updates_false_rejected": 0,
+        "malicious_client_id": "benchmark_client_5",
+        "noisy_client_id": "benchmark_client_4"
+      },
+      "attacked_trust_weighted": {
+        "mode": "secure",
+        "accuracy": 0.97,
+        "f1": 0.9671772428884027,
+        "malicious_updates_submitted": 12,
+        "benign_updates_submitted": 48,
+        "malicious_updates_detected": 12,
+        "malicious_updates_rejected": 12,
+        "benign_updates_false_positive": 0,
+        "benign_updates_false_rejected": 0,
+        "malicious_client_id": "benchmark_client_5",
+        "noisy_client_id": "benchmark_client_4",
+        "aggregation_method": "trust_weighted_fedavg",
+        "final_client_security": [
+          {
+            "client_id": "benchmark_client_1",
+            "update_norm": 0.097951,
+            "distance_from_median": 0.21002,
+            "cosine_similarity": 0.983881,
+            "norm_robust_z": 0.0,
+            "distance_robust_z": 0.0,
+            "cosine_robust_z": 0.0,
+            "history_norm_robust_z": 0.0,
+            "deviation_score": 0.0,
+            "evidence_count": 0,
+            "status": "NORMAL",
+            "population_dispersion": 0.481838,
+            "adaptive_z_threshold": 4.764825,
+            "self_consistency": 0.680352,
+            "norm_ratio": 0.992537,
+            "extreme_evidence": false,
+            "action": "ACCEPTED",
+            "trust_score": 0.997177,
+            "aggregation_weight": 0.257688,
+            "reported_num_examples": 500,
+            "effective_num_examples": 500.0,
+            "rejection_reason": null
+          },
+          {
+            "client_id": "benchmark_client_2",
+            "update_norm": 0.098687,
+            "distance_from_median": 0.319509,
+            "cosine_similarity": 0.951599,
+            "norm_robust_z": 0.0,
+            "distance_robust_z": 0.0,
+            "cosine_robust_z": 0.0,
+            "history_norm_robust_z": 0.0,
+            "deviation_score": 0.0,
+            "evidence_count": 0,
+            "status": "NORMAL",
+            "population_dispersion": 0.481838,
+            "adaptive_z_threshold": 4.764825,
+            "self_consistency": 0.69743,
+            "norm_ratio": 1.0,
+            "extreme_evidence": false,
+            "action": "ACCEPTED",
+            "trust_score": 0.997,
+            "aggregation_weight": 0.257643,
+            "reported_num_examples": 500,
+            "effective_num_examples": 500.0,
+            "rejection_reason": null
+          },
+          {
+            "client_id": "benchmark_client_3",
+            "update_norm": 0.099994,
+            "distance_from_median": 0.462242,
+            "cosine_similarity": 0.890674,
+            "norm_robust_z": 0.67449,
+            "distance_robust_z": 0.879281,
+            "cosine_robust_z": 1.272981,
+            "history_norm_robust_z": 0.0,
+            "deviation_score": 0.14899,
+            "evidence_count": 0,
+            "status": "NORMAL",
+            "population_dispersion": 0.481838,
+            "adaptive_z_threshold": 4.764825,
+            "self_consistency": 0.691408,
+            "norm_ratio": 1.013237,
+            "extreme_evidence": false,
+            "action": "ACCEPTED",
+            "trust_score": 0.924752,
+            "aggregation_weight": 0.238972,
+            "reported_num_examples": 500,
+            "effective_num_examples": 500.0,
+            "rejection_reason": null
+          },
+          {
+            "client_id": "benchmark_client_4",
+            "update_norm": 0.092636,
+            "distance_from_median": 0.239003,
+            "cosine_similarity": 0.968208,
+            "norm_robust_z": 0.0,
+            "distance_robust_z": 0.0,
+            "cosine_robust_z": 0.0,
+            "history_norm_robust_z": 0.0,
+            "deviation_score": 0.0,
+            "evidence_count": 0,
+            "status": "NORMAL",
+            "population_dispersion": 0.481838,
+            "adaptive_z_threshold": 4.764825,
+            "self_consistency": 0.650701,
+            "norm_ratio": 0.938683,
+            "extreme_evidence": false,
+            "action": "ACCEPTED",
+            "trust_score": 0.950773,
+            "aggregation_weight": 0.245697,
+            "reported_num_examples": 500,
+            "effective_num_examples": 500.0,
+            "rejection_reason": null
+          },
+          {
+            "client_id": "benchmark_client_5",
+            "update_norm": 2.027442,
+            "distance_from_median": 21.337066,
+            "cosine_similarity": -0.914212,
+            "norm_robust_z": 20.0,
+            "distance_robust_z": 20.0,
+            "cosine_robust_z": 20.0,
+            "history_norm_robust_z": 0.0,
+            "deviation_score": 0.9,
+            "evidence_count": 3,
+            "status": "MALICIOUS",
+            "population_dispersion": 0.481838,
+            "adaptive_z_threshold": 4.764825,
+            "self_consistency": 0.697372,
+            "norm_ratio": 20.54407,
+            "extreme_evidence": true,
+            "action": "REJECTED",
+            "trust_score": 0.011073,
+            "aggregation_weight": 0.0,
+            "reported_num_examples": 500,
+            "effective_num_examples": 500.0,
+            "rejection_reason": "multiple robust outlier signals"
+          }
+        ],
+        "malicious_trust": 0.011073,
+        "mean_benign_trust": 0.9674255,
+        "detection_recall": 1.0,
+        "detection_precision": 1.0,
+        "benign_false_positive_rate": 0.0
+      },
+      "fedavg_accuracy_degradation": 0.816,
+      "secure_accuracy_degradation": -0.0040000000000000036,
+      "secure_accuracy_gain_over_attacked_fedavg": 0.82,
+      "secure_f1_gain_over_attacked_fedavg": 0.8581625678359918
+    }
+  ]
+}

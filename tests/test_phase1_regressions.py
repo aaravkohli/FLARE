@@ -14,6 +14,7 @@ import api.server as api_server
 import orchestrator.loop as orchestrator
 import simulation.jammer as jammer
 import rl.agent as rl_agent_module
+from fleet.registry import active_drone_ids
 from api.server import JamRequest, PredictRequest
 from rl.agent import RLAgent
 from rl.env import DronePathEnv
@@ -64,7 +65,7 @@ def test_jammer_state_updates_are_complete_and_clearable(tmp_path, monkeypatch):
     monkeypatch.setattr(jammer, "_JAM_STATE_FILE", state_path)
 
     targets = jammer.set_jamming_state("all", ["direct"], "gps_spoofing")
-    assert targets == ["drone_1", "drone_2", "drone_3"]
+    assert targets == list(active_drone_ids())
     state = json.loads(state_path.read_text())
     assert all(state[target]["gps_drift"] == 120.0 for target in targets)
 

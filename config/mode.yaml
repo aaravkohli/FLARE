@@ -17,3 +17,8 @@ real:
   ryu_host: "127.0.0.1"
   ryu_port: 8080
   loop_interval_s: 0.5
+  telemetry_cache_ttl_s: 2.0
+
+deployment:
+  manifest_path: models/deployment_manifest.json
+  poll_interval_s: 0.5

@@ -61,6 +61,7 @@ import csv
 import json
 import logging
 import os
+import tempfile
 import time
 from pathlib import Path
 from typing import Any, Dict, List, Optional
@@ -79,6 +80,9 @@ _CSV_COLUMNS = [
     "compression_ratio", "bytes_saved",
     # Trust
     "mean_trust", "min_trust", "quarantine_rate", "n_quarantined",
+    "suspected_malicious_clients", "rejected_updates", "down_weighted_updates",
+    "poisoning_attempts_detected",
+    "effective_clip_norm", "sample_count_cap", "sample_count_capped_clients",
     # Selection
     "jains_fairness", "selection_entropy",
     # Personalization
@@ -131,6 +135,40 @@ class FLMetricsTracker:
         self._round_start: float = time.time()
         self._convergence_round: Optional[int] = None
         self._csv_initialized: bool = False
+        self._ensure_csv_schema()
+
+    def _ensure_csv_schema(self) -> None:
+        """Atomically add newly introduced scalar columns to an existing CSV."""
+        if not self._csv_path.exists() or self._csv_path.stat().st_size == 0:
+            return
+        with open(self._csv_path, newline="") as handle:
+            reader = csv.DictReader(handle)
+            if reader.fieldnames == _CSV_COLUMNS:
+                return
+            rows = list(reader)
+
+        temp_path = None
+        try:
+            with tempfile.NamedTemporaryFile(
+                mode="w",
+                newline="",
+                encoding="utf-8",
+                prefix=f".{self._csv_path.name}.",
+                suffix=".tmp",
+                dir=self._csv_path.parent,
+                delete=False,
+            ) as handle:
+                writer = csv.DictWriter(handle, fieldnames=_CSV_COLUMNS, extrasaction="ignore")
+                writer.writeheader()
+                for row in rows:
+                    writer.writerow({key: row.get(key, "") for key in _CSV_COLUMNS})
+                handle.flush()
+                os.fsync(handle.fileno())
+                temp_path = Path(handle.name)
+            os.replace(temp_path, self._csv_path)
+        finally:
+            if temp_path is not None and temp_path.exists():
+                temp_path.unlink()
 
     def _empty_row(self) -> Dict[str, Any]:
         return {col: None for col in _CSV_COLUMNS}
@@ -227,6 +265,22 @@ class FLMetricsTracker:
         if trust_snapshot:
             min_t = min(s.get("trust_score", 1.0) for s in trust_snapshot)
             self.update("min_trust", round(min_t, 4))
+
+    def update_security_audit(self, audit: dict) -> None:
+        """Store round-level and per-client Byzantine defense evidence."""
+        self.update("suspected_malicious_clients", audit.get("suspected_malicious_clients", 0))
+        self.update("rejected_updates", audit.get("rejected_updates", 0))
+        self.update("down_weighted_updates", audit.get("down_weighted_updates", 0))
+        self.update(
+            "poisoning_attempts_detected",
+            audit.get("total_poisoning_attempts_detected", 0),
+        )
+        self.update("effective_clip_norm", audit.get("effective_clip_norm"))
+        self.update("sample_count_cap", audit.get("sample_count_cap"))
+        self.update("sample_count_capped_clients", audit.get("sample_count_capped_clients", 0))
+        # This structured field is intentionally JSON-only; the CSV retains the
+        # scalar columns above for straightforward experiment analysis.
+        self._current["client_security"] = audit.get("clients", [])
 
     def commit(self, round_num: int) -> Dict[str, Any]:
         """

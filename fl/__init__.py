@@ -6,7 +6,10 @@ Public API:
     from fl.aggregator import secure_aggregate
     from fl.privacy import PrivacyAccountant, add_server_side_dp_noise
     from fl.compression import GradientCompressor
-    from fl.trust import TrustRegistry, jains_fairness_index
+    from fl.trust import (
+        ClientIdentityRegistry, TrustManager, UpdateAnalyzer,
+        TrustRegistry, jains_fairness_index,
+    )
     from fl.drift import DriftRegistry
     from fl.selection import AdaptiveClientSelector
     from fl.personalization import PersonalizationManager
@@ -24,7 +27,8 @@ __all__ = [
     "PrivacyAccountant", "add_server_side_dp_noise",
     # Compression (v2)
     "GradientCompressor",
-    # Trust (v2)
+    # Production Byzantine trust plus legacy selector compatibility
+    "ClientIdentityRegistry", "TrustManager", "UpdateAnalyzer",
     "TrustRegistry", "jains_fairness_index",
     # Drift (v2)
     "DriftRegistry",

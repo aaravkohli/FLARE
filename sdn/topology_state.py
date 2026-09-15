@@ -5,7 +5,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Iterable, Mapping, Optional
 
-from sdn.route_contract import ROUTABLE_PATHS, VALID_DRONES
+from fleet.registry import list_drones
+from sdn.route_contract import ROUTABLE_PATHS
 
 
 @dataclass(frozen=True)
@@ -56,8 +57,8 @@ class TopologyState:
             raise ValueError("transit_dpids must define every routable path")
         if set(self.path_ports) != set(ROUTABLE_PATHS):
             raise ValueError("path_ports must define every routable path")
-        if set(self.drone_access_ports) != set(VALID_DRONES):
-            raise ValueError("drone_access_ports must define every drone")
+        if not self.drone_access_ports:
+            raise ValueError("drone_access_ports must define at least one drone")
 
         self._connected: set[int] = set()
         self._inventory_complete: set[int] = set()
@@ -77,8 +78,8 @@ class TopologyState:
                 for path in ROUTABLE_PATHS
             },
             drone_access_ports={
-                drone: values["access_port"]
-                for drone, values in config["drones"].items()
+                record["drone_id"]: record["access_port"]
+                for record in list_drones(enabled_only=True)
             },
         )
 
@@ -118,9 +119,10 @@ class TopologyState:
         )
 
     def _required_ports(self, path_name: str, drone_id: str) -> dict[int, set[int]]:
+        self._sync_registered_drones()
         if path_name not in ROUTABLE_PATHS:
             raise ValueError(f"Unknown route: {path_name!r}")
-        if drone_id not in VALID_DRONES:
+        if drone_id not in self.drone_access_ports:
             raise ValueError(f"Unknown drone: {drone_id!r}")
 
         path_port = self.path_ports[path_name]
@@ -132,6 +134,13 @@ class TopologyState:
             },
             transit_dpid: {1, 2},
             self.egress_dpid: {path_port, self.base_station_port},
+        }
+
+    def _sync_registered_drones(self) -> None:
+        """Refresh access-port bindings from the canonical fleet registry."""
+        self.drone_access_ports = {
+            record["drone_id"]: int(record["access_port"])
+            for record in list_drones(enabled_only=True)
         }
 
     def route_status(self, path_name: str, drone_id: str) -> RouteAvailability:
@@ -159,6 +168,7 @@ class TopologyState:
         ]
 
     def snapshot(self) -> dict:
+        self._sync_registered_drones()
         return {
             "ready": self.ready,
             "expected_switches": sorted(self.expected_dpids),
@@ -173,6 +183,6 @@ class TopologyState:
             },
             "available_paths": {
                 drone: self.available_paths(drone)
-                for drone in sorted(VALID_DRONES)
+                for drone in sorted(self.drone_access_ports)
             },
         }

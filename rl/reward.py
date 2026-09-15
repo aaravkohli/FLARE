@@ -15,6 +15,7 @@ _BASE = Path(__file__).parent.parent
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
 
 REWARD_DEFINITION = "routing_qos_v2"
+SECURE_REWARD_DEFINITION = "routing_security_qos_v3"
 PATH_NAMES = ("direct", "satellite", "mesh")
 PATH_ENERGY_COSTS = (0.2, 0.6, 0.9)
 MAX_LATENCY_MS = (100.0, 300.0, 600.0)
@@ -44,6 +45,7 @@ class RewardBreakdown:
     loss_penalty: float
     switching_penalty: float
     total: float
+    held: bool = False
 
     def as_dict(self) -> dict:
         return asdict(self)
@@ -145,4 +147,51 @@ def compute_routing_reward(
         loss_penalty=loss_penalty,
         switching_penalty=switching_penalty,
         total=float(total),
+    )
+
+
+def compute_secure_routing_reward(
+    action: int,
+    path_scores: Sequence[float],
+    path_latencies: Sequence[float],
+    path_losses: Sequence[float],
+    *,
+    previous_action: Optional[int] = None,
+    weights: RewardWeights = DEFAULT_REWARD_WEIGHTS,
+    hold_penalty: float = 0.35,
+) -> RewardBreakdown:
+    """v3 reward with an explicit HOLD action at index three.
+
+    HOLD loses availability but avoids forwarding across a route already judged
+    unsafe.  It is therefore preferable to highly negative unsafe-route reward,
+    but remains worse than a healthy forwarding path.
+    """
+    if int(action) != len(PATH_NAMES):
+        safe_previous = previous_action
+        if safe_previous == len(PATH_NAMES):
+            safe_previous = None
+        return compute_routing_reward(
+            action,
+            path_scores,
+            path_latencies,
+            path_losses,
+            previous_action=safe_previous,
+            weights=weights,
+        )
+    switched = previous_action is not None and previous_action != action
+    switching_penalty = weights.switching if switched else 0.0
+    total = -max(0.0, float(hold_penalty)) - switching_penalty
+    return RewardBreakdown(
+        throughput_norm=0.0,
+        delay_norm=0.0,
+        energy_norm=0.0,
+        loss_norm=0.0,
+        switched=switched,
+        throughput_contribution=0.0,
+        delay_penalty=0.0,
+        energy_penalty=0.0,
+        loss_penalty=max(0.0, float(hold_penalty)),
+        switching_penalty=switching_penalty,
+        total=total,
+        held=True,
     )

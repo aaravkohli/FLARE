@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/wh
     scikit-learn opacus
 
 COPY fl/ fl/
+COPY fleet/ fleet/
 COPY config/ config/
 COPY schemas/ schemas/
 

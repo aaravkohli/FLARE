@@ -19,6 +19,7 @@ from rl.traces import (  # noqa: E402
     load_synchronized_trace,
     trace_fingerprint,
 )
+from provenance import promote_run, write_experiment_run  # noqa: E402
 
 
 RL_CONFIG = yaml.safe_load((BASE / "config" / "rl_config.yaml").read_text())
@@ -48,6 +49,7 @@ def main() -> None:
         type=Path,
         default=BASE / "results" / "ns3_evaluation_report.json",
     )
+    parser.add_argument("--promote", action="store_true")
     args = parser.parse_args()
 
     frame = load_synchronized_trace(args.trace)
@@ -95,8 +97,32 @@ def main() -> None:
         },
         **evaluation,
     }
-    args.report.parent.mkdir(parents=True, exist_ok=True)
-    args.report.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
+    run_artifact = write_experiment_run(
+        base=BASE,
+        experiment="ns3_routing_evaluation",
+        protocol_version="ns3_packet_trace_evaluation_v1",
+        report=report,
+        seeds=[],
+        evidence_category="packet_simulation",
+        config_paths=[Path("config/rl_config.yaml")],
+        checkpoint_paths=[
+            args.checkpoint,
+            args.checkpoint.with_name(f"{args.checkpoint.name}.metadata.json"),
+        ],
+        dataset_paths=[args.trace],
+        dataset_roles={str(args.trace): "packet_simulation_evaluation"},
+        dataset_fingerprints={str(args.trace): trace_fingerprint(frame)},
+        parameters={"episodes_per_scenario": episode_count},
+    )
+    if args.promote:
+        promote_run(
+            base=BASE,
+            run_dir=run_artifact.run_dir,
+            published_path=args.report,
+            expected_experiment="ns3_routing_evaluation",
+            expected_protocol="ns3_packet_trace_evaluation_v1",
+            required_seeds=[],
+        )
 
     print("\nPacket-level ns-3 routing evaluation")
     for scenario, result in evaluation["scenarios"].items():
@@ -107,7 +133,7 @@ def main() -> None:
             f"CI±{runtime['reward_95ci_half_width']:.3f} "
             f"delta-vs-greedy={delta['mean']:+.3f}±{delta['95ci_half_width']:.3f}"
         )
-    print(f"Report: {args.report}")
+    print(f"Report: {run_artifact.report_path}")
 
 
 if __name__ == "__main__":

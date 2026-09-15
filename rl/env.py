@@ -42,6 +42,8 @@ from rl.reward import (
     compute_routing_reward,
 )
 from rl.traces import load_synchronized_trace, trace_fingerprint
+from rl.reward import compute_secure_routing_reward
+from schemas.contracts import ROUTING_ACTIONS_V3, ROUTING_STATE_V3
 
 logger = logging.getLogger(__name__)
 
@@ -217,6 +219,126 @@ class DronePathEnv(gym.Env):
             self._path_losses,
             previous_action=self._prev_action,
         )
+
+
+class TrustAwareDronePathEnv(DronePathEnv):
+    """routing_state_v3: QoS state plus cross-layer security evidence.
+
+    Additional inputs are client trust, insider risk, containment severity, and
+    evidence freshness.  Action 3 is an executable fail-closed HOLD.
+    """
+
+    contract_name = ROUTING_STATE_V3
+
+    def __init__(self, render_mode: Optional[str] = None):
+        super().__init__(render_mode=render_mode)
+        self.obs_dim = 18
+        self.num_paths = 3
+        self.action_space = gym.spaces.Discrete(len(ROUTING_ACTIONS_V3))
+        self.observation_space = gym.spaces.Box(
+            low=np.array([0.0] * 12 + [-np.inf, 0.0] + [0.0] * 4, dtype=np.float32),
+            high=np.array([1.0] * 12 + [np.inf, 1.0] + [1.0] * 4, dtype=np.float32),
+            dtype=np.float32,
+        )
+        self._client_trust = 1.0
+        self._insider_risk = 0.0
+        self._containment_score = 0.0
+        self._evidence_freshness = 1.0
+
+    def inject_security_context(
+        self,
+        *,
+        client_trust: float,
+        insider_risk: float,
+        containment_score: float,
+        evidence_freshness: float,
+    ) -> None:
+        self._client_trust = float(np.clip(client_trust, 0.0, 1.0))
+        self._insider_risk = float(np.clip(insider_risk, 0.0, 1.0))
+        self._containment_score = float(np.clip(containment_score, 0.0, 1.0))
+        self._evidence_freshness = float(np.clip(evidence_freshness, 0.0, 1.0))
+
+    def _build_obs(self) -> np.ndarray:
+        prev_action_onehot = np.zeros(3, dtype=np.float32)
+        if self._prev_action is not None and self._prev_action < 3:
+            prev_action_onehot[self._prev_action] = 1.0
+        base = np.concatenate([
+            self._path_scores,
+            self._path_latencies,
+            self._path_losses,
+            prev_action_onehot,
+            [self._prev_reward],
+            [self._step / self.max_steps],
+        ])
+        security = np.asarray([
+            self._client_trust,
+            self._insider_risk,
+            self._containment_score,
+            self._evidence_freshness,
+        ], dtype=np.float32)
+        return np.concatenate([base, security]).astype(np.float32)
+
+    def reset(self, *, seed: Optional[int] = None, options: Optional[dict] = None):
+        # Base reset safely builds through this class after security defaults are
+        # established in __init__.
+        observation, info = super().reset(seed=seed, options=options)
+        self.inject_security_context(
+            client_trust=float(self.np_random.uniform(0.75, 1.0)),
+            insider_risk=float(self.np_random.uniform(0.0, 0.20)),
+            containment_score=0.0,
+            evidence_freshness=float(self.np_random.uniform(0.8, 1.0)),
+        )
+        return self._build_obs(), info
+
+    def step(self, action: int):
+        assert self.action_space.contains(action), f"Invalid action {action}"
+        reward_breakdown = self._reward_breakdown(action)
+        decision_scores = self._path_scores.copy()
+        decision_latencies = self._path_latencies.copy()
+        decision_losses = self._path_losses.copy()
+        self._prev_action = int(action)
+        self._prev_reward = reward_breakdown.total
+        self._step += 1
+        self._evolve_rf_state()
+        # Security incidents are uncommon but sustained for learnable episodes.
+        if self.np_random.random() < 0.04:
+            self._insider_risk = float(self.np_random.uniform(0.75, 1.0))
+            self._client_trust = float(self.np_random.uniform(0.0, 0.35))
+        else:
+            self._insider_risk = max(0.0, self._insider_risk * 0.96)
+            self._client_trust = min(1.0, self._client_trust + 0.01)
+        self._containment_score = max(self._insider_risk, 1.0 - self._client_trust)
+        terminated = self._step >= self.max_steps
+        return self._build_obs(), reward_breakdown.total, terminated, False, {
+            "path_name": ROUTING_ACTIONS_V3[int(action)],
+            "reward": reward_breakdown.total,
+            "reward_definition": "routing_security_qos_v3",
+            "reward_components": reward_breakdown.as_dict(),
+            "path_scores": decision_scores.tolist(),
+            "latencies": decision_latencies.tolist(),
+            "packet_losses": decision_losses.tolist(),
+            "security_context": self._build_obs()[-4:].tolist(),
+            "step": self._step,
+        }
+
+    def _reward_breakdown(self, action: int) -> RewardBreakdown:
+        # Unsafe forwarding from a likely compromised node gets an additional
+        # cost so the learnable optimum becomes HOLD under corroborated risk.
+        result = compute_secure_routing_reward(
+            action,
+            self._path_scores,
+            self._path_latencies,
+            self._path_losses,
+            previous_action=self._prev_action,
+            hold_penalty=float(_RL_CFG.get("routing_v3", {}).get("hold_penalty", 0.35)),
+        )
+        if action < 3 and max(self._insider_risk, 1.0 - self._client_trust) >= 0.72:
+            payload = result.as_dict()
+            payload["loss_penalty"] += 1.0
+            payload["total"] -= 1.0
+            payload.pop("held", None)
+            return RewardBreakdown(**payload)
+        return result
 
     def _render_human(
         self,

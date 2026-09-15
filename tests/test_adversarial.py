@@ -71,6 +71,19 @@ def get_valid_token():
         return json.loads(r.read())["access_token"]
 
 
+def active_fleet_ids(token):
+    code, payload = _req(
+        "GET", "/fleet/drones",
+        headers={"Authorization": f"Bearer {token}"},
+    )
+    if code != 200 or not isinstance(payload, dict):
+        return code, []
+    return code, [
+        row["drone_id"] for row in payload.get("drones", [])
+        if isinstance(row, dict) and isinstance(row.get("drone_id"), str)
+    ]
+
+
 def check(name, condition, detail="", warn=False):
     if condition:
         print(f"  {PASS_COLOR}✓ PASS{RESET} {name}")
@@ -286,24 +299,32 @@ def test_dos_resilience(token):
 def test_swarm(token):
     section("5. Multi-Drone Swarm Functionality")
     auth = {"Authorization": f"Bearer {token}"}
+    fleet_code, active_ids = active_fleet_ids(token)
+    check("Active fleet registry → 200", fleet_code == 200, f"got {fleet_code}")
+    check("Active fleet is nonempty", bool(active_ids), f"active={active_ids}")
 
-    # /swarm/status returns all 3 drones
+    # /swarm/status returns historical decisions and safety events; retired
+    # identities may remain until their persisted history is cleared.
     code, data = _req("GET", "/swarm/status", headers=auth)
     check("/swarm/status → 200", code == 200, f"got {code}")
     if code == 200:
         drones = data.get("drones", {})
-        check("Swarm has 3 drone entries", len(drones) == 3, f"got {len(drones)}")
-        for drone_id in ["drone_1", "drone_2", "drone_3"]:
-            d = drones.get(drone_id, {})
+        for drone_id, d in drones.items():
             check(f"  {drone_id} has path_name", "path_name" in d, f"keys: {list(d.keys())}")
             check(f"  {drone_id} has threat_level", "threat_level" in d, f"keys: {list(d.keys())}")
+            check(f"  {drone_id} identifies its source", "source" in d, f"keys: {list(d.keys())}")
 
-    # /swarm/metrics returns all 3 drones
+    # /swarm/metrics includes all active identities, plus any historical
+    # telemetry still persisted for retired identities.
     code, data = _req("GET", "/swarm/metrics", headers=auth)
     check("/swarm/metrics → 200", code == 200, f"got {code}")
     if code == 200:
-        check("Swarm metrics has 3 drones", len(data) == 3, f"got {len(data)}")
-        for did in ["drone_1", "drone_2", "drone_3"]:
+        check(
+            "Swarm metrics covers the active fleet",
+            set(active_ids).issubset(set(data)),
+            f"metrics={list(data)}, active={active_ids}",
+        )
+        for did in active_ids:
             check(f"  {did} metrics present", did in data, f"keys: {list(data.keys())}")
 
     # Drone 2 metrics differ from Drone 1 (has offset applied)
@@ -369,6 +390,11 @@ def test_jam_roundtrip(token):
 def test_jam_all(token):
     section("8. Swarm-Wide Jamming")
     auth = {"Authorization": f"Bearer {token}"}
+    fleet_code, active_ids = active_fleet_ids(token)
+    check("Active fleet registry for swarm-wide scenario → 200", fleet_code == 200, f"got {fleet_code}")
+    if not active_ids:
+        check("Swarm-wide scenario requires active identities", False, "fleet is empty")
+        return
 
     # Trigger jam on 'all'
     code, resp = _req("POST", "/jam", data={"paths": ["direct"], "duration": 5, "drone_id": "all"}, headers=auth)
@@ -376,7 +402,7 @@ def test_jam_all(token):
 
     time.sleep(0.5)
     # Check all drones are jammed
-    for did in ["drone_1", "drone_2", "drone_3"]:
+    for did in active_ids:
         _, m = _req("GET", f"/metrics/live?drone_id={did}", headers=auth)
         pdr = m["paths"][0]["pdr"]
         check(f"  {did} is jammed (PDR={pdr:.2f})", pdr < 0.4)
@@ -384,7 +410,7 @@ def test_jam_all(token):
     # Clear 'all'
     _req("POST", "/jam", data={"paths": [], "duration": 0, "drone_id": "all", "profile": "none"}, headers=auth)
     time.sleep(0.5)
-    for did in ["drone_1", "drone_2", "drone_3"]:
+    for did in active_ids:
         _, m = _req("GET", f"/metrics/live?drone_id={did}", headers=auth)
         pdr = m["paths"][0]["pdr"]
         check(f"  {did} is recovered (PDR={pdr:.2f})", pdr > 0.7)

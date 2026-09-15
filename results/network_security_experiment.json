@@ -1,0 +1,7540 @@
+{
+  "binary_detection": {
+    "false_negatives": 0,
+    "false_positive_rate": 0.0,
+    "false_positives": 0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "true_negatives": 150,
+    "true_positives": 600,
+    "unavailable_count": 0
+  },
+  "evidence_category": "controlled_simulation",
+  "experiment": "controlled_network_security_v1",
+  "limitations": [
+    "Controlled synthetic counter distributions only.",
+    "Does not establish real-network, RF, GPS, or field accuracy."
+  ],
+  "profiles": [
+    "normal",
+    "dos",
+    "identity_spoofing",
+    "metric_falsification",
+    "replay"
+  ],
+  "promotion_gate": {
+    "false_positive_rate_max": 0.05,
+    "passed": true,
+    "precision_min": 0.9,
+    "recall_min": 0.9,
+    "unavailable_count_max": 0
+  },
+  "records": [
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.14726098230779658,
+      "sample": 0,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07592099001044297,
+      "sample": 1,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07578983383080214,
+      "sample": 2,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.16306464003335952,
+      "sample": 3,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.056890666054906336,
+      "sample": 4,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10534956302293658,
+      "sample": 5,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08625168578729696,
+      "sample": 6,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07851900248814903,
+      "sample": 7,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1377721969370627,
+      "sample": 8,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08479318941417423,
+      "sample": 9,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10425704954049674,
+      "sample": 10,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12222765685312,
+      "sample": 11,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12762746312839268,
+      "sample": 12,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08399509927345683,
+      "sample": 13,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09275476685680899,
+      "sample": 14,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1571262266373974,
+      "sample": 15,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1382584099377022,
+      "sample": 16,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11393240476378028,
+      "sample": 17,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12345360723089913,
+      "sample": 18,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.06207112122333355,
+      "sample": 19,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1455515086431739,
+      "sample": 20,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10688193764937015,
+      "sample": 21,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.14595998198037624,
+      "sample": 22,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.15010819273512535,
+      "sample": 23,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10617066084711532,
+      "sample": 24,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.06663714425061931,
+      "sample": 25,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13964008047549983,
+      "sample": 26,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.16198606826948395,
+      "sample": 27,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11931504265826152,
+      "sample": 28,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08625151598998185,
+      "sample": 29,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1298000244430221,
+      "sample": 30,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09498985001540731,
+      "sample": 31,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1407524425950639,
+      "sample": 32,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12194253194994988,
+      "sample": 33,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11027839160451483,
+      "sample": 34,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12476637138389679,
+      "sample": 35,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.15597879557345798,
+      "sample": 36,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.03927684846091936,
+      "sample": 37,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0904489968545872,
+      "sample": 38,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07152258865337356,
+      "sample": 39,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13830113871406377,
+      "sample": 40,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11144207889574863,
+      "sample": 41,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08532025509685343,
+      "sample": 42,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13884753040549735,
+      "sample": 43,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09266471640928033,
+      "sample": 44,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11072431663105738,
+      "sample": 45,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11438371503898163,
+      "sample": 46,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11215574130536365,
+      "sample": 47,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.06615140669121061,
+      "sample": 48,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.05989368945120574,
+      "sample": 49,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 0,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 1,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 2,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 3,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 4,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 5,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 6,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 7,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 8,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 9,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 10,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 11,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 12,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 13,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 14,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 15,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 16,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 17,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 18,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 19,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 20,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 21,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 22,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 23,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 24,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 25,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 26,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 27,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 28,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 29,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 30,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 31,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 32,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 33,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 34,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 35,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 36,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 37,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 38,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 39,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 40,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 41,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 42,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 43,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 44,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 45,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 46,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 47,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 48,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 49,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 0,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 1,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 2,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 3,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 4,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 5,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 6,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 7,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 8,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 9,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 10,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 11,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 12,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 13,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 14,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 15,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 16,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 17,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 18,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 19,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 20,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 21,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 22,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 23,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 24,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 25,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 26,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 27,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 28,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 29,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 30,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 31,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 32,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 33,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 34,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 35,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 36,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 37,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 38,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 39,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 40,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 41,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 42,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 43,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 44,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 45,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 46,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 47,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 48,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 49,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 0,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 1,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 2,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 3,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 4,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 5,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 6,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 7,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 8,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 9,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 10,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 11,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 12,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 13,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 14,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 15,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 16,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 17,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 18,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 19,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 20,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 21,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 22,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 23,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 24,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 25,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 26,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 27,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 28,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 29,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 30,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 31,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 32,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 33,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 34,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 35,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 36,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 37,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 38,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 39,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 40,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 41,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 42,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 43,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 44,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 45,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 46,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 47,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 48,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 49,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 0,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 1,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 2,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 3,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 4,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 5,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 6,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 7,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 8,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 9,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 10,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 11,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 12,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 13,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 14,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 15,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 16,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 17,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 18,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 19,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 20,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 21,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 22,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 23,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 24,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 25,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 26,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 27,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 28,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 29,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 30,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 31,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 32,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 33,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 34,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 35,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 36,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 37,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 38,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 39,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 40,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 41,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 42,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 43,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 44,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 45,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 46,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 47,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 48,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 49,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.105063547090666,
+      "sample": 0,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.14712565311251713,
+      "sample": 1,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1389993810579059,
+      "sample": 2,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10595200486618042,
+      "sample": 3,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10778654590083556,
+      "sample": 4,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08957817355478523,
+      "sample": 5,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.15726897076077678,
+      "sample": 6,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.05634241676403974,
+      "sample": 7,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1429043328290361,
+      "sample": 8,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10604011734060256,
+      "sample": 9,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.04494436899845501,
+      "sample": 10,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10569160721137424,
+      "sample": 11,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1146409105285781,
+      "sample": 12,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11088583130096805,
+      "sample": 13,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08048440446988378,
+      "sample": 14,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08205206491128718,
+      "sample": 15,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09417080786764227,
+      "sample": 16,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11147599246024377,
+      "sample": 17,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10546560630284799,
+      "sample": 18,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10781473921273965,
+      "sample": 19,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1483553624012415,
+      "sample": 20,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11841520868417794,
+      "sample": 21,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07384303974193188,
+      "sample": 22,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.15054160049602625,
+      "sample": 23,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11515627929931181,
+      "sample": 24,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09306893909062113,
+      "sample": 25,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13290430678660398,
+      "sample": 26,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1273727895629839,
+      "sample": 27,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10629643506506357,
+      "sample": 28,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07262699181381768,
+      "sample": 29,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.15599144943902576,
+      "sample": 30,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0967779393191967,
+      "sample": 31,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13138660362627128,
+      "sample": 32,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1382475326281231,
+      "sample": 33,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09351061901794784,
+      "sample": 34,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0876153842175515,
+      "sample": 35,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1629393195136477,
+      "sample": 36,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09938136527196294,
+      "sample": 37,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0965699168458072,
+      "sample": 38,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0961184572326443,
+      "sample": 39,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1494317715864454,
+      "sample": 40,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.06306996282450336,
+      "sample": 41,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12366386753709921,
+      "sample": 42,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08015606764382795,
+      "sample": 43,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09228432090599817,
+      "sample": 44,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.06554007783712634,
+      "sample": 45,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08924560580073476,
+      "sample": 46,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11072970898831198,
+      "sample": 47,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1558864665283915,
+      "sample": 48,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1279946543043141,
+      "sample": 49,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 0,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 1,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 2,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 3,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 4,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 5,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 6,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 7,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 8,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 9,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 10,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 11,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 12,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 13,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 14,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 15,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 16,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 17,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 18,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 19,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 20,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 21,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 22,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 23,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 24,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 25,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 26,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 27,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 28,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 29,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 30,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 31,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 32,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 33,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 34,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 35,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 36,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 37,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 38,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 39,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 40,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 41,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 42,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 43,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 44,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 45,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 46,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 47,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 48,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 49,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 0,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 1,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 2,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 3,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 4,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 5,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 6,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 7,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 8,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 9,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 10,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 11,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 12,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 13,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 14,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 15,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 16,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 17,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 18,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 19,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 20,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 21,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 22,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 23,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 24,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 25,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 26,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 27,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 28,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 29,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 30,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 31,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 32,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 33,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 34,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 35,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 36,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 37,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 38,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 39,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 40,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 41,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 42,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 43,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 44,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 45,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 46,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 47,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 48,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 49,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 0,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 1,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 2,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 3,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 4,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 5,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 6,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 7,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 8,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 9,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 10,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 11,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 12,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 13,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 14,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 15,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 16,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 17,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 18,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 19,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 20,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 21,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 22,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 23,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 24,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 25,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 26,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 27,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 28,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 29,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 30,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 31,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 32,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 33,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 34,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 35,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 36,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 37,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 38,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 39,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 40,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 41,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 42,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 43,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 44,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 45,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 46,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 47,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 48,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 49,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 0,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 1,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 2,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 3,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 4,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 5,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 6,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 7,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 8,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 9,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 10,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 11,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 12,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 13,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 14,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 15,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 16,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 17,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 18,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 19,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 20,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 21,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 22,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 23,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 24,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 25,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 26,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 27,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 28,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 29,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 30,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 31,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 32,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 33,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 34,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 35,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 36,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 37,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 38,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 39,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 40,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 41,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 42,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 43,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 44,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 45,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 46,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 47,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 48,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 49,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1129133341001959,
+      "sample": 0,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.088501219825063,
+      "sample": 1,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09539686224040177,
+      "sample": 2,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13201670043696057,
+      "sample": 3,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11807308560779935,
+      "sample": 4,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12470002136569443,
+      "sample": 5,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.040719712478038454,
+      "sample": 6,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11589085961217405,
+      "sample": 7,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07638957237812166,
+      "sample": 8,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0983141148364887,
+      "sample": 9,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13097856621449525,
+      "sample": 10,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1467559909265957,
+      "sample": 11,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09290037514449229,
+      "sample": 12,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.06929378046972678,
+      "sample": 13,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10391469752500275,
+      "sample": 14,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09059921116559036,
+      "sample": 15,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0816156905325743,
+      "sample": 16,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1288101078387746,
+      "sample": 17,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09273108403689788,
+      "sample": 18,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.16502342453958063,
+      "sample": 19,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11231123229036757,
+      "sample": 20,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.09403802040518958,
+      "sample": 21,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07717952023633286,
+      "sample": 22,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13481810608066197,
+      "sample": 23,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11550970691618699,
+      "sample": 24,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.07337321694976862,
+      "sample": 25,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08594164681103328,
+      "sample": 26,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1528233538717506,
+      "sample": 27,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1411442416086414,
+      "sample": 28,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10567459519497661,
+      "sample": 29,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12275978377178838,
+      "sample": 30,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1463316962141716,
+      "sample": 31,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10071787591677601,
+      "sample": 32,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13963353178638813,
+      "sample": 33,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11920937255266836,
+      "sample": 34,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11650887305880514,
+      "sample": 35,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13292606946348523,
+      "sample": 36,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12318685461068582,
+      "sample": 37,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11315079889425803,
+      "sample": 38,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10756405288373838,
+      "sample": 39,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.11054500918145603,
+      "sample": 40,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.13602496468714886,
+      "sample": 41,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.0735384211280194,
+      "sample": 42,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.10084196013078311,
+      "sample": 43,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.08633107035622045,
+      "sample": 44,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.12737955140513318,
+      "sample": 45,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.046714632105774735,
+      "sample": 46,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.06970532013413266,
+      "sample": 47,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.1157602785868049,
+      "sample": 48,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [],
+      "ground_truth": "normal",
+      "risk_score": 0.05495547146179894,
+      "sample": 49,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 0,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 1,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 2,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 3,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 4,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 5,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 6,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 7,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 8,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 9,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 10,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 11,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 12,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 13,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 14,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 15,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 16,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 17,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 18,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 19,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 20,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 21,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 22,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 23,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 24,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 25,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 26,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 27,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 28,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 29,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 30,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 31,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 32,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 33,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 34,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 35,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 36,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 37,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 38,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 39,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 40,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 41,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 42,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 43,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 44,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 45,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 46,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 47,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 48,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos"
+      ],
+      "ground_truth": "dos",
+      "risk_score": 1.0,
+      "sample": 49,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 0,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 1,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 2,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 3,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 4,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 5,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 6,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 7,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 8,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 9,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 10,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 11,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 12,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 13,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 14,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 15,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 16,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 17,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 18,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 19,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 20,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 21,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 22,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 23,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 24,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 25,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 26,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 27,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 28,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 29,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 30,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 31,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 32,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 33,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 34,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 35,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 36,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 37,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 38,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 39,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 40,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 41,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 42,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 43,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 44,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 45,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 46,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 47,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 48,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "network_spoofing"
+      ],
+      "ground_truth": "identity_spoofing",
+      "risk_score": 0.9,
+      "sample": 49,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 0,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 1,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 2,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 3,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 4,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 5,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 6,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 7,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 8,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 9,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 10,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 11,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 12,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 13,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 14,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 15,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 16,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 17,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 18,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 19,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 20,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 21,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 22,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 23,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 24,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 25,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 26,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 27,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 28,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 29,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 30,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 31,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 32,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 33,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 34,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 35,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 36,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 37,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 38,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 39,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 40,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 41,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 42,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 43,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 44,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 45,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 46,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 47,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 48,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "metric_falsification",
+      "risk_score": 0.72,
+      "sample": 49,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 0,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 1,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 2,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 3,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 4,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 5,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 6,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 7,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 8,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 9,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 10,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 11,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 12,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 13,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 14,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 15,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 16,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 17,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 18,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 19,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 20,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 21,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 22,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 23,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 24,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 25,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 26,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 27,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 28,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 29,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 30,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 31,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 32,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 33,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 34,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 35,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 36,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 37,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 38,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 39,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 40,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 41,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 42,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 43,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 44,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 45,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 46,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 47,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 48,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "detected_classes": [
+        "dos",
+        "network_spoofing"
+      ],
+      "ground_truth": "replay",
+      "risk_score": 0.72,
+      "sample": 49,
+      "seed": 99,
+      "status": "MALICIOUS"
+    }
+  ],
+  "samples_per_profile": 50,
+  "seeds": [
+    7,
+    42,
+    99
+  ]
+}

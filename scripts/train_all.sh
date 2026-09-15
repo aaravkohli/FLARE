@@ -22,7 +22,6 @@ RL_STEPS=100000
 SYNTHETIC_ONLY=false
 SKIP_PREPROCESS=false
 FL_SERVER_ADDR="127.0.0.1:8090"
-NUM_CLIENTS=3
 
 # ── Argument parsing ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
@@ -86,10 +85,18 @@ else
   fi
 fi
 
-# Verify outputs
-for f in "drone_1_train.csv" "drone_2_train.csv" "drone_3_train.csv" "test.csv"; do
-  [ -f "datasets/processed/$f" ] || fail "Missing processed file: $f"
+# Resolve the authorized fleet only after preprocessing so client identity and
+# data ownership use the same current registry snapshot.
+CLIENT_IDS=()
+while IFS= read -r client_id; do
+  CLIENT_IDS+=("$client_id")
+done < <(python -c "from fleet.registry import active_drone_ids; print(*active_drone_ids(), sep='\n')")
+[ "${#CLIENT_IDS[@]}" -ge 2 ] || fail "Federated training requires at least two active drones."
+for client_id in "${CLIENT_IDS[@]}"; do
+  [ -f "datasets/processed/${client_id}_train.csv" ] \
+    || fail "Missing processed file: ${client_id}_train.csv"
 done
+[ -f "datasets/processed/test.csv" ] || fail "Missing processed file: test.csv"
 ok "Preprocessed datasets ready."
 
 # ── Step 3: Federated Learning ───────────────────────────────────────────────
@@ -101,20 +108,21 @@ pkill -f "fl/client.py" 2>/dev/null || true
 sleep 1
 
 # Start FL server in background
-python fl/server.py --rounds "$FL_ROUNDS" &
+python fl/server.py --rounds "$FL_ROUNDS" --output models/fl_candidate.pth &
 FL_SERVER_PID=$!
 log "FL server started (PID $FL_SERVER_PID), waiting 3s for startup..."
 sleep 3
 
-# Start 3 FL clients in parallel
+# Start one strict real-data client per active registry identity.
 CLIENT_PIDS=()
-for i in 1 2 3; do
-  log "  Starting FL client drone_$i..."
+for client_id in "${CLIENT_IDS[@]}"; do
+  log "  Starting FL client ${client_id}..."
   python fl/client.py \
-    --client_id "drone_$i" \
+    --client_id "$client_id" \
     --real \
+    --require-real-data \
     --server_address "$FL_SERVER_ADDR" \
-    > "logs/fl_client_${i}.log" 2>&1 &
+    > "logs/fl_client_${client_id}.log" 2>&1 &
   CLIENT_PIDS+=($!)
 done
 
@@ -125,8 +133,8 @@ for pid in "${CLIENT_PIDS[@]}"; do
 done
 wait "$FL_SERVER_PID" || warn "FL server exited with non-zero status."
 
-[ -f "models/fl_model.pth" ] || fail "FL model not saved. Check logs/fl_client_*.log"
-ok "FL training complete → models/fl_model.pth"
+[ -f "models/fl_candidate.pth" ] || fail "FL candidate not saved. Check logs/fl_client_*.log"
+ok "FL training complete → models/fl_candidate.pth (not deployed)"
 
 # ── Step 4: RL Training ───────────────────────────────────────────────────────
 log "═══ STEP 4/5: RL Training ($RL_STEPS steps) ═══"
@@ -144,17 +152,20 @@ python -m rl.traces \
   --output datasets/processed/rl_trace_iid_eval.csv
 python rl/train.py --timesteps "$RL_STEPS" --trace-data
 
-[ -f "models/rl_model.zip" ] || fail "RL model not saved."
-ok "RL training complete → models/rl_model.zip"
+[ -f "models/best_model.zip" ] || fail "RL validation-best candidate not saved."
+ok "RL training complete → models/best_model.zip (not deployed)"
 
 # ── Step 5: Evaluation ────────────────────────────────────────────────────────
 log "═══ STEP 5/5: Evaluation ═══"
-python scripts/evaluate.py
+python scripts/evaluate.py \
+  --model-path models/fl_candidate.pth \
+  --rl-model-path models/best_model.zip
 
 ok "═══ Pipeline complete! Results in results/ ═══"
 echo ""
-echo "  FL model:        models/fl_model.pth"
-echo "  RL model:        models/rl_model.zip"
+echo "  FL candidate:    models/fl_candidate.pth"
+echo "  RL candidate:    models/best_model.zip"
 echo "  Round metrics:   results/fl_round_metrics.csv"
-echo "  Eval report:     results/evaluation_report.json"
+echo "  Eval evidence:   results/runs/model_evaluation/<run-id>/"
 echo "  Plots:           results/plots/"
+echo "  Deployment:      use scripts/promote_checkpoint.py after evidence review"

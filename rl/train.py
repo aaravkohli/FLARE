@@ -48,7 +48,7 @@ def _write_checkpoint_metadata(
     use_trace_data: bool,
     training_seed: int,
     training_provenance: Optional[dict] = None,
-) -> None:
+) -> Path:
     sidecar = write_checkpoint_metadata(
         checkpoint_path,
         algorithm=algorithm,
@@ -91,7 +91,7 @@ def train_dqn(
     evaluation_episodes: Optional[int] = None,
     evaluation_frequency: int = 5_000,
     evaluation_seed: Optional[int] = None,
-) -> None:
+) -> Path:
     from stable_baselines3 import DQN
     from stable_baselines3.common.callbacks import CheckpointCallback, EvalCallback
     from stable_baselines3.common.monitor import Monitor
@@ -263,23 +263,28 @@ def train_dqn(
     if eval_cb.best_mean_reward > -float("inf"):
         best_path = best_model_directory / "best_model.zip"
         if resolved_output_path is None:
-            promoted_path = _BASE / _PATHS_CFG["model_save"]
-            promotion_label = "deployed"
+            promoted_path = best_path
+            promotion_label = "candidate"
         else:
             promoted_path = resolved_output_path.with_name(
                 f"{resolved_output_path.stem}_best.zip"
             )
             promotion_label = "run-specific"
-        _copy_checkpoint_with_metadata(best_path, promoted_path)
+        if promoted_path != best_path:
+            _copy_checkpoint_with_metadata(best_path, promoted_path)
         logger.info(
-            "[DQN] Promoted validation-best checkpoint (reward=%.4f) "
-            "to %s artifact → %s",
+            "[DQN] Preserved validation-best checkpoint (reward=%.4f) "
+            "as %s artifact → %s",
             eval_cb.best_mean_reward,
             promotion_label,
             promoted_path,
         )
+        train_env.close()
+        eval_env.close()
+        return promoted_path
     train_env.close()
     eval_env.close()
+    return final_path
 
 
 # ---------------------------------------------------------------------------
@@ -507,6 +512,15 @@ def main():
         default=None,
         help="Fixed DQN validation environment seed (default: config value)",
     )
+    parser.add_argument(
+        "--deploy",
+        action="store_true",
+        help="Atomically publish the validated DQN candidate via deployment_manifest.json",
+    )
+    parser.add_argument(
+        "--provenance-run-id",
+        help="Immutable training/evaluation run ID required with --deploy",
+    )
     args = parser.parse_args()
 
     if args.timesteps < 1:
@@ -515,6 +529,8 @@ def main():
         parser.error("--evaluation-episodes must be at least 1")
     if args.evaluation_frequency < 1:
         parser.error("--evaluation-frequency must be at least 1")
+    if args.deploy and not args.provenance_run_id:
+        parser.error("--deploy requires --provenance-run-id")
 
     use_trace_data = (
         args.trace_data
@@ -544,7 +560,7 @@ def main():
             trace_eval_csv=args.trace_eval_csv,
         )
     else:
-        train_dqn(
+        candidate_path = train_dqn(
             total_timesteps=args.timesteps,
             use_trace_data=use_trace_data,
             tb_log=tb_log,
@@ -556,6 +572,22 @@ def main():
             evaluation_frequency=args.evaluation_frequency,
             evaluation_seed=args.evaluation_seed,
         )
+        if args.deploy:
+            from runtime.model_deployment import publish_checkpoint
+
+            published = publish_checkpoint(
+                base=_BASE,
+                manifest_path=_BASE / "models" / "deployment_manifest.json",
+                model_name="routing",
+                checkpoint_path=candidate_path,
+                metadata_path=checkpoint_metadata_path(candidate_path),
+                contract="routing_state_v2",
+                provenance_run_id=args.provenance_run_id,
+            )
+            logger.info(
+                "Published atomic routing deployment generation %d",
+                published["generation"],
+            )
 
 
 if __name__ == "__main__":

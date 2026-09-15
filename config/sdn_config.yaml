@@ -8,6 +8,7 @@ controller:
   port: 8080
   timeout_s: 1.0
   barrier_timeout_s: 1.0
+  control_udp_ports: [9000]
 
 # Expected wired topology used by the Ryu controller. A route is not reported
 # ready until every switch has connected and returned its port inventory.
@@ -44,23 +45,18 @@ flow_priority:
   satellite: 90
   mesh: 80
   fallback: 10   # lowest priority table-miss rule
+  containment_allow: 300
+  containment_drop: 290
 
-# Each drone is matched independently at the ingress/egress switches. The
-# access ports correspond to sdn/mininet_topo.py.
-drones:
-  drone_1:
-    index: 1
-    mac: "00:00:00:00:00:02"
-    access_port: 4
-  drone_2:
-    index: 2
-    mac: "00:00:00:00:00:03"
-    access_port: 5
-  drone_3:
-    index: 3
-    mac: "00:00:00:00:00:04"
-    access_port: 6
+# Drone ID, MAC, and access-port bindings live only in fleet_registry.yaml.
 
 mock:
   log_to_file: true
   log_path: "logs/mock_sdn.log"
+
+containment:
+  # Align the first executable restriction with the detector's SUSPICIOUS
+  # threshold; stronger evidence still escalates to control-only/quarantine.
+  restricted_threshold: 0.35
+  control_only_threshold: 0.72
+  quarantine_threshold: 0.90

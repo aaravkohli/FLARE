@@ -67,6 +67,12 @@ _BASE    = Path(__file__).parent.parent
 sys.path.insert(0, str(_BASE))
 
 from fl.data import split_by_sequence_group
+from fl.partitioning import (
+    PARTITION_MODES,
+    apply_normalized_rf_environment,
+    assign_rf_environments,
+    partition_dataframe,
+)
 
 _PROC    = _BASE / "datasets" / "processed"
 _PROC.mkdir(parents=True, exist_ok=True)
@@ -525,6 +531,8 @@ def preprocess(
     max_radioml:  int  = 300_000,
     max_dronerf:  int  = 150_000,
     dry_run:      bool = False,
+    partition_mode: Optional[str] = None,
+    non_iid_alpha: Optional[float] = None,
 ) -> None:
     dfs = []
 
@@ -606,14 +614,62 @@ def preprocess(
     logger.info("Test set → %s  (%d rows)", _PROC / "test.csv", len(df_test))
 
     # ── Partition training set into 3 drone partitions ────────────────────
-    for i, drone_id in enumerate(["drone_1", "drone_2", "drone_3"]):
-        df_drone = df_train[df_train["drone_id"] == drone_id].copy()
+    client_ids = ["drone_1", "drone_2", "drone_3"]
+    effective_mode = partition_mode or str(_DATA_CFG.get("partition_mode", "preserve"))
+    effective_alpha = (
+        non_iid_alpha
+        if non_iid_alpha is not None
+        else _DATA_CFG.get("non_iid_alpha")
+    )
+    if effective_mode == "preserve":
+        partitions = {
+            drone_id: df_train[df_train["drone_id"] == drone_id]
+            .sort_values(["sequence_group", "sequence_index"], kind="stable")
+            .reset_index(drop=True)
+            for drone_id in client_ids
+        }
+        partition_audit = {
+            "mode": "preserve",
+            "description": "Preserved source-assigned drone ownership; distribution may be naturally non-IID.",
+            "seed": None,
+            "non_iid_alpha": None,
+            "group_overlap": 0,
+        }
+    else:
+        result = partition_dataframe(
+            df_train,
+            client_ids,
+            mode=effective_mode,
+            non_iid_alpha=effective_alpha,
+            seed=int(_DATA_CFG.get("partition_seed", 42)),
+        )
+        partitions = result.partitions
+        partition_audit = result.audit
 
-        # Preserve client ownership and temporal order. Do not copy rows from
-        # another drone merely to equalize partition sizes.
-        df_drone = df_drone.sort_values(
-            ["sequence_group", "sequence_index"], kind="stable"
-        ).reset_index(drop=True)
+    if bool(_DATA_CFG.get("feature_skew_enabled", False)):
+        environments = assign_rf_environments(client_ids)
+        skew_strength = float(_DATA_CFG.get("feature_skew_strength", 1.0))
+        for drone_id, partition in partitions.items():
+            shifted = partition.copy()
+            shifted.loc[:, FEATURE_COLS] = apply_normalized_rf_environment(
+                shifted[FEATURE_COLS].to_numpy(dtype=np.float32),
+                environments[drone_id],
+                strength=skew_strength,
+            )
+            partitions[drone_id] = shifted
+        partition_audit["feature_skew"] = {
+            "enabled": True,
+            "strength": skew_strength,
+            "environments": dict(environments),
+            "simulation_only": True,
+        }
+    else:
+        partition_audit["feature_skew"] = {"enabled": False}
+    stats["client_partition"] = partition_audit
+    stats_path.write_text(json.dumps(stats, indent=2))
+
+    for i, drone_id in enumerate(client_ids):
+        df_drone = partitions[drone_id]
         out = _PROC / f"drone_{i+1}_train.csv"
         df_drone.to_csv(out, index=False)
         logger.info(
@@ -635,6 +691,18 @@ def main():
                         help="Max RadioML samples to load (default 300k)")
     parser.add_argument("--max-dronerf",  type=int, default=150_000,
                         help="Max DroneRF records to extract (default 150k)")
+    parser.add_argument(
+        "--partition-mode",
+        choices=("preserve", *PARTITION_MODES),
+        default=None,
+        help="Client partition policy; defaults to data.partition_mode",
+    )
+    parser.add_argument(
+        "--non-iid-alpha",
+        type=float,
+        default=None,
+        help="Dirichlet concentration override for non-IID modes",
+    )
     args = parser.parse_args()
 
     preprocess(
@@ -643,6 +711,8 @@ def main():
         max_radioml  = args.max_radioml,
         max_dronerf  = args.max_dronerf,
         dry_run      = args.dry_run,
+        partition_mode = args.partition_mode,
+        non_iid_alpha = args.non_iid_alpha,
     )
 
 

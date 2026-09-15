@@ -1,6 +1,8 @@
-# FLARE: Federated Learning and Reinforcement Learning Anti-Jamming Swarm Router
+# FLARE: Cross-Layer Cyber-Resilience for UAV Swarms
 
-FLARE is a research-oriented prototype for detecting wireless jamming against a three-drone swarm and selecting a safer communication path in response. It combines federated learning (FL) for threat classification, reinforcement learning (RL) for route selection, and software-defined networking (SDN) for applying the chosen route. A FastAPI service exposes the system, while a React dashboard visualizes telemetry, attacks, model explanations, and routing decisions.
+FLARE is a research-oriented prototype with separate communication-threat, network/traffic-evidence, and federated-update security paths. A five-feature federated BiLSTM detects communication anomalies; explicit source-labelled analyzers score traffic-insider, DoS, and network/telemetry-spoofing evidence; Byzantine-resilient aggregation protects collaborative training; and a standard DQN selects among three routes plus a v3 HOLD action. Deterministic safety validation and SDN then request forwarding, restriction, quarantine, or fail-closed hold. Mock SDN is simulated enforcement; packet behavior is only claimed when the Ryu/Mininet gate passes.
+
+> **Canonical research source:** [`docs/canonical_research_story.md`](docs/canonical_research_story.md) contains the report/PPT-ready problem statement, objectives, methodology, terminology, feature definition, contribution mapping, limitations, and final contribution statement. Code is the source of truth when any older generated artifact differs.
 
 > **Project status:** This repository is a capstone/research prototype, not a production-ready network controller. The principal host-native simulation workflow has been exercised end to end, including federated training, RL inference, orchestration, authenticated APIs, mock SDN routing, persistence, and the React dashboard. Development/production-like container layouts and CI checks are also defined. Several advanced FL features and real-network integrations remain experimental. These distinctions are called out throughout this README.
 
@@ -46,21 +48,24 @@ For every drone, FLARE collects or generates link measurements, estimates the th
 
 ### Problem it addresses
 
-Static wireless routes respond poorly to changing interference. A path that was healthy seconds ago may become unreliable under spot, sweep, barrage, reactive, spoofing, or denial-of-service behavior. Centralizing all raw radio data would also be undesirable in a real distributed swarm because of bandwidth, latency, and privacy constraints.
+Static wireless routes respond poorly to changing interference, while ordinary FedAvg can be corrupted by a compromised swarm member that submits poisoned parameters. Centralizing raw radio data is also undesirable in a distributed swarm because of bandwidth, latency, and privacy constraints, and heterogeneous RF exposure creates non-IID client drift.
 
 FLARE explores two complementary ideas:
 
-- **Federated threat detection:** drones train locally and share model parameters rather than raw samples.
-- **Adaptive routing:** an RL policy balances throughput, delay, loss, energy use, and route-switching cost.
+- **Federated communication-threat detection:** drones train locally over five link metrics and share model parameters rather than raw samples.
+- **Insider-resistant collaboration:** the server analyzes model deltas, tracks historical trust, and down-weights or rejects Byzantine updates.
+- **Adaptive recovery:** a deployed standard DQN balances throughput, delay, loss, energy use, and route-switching cost before a safety gate and SDN enforcement.
 
 ### Why the project was built
 
-The repository does not contain a formal product brief. Based on the implementation, it is reasonable to infer that FLARE was built to demonstrate an end-to-end anti-jamming architecture and to compare research techniques such as differential privacy, robust aggregation, knowledge distillation, client selection, and explainability in one executable prototype.
+The implementation supports a cross-layer communication-resilience and secure-federation research story. Optional modules such as privacy, personalization, and client selection remain experimental and are not presented as validated core contributions.
 
 ### Main goals and use cases
 
-- Demonstrate jamming-aware routing for a small drone swarm.
+- Demonstrate communication-threat-aware recovery for a small drone swarm.
 - Train a multi-task threat model without pooling all client data.
+- Protect Flower aggregation against poisoned client updates.
+- Measure legitimate non-IID drift and the false-positive cost of Byzantine detection.
 - Compare learned routing with greedy and static baselines.
 - Test behavior under synthetic and dataset-derived link conditions.
 - Visualize route, threat, attack, FL, and explanation data.
@@ -70,32 +75,23 @@ The repository does not contain a formal product brief. Based on the implementat
 
 - It is not a flight controller and does not command drone movement.
 - It does not implement real RF signal capture or radio-frequency hopping.
+- Its controller-evidence insider classifier is simulation-validated, not a claim of representative operational traffic detection.
+- Trust-aware routing and containment require a valid `routing_state_v3` checkpoint; the runtime safely falls back to the versioned v2 contract if it is absent.
 - The default workflow uses synthetic link metrics.
 - It does not yet provide production-grade identity, secrets, durability, or high availability.
 - Some research modules exist as utilities but are not connected to Flower's live round lifecycle; these are identified below.
 
-### Latest verified state
+### Promoted evidence
 
-The most recent full host-native stack verification was performed on **2026-08-15**. A correctness follow-up on **2026-08-25** added the SDN route contract and exercised the Ryu controller against a privileged five-switch/three-drone Mininet topology. These are reproducibility snapshots, not benchmark or production-readiness claims.
+Historical files under `results/` are not current evidence unless they have a matching, hash-valid `.provenance.json` sidecar. The generated block below lists only explicitly promoted artifacts; it must not be treated as real-world performance evidence when its category is controlled simulation. `scripts/update_readme_metrics.py` fails closed if a report, protocol input, checkpoint, dataset, or sidecar is missing or stale.
 
-| Area | Verified result |
-|---|---|
-| Federated learning | A three-round real-loader smoke run used two clients in round 1 and all three in rounds 2–3 under `grouped_temporal_v1`; final synthetic threat macro F1 was `1.000`, attack accuracy `0.724`, and confidence Brier `0.020`. The RSSI baseline also scored about `1.000`, so this validates plumbing, not superiority |
-| Reinforcement learning | Three independent 100,000-step DQN runs (seeds 7, 42, and 99) trained on 200 synchronized three-path episodes. Checkpoint selection used the same fixed 20-episode subset of a disjoint 50-episode validation file. The seed-42 60,000-step validation-best checkpoint is deployed. On 50 paired `DronePathEnv` episodes it scored `229.528 ± 1.734` (95% CI), versus `208.557` for lowest-threat greedy; the paired improvement was `20.970 ± 0.773` |
-| RL robustness | Across the three training seeds, mean rewards were `228.271 ± 0.121` on held-out IID traces, `249.757 ± 0.196` under persistent spot jamming, `-122.679 ± 0.669` under barrage jamming, and `247.899 ± 0.416` under a concealed-threat smart jammer (mean ± sample SD across seeds). All three policies beat greedy in every scenario, but barrage reward remained negative because every route was degraded |
-| Controlled-mixture follow-up | A same-budget three-seed study trained on a documented 50% IID, 25% persistent-spot, 15% barrage, and 10% reactive mixture while retaining smart-jammer as an unseen profile. The validation-selected seed-7 candidate improved packet persistent-spot performance to `+0.971 ± 0.268` versus greedy, but reduced packet barrage/reactive reward and trailed the deployed checkpoint on all four large generated suites. It was therefore not promoted; the deployed checkpoint remains unchanged |
-| Packet-level RL evaluation | A reproducible ns-3.48 suite sent 270,000 UDP packets over independent direct/satellite/mesh point-to-point paths in 30 held-out episodes. The deployed policy beat greedy under barrage (`+3.854 ± 0.326`) and reactive impairment (`+1.926 ± 0.296`), but was slightly lower under persistent spot impairment (`-0.200 ± 0.732`); intervals are 30 steps and values after `±` are paired 95% CI half-widths across 10 episodes |
-| Orchestration | All three drones were processed continuously; a representative local tick took approximately 20 ms |
-| API and authentication | Login, authorization failures, prediction validation, health, metrics, history, swarm status, configuration, reporting, SSE, and WebSocket telemetry passed |
-| Electronic-warfare controls | Jam activation/expiry, compromise, restore, and SDN route-state behavior passed |
-| Persistence | SQLite rows include a validated canonical decision event; authenticated live/swarm API telemetry was verified byte-for-structure against persisted event snapshots |
-| Frontend | The authenticated dashboard workflow—login/error handling, live API/WebSocket status, drone selection, charts, attack controls, compromise/restore, configuration save, report export, and terminal lock—was exercised in a real browser with no console errors. The newer SDN-readiness UI passed lint/production build and its live API contract was verified separately; the latest browser smoke covered the unauthenticated login surface |
-| Python tests | 138 regression tests passed on 2026-08-25; the earlier full-stack run also passed all 80 live API/adversarial checks plus the EW and FL API integration scripts |
-| Frontend checks | Clean install, lint, production build, and dependency audit passed; `npm audit` reported zero vulnerabilities |
-| SDN/OpenFlow integration | Ryu imported and started in its Python 3.9 image; all five Mininet switches supplied port inventories; concurrent direct/satellite/mesh commands for the three drones received five barrier replies each; ingress, transit, and return-flow packet counters advanced; taking the direct port down caused acknowledged failover to satellite without changing the other drones' routes |
-| Deployment definitions | Development and production Compose files passed `docker compose config --quiet` validation |
+<!-- PROMOTED-EVIDENCE:START -->
+| Evidence set | Promoted run | Category | Seeds | Report SHA-256 |
+|---|---|---|---|---|
+| Network DoS/spoofing detector | `20260915T075021.230452Z-ac64c960cc91` | `controlled_simulation` | `[7, 42, 99]` | `bf28287eaf17092cd4cdf70a8eaed4f8fd3e14be9fde23cf1f68c38b1b8cb0fd` |
+<!-- PROMOTED-EVIDENCE:END -->
 
-The verification now covers wired Ryu/OpenFlow and privileged Mininet plus ns-3 packet delivery over three independent point-to-point paths. It still does **not** cover Mininet-WiFi, a wireless ns-3 PHY/swarm topology, physical radios, or a clean rebuild of every container image. The current controller source was loaded read-only into the existing local Ryu image; a fresh rebuild was attempted but stopped when Docker Hub metadata retrieval remained unavailable. See [Limitations and known issues](#limitations-and-known-issues) for the resulting boundaries.
+Current implementation checks may be reported from fresh command output, but numerical research-performance claims must come from this promoted evidence chain. Packet-level OpenFlow, wireless/RF, and hardware evidence remain separate validation categories.
 
 ## Architecture
 
@@ -118,7 +114,7 @@ flowchart LR
         C3["Flower client: drone_3"]
         FLS["Flower server + SecureFedAvgV2"]
         MODEL["Global BiLSTM multi-task model"]
-        RL["DQN or discrete SAC agent"]
+        RL["Deployed standard DQN agent"]
     end
 
     subgraph Runtime["Runtime orchestration"]
@@ -178,9 +174,31 @@ flowchart LR
 | FastAPI | Exposes authentication, prediction, metrics, attack control, reporting, SSE, and WebSocket telemetry | Backend consumed by the React UI |
 | React dashboard | Operator view and attack/configuration controls | Uses REST and WebSocket endpoints |
 
+### Cross-layer security flow
+
+```mermaid
+flowchart TD
+    T["UAV telemetry: RSSI, PDR, SINR, latency, packet loss"] --> M["Federated BiLSTM communication-threat detection"]
+    U["Client model updates"] --> I["Identity and shape validation"]
+    I --> B["Robust update evidence: median distance, cosine, norm, history"]
+    B --> TR["Trust decision: accept, down-weight, or reject"]
+    TR --> A["TrustWeightedFedAvg or robust fallback"]
+    A --> K["Optional FedDF using accepted teachers only"]
+    K --> M
+    E["Controller-observed forwarding, claims, control rate, replay"] --> IN["Temporal insider-evidence analysis"]
+    TR --> D["Trust-aware standard DQN: three routes plus HOLD"]
+    IN --> D
+    M --> D
+    D --> S["Safe mask and deterministic route validation"]
+    S --> C["Mock or Ryu/OpenFlow SDN controller"]
+    C --> R["Route update and network recovery"]
+```
+
+The preferred `routing_state_v3` contract consumes server trust, insider risk, containment severity, and evidence freshness through four added state values. Its checkpoint is trained separately from the legacy v2 route policy and is bound to 18 inputs/4 actions by metadata. If that checkpoint is absent, runtime fallback to `routing_state_v2` is explicit: v2 does not consume trust and retains its historical 14-input/3-route semantics. The RF threat model itself detects communication anomalies; insider traffic evidence remains a separate, controller-corroborated analyzer.
+
 ### Offline training and online control are separate
 
-The Flower server trains and writes `models/fl_model.pth`. The orchestrator and API load a checkpoint for inference; they do not participate in a live FL round on every routing decision. Similarly, `rl/train.py` trains an RL checkpoint offline, while `RLAgent` loads it for runtime decisions.
+The Flower server trains and writes the non-deployed `models/fl_candidate.pth`. The orchestrator and API load the last manifest-approved generation (or the legacy bootstrap checkpoint when no manifest exists); they do not participate in a live FL round on every routing decision. Similarly, `rl/train.py` trains an RL candidate offline, while `RLAgent` loads only the approved runtime generation.
 
 ```mermaid
 flowchart TD
@@ -195,7 +213,7 @@ flowchart TD
     FC1 --> FS["Federated rounds"]
     FC2 --> FS
     FC3 --> FS
-    FS --> FM["models/fl_model.pth"]
+    FS --> FM["models/fl_candidate.pth"]
     TEST --> FS
 
     ENV["DronePathEnv"] --> TRAIN["rl/train.py"]
@@ -229,10 +247,10 @@ sequenceDiagram
         S-->>O: RSSI, SINR, PDR, latency, loss
         O->>F: Three normalized 10-step sequences
         F-->>O: Threat scores, confidence, attack class
-        O->>R: 14-value observation
-        R-->>O: direct, satellite, or mesh
-        O->>D: POST /sdn/route
-        D-->>O: Route acknowledgement
+        O->>R: v2 14-value or v3 18-value observation
+        R-->>O: direct, satellite, mesh, or v3 HOLD
+        O->>D: containment + route/HOLD command
+        D-->>O: OpenFlow/barrier acknowledgement
         O->>P: Persist summary + canonical DecisionEvent
     end
     A->>P: Query and validate latest/history events
@@ -244,10 +262,10 @@ The detailed steps are:
 1. `SwarmOrchestrator` reads `config/mode.yaml`.
 2. In `simulation` mode, it generates one swarm snapshot from one jammer-state read. In `real` mode, it concurrently awaits the three `AJ_SENSOR_API_URL/metrics?drone_id=...` responses and falls back per drone on failure.
 3. The orchestrator appends each path's normalized features to a per-drone rolling 10-timestep buffer. Startup windows are left-padded with the earliest real observation; full windows contain ten chronological measurements.
-4. The FL model returns three threat values, one confidence value, and five attack logits. The orchestrator batches all nine drone/path sequences into one model call, then uses each sequence's mean threat-head output as that path's score. It also forces a score of at least `0.95` when raw PDR is below `0.4`.
-5. The orchestrator passes the three threat scores plus normalized raw latency/loss arrays to a stateful `RLAgent` dedicated to that drone. The agent adds its previous action/reward and normalized step. If RL inference fails, the orchestrator chooses the lowest-threat path.
-6. `rl/safety.py` applies the configured `0.8` threat constraint. If the policy chooses an unsafe route while another route is safe, it selects the lowest-threat safe route. If every route exceeds the threshold, it preserves connectivity over the least-risk executable route and explicitly records `no_safe_route=true`; this is a degraded state, not a fictitious fourth RL/SDN action.
-7. The selected route is sent to the configured SDN endpoint with retries at approximately 0, 0.1, and 0.4 seconds.
+4. The FL model returns three threat values, one confidence value, and five attack logits per input sequence. The orchestrator batches one sequence for each active-drone/path pair into one model call, then uses each sequence's mean threat-head output as that path's score. It also forces a score of at least `0.95` when raw PDR is below `0.4`.
+5. The orchestrator separately analyzes controller-observed forwarding/control counters for insider behavior and reads the latest server-authenticated FL trust. Under `routing_state_v3`, the RL agent receives those four cross-layer security values in addition to the v2 QoS state.
+6. `rl/safety.py` applies the configured threat constraint. An unsafe forwarding choice is replaced with a safe route when possible. The v3 contract converts all-routes-unsafe or quarantine decisions into executable action 3 (`hold`); v2 retains the identified least-risk compatibility behavior.
+7. Containment and the selected route/HOLD command are sent to SDN. Mock and Ryu implementations acknowledge normal, restricted/control-only, quarantined, and fail-closed states; Ryu uses explicit empty-action drop rules and barriers.
 8. The installed/effective route is scored with the same shared throughput, delay, energy, packet-loss, and switching formula used during RL training. The resulting total becomes the next RL observation's previous reward.
 9. For each drone, the orchestrator validates a versioned `DecisionEvent` containing the exact telemetry snapshot, FL outputs, RL observation/source, requested and installed routes, SDN result, reward breakdown, timing, checkpoint hashes, and fallback reasons.
 10. The three compact summaries plus their `event_json` payloads are written with one CSV open and one SQLite transaction on a worker thread. CSV intentionally remains compact and does not duplicate the JSON payload.
@@ -294,6 +312,7 @@ Capstone/
 │   ├── client.py                  # Flower NumPyClient and data loading/training
 │   ├── server.py                  # SecureFedAvgV2 strategy and Flower entry point
 │   ├── data.py                    # Shared temporal windows, normalization, and group split
+│   ├── partitioning.py            # Group-safe IID/Dirichlet and RF feature-skew simulation
 │   ├── checkpoint.py              # Temporal FL checkpoint compatibility metadata
 │   ├── aggregator.py              # Clipping, anomaly filtering, robust/trust aggregation
 │   ├── privacy.py                 # Opacus integration and simplified DP accounting
@@ -343,6 +362,8 @@ Capstone/
 │   ├── migrate_experiment_db.py    # Dry-run/backup-first repair for historical DB rows
 │   ├── rl_seed_study.py             # Multi-training-seed/OOD DQN robustness study
 │   ├── test_model_with_ns3.py      # Evaluate the deployed DQN on packet-derived traces
+│   ├── run_byzantine_experiment.py # Clean/attacked FedAvg versus secure aggregation
+│   ├── run_fl_resilience_matrix.py # IID/non-IID, poisoning, FedDF, drift, and ablation matrix
 │   └── sdn_smoke_test.sh           # Privileged concurrent-route/data-plane/failover test
 ├── sdn/
 │   ├── controller.py               # Ryu OpenFlow 1.3 REST controller
@@ -366,7 +387,7 @@ Capstone/
 │   ├── test_phase1_regressions.py  # Correctness/data-integrity regression suite
 │   ├── test_phase2_security.py     # Auth, CORS, config, stream, and SDN security tests
 │   ├── test_phase3_ml_correctness.py # FL data/loss/privacy/aggregation regressions
-│   ├── test_phase4_performance.py  # Batching, async sensor, XAI, and persistence tests
+│   ├── test_phase4_performance.py  # Batching, async sensor, sensitivity, and persistence tests
 │   ├── test_phase5_reward_consistency.py # Training/runtime reward parity and transition tests
 │   ├── test_phase6_temporal_data.py # Temporal ordering, leakage, runtime, and FL metadata tests
 │   ├── test_phase7_rl_evaluation.py # Initial-state and paired seeded RL evaluation tests
@@ -376,7 +397,9 @@ Capstone/
 │   ├── test_phase11_sdn_correctness.py # SDN contract, replacement, and real-data deployment guards
 │   ├── test_phase12_sdn_readiness.py # Switch/port readiness and failover regressions
 │   ├── test_phase13_system_readiness.py # API/controller readiness contract regressions
-│   └── test_phase14_operational_readiness.py # Transition history and alert regressions
+│   ├── test_phase14_operational_readiness.py # Transition history and alert regressions
+│   ├── test_byzantine_aggregation.py # Trust/update-security and benchmark regressions
+│   └── test_non_iid_fl.py          # Partition, RF-skew, and secure non-IID tests
 ├── .github/workflows/
 │   ├── ci.yml                      # Python, frontend, and Compose checks
 │   └── sdn-integration.yml         # Path-filtered privileged SDN integration tier
@@ -438,7 +461,7 @@ The vendored `mininet-wifi/` and `ns-3-dev/` trees and the local raw datasets ar
 
 - **Ryu and OpenFlow 1.3** translate a logical route into switch flow rules. Ryu is commented out in the shared Python requirements and installed only in the SDN Docker image because of its older compatibility constraints.
 - **Mininet** provides a reproducible wired virtual topology; **Mininet-WiFi** provides ad-hoc wireless nodes and Linux `tc netem` impairment.
-- **ns-3** is included for packet-level network experiments. The vendored tree identifies itself as an ns-3.48 development revision. `simulation/ns3/flare_packet_trace.cc` creates real UDP flows over independent direct/satellite/mesh point-to-point links, applies seeded packet error models, and exports per-interval delivery, throughput, and delay. It is a packet simulation, but not yet a wireless-PHY, interference, mobility, or complete swarm model.
+- **ns-3** is included for packet-level network experiments. The vendored tree identifies itself as an ns-3.48 development revision. `simulation/ns3/flare_packet_trace.cc` creates UDP flows over independent direct/satellite/mesh point-to-point links with seeded packet error models. A separate `simulation/ns3/flare_wifi_mobility.cc` models one two-node 802.11b moving-away link. Neither study is a representative UAV RF capture, wireless three-route policy evaluation, interference/contending swarm model, or hardware experiment.
 - **SQLite** is a zero-administration experiment store suited to a single-process prototype.
 - **Docker Compose** describes repeatable multi-service development and production-like layouts.
 - **Redis** appears as an optional development service, but current first-party code does not use it.
@@ -447,7 +470,7 @@ The vendored `mininet-wifi/` and `ns-3-dev/` trees and the local raw datasets ar
 
 ### 1. Attack selection and metric generation
 
-`simulation/jammer.py` recognizes profiles including `none`, `spot`, `sweep`, `barrage`, `smart`, `reactive`, `adaptive`, `fhss`, `spoofing`, `gps_spoofing`, `replay`, `dos`, `sybil`, `model_poisoning`, `data_poisoning`, and `backdoor`. It writes the active state to `simulation/jam_state.json`.
+`simulation/jammer.py` recognizes the implemented communication profiles `none`, `spot`, `sweep`, `barrage`, `smart`, `reactive`, `adaptive`, `fhss`, `spoofing`, `gps_spoofing`, `replay`, and `dos`. It writes the active state to `simulation/jam_state.json`. Strong model-update poisoning is implemented separately in `fl/client.py`, `simulation/byzantine_state.py`, and the Byzantine experiment/control API. Sybil, local-data-poisoning, and backdoor attacks are not implemented and are not exposed as working controls.
 
 `simulation/generator.py` reads that file and generates metrics for every path. Examples:
 
@@ -473,7 +496,7 @@ If the FL checkpoint is absent or inference fails, the orchestrator uses a deter
 
 ### 3. RL state and route choice
 
-`DronePathEnv` exposes a discrete action space:
+`DronePathEnv` preserves the deployed v2 action space:
 
 ```text
 0 = direct, 1 = satellite, 2 = mesh
@@ -487,6 +510,8 @@ Its 14-value observation is:
 ```
 
 At the first decision, all three previous-action values are zero to mean “no route selected yet.” After a decision, exactly one becomes one. This matches the reward contract: the first action has no switching penalty, while later route changes do.
+
+`TrustAwareDronePathEnv` defines the separately versioned v3 contract. It appends `[client_trust, insider_risk, containment_score, evidence_freshness]` for 18 inputs and adds action `3 = hold`. HOLD receives an availability penalty but avoids the larger penalty assigned to forwarding traffic for a participant with corroborated malicious evidence.
 
 The reward encourages throughput and penalizes delay, energy, packet loss, and switching:
 
@@ -508,9 +533,11 @@ For replay and robustness work, `rl/traces.py` defines the strict `synchronized_
 
 ### 4. SDN application
 
-For local work, `sdn/mock_sdn.py` accepts the route and remembers independent state per drone. `sdn/route_contract.py` gives path/action pairs one shared definition and both controllers reject mismatches. With Ryu, `sdn/controller.py` delegates flow construction to `sdn/flow_manager.py` and installs OpenFlow rules on connected datapaths. `sdn/topology_state.py` requires all expected switches and port inventories, derives per-drone route availability from OpenFlow port state, and fails closed while topology state is incomplete. At the ingress/egress switches, output ports 1, 2, and 3 represent direct, satellite, and mesh. Dynamic rules match each configured drone MAC independently, delete current and legacy route priorities before replacement, and retain lower-priority mesh fallback rules. Transit switches receive bidirectional forwarding rules. After each update, the controller waits for OpenFlow barrier replies from all five switches before reporting success.
+For local work, `sdn/mock_sdn.py` accepts route, HOLD, and containment commands and remembers independent state per drone. `sdn/route_contract.py` gives action/path pairs one shared definition and both controllers reject mismatches. With Ryu, `sdn/controller.py` delegates flow construction to `sdn/flow_manager.py`: routes use output actions, HOLD/quarantine use empty-action drops, and restricted/control-only mode permits configured telemetry UDP ports before a higher-priority drop. `sdn/topology_state.py` requires all expected switches and port inventories, derives per-drone route availability from OpenFlow port state, and fails closed while topology state is incomplete. After each update, the controller waits for OpenFlow barrier replies from all five switches before reporting success.
 
-The wired Mininet topology connects three drone hosts to the ingress switch and uses three middle switches with representative link properties:
+The Ryu evidence endpoint labels ingress flow counters separately from registry-bound ingress-port receive drops/errors. `controller_policy_dropped_packets` counts installed HOLD/containment drop-flow packets and is **not** scored as DoS loss; `controller_dropped_packets` is supplied only with fresh port statistics and `drop_counter_semantics=ingress_port_receive_drop_error`. Unsupported or stale port signals remain absent. Its compatible `control_messages_per_s` field counts access-port OpenFlow `PacketIn` events, **not** FLARE's own route/containment REST commands, and includes `control_rate_observer=access_port_packet_in`. A source MAC is marked observed only when a fresh `PacketIn` on a registry-bound port supplies it; the expected MAC in a flow match is not independent identity observation. Real-mode evidence joins reject malformed counters and RF/controller timestamps more than three seconds apart. MAC/port binding is still not device authentication or radio attestation.
+
+The wired Mininet topology creates one host per enabled fleet-registry identity at startup and connects each to its configured ingress access port. Three middle switches have representative link properties:
 
 - direct: about 10 ms and 100 Mbit/s,
 - satellite: about 300 ms, 10 Mbit/s, and 1% loss on its first link,
@@ -535,21 +562,21 @@ The orchestrator appends compact summaries to CSV and writes the same summaries 
 | `DroneFlClient.fit` | Executes local Flower training, optional privacy/personalization/compression, and metric reporting |
 | `SecureFedAvgV2.aggregate_fit` | Coordinates trust, drift, quarantine, robust aggregation, distillation, checkpointing, and evaluation for a round |
 | `secure_aggregate` | Clips client deltas, filters statistical outliers, chooses trust/trimmed/FedAvg aggregation, and optionally adds noise |
-| `DronePathEnv.step` | Scores the policy-visible state, evolves the link state, and returns the next 14-value observation |
+| `DronePathEnv.step` / `TrustAwareDronePathEnv.step` | Preserve v2 14-input/3-action behavior or execute the v3 18-input/4-action security contract |
 | `compute_routing_reward` | Produces the shared, inspectable QoS reward used in training and live orchestration |
 | `SynchronizedTraceDronePathEnv` | Strictly replays complete, versioned three-route timesteps and terminates at the trace episode boundary |
 | `RealDataDronePathEnv` | Backward-compatible import name for `SynchronizedTraceDronePathEnv`; it no longer accepts the single-link FL `test.csv` or fabricates route variants |
 | `generate_synchronized_trace` / `generate_scenario_mixture_trace` | Produce deterministic single-scenario or exact-distribution three-path traces |
 | `validate_disjoint_trace_files` | Proves training/evaluation episode identities and content are disjoint and records per-scenario counts |
 | `constrain_route_action` | Builds a safe-action mask, replaces an unsafe choice when possible, and marks an all-routes-unsafe degraded state |
-| `RLAgent.predict` | Builds stateful runtime observations, loads DQN/SAC, predicts a path, and applies the shared route constraint |
+| `RLAgent.predict` | Validates checkpoint-bound v2/v3 state, predicts with standard DQN, fuses trust/insider containment in v3, and applies the shared route/HOLD constraint |
 | `Orchestrator._run_step` | Runs the per-drone sensing → FL → RL → SDN → persistence pipeline |
 | `DecisionEvent` / `TelemetrySnapshot` | Strict, versioned runtime contracts that reject incomplete paths, invalid ranges, non-finite numbers, or unknown fields |
 | `AntiJammingController.apply_routing_decision` | Converts an SDN REST decision into flow installation on every connected Ryu datapath |
 | `install_flow` / `select_safe_path` | Map paths to configured ports and provide deterministic failover |
 | `lifespan` / `telemetry_broadcaster` | Load API-side models once and publish dashboard messages in the background |
 | `_latest_decision_events` | Reads and revalidates the newest canonical event for each drone before API/stream delivery |
-| `_calculate_xai_attributions` | Performs feature ablation for dashboard explanations |
+| `integrated_gradients` / `_calculate_model_explanation` | Explain a specific threat/attack output or DQN Q value with signed temporal attribution and completeness error; return no fabricated fallback |
 | `SwarmStateRegistry` | Maintains the optional digital-twin state and short-horizon predictions |
 
 ### Federated client training
@@ -570,20 +597,73 @@ Synthetic client and distillation data now generate correlated random-walk seque
 
 `SecureFedAvgV2.aggregate_fit` performs the following broad sequence:
 
-1. Update client trust and drift statistics.
-2. Quarantine clients that fall below configured trust rules.
-3. Convert parameters into client updates and clip each client's complete multi-layer delta to one global L2 bound.
-4. Compute mean-absolute-parameter anomaly scores and filter outliers.
-5. Aggregate with trust weighting, trimmed mean, or FedAvg depending on configuration.
-6. Add optional server-side Gaussian noise.
-7. Optionally run server knowledge distillation.
-8. Save and evaluate the global model.
+1. Bind the Flower connection to an allowed drone identity and reject a connection that changes identity or duplicates another drone within the round.
+2. Convert every submitted model into a finite, shape-checked update delta relative to the current global model.
+3. Compare each delta with the coordinate-wise median update using distance, cosine direction, and update norm.
+4. Normalize those signals with median/MAD statistics (and IQR or majority-relative fallbacks when MAD is zero).
+5. Combine current-round evidence with persisted historical trust to accept, down-weight, quarantine, or reject each client.
+6. Cap self-reported sample counts using the population median/IQR and a configurable median ratio, then derive an adaptive robust norm bound and clip surviving deltas.
+7. Apply effective-sample-count × trust weighting, or switch to coordinate-wise median/trimmed mean when the configured suspicious-client fraction is reached.
+8. Add optional server-side Gaussian noise, then save and evaluate the model.
 
-When trust aggregation is enabled, it supplies an aggregation weight vector and therefore takes precedence over trimmed-mean aggregation. Configuration keys should not be interpreted as five independent layers that are always applied simultaneously.
+The production Flower strategy uses `TrustWeightedAggregationStrategy`; the older `secure_aggregate` function remains for compatibility and for explicitly disabled trust mode. Rejected models are also removed from the optional knowledge-distillation teacher ensemble, preventing that path from bypassing the aggregation decision.
 
 ### Trust and quarantine
 
-`fl/trust.py` updates a bounded trust score using reported loss, accuracy, drift, and anomaly behavior. Repeated low scores can quarantine a client. This provides an interpretable Byzantine-resilience experiment, but reported client metrics are not cryptographically trustworthy.
+`UpdateAnalyzer` calculates server-side evidence, so an insider cannot improve its aggregation weight by claiming a false local accuracy. `TrustManager` applies an exponential moving average to that evidence and keeps bounded update-norm and deviation histories. In a tightly clustered round, a strong single-signal warning can reduce influence; when measured population dispersion indicates heterogeneous clients, a warning requires corroborating signals, a longitudinal jump, or a sufficiently opposing direction. Quarantine requires repeated malicious evidence or reputation that has decayed to the rejection threshold. Trust state is atomically persisted to `results/fl_trust_state.json`, so restarting the Flower server does not reset a repeatedly malicious drone to its initial reputation. Extreme-magnitude poison can still be rejected in its first round.
+
+### Byzantine-Resilient Federated Learning / Insider Attack Defense
+
+FLARE protects the FL server from a compromised but otherwise legitimate drone that submits a model-poisoning update. This is distinct from drone-level radio anomaly detection: the defended asset is the global model itself.
+
+For participating drone \(i\), the server computes:
+
+```text
+delta_i = submitted_model_i - current_global_model
+majority_delta = coordinate_median(delta_1, ..., delta_n)
+
+signals_i = {
+  distance from majority_delta,
+  cosine disagreement with majority_delta,
+  round-relative update norm,
+  historical update-norm deviation
+}
+```
+
+Each population signal is converted to a robust z-score using the median and MAD. IQR and a majority-relative scale cover small-client rounds where MAD can be zero. Configurable signal weights produce a normalized deviation score in `[0, 1]`. The server then assigns `NORMAL`, `SUSPICIOUS`, or `MALICIOUS` and records `ACCEPTED`, `DOWN_WEIGHTED`, or `REJECTED`.
+
+The normal secure path is:
+
+```text
+global_model = sum(samples_i * trust_i * action_factor_i * clipped_model_i)
+               / sum(samples_i * trust_i * action_factor_i)
+```
+
+`action_factor_i` is `1` for accepted updates, reduced for suspicious updates, and `0` for rejected updates. If the suspicious fraction crosses `byzantine_aggregation.suspicious_fraction_for_fallback`, the strategy uses the configured coordinate-wise median or trimmed-mean fallback. With fewer than `min_clients_for_detection`, FLARE still clips updates but does not claim statistically robust Byzantine detection.
+
+The sample term is also defended: the server records both the reported count and a robustly capped effective count, preventing a client from gaining arbitrary influence by claiming billions of local examples. The clipping bound is recalculated from the accepted population's median and robust scale each round, but never exceeds the configured hard ceiling.
+
+Every round exports the client ID, trust score, deviation score, raw update norm, cosine similarity, robust signal scores, status, action, reported/effective sample count, final aggregation weight, effective clipping bound, aggregation method, suspected count, rejected count, and cumulative detected attempts to `results/fl_metrics_snapshot.json`. `/api/fl/metrics` and the dashboard's Byzantine Swarm Trust Console display the same evidence; the UI no longer fabricates random anomaly values.
+
+`federation.allowed_client_ids` prevents arbitrary claimed names, and `ClientIdentityRegistry` stops identity rotation and same-round duplicate claims. This is transport-session hardening, not cryptographic device authentication: a deployment should bind that allow-list identity to a per-drone mTLS certificate or attested device key at the Flower ingress.
+
+Simulation clients support all required behaviors:
+
+```bash
+python fl/client.py --client_id drone_1 --attack-mode normal
+python fl/client.py --client_id drone_2 --attack-mode noisy
+python fl/client.py --client_id drone_3 --attack-mode poisoned
+```
+
+`noisy` adds deterministic round-seeded noise at the outgoing-update boundary. `poisoned` performs a configurable amplified sign-flip/model-replacement attack. In local/dev simulation, the authenticated dashboard compromise/restore buttons write the same shared control state that clients read before each submission. Both API and UI fail closed outside simulation mode, so these attack-injection controls cannot be activated in real or production mode. These controls are test instrumentation, not a production compromise oracle.
+
+Run the reproducible comparison with:
+
+```bash
+python scripts/run_byzantine_experiment.py --rounds 12 --seeds 7 42 99
+```
+
+Each invocation creates a new immutable run under `results/runs/byzantine/`. Add `--promote` only for the complete ordered seed protocol; promotion revalidates command status and current configuration/checkpoint/dataset hashes before atomically updating `results/byzantine_experiment.json`. Numerical outcomes are intentionally absent from this prose until the promoted-evidence block is generated from a matching manifest.
 
 ### Differential privacy
 
@@ -597,7 +677,21 @@ This is a much sounder DP-SGD integration, but any published privacy claim still
 
 ### Knowledge distillation
 
-The FedDF-style utility evaluates client models on a synthetic proxy dataset, averages teacher predictions, and trains the global student with temperature-scaled KL divergence plus classification/threat terms. The default configuration invokes this periodically. Its proxy data is synthetic, so real-world transfer quality is not established.
+The FedDF-style utility evaluates accepted client models on a synthetic proxy dataset, averages teacher predictions, and trains the global student with temperature-scaled KL divergence plus classification/threat terms. The default configuration invokes this periodically. Rejected Byzantine teachers are excluded. Its proxy data is synthetic and the measured benefit is scenario-dependent, so real-world transfer quality is not established.
+
+### Explicit IID/non-IID simulation and evaluation
+
+`fl/partitioning.py` supports `iid`, `mild_non_iid`, and `strong_non_iid`. IID allocation shuffles complete temporal groups and assigns them round-robin. The non-IID modes use seeded per-class Dirichlet allocation (`alpha=2.0` mild, `alpha=0.2` strong by default), creating label and attack-exposure skew without splitting a temporal capture. Experiments additionally apply named normalized feature shifts for open-terrain, urban/interference-heavy, near-jammer, and far-from-jammer RF environments. The alpha, seed, partition mode, and feature-shift strength are configurable.
+
+Run the complete three-seed matrix and strong-non-IID ablation with:
+
+```bash
+python scripts/run_fl_resilience_matrix.py --rounds 4 --seeds 7 42 99
+```
+
+The controlled BiLSTM methodology experiment writes an immutable JSON report and CSV companion under `results/runs/fl_resilience_matrix/`. Only a successful full-seed promotion may update compatibility files under `results/`. FLARE presents distillation as an optional, measurable mitigation with a safety gate—not as a universal improvement or deployment-accuracy result.
+
+The matrix reports predictive metrics, convergence, client-to-majority distance, pairwise update cosine, norm dispersion, client-loss variance, TP/FP/TN/FN, Byzantine detection precision/recall/F1, poison and benign rejection counts, and benign/malicious trust. The canonical feature definition and report/PPT wording are in [`docs/canonical_research_story.md`](docs/canonical_research_story.md).
 
 ### Personalization, client selection, and asynchronous FL
 
@@ -622,17 +716,17 @@ Client selection and async FL are disabled by default. This distinction is impor
 
 `RLAgent` selects its algorithm from `config/rl_config.yaml`, not from the checkpoint filename. Training with `--algo sac` does not rewrite that YAML; the runtime configuration must be updated separately.
 
-Every checkpoint intended for inference must have a sibling metadata file such as `models/rl_model.zip.metadata.json`. Metadata version 2 binds the artifact to the configured algorithm, observation/action dimensions, episode length, `routing_state_v2` initial-state semantics, the complete `routing_qos_v2` reward contract, training seed/mode/step count, and checkpoint SHA-256. Trace-trained checkpoints additionally record the exact training/evaluation trace fingerprints, episode counts, scenarios, and trace schema version. Final, best, and periodic DQN checkpoints and final/best SAC checkpoints receive sidecars. Missing, stale, or mismatched metadata causes inference startup to fail closed; the orchestrator/API then use the deterministic greedy fallback.
+Every checkpoint intended for inference must have a sibling metadata file such as `models/rl_model.zip.metadata.json`. Metadata binds the artifact to its algorithm, observation/action dimensions, episode length, exact routing-state/reward contract, training seed/mode/step count, and checkpoint SHA-256. v2 sidecars remain readable; v3 sidecars require 18 inputs, four actions, and `routing_security_qos_v3`. Missing, stale, or mismatched metadata causes inference startup to fail closed; the orchestrator/API then use the deterministic greedy fallback.
 
-For a normal DQN run, `best_model.zip` stores the validation-best snapshot, `rl_final_model.zip` preserves the final training snapshot, and the best checkpoint plus its sidecar are promoted to the runtime path `rl_model.zip`. Custom `--output-path` runs keep their checkpoints/evaluation directory isolated and create a sibling `_best.zip` artifact rather than replacing production. Validation is rewound to `training.evaluation_seed` before each checkpoint comparison, so every candidate sees the same episodes. The deployed trace-trained run selected the seed-42 checkpoint at 60,000 steps rather than the final 100,000-step snapshot.
+For a normal DQN run, `best_model.zip` stores the validation-best candidate and `rl_final_model.zip` preserves the final training snapshot. Training does not overwrite the active runtime checkpoint. Custom `--output-path` runs keep their checkpoints/evaluation directory isolated and create a sibling `_best.zip` artifact. Validation is rewound to `training.evaluation_seed` before each checkpoint comparison, so every candidate sees the same episodes. A validated candidate is deployed only with `--deploy --provenance-run-id <run-id>`, which atomically advances `models/deployment_manifest.json` after staging immutable, hash-bound artifacts.
 
 The orchestrator and API keep separate stateful `RLAgent` wrappers for each drone. The orchestrator supplies each wrapper with the drone's previous reward and current measured latency/loss values so state does not leak between swarm members. The wrappers currently load separate copies of the same model; a later optimization can share immutable model parameters while retaining per-drone observation state.
 
-Several YAML fields describe Double DQN, dueling networks, prioritized replay, and n-step returns, but the DQN constructor currently instantiates standard Stable-Baselines3 DQN without wiring those fields. Treat them as intended/experimental settings, not confirmed active behavior.
+The configured and deployed algorithm is standard Stable-Baselines3 DQN. Stale Double-DQN, dueling-network, prioritized-replay, and n-step keys were removed from `rl_config.yaml` because they were never passed to the constructor.
 
 ### Explainability
 
-The API computes a local feature-ablation explanation: it predicts once with the full normalized sequence, zeroes one feature at a time, and measures the change. This is inexpensive and beginner-friendly, but it is not SHAP and does not establish causal importance. If inference fails, the API returns display fallback weights.
+The API computes target-specific Integrated Gradients over the exact normalized 10-step sequence. It reports signed feature importance, temporal attribution, selected output head/index, and the numerical completeness error. `RLAgent.explain()` applies the same diagnostic to the policy-selected standard-DQN Q value from the exact persisted routing observation; the authenticated API, WebSocket, and dashboard expose that policy action separately from any installed safety override. Explanations are local model behavior—not causal proof—and no fallback attribution is fabricated when inference fails.
 
 ### Digital twin
 
@@ -647,7 +741,7 @@ The API computes a local feature-ablation explanation: it predicts once with the
 | Multi-task outputs | One representation can estimate threat, attack type, and correctness confidence | Separate models | Shared features reduce duplication; competing losses and an only lightly calibrated confidence head can still hurt calibration |
 | Federated learning | Models distributed clients without centralizing raw data | Centralized training, split learning | Better privacy story, but operationally more complex and still leaks information through updates |
 | Flower NumPyClient | Minimizes custom federation plumbing | Custom RPC/gRPC framework | Fast to prototype; dense array transport limits custom compression semantics |
-| DQN for default policy | Small discrete action space fits value-based RL | PPO, tabular Q-learning, contextual bandit | Simple and mature; configuration promises features not currently wired |
+| Standard DQN for deployed policy | Small discrete action space fits value-based RL | PPO, tabular Q-learning, contextual bandit | Simple and mature; no DDQN/dueling/PER/n-step claim |
 | Wide synchronized RL trace rows | Makes every route state at a decision point explicit and exactly replayable | Derive route variants from single-link rows, long-format timestamp joins | Prevents fabricated cross-route state and enables fingerprints; wider files are larger and still require genuinely synchronized source measurements |
 | Custom discrete SAC | Explores entropy-regularized routing | PPO/A2C/discrete actor-critic library | More exploration and research control; more code to validate and maintain |
 | Safety override | Prevents a learned policy from knowingly selecting a highly threatened route | Constrained RL, action masks | Clear guardrail; can hide weaknesses in the learned policy |
@@ -666,6 +760,18 @@ The API computes a local feature-ablation explanation: it predicts once with the
 - **DroneRF:** extracts archive content and maps data into the common tabular link representation.
 
 Each processed row ultimately supplies five model features plus a jamming label and attack class. Preprocessing assigns or preserves `sequence_group` and `sequence_index`, selects an approximately 80/20 group-disjoint train/test split, and then writes each training row only to its owning drone partition. It does not shuffle rows globally, split a capture across train and test, or pad a sparse client by copying another drone's rows.
+
+The canonical threat-model inputs are:
+
+| Feature | Meaning | Native unit/range | Source status |
+|---|---|---|---|
+| `rssi` | received signal strength | dBm, clipped `[-120,-20]` | live/simulated; derived from SNR in adapters |
+| `pdr` | packet delivery ratio | ratio `[0,1]` | live/simulated or packet/SNR-derived |
+| `sinr` | signal-to-interference-plus-noise ratio | dB, clipped `[-10,30]` | live/simulated; SNR proxy for RadioML |
+| `latency` | end-to-end path delay | ms `[0,1000]` | live/simulated or packet-derived |
+| `packet_loss` | lost-packet fraction | ratio `[0,1]` | live/simulated or counter/PDR-derived |
+
+These five logical features are normalized to `[0,1]` and presented over 10 chronological steps. The unrelated 14-value RL observation contains 3 threat scores, 3 latencies, 3 losses, 3 previous-route one-hot values, the previous reward, and normalized step. The former “six features” wording was stale; it was not a hidden encoding or time-window transformation.
 
 The current generated artifacts contain 50,000 synthetic rows: 40,000 training rows in 800 trace groups and 10,000 test rows in 200 groups, with zero group overlap. With a sequence length of 10 and stride 1, the held-out rows produce 8,200 windows. These are local artifact observations from the regenerated fallback, not representative-radio benchmark results.
 
@@ -747,7 +853,7 @@ erDiagram
 | `run_id` | Intended experiment-run identifier |
 | `timestamp` | Intended Unix timestamp |
 | `step` | Orchestrator loop step |
-| `drone_id` | `drone_1`, `drone_2`, or `drone_3` |
+| `drone_id` | Active identity from `config/fleet_registry.yaml` (lowercase 3–64 character identifier) |
 | `action_id` / `path_name` | Chosen route as numeric and readable forms |
 | `threat_level` | Categorical `LOW`/`MEDIUM`/`HIGH`/fallback status derived from the decision |
 | `reward` | `routing_qos_v2` total from the same throughput/delay/energy/loss/switching formula used by `DronePathEnv`; full components are in `event_json` |
@@ -761,7 +867,7 @@ There are no foreign keys or separate user, drone, route, or attack tables. A ro
 
 ### CRUD behavior
 
-- **Create:** the orchestrator validates one canonical event per drone, opens the CSV once, and inserts all three SQLite rows in one transaction. CSV stores summary fields only.
+- **Create:** the orchestrator validates one canonical event per active enrolled drone, opens the CSV once, and inserts that control-cycle batch in one transaction. CSV stores summary fields only.
 - **Read:** FastAPI selects the latest valid canonical event per drone, revalidates it with Pydantic, reads bounded history, streams new events, and aggregates summary fields for reports. Legacy null-event rows retain summary compatibility.
 - **Update/delete:** normal application code does not update or delete experiment rows.
 
@@ -797,33 +903,41 @@ curl http://localhost:8000/swarm/status \
 | Method and path | Auth | Purpose | Request | Response/consumer |
 |---|---|---|---|---|
 | `POST /auth/token` | Public, throttled | Verify the configured operator credentials and issue an 8-hour JWT | OAuth2 form fields `username`, `password` | `{access_token, token_type, username}`; used by React |
-| `GET /health` | Public | Liveness, model readiness, runtime mode, and SDN implementation | None | Health JSON |
+| `GET /fleet/drones` | Bearer | Discover active UAV identities and topology bindings | None | Canonical drone ID, display name, MAC, access port, and RF simulation profile |
+| `POST /fleet/drones` | Admin bearer | Enroll a unique UAV identity for cross-layer runtime discovery | Drone ID, display name, MAC, access port, optional RF offsets | Enrollment/runtime status; duplicate identity, MAC, or port is rejected |
+| `GET /health` | Public | Liveness, model readiness, active deployment generation/hashes, runtime mode, and SDN implementation | None | Health JSON |
 | `GET /ready` | Public | Check whether the configured SDN data plane is currently usable | None | `200` when ready; otherwise `503`, with a reduced controller summary, switch counts, and per-drone available paths |
 | `GET /ready/history` | Bearer | Read recent meaningful SDN readiness/degradation transitions | Optional `limit` from 1–100 | Newest-first bounded process-local events with severity, message, switch progress, and unavailable paths |
-| `POST /predict` | Bearer | Choose a constrained executable route from supplied threat scores | JSON with three `path_scores` in `[0,1]`, optional `drone_id`, `prev_reward` | Action/path, original policy action, safe mask, override flag, threshold, reason, and `no_safe_route` state |
-| `GET /metrics/live` | Bearer | Return the latest decision-driving telemetry for one drone | `drone_id` query parameter | Canonical three-path telemetry; explicitly sourced fallback before events exist |
+| `POST /predict` | Bearer | Choose a constrained executable route/HOLD from supplied threat and security context | Three `path_scores`; optional trust, insider risk, containment, freshness, drone, and previous reward | Contract, action/path, network action, original action, safe mask, override, and degraded state |
+| `GET /metrics/live` | Bearer | Return the latest decision-driving telemetry for one drone | `drone_id` query parameter | Canonical three-path telemetry; real mode returns `503` when valid live/cached data is unavailable |
 | `GET /swarm/status` | Bearer | Latest recorded state for every drone | None | Per-drone installed/requested route, outcome, SDN status, event ID, and fallback metadata when canonical data exists |
-| `GET /swarm/metrics` | Bearer | Return the latest decision-driving telemetry for the full swarm | None | Canonical telemetry per drone; missing drones use explicitly sourced fallback data |
+| `GET /swarm/metrics` | Bearer | Return the latest decision-driving telemetry for the full swarm | None | Canonical telemetry per drone; real-mode gaps are explicit unavailable/HOLD states, never synthetic fallback |
 | `GET /metrics/history` | Bearer | Read recent experiment rows and embedded canonical events | Optional `limit` query parameter | Oldest-first summary records, optional `event`, and count |
 | `POST /jam` | Admin bearer | Set or clear the jammer-state file | JSON `paths` list, optional `duration`, `drone_id`, and `profile` | Active jammer state |
-| `POST /swarm/compromise/{drone_id}` | Admin bearer | Mark a drone compromised for dashboard/audit simulation | Path parameter | Updated in-memory state |
-| `POST /swarm/restore/{drone_id}` | Admin bearer | Remove the visual compromise state | Path parameter | Updated in-memory state |
+| `POST /swarm/compromise/{drone_id}` | Admin bearer | Arm model-poisoning behavior for a simulated Flower client | Path parameter | Persisted Byzantine simulation mode |
+| `POST /swarm/restore/{drone_id}` | Admin bearer | Restore the simulated Flower client to normal updates | Path parameter | Persisted normal simulation mode |
+| `GET /swarm/insider` | Bearer | Read website showcase state | None | Simulation availability and each drone's active telemetry-insider profile |
+| `GET /swarm/insider/{drone_id}` | Bearer | Recover the latest measured showcase result if a WebSocket update is missed | Path parameter | Active/observed profile, event age, insider analysis, containment, route/HOLD, and SDN status |
+| `POST /swarm/insider/{drone_id}` | Admin bearer | Configure a controlled telemetry-insider scenario | `normal`, selective forwarding, falsification, control flood, or replay | Persisted simulation profile |
 | `GET /api/fl/config` | Bearer | Read current FL YAML | None | Parsed configuration |
 | `POST /api/fl/config` | Admin bearer | Validate, deep-merge, and atomically rewrite FL YAML | Partial object containing only existing keys with compatible types | Resulting configuration |
 | `GET /api/fl/metrics` | Bearer | Read exported FL round metrics | None | Metrics JSON or defaults |
+| `GET /fleet/clients` | Bearer | Read fleet-manager process and real-data readiness | None | Authorized versus active versus real-data-unavailable client state |
+| `GET /explanations/routing/{drone_id}` | Bearer | Explain the persisted standard-DQN policy action | Path parameter | Named 14/18-value Q attribution, policy/installed actions, completeness error, model hash/generation, or explicit unavailable reason |
+| `POST /api/fl/security/self-test` | Admin bearer | Verify Byzantine update rejection against deterministic in-memory parameter copies | None | Rejection evidence, secure-vs-attacked aggregation distance, and explicit non-mutation invariants |
 | `GET /api/report/generate` | Admin bearer header | Generate an HTML experiment report | `Authorization: Bearer ...`; query-string tokens are rejected | HTML download/view |
 | `GET /stream` | Bearer | Poll-based server-sent canonical decision updates | Authorization header from a streaming-capable client | `DecisionEvent` SSE records, with legacy summary compatibility |
-| `WS /ws` | First-message bearer | Broadcast canonical decision/telemetry plus XAI, FL, and visual audit data | First frame: `{"type":"auth","token":"..."}` | Auth acknowledgement, then JSON telemetry roughly once/second |
+| `WS /ws` | First-message bearer | Broadcast canonical telemetry, insider/trust evidence, Integrated Gradients, FL, and audit data | First frame: `{"type":"auth","token":"..."}` | Auth acknowledgement, then JSON telemetry roughly once/second |
 
 Important request behaviors:
 
-- `/predict` requires exactly three already-computed threat scores. Because it does not receive raw RF history, `fl_confidence` and `attack_type` remain null instead of being fabricated from those scores; the orchestrator is the normal temporal FL inference path. When all scores exceed the safety threshold, the response returns the least-risk route with `no_safe_route=true`, `safe_action_mask=[false,false,false]`, and `constraint_reason="all_routes_above_threshold"`.
-- `/metrics/live`, `/swarm/metrics`, SSE, and WebSocket output preserve telemetry provenance. `synthetic` and `live` passed through the control loop; `synthetic_fallback` indicates a failed real sensor; `legacy_api_fallback` indicates that the API had no canonical event to serve.
+- `/predict` requires exactly three already-computed threat scores. Because it does not receive raw RF history, `fl_confidence` and `attack_type` remain null instead of being fabricated from those scores; the orchestrator is the normal temporal FL inference path. With a `routing_state_v3` checkpoint, all-routes-unsafe or containment-required decisions return executable action 3 (`hold`) with `network_action="drop_data_plane"`. A legacy v2 checkpoint retains its version-bound least-risk-route fallback.
+- `/metrics/live`, `/swarm/metrics`, SSE, and WebSocket output preserve telemetry provenance. `synthetic` is simulation-only, while `live` and bounded `cached_live` are real-mode sources. Real-mode cache expiry creates an operational HOLD event and skips BiLSTM/DQN inference; it never invokes a synthetic generator.
 - When fresh orchestrator events are available, `/jam` waits for the next affected control-cycle event to contain the requested attack state before responding. This prevents an immediate metrics read from observing the previous cycle; if the orchestrator is absent or stale, the endpoint skips the wait and still updates the simulator state.
 - `/metrics/history` uses parameterized SQL and bounds `limit` to 1–1000.
 - `/ready` records only readiness state changes, not every dashboard poll. `/ready/history` is authenticated, bounded, newest-first, and process-local; identical observations are deduplicated and recovery is a separate event.
 - `/api/fl/config` rejects unknown keys, shape/type changes, and non-finite numbers, then uses atomic replacement. Services still load much of their configuration only at import/startup, so restart relevant services to apply changes reliably.
-- Compromise/restore endpoints affect an in-memory dashboard set; they do not compromise or restore a Flower client.
+- Compromise/restore endpoints change only the controlled simulation boundary read by Flower clients; they are disabled in real/production modes and do not represent a real compromise mechanism.
 - The report endpoint explicitly displays an insufficient-data notice when fewer than ten rows exist and never substitutes demonstration statistics.
 
 ### Mock SDN API
@@ -834,6 +948,8 @@ The mock service normally listens on `http://localhost:8080`.
 |---|---|
 | `POST /sdn/route` | Select a route for a drone |
 | `GET /sdn/flows` | Inspect in-memory route/flow state |
+| `GET /sdn/evidence/{drone_id}` | Read authenticated, source-labelled controller evidence; mock evidence is explicitly non-independent |
+| `POST /sdn/containment` | Apply normal/restricted/control-only/quarantined state |
 | `POST /sdn/simulate/fail/{path}` | Mark a path failed and exercise failover |
 | `POST /sdn/simulate/restore/{path}` | Restore a path |
 | `GET /health` | Service liveness |
@@ -932,15 +1048,17 @@ Output is a dictionary/tuple containing three threat probabilities, a learned co
 
 ### RL training and inference
 
-The standard environment simulates episodes using configured network distributions and the reward above. Trace mode loads complete synchronized direct/satellite/mesh rows and requires separate, disjoint training and validation files. The configured paths retain the reproducible IID deployment-training inputs; the controlled mixture is an explicit study input until a candidate passes promotion. Training uses the configured seed (`42` by default); Stable-Baselines3 DQN uses a two-layer 128-unit MLP, while custom discrete SAC uses PyTorch state. DQN validation uses a fixed seed and cyclic episode traversal so checkpoint comparisons are made on the same ordered subset. Both checkpoint formats require a JSON metadata sidecar bound to the model digest and semantic contracts. At runtime, the configured agent validates the sidecar, predicts one of three executable actions, and then applies the shared constraint/no-safe-route policy.
+The standard environment simulates episodes using configured network distributions and the reward above. Trace mode loads complete synchronized direct/satellite/mesh rows and requires separate, disjoint training and validation files. The configured paths retain the reproducible IID deployment-training inputs; the controlled mixture is an explicit study input until a candidate passes promotion. Training uses the configured seed (`42` by default); Stable-Baselines3 DQN uses a two-layer 128-unit MLP, while custom discrete SAC uses PyTorch state. DQN validation uses a fixed seed and cyclic episode traversal so checkpoint comparisons are made on the same ordered subset. Both checkpoint formats require a JSON metadata sidecar bound to the model digest and semantic contracts. At runtime, the configured agent validates the sidecar: v2 predicts one of three route actions, while v3 predicts among three routes plus HOLD and consumes trust/insider/containment context before the shared safety constraint is enforced.
 
 ### Evaluation
 
 `scripts/evaluate.py` evaluates FL classification, confidence calibration, paired seeded routing policies, FL baselines, four generated synchronized RL scenarios, and the packet-derived ns-3 suite when its trace exists, then writes a local report and plots. `scripts/rl_seed_study.py` separately trains multiple validation-selected policies and reports variation across training seeds on identical held-out traces. Generated reports are ignored rather than committed, so preserve the report, checkpoint sidecar, trace fingerprints, configuration, and seeds before citing a run.
 
-In the latest 50-episode `DronePathEnv` evaluation, the deployed DQN averaged `229.528` reward with a `1.734` 95% CI half-width, compared with `208.557` for lowest-threat greedy, `229.066` for the immediate-reward oracle, `116.550` for static-direct, and `7.704` for random routing. On held-out synchronized traces, that checkpoint scored `228.379 ± 1.639` for IID, `249.984 ± 1.182` for persistent spot, `-121.980 ± 1.204` for barrage, and `247.694 ± 1.281` for smart-jammer episodes. Values after `±` in this sentence are 95% CI half-widths across 50 episodes. These deterministic synthetic scenarios improve reproducibility but are not evidence of real-radio performance.
+Evaluation scripts now produce immutable, source-categorized runs. Published comparisons must be promoted from the required seed protocol and listed in the promoted-evidence block; generated synthetic scenarios and point-to-point ns-3 packet traces remain separate from representative RF or hardware validation.
 
-On the packet-derived ns-3 suite, the deployed DQN scored `21.493 ± 0.611` for persistent spot, `1.880 ± 0.224` for barrage, and `22.455 ± 0.046` for reactive impairment across 10 30-step episodes per scenario. Its paired reward differences versus greedy were `-0.200 ± 0.732`, `+3.854 ± 0.326`, and `+1.926 ± 0.296`, respectively. The persistent-spot interval includes zero and therefore does not demonstrate a meaningful advantage. This is stronger evidence than random-number JSON, but it remains a seeded point-to-point error-model experiment rather than RF or hardware validation.
+The deferred external-evidence milestone has a [capture pre-registration protocol](docs/external_validation_protocol.md) and `scripts/preflight_external_capture.py`. Its preflight checks file hashes, independent-observer declarations, UTC alignment, and disjoint development/held-out campaigns, but labels its output `structure_only` and requires human source review. No external capture has passed it in this repository; it is not a real-RF evaluation or accuracy result.
+
+A separate [controlled ns-3 Wi-Fi mobility protocol](docs/wifi_mobility_packet_protocol.md) exercises receiver-derived UDP delivery as one moving node leaves a fixed base under an 802.11b LogDistance model. `scripts/run_wifi_mobility_study.py` saves immutable packet-simulation runs; it is not online route integration, real RF evidence, or a three-path UAV benchmark.
 
 ## Setup and installation
 
@@ -1032,7 +1150,7 @@ bash scripts/train_all.sh
 
 That script is a long pipeline: it prepares data, starts federated services, trains RL, and evaluates. Review its process-management behavior before using it on a shared machine because it uses process matching to clear stale Flower jobs.
 
-Preprocessing must be rerun after this temporal-data upgrade. New CSVs include `sequence_group`/`sequence_index`, keep complete groups on one side of the train/test boundary, and write a split audit to `datasets/processed/dataset_stats.json`. The Flower server writes `models/fl_model.pth.metadata.json`; API, orchestrator, evaluation, and ns-3 model loading validate its `grouped_temporal_v1` definition, sequence shape/stride, model configuration, and checkpoint digest before deserialization. Keep the model and sidecar together. A legacy shape-compatible FL model is rejected rather than silently evaluated under different input semantics.
+Preprocessing must be rerun after this temporal-data upgrade. New CSVs include `sequence_group`/`sequence_index`, keep complete groups on one side of the train/test boundary, and write a split audit to `datasets/processed/dataset_stats.json`. The Flower server writes `models/fl_candidate.pth.metadata.json`; evaluation validates its `grouped_temporal_v1` definition, sequence shape/stride, model configuration, and checkpoint digest before deserialization. Promotion stages the validated pair under hash-addressed deployment storage; API and orchestrator validate that immutable artifact before swapping generations. Keep every checkpoint and sidecar together. A legacy shape-compatible FL model is rejected rather than silently evaluated under different input semantics.
 
 To regenerate disjoint synchronized traces and retrain the configured DQN policy with the same step count used in the latest verification:
 
@@ -1045,7 +1163,7 @@ python -m rl.traces --scenario iid --episodes 50 --steps 500 --seed 42000 \
 python rl/train.py --algo dqn --timesteps 100000 --seed 42 --trace-data
 ```
 
-The trace validator checks both files and refuses overlapping episode identities or identical fingerprints. Training preserves the final snapshot as `models/rl_final_model.zip`, stores the validation-best snapshot as `models/best_model.zip`, and promotes that best checkpoint to `models/rl_model.zip` for runtime use. Use `--output-path /tmp/rl-smoke.zip --no-tensorboard` for an isolated short smoke run that must not replace the deployable artifact. Omit `--trace-data` to train on the original action-independent `DronePathEnv` distribution.
+The trace validator checks both files and refuses overlapping episode identities or identical fingerprints. Training preserves the final snapshot as `models/rl_final_model.zip` and the validation-best candidate as `models/best_model.zip`; it does not overwrite the active runtime path. Use `--deploy --provenance-run-id <run-id>` only after the training/evaluation run has immutable provenance. That command stages the candidate and sidecar under hash-addressed storage and atomically advances `models/deployment_manifest.json`. Routing-v3 training likewise writes `models/routing_v3_candidate.zip` by default and only advances the manifest when explicitly passed `--deploy`. Use `--output-path /tmp/rl-smoke.zip --no-tensorboard` for an isolated short smoke run. Omit `--trace-data` to train on the original action-independent `DronePathEnv` distribution.
 
 To reproduce the three-seed robustness study without promoting any study checkpoint automatically:
 
@@ -1103,13 +1221,15 @@ Activate the virtual environment, then run:
 ./run_local_simulation.sh
 ```
 
-The launcher prepares simulation mode and starts the Flower server/clients, mock SDN, FastAPI/orchestrator process, and service logs. Stop recorded processes with:
+The launcher prepares simulation mode and starts the Flower server/clients, mock SDN, FastAPI/orchestrator process, and service logs. It is restart-safe: running it again first terminates only FLARE processes owned by this repository, waits for their ports to clear, and starts a fresh set. If ports 8000, 8080, or 8090 belong to another application, the launcher reports that process and refuses to kill it.
+
+Stop recorded processes with:
 
 ```bash
 ./stop_local_simulation.sh
 ```
 
-The stop script can fall back to broad process-name matching when its PID file is missing, so inspect running processes before using that fallback on a shared host.
+The stop script validates both the command marker and working directory before terminating a PID. If its PID file is missing, it discovers only matching processes whose working directory is this repository; it no longer uses global `pkill` matching. Running the stop script repeatedly is safe.
 
 The launcher mentions port 5173 but does not start Vite. Start the dashboard in a second terminal:
 
@@ -1119,6 +1239,32 @@ npm run dev
 ```
 
 Open `http://localhost:5173`. The backend is normally at `http://localhost:8000` and the mock controller at `http://localhost:8080`.
+
+### Website-controlled insider demonstration
+
+After signing in, select the target drone and use **Insider defense validation**. The dashboard is the complete operator surface for the demonstration; no API token, `curl` command, or direct mock-SDN access is required. **Traffic evidence** evaluates packet/control behavior and can trigger routing/SDN containment. **FL update gate** evaluates submitted model deltas and controls aggregation weight. A traffic attack is not automatically treated as a poisoned model update.
+
+1. In **Traffic evidence**, choose selective forwarding, telemetry falsification, control flood, or replay. Control flood is the fastest live presentation profile.
+2. Click **Run baseline → Control flood** (the attack name follows the selected scenario). The lab first restores the drone, waits for a measured `NORMAL` result, captures that evidence, injects the attack, and waits for matching control-loop evidence and an applied SDN rule.
+3. Present the resulting three-stage trace: attack observed, detector evidence changed, and policy enforced. `DEFENSE PASS` is shown only when the observed profile matches, the analyzer reports non-normal behavior, containment is active, and SDN application is confirmed.
+4. Compare the recorded **Normal baseline** and **Under attack** columns. For control flood, the important values are insider risk, control-rate score, containment (`normal` → `control only`), and network action (`forward` → `hold`). Expand **View detector signals** only for detailed evidence.
+5. The blast-radius result explicitly shows that no Flower update was created by the traffic test. The latest ordinary FL update can remain accepted because traffic evidence is not model-parameter evidence.
+6. Select **FL update gate** or **Test FL gate separately**, then click **Start isolated test**. This runs the configured analyzer and trust-weighted aggregation against four synthetic reference vectors plus one synthetic malicious candidate. A successful result shows `REJECTED`, zero candidate weight, and a secure aggregate much closer to the honest reference. Reference A–D are isolated test inputs—not enrolled fleet members.
+7. Return to **Traffic evidence** and click **Reset to normal baseline**. Risk decays over subsequent cycles because the detector retains temporal history.
+
+If live delivery is interrupted, the panel reports the exact stale/error state, shows API/WebSocket/SDN readiness, polls an authenticated snapshot every two seconds, and provides **Retry now**.
+
+The protection self-test is deliberately non-mutating: it does not submit an update to Flower, change the deployed global model, alter any client mode, or write persistent trust history. The dashboard exposes live federated clients only as read-only security evidence. Research attack injection remains confined to simulation scripts and simulation-only authenticated API routes for reproducible experiments; it is not an operator action in the website.
+
+For fail-safe startup, `run_local_simulation.sh` clears any persisted Byzantine client simulation mode before launching Flower clients. A controlled research run may explicitly preserve that state with `FLARE_PRESERVE_BYZANTINE_STATE=1`; normal demonstrations should leave this unset.
+
+Traffic-attack buttons fail closed unless the backend reports simulation mode. The selected scenario description states expected evidence; the right-hand panel displays measured live evidence, so presentation expectations are not shown as observed results. The model-protection self-test is safe to run because it never targets a live client or deployed model.
+
+### Dynamic drone onboarding
+
+The dashboard's **Enrolled UAV fleet → Enroll a UAV** control performs an authenticated registration. `config/fleet_registry.yaml` is the canonical identity source for the API, simulator, orchestrator, Flower allowlist, SDN request validation, OpenFlow MAC/port lookup, launch script, and dashboard. The registration rejects duplicate drone IDs, MAC addresses, and SDN access ports instead of trusting an arbitrary client-supplied name.
+
+In local simulation, the orchestrator discovers a newly enrolled drone on its next control cycle. The same five-feature BiLSTM and insider-evidence analyzer apply without retraining because they operate on telemetry/history rather than a fixed drone ordinal; per-drone history, DQN wrapper, containment state, and trust identity are initialized independently. The Compose layouts run a fleet-aware Flower client manager that reconciles new and removed identities and publishes per-client state atomically. A real UAV must still provide its own `<drone_id>_train.csv`; missing production data leaves that client degraded and never falls back to synthetic data. The host-native launcher remains a startup snapshot and must be restarted after enrollment. In real SDN mode, the declared switch port and MAC must also correspond to an actually connected device; enrollment cannot create physical radio or switch hardware.
 
 ### Option B: start services manually
 
@@ -1184,33 +1330,37 @@ cd frontend-react
 npm run build
 ```
 
-The dashboard lazy-loads its Recharts module. The current production build creates an initial JavaScript chunk of about 248 kB and a chart chunk of about 352 kB, both below Vite's default 500 kB warning threshold. FastAPI serves `frontend-react/dist` only when that build exists (or when `AJ_STATIC_DIR` points to a valid build); otherwise `/` returns API metadata. Docker serves the generated bundle from a separate Nginx container.
+The dashboard lazy-loads its Recharts module. Frontend lint and production build are regression gates; generated chunk sizes are build output rather than research evidence. FastAPI serves `frontend-react/dist` only when that build exists (or when `AJ_STATIC_DIR` points to a valid build); otherwise `/` returns API metadata. Docker serves the generated bundle from a separate Nginx container.
 
 ## Configuration
 
 ### `config/mode.yaml`
 
-Selects `simulation` or `real` when `MODE` is unset. A valid `MODE` environment variable overrides the file, which allows each Compose layout to select its runtime safely. In real mode, sensor failures fall back to synthetic metrics.
+Selects `simulation` or `real` when `MODE` is unset. A valid `MODE` environment variable overrides the file, which allows each Compose layout to select its runtime safely. In real mode, validated live snapshots may be reused only for the configured two-second cache window. Missing or expired telemetry produces an explicit unavailable/HOLD operational state, skips BiLSTM and DQN inference, and never invokes synthetic generation. The deployment section configures manifest polling; consumers only inspect new generations at decision or broadcaster boundaries.
 
 ### `config/fl_config.yaml`
 
-Controls federation, model shape, temporal data settings, privacy, compression, distillation, drift, trust, personalization, client-selection, and asynchronous settings. `data.sequence_stride`, `data.split_seed`, and `data.test_fraction` are part of FL checkpoint compatibility and should only change together with reprocessing and retraining. Privacy, compression, client selection, and async FL are disabled by default because they need an optional dependency, explicit experiment, or further transport/lifecycle integration. Trust, drift, client-local personalization, and distillation remain enabled. As noted earlier, not every configured feature is connected to the live round path.
+Controls federation, model shape, temporal data settings, IID/non-IID partitioning, privacy, compression, distillation, drift, trust, personalization, client-selection, asynchronous settings, and fleet-client reconciliation. `data.sequence_stride`, `data.split_seed`, `data.test_fraction`, and partition settings are part of the data/model contract and should change only with reprocessing and retraining. `client_manager.reconcile_interval_s` controls registry polling, while `simulation_jammed_clients` makes controlled client attacks explicit. Privacy, compression, client selection, and async FL are disabled by default because they need an optional dependency, explicit experiment, or further transport/lifecycle integration. Trust and accepted-teacher distillation are connected to the live Flower round path.
 
 Configuration is loaded by different modules at process startup. Updating it through the dashboard rewrites the file but does not guarantee live reconfiguration of already-running FL processes.
 
 ### `config/rl_config.yaml`
 
-Selects `dqn` or `sac` and contains training/environment hyperparameters. Runtime algorithm selection comes from this file. `training.seed` controls reproducible initialization/training, `training.evaluation_seed` fixes the validation trace sequence, and `training.evaluation_episodes` controls validation breadth. `paths.synchronized_trace_csv` and `paths.synchronized_trace_eval_csv` point to disjoint `synchronized_three_path_v1` files for `--trace-data`; the checked configuration retains IID files that reproduce the deployed training protocol. Experimental studies pass mixture paths explicitly. `paths.ns3_trace_csv` is the optional packet-derived evaluation suite. `paths.final_model_save`, `best_model.zip`, and `paths.model_save` distinguish the final snapshot, validation-best snapshot, and deployed checkpoint. Episode length and reward settings are checkpoint compatibility inputs; changing them requires retraining.
+Selects `dqn` or `sac` and contains training/environment hyperparameters. Runtime algorithm selection comes from this file. `training.seed` controls reproducible initialization/training, `training.evaluation_seed` fixes the validation trace sequence, and `training.evaluation_episodes` controls validation breadth. `paths.synchronized_trace_csv` and `paths.synchronized_trace_eval_csv` point to disjoint `synchronized_three_path_v1` files for `--trace-data`; the checked configuration retains IID files that reproduce the deployed training protocol. Experimental studies pass mixture paths explicitly. `paths.ns3_trace_csv` is the optional packet-derived evaluation suite. `paths.final_model_save`, `best_model.zip`, and `paths.model_save` distinguish the final snapshot, validation-best candidate, and legacy bootstrap checkpoint. Once a deployment manifest exists, its generation is authoritative. Episode length and reward settings are checkpoint compatibility inputs; changing them requires retraining.
 
-`safety.threat_threshold` defines which route scores are allowed during normal routing. `safety.all_unsafe_behavior` is deliberately restricted to `least_risk_route`, because neither SDN implementation exposes a real hold/drop/disconnect action. Changing the threshold changes deployed behavior and evaluation results, so restart the API/orchestrator and rerun the policy suites even though the DQN action/observation shape is unchanged. Settings describing Double/Dueling DQN, prioritized replay, and n-step returns are not passed into the current SB3 DQN implementation.
+`safety.threat_threshold` defines safe forwarding for v2. `routing_v3` defines the separately checkpointed 18-input/four-action contract, HOLD penalty, containment threshold, and fail-closed all-unsafe behavior. Changing either contract requires retraining and a matching metadata sidecar.
 
 ### `config/sdn_config.yaml`
 
-Defines controller address and barrier timeout, expected switch IDs, route-to-port/transit mapping, priorities, drone access ports, and failover ordering. Keep these IDs consistent with `sdn/mininet_topo.py`. Ryu now fails closed until port-description replies arrive and updates route availability from OpenFlow port-status events. This detects administrative/link-down state, but it is not an active packet-loss, latency, throughput, or end-to-end reachability probe.
+Defines controller address and barrier timeout, expected switch IDs, route-to-port/transit mapping, priorities, control UDP ports, and failover ordering. Drone identity/access-port bindings come from the fleet registry. Keep the switch IDs consistent with `sdn/mininet_topo.py`. Ryu fails closed until port-description replies arrive, updates route availability from OpenFlow port-status events, and samples controller-owned flow counters. These observations do not fabricate unsupported replay evidence and are not an active RF, latency, throughput, or end-to-end reachability probe.
+
+### `config/security_config.yaml`
+
+Versions the controller-evidence URL and timeout, maximum evidence age, DoS and network/telemetry-spoofing signal thresholds and weights, EWMA history, and response mapping. In real mode the detector requires authenticated evidence whose controller response explicitly identifies itself as independent; missing, stale, malformed, mock, or untrusted evidence yields `UNAVAILABLE`, not zero risk.
 
 ### JSON schemas
 
-`schemas/decision_event.py` is an active runtime contract used by both the orchestrator and API. It uses strict Pydantic models, rejects extra/non-finite data, requires exactly one direct, satellite, and mesh path, and emits constraint-aware event version `2.1` while still reading stored `2.0` events. Decision validation prevents `no_safe_route` from contradicting the safe-action mask/reason, and outcome validation requires the recorded reward to equal its component total. `schemas/metrics.json` mirrors the current telemetry fields and source values for non-Python consumers. `routing_decision.json` and `threat_scores.json` remain documentation artifacts and should be kept synchronized if they are promoted to active validators.
+`schemas/decision_event.py` is an active runtime contract used by both the orchestrator and API. It uses strict Pydantic models, rejects extra/non-finite data, requires exactly one direct, satellite, and mesh path, and emits evidence-aware event version `3.1` when network security, routing-v3, or HOLD fields are active while still parsing stored `2.0`, `2.1`, and `3.0` events. Decision validation prevents `no_safe_route` from contradicting the safe-action mask/reason, and outcome validation requires the recorded reward to equal its component total. `schemas/metrics.json` mirrors the current telemetry fields and source values for non-Python consumers. `routing_decision.json` and `threat_scores.json` remain documentation artifacts and should be kept synchronized if they are promoted to active validators.
 
 ## Testing and evaluation
 
@@ -1273,16 +1423,16 @@ Mininet and ns-3 tests require their external runtimes and, for Mininet, Linux/r
 
 GitHub Actions runs the complete Python regression suite, compiles the first-party Python modules, lints/builds the React application, and validates both Compose files on every push and pull request. A separate path-filtered workflow builds the Ryu and Mininet images and runs `scripts/sdn_smoke_test.sh` in a privileged Docker container when SDN integration files change or when manually dispatched. Large-dataset/model training remains outside CI because it requires substantial data and compute.
 
-### Current verification notes
+### Verification notes
 
-The regression set currently contains **138 passing tests**. `tests/test_api_client.py` provides a real token fixture and works both as a pytest module and through its standalone `run_all_tests()` entry point.
+Test counts and pass/fail state are intentionally not hardcoded here because the suite changes. Run the commands above against the current revision and report their observed output. `tests/test_api_client.py` provides a real token fixture and works both as a pytest module and through its standalone `run_all_tests()` entry point.
 
 | Suite | Principal coverage |
 |---|---|
 | `tests/test_phase1_regressions.py` | Correctness, data integrity, database migration, safety behavior, and graceful fallback from incompatible RL checkpoints |
 | `tests/test_phase2_security.py` | CORS, runtime health metadata, report/SSE/WebSocket authentication, failed-login throttling, admin authorization, type-preserving configuration patches, and SDN service tokens |
 | `tests/test_phase3_ml_correctness.py` | Deterministic/path-aligned synthetic data, confidence supervision, global update clipping, trim semantics, privacy integration, and honest compression metrics |
-| `tests/test_phase4_performance.py` | Batched FL/XAI calls, one-transaction persistence, strict canonical event validation, exact telemetry persistence/API reuse, consistent swarm snapshots, and correctly awaited real sensor calls |
+| `tests/test_phase4_performance.py` | Batched FL/sensitivity calls, one-transaction persistence, strict canonical event validation, exact telemetry persistence/API reuse, consistent swarm snapshots, and correctly awaited real sensor calls |
 | `tests/test_phase5_reward_consistency.py` | Shared formula arithmetic, first-step/switching behavior, environment/orchestrator parity, policy-visible transition ordering, canonical reward-total validation, and full reward/observation/hash-bound checkpoint compatibility |
 | `tests/test_phase6_temporal_data.py` | Temporal ordering/final-row labels, capture/path isolation, group-disjoint splits, synthetic/proxy variation, rolling runtime tensors, temporal FL checkpoint compatibility, and jammer-state visibility synchronization |
 | `tests/test_phase7_rl_evaluation.py` | Explicit no-previous-action state, reproducible paired policy evaluation, and deployed safety-override behavior |
@@ -1293,14 +1443,16 @@ The regression set currently contains **138 passing tests**. `tests/test_api_cli
 | `tests/test_phase12_sdn_readiness.py` | Complete switch/port inventory requirements, path-isolated failures, per-drone access failures, reconnect behavior, port flag interpretation, and controller-only route rejection |
 | `tests/test_phase13_system_readiness.py` | Mock/Ryu readiness normalization, API `200`/`503` semantics, safe topology reduction, switch counts, and per-drone path availability |
 | `tests/test_phase14_operational_readiness.py` | Transition deduplication, degradation/recovery severity, bounded eviction, current alert responses, and authenticated newest-first history |
+| `tests/test_byzantine_aggregation.py` | Robust evidence, trust history, poison rejection, sample-count defense, fallback aggregation, identity binding, metrics, controls, and benchmark reproducibility |
+| `tests/test_non_iid_fl.py` | Group-safe IID/Dirichlet partitioning, seeded skew, RF feature shifts, and secure non-IID poison/detection/drift output |
 
-With the complete local stack running, `tests/test_adversarial.py` passed **80 of 80 checks**, and the EW and FL API integration scripts also passed. Together they cover authenticated live requests, invalid-input rejection, concurrency, telemetry history, jammer lifecycle, compromise/restore controls, FL metrics, and SDN state. The adversarial checks use seeded comparisons where path ordering is asserted, avoiding flaky conclusions from small overlapping random samples; the history endpoint deliberately rejects requests above its secure `limit=1000` cap.
+The live API scripts cover authenticated requests, invalid-input rejection, concurrency, telemetry history, jammer lifecycle, compromise/restore controls, FL metrics, and SDN state. Their outcome is revision- and environment-specific and must be reported from a fresh run.
 
-The 2026-08-25 privileged SDN smoke test used the existing local Python 3.9/Ryu image with the current `sdn/` and `config/` directories mounted read-only. `/ready` remained `503` without switches and became `200` only after DPIDs 1–5 returned port descriptions. The reusable `scripts/sdn_smoke_test.sh` now submits direct, satellite, and mesh commands concurrently for drones 1–3, requires every response to contain all five barrier acknowledgements, verifies the controller retained the three independent routes, and checks the expected output ports. It then requires nonzero live packet counters on all three ingress flows, all three transit switches, and all three per-drone return flows. Administratively disabling the direct ingress port removes direct from measured availability; a new direct request for drone 1 must receive acknowledged satellite failover, new packet counters must advance, and drones 2–3 must retain their routes. The script creates uniquely named temporary Docker resources and removes them on exit. This validates traffic in the wired test topology, not wireless or hardware behavior, and packet counters are not continuous production probes.
+The reusable `scripts/sdn_smoke_test.sh` builds an isolated privileged topology, requires complete switch inventory and barrier acknowledgements, verifies receiver-observed UDP data and control delivery on direct/satellite/mesh routes, and exercises route replacement, deterministic link failover, HOLD, restricted/control-only, quarantine, dynamic registry bindings, and authenticated controller evidence. A test-only mismatched-MAC frame also verifies that Ryu observes an access-port `PacketIn` identity and traffic-derived rate. It fails when Docker, privileged networking, TUN/TAP, OVS, Ryu, or Mininet is unavailable; mock SDN is never substituted. A pass validates only the wired packet-simulation topology, not wireless or hardware behavior. On 2026-09-15, a source-bound local run passed with the five enabled registry identities; this is an environment-specific integration check, not a performance benchmark.
 
-The production frontend was also tested through the browser rather than only compiled. The original full test covered failed and successful login, WebSocket `ONLINE` state, all-drone telemetry, drone selection, both Recharts visualizations, jamming with automatic expiry, Byzantine compromise/restore, FL configuration save, HTML report export, and terminal lock. A 2026-08-15 follow-up specifically verified that switching from Drone 1 to Drone 2 updates the active card and RF values without reconnecting, while WebSocket data came from canonical events. The browser console contained no errors. Runtime labels correctly changed to `SIMULATION Mode` and `Mock SDN` based on `/health` metadata instead of hard-coded text. For the readiness phase, lint and the production build passed, `/health` and `/ready` were exercised against live local services, and the unauthenticated login surface rendered without console warnings; an authenticated browser regression of the new readiness/degraded banners remains to be added.
+The following browser snapshot predates the current provenance/runtime changes and is retained as unverified history, not current evidence. It covered login, WebSocket state, telemetry, selection, charts, scenario injection, FL controls, report export, and responsive layout. The revised unavailable-telemetry, network-evidence, deployment-generation, and routing-XAI states require a fresh live browser regression.
 
-Additional checks completed successfully:
+Historical unverified check list (not current evidence):
 
 ```text
 Python compileall                         passed
@@ -1372,6 +1524,9 @@ Production-like Ryu/Mininet composition requires `AJ_SECRET_KEY`, `AJ_ADMIN_PASS
 
 ```bash
 docker compose -f docker-compose.prod.yml up --build
+
+# Optional privileged wired packet-validation profile
+docker compose -f docker-compose.prod.yml --profile packet-validation up --build
 ```
 
 The production-like frontend is exposed on port 80. `MODEL_DIR` defaults to the repository's `models/` directory so Flower can publish checkpoints and API/orchestrator consumers can read the same files. API and orchestrator run as separate containers, and the latter uses the SDN service DNS name instead of container-local loopback.
@@ -1385,11 +1540,11 @@ docker compose -f docker-compose.prod.yml config --quiet
 
 ### Current container limitations
 
-The Compose files now form a coherent deployment baseline, but they do not make the research prototype production-ready:
+The Compose files now form a coherent deployment baseline, but they do not make the research prototype production-ready. `venv/bin/python scripts/fl_smoke_test.py` provides an isolated controlled-simulation gate that starts two Flower clients, enrolls a third identity during the run, verifies manager reconciliation, and writes candidates only inside a temporary directory:
 
 1. The production-like stack still starts a privileged Mininet container and assumes a Linux/Open vSwitch-capable host.
 2. Production FL clients require mounted real processed datasets and fail startup instead of silently substituting synthetic data; availability and licensing of those datasets remain deployment responsibilities.
-3. Model consumers load checkpoints at process startup; a newly written model requires a coordinated restart or a future hot-reload protocol.
+3. Model consumers poll `models/deployment_manifest.json` at decision/broadcast boundaries and swap only hash-valid, contract-compatible, smoke-tested immutable artifacts. This is a local file handoff, not a distributed model registry.
 4. Runtime FL configuration edits are not distributed/reloaded across already-running containers.
 5. The FL image does not contain processed test data, so server-side evaluation may be unavailable.
 6. Images use dependency ranges rather than a fully locked software bill of materials.
@@ -1450,10 +1605,10 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 ### Current performance characteristics
 
 - With a 0.5-second interval and three drones, the orchestrator can write roughly six rows per second.
-- It batches all nine drone/path sequences into one FL forward pass; stateful RL and SDN commands remain per drone.
+- It batches one sequence for every active-drone/path pair into one FL forward pass; stateful RL and SDN commands remain per drone.
 - Each tick persists all three rows with one CSV open and one SQLite transaction on a worker thread.
 - The API polls SQLite and parses/revalidates JSON for WebSocket/SSE/status output instead of consuming an event stream.
-- WebSocket XAI batches the base input and five ablations into one model pass per drone.
+- WebSocket Integrated Gradients is computed once per new event and cached; its gradient path is still substantially more expensive than one inference.
 - Logs and experiment data have no retention policy.
 - Recharts is lazy-loaded into its own chunk, keeping both generated JavaScript chunks below the current 500 kB warning threshold.
 
@@ -1472,7 +1627,7 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 - Write asynchronously in batches to PostgreSQL/TimescaleDB and preserve the existing `(drone_id, id DESC)` and `(run_id, step)` access paths.
 - Partition or expire raw telemetry and retain summarized experiment results.
 - Run API replicas without embedded singleton broadcasters; use a shared pub/sub channel.
-- Separate control-plane latency-sensitive work from report generation and XAI workers.
+- Separate control-plane latency-sensitive work from report generation and sensitivity-diagnostic workers.
 - Export the model to TorchScript/ONNX if profiling shows PyTorch inference overhead.
 - Implement true sparse/custom FL transport and sample clients as the fleet grows.
 - Use one elected controller/orchestrator and a redundant standby rather than allowing independent writers to command routes.
@@ -1488,30 +1643,34 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 - Inputs are path-aligned with current per-path inference, but one path label is still copied across three redundant threat outputs.
 - Fixed normalization and synthetic distributions may not transfer to real radio environments.
 - The attack classifier has five labels while the simulator exposes many more profiles.
+- The five-feature BiLSTM remains a communication-threat model. A separate controller-evidence classifier now detects selective forwarding, telemetry falsification, control floods, and replay in controlled simulation; representative labeled operational traffic is not yet available.
+- `routing_state_v3` consumes server trust, insider risk, containment severity, and evidence freshness and exposes an executable HOLD action. Legacy 14-value/3-action `routing_state_v2` checkpoints retain their original semantics and do not consume those fields.
+- Legitimate non-IID drift can resemble poisoning. The analyzer now expands its evidence threshold using robust population dispersion and treats stable accepted history as bounded counter-evidence; false-positive and benign-rejection rates remain mandatory outputs of every matrix run.
+- FedDF is now trust-weighted, covers four named proxy RF environments, records teacher disagreement and runtime, and rolls back on proxy-KL or held-out-loss regression. This makes it conditionally applied, not universally beneficial.
 - No committed representative-radio evaluation report supports a deployment accuracy claim; the latest generated report is a local, ignored artifact.
-- The regenerated synthetic traces make jammed and healthy RSSI almost perfectly separable. Both the three-round FL smoke model (`1.0000` macro F1) and RSSI threshold baseline (approximately `0.9998`) saturate, so this dataset cannot demonstrate an advantage for temporal learning.
+- Regenerated synthetic traces can make jammed and healthy RSSI nearly separable, so that dataset cannot by itself demonstrate an advantage for temporal learning. Any updated score must come from promoted evidence.
 - Opacus now uses its private loader and a persistent accountant, but formal privacy claims still require independent end-to-end accounting; server-side noise has no full accountant.
 - Compression does not reduce Flower wire traffic.
 - Personalization, client selection, and async aggregation are not fully connected to live federation.
-- The DQN implementation does not activate several advanced settings present in YAML.
+- The deployed routing model is standard DQN; Double DQN, dueling DQN, prioritized replay, and n-step returns are not implemented.
 - `DronePathEnv` and the four generated robustness scenarios are synthetic and action-independent. The trace contract eliminates fabricated cross-route observations and supports exact replay, but those generated CSVs still do not replace timestamp-aligned radio captures or hardware evaluation.
-- The ns-3 suite now sends and measures real simulated UDP packets, but its three paths are independent point-to-point links with seeded receive-error models. It does not model a wireless PHY, spectrum interference, shared contention, mobility, multi-hop swarm routing, or action-dependent traffic. The policy-visible threat is a documented QoS proxy rather than FL inference. Treat this as an intermediate packet-level validation tier, not real-radio evidence.
-- On the packet persistent-spot suite, the deployed DQN's paired difference versus greedy is `-0.200 ± 0.732`; the interval spans zero. The controlled-mixture seed-7 candidate improved this to `+0.971 ± 0.268`, but reduced packet barrage/reactive reward and all four large generated-suite rewards, so it was correctly not promoted. The mixture remains an explicit study workflow, while the deployed artifact and routine reproducibility paths retain the earlier validation-best IID protocol.
+- The three-route ns-3 replay suite sends and measures simulated UDP packets over independent point-to-point links with seeded receive-error models. It does not model a wireless PHY, spectrum interference, shared contention, mobility, multi-hop swarm routing, or action-dependent traffic; its policy-visible threat is a documented QoS proxy rather than FL inference. The separate two-node Wi-Fi mobility study is not connected to that replay suite or the online policy. Both remain packet-simulation tiers, not real-radio evidence.
+- Historical packet-policy comparisons remain unverified under the new manifest protocol and must be rerun before they are cited as current results.
 - Mixture proportions are project-defined synthetic assumptions, not estimates of a real deployment's attack distribution. Smart-jammer remains unseen, but tuning and comparing three candidates on the packet suite also makes that suite development evidence rather than a pristine future final test; new packet seeds/profiles are required for an unbiased post-tuning evaluation.
-- Barrage episodes deliberately degrade every route for 55% of their steps. Absolute deployed-policy reward is therefore negative (`-121.980 ± 1.204`), although its paired advantage over greedy is positive (`+19.032 ± 0.635`). Routing cannot create a healthy link when none exists.
-- The runtime constraint remains outside the learned DQN. It now distinguishes action replacement from the explicit `no_safe_route` state (22 of 25,000 IID replay steps and 1,719 of 25,000 barrage replay steps in the latest fixed trace), but the degraded response still forwards over the least-risk route. A true hold/drop/disconnect action would require matching SDN flow semantics, reward design, API/event changes, and retraining; adding a fourth model action alone would be unsafe and misleading.
+- Barrage scenarios can deliberately degrade every route. Routing cannot create a healthy link when none exists; v3 therefore exposes the separate HOLD action.
+- The v3 runtime and SDN controllers implement a fourth fail-closed HOLD action with matching reward, API/event semantics, mock enforcement, and OpenFlow empty-action drop rules. Historical v2 checkpoints intentionally retain the least-risk forwarding fallback and are identified as such in events.
 - FL checkpoints trained with repeated rows are similarly rejected unless they have a valid `grouped_temporal_v1` sidecar. The current local checkpoint was retrained on synthetic temporal sequences; representative RadioML/DroneRF retraining and external evaluation remain outstanding.
 
 ### Runtime and application limitations
 
-- The dashboard now receives every drone, but the backend still performs per-drone XAI and emits three messages per telemetry interval.
+- The dashboard now receives every drone and caches one target-specific Integrated Gradients explanation per new event. Explanation computation remains more expensive than ordinary inference and should move to a dedicated worker at fleet scale.
 - Canonical events are stored as JSON beside denormalized summary columns; this is easy to migrate but duplicates some values and provides limited SQL queryability inside the event.
 - The dashboard polls the API's normalized SDN readiness every five seconds, displays switch progress and per-drone route loss, and shows the five most recent deduplicated state changes. The history is bounded and process-local, and runtime readiness remains control-plane state rather than an active packet-delivery probe.
 - FastAPI and the Nginx frontend are deployable separately, but there is no same-origin reverse-proxy configuration for combining UI and API under one public hostname.
 - API configuration writes do not hot-reload every consumer.
 - Multiple process-local singletons make horizontal API scaling inconsistent.
 - The path/action command is validated end to end, Ryu rules are replaced per drone, and success requires OpenFlow barrier replies from every expected switch. A barrier proves the switch processed preceding messages; it does not prove packets traversed the intended physical path.
-- Live sensor calls use a short fixed timeout and fall back to simulation; the event exposes this as `synthetic_fallback` and `live_sensor_unavailable`, but there is no external alert delivery or centralized observability pipeline.
+- Live sensor calls use a short fixed timeout and a bounded validated-live cache. Cache expiry requests HOLD, records an operational safety event, and skips learned inference; there is no external alert delivery or centralized observability pipeline.
 - Route availability now consumes OpenFlow switch/port state, but it does not actively measure packet delivery, latency, throughput, congestion, or RF quality.
 
 ### Operational and security limitations
@@ -1520,8 +1679,8 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 - SQLite/CSV storage is unbounded and has no migration/retention system.
 - Compose is a validated deployment baseline, not an orchestrated, resource-limited, highly available production platform.
 - CI defines complete Python/frontend/configuration checks plus a path-filtered privileged Ryu/Mininet image-build and failover tier. Large-dataset training and hardware/wireless validation remain outside CI.
-- The Ryu/Mininet integration was exercised with existing local images and current source mounts. A clean controller rebuild did not complete because Docker Hub base-image metadata retrieval stalled, so reproducible fresh-image construction remains unverified.
-- No production observability, model registry, or rollback mechanism is present.
+- The Ryu and Mininet images were rebuilt locally on 2026-09-15 and the source-bound wired packet gate passed. The gate does not measure wireless behavior, RF attack realism, hardware forwarding, sustained latency/loss, or production reliability; CI execution remains environment-dependent.
+- A deployment-manifest generation handoff and in-memory rollback path exists for model reloads, but it is not a production model registry or centralized observability system.
 - Mininet and the point-to-point ns-3 integration are experiments rather than a validated wireless or hardware-in-the-loop environment.
 - No root-level project license is present, so redistribution/use terms for the application code are not currently defined in this repository. Dataset licenses must also be reviewed at their original sources.
 
@@ -1530,18 +1689,24 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 ### Highest-priority correctness work
 
 1. Reprocess representative RadioML/DroneRF sources, retrain FL under `grouped_temporal_v1`, and report group-held-out results with dataset/config hashes and confidence intervals.
-2. Extend the new point-to-point packet tier into a timestamp-aligned wireless/multi-hop ns-3 or Mininet-WiFi experiment, then replace proxy threat scores with representative three-path RF measurements and repeat the three-training-seed study.
+2. Extend the standalone two-node Wi-Fi mobility probe into a timestamp-aligned, three-action wireless/multi-hop ns-3 or Mininet-WiFi evaluation, then replace proxy threat scores with representative three-path RF measurements and repeat the three-training-seed policy study.
 3. Calibrate the temporal model's confidence head and define thresholds on a held-out deployment-like set.
-4. Extend the automated privileged Ryu/Mininet smoke beyond packet-counter assertions with timed loss/latency probes, repeated link flaps, and streaming disconnect/backpressure coverage.
+4. Extend the receiver-observed privileged Ryu/Mininet gate with timed loss/latency probes, repeated link flaps, and streaming disconnect/backpressure coverage.
 5. Obtain independently verified client/server privacy accounting for the exact participation and restart policy.
-6. Either wire selection, personalized server updates, async buffering, and advanced DQN options into runtime or remove their configuration switches.
+6. Either wire selection, personalized server updates, and async buffering into runtime or remove their configuration switches.
 7. Add a retention/archival policy and a general schema migration framework beyond the current additive `event_json` upgrade.
+
+The complete Phase 0–7 security contract, acceptance criteria, and reproduction commands are documented in [`docs/security_upgrade_phases_0_7.md`](docs/security_upgrade_phases_0_7.md). The fast verification entry point is `venv/bin/python scripts/run_security_regression.py`; add `--full` to regenerate the multi-seed Byzantine and IID/non-IID studies.
 
 ### Feature and evaluation work
 
 - Add real sensor adapters and timestamp synchronization.
 - Expand attack labels and collect representative per-profile data.
-- Compare action-masked/constrained learning against the current deterministic runtime constraint; add a learned hold/drop option only after the SDN layer can execute and acknowledge that behavior.
+- Replace controlled insider scenarios with representative, independently observed, authenticated traffic counters and labels before making deployment claims.
+- Run a larger multi-seed promotion study for the new v3 checkpoint against the retained v2 route-only baseline.
+- Calibrate Byzantine thresholds on representative non-IID data to reduce benign-client rejection without sacrificing poison recall.
+- Extend the implemented Integrated Gradients completeness test with perturbation stability, counterfactual, and operator-utility studies.
+- Compare action-masked/constrained learning against the deterministic runtime constraint and implemented learned HOLD action.
 - Iterate on the documented mixture and reward using a pre-registered promotion criterion, then evaluate once on new packet seeds/profiles that were not used to choose a candidate.
 - Build repeatable experiment manifests with seeds, dataset hashes, config snapshots, and confidence intervals.
 - Complete a packet-level ns-3 swarm model and hardware/OpenFlow testbed.
@@ -1561,11 +1726,11 @@ The orchestrator deliberately falls back when live sensors, FL inference, RL inf
 
 ### 30-second explanation
 
-> FLARE is an anti-jamming routing prototype for a three-drone swarm. Each drone produces link-quality metrics for direct, satellite, and mesh paths. A federated BiLSTM estimates jamming threat without centralizing raw training data, an RL policy chooses a path while balancing reliability, delay, energy, and switching, and an SDN controller applies the route. FastAPI, SQLite, and a React dashboard provide control, telemetry, and experiment visualization.
+> FLARE is a cross-layer cyber-resilience prototype for a small UAV swarm. A federated five-feature BiLSTM detects jamming and communication degradation, trust-weighted Byzantine aggregation prevents a compromised client from corrupting the global model, and a standard DQN selects a route that passes deterministic safety validation before SDN enforcement. Reproducible IID/non-IID experiments report both poison detection and benign false positives.
 
 ### One-minute explanation
 
-> I built an end-to-end research system that connects distributed threat detection to network control. Three Flower clients train a PyTorch BiLSTM with attention and multi-task threat/attack heads. At runtime, the orchestrator normalizes five link features per route, runs the model, constructs a 14-dimensional RL state, and asks either DQN or a custom discrete SAC agent for one of three executable routes. A shared constraint rejects unsafe choices and explicitly marks the all-routes-unsafe degraded state before a mock or Ryu OpenFlow controller applies the least-risk route. Every decision is logged to SQLite/CSV and exposed through FastAPI to a React dashboard. Evaluation uses controlled-mixture training, paired generated traces, and a reproducible ns-3 UDP packet tier; a mixed-training candidate improved one packet profile but was not promoted because it regressed others.
+> I built an end-to-end research system that protects both network communication and collaborative learning. Flower clients train a five-feature temporal BiLSTM; the server uses heterogeneity-aware update evidence and historical trust before aggregation, then conditionally applies trust-weighted FedDF with rollback. The online v3 path combines communication threats with independently observed insider evidence and FL trust in an 18-value standard-DQN state, validates direct/satellite/mesh/HOLD actions, and enforces routing or containment through mock or Ryu/OpenFlow SDN. Experiments report poison recall, benign rejection, client drift, QoS, unsafe forwarding, and explanation fidelity.
 
 ### Detailed technical explanation
 
@@ -1574,9 +1739,9 @@ A strong walkthrough should follow the data rather than listing libraries:
 1. **Input:** explain the five link features and how attack profiles modify them.
 2. **Detection:** explain the `[batch, time, feature]` tensor, BiLSTM/attention representation, and three model heads.
 3. **Federation:** explain client-local training, parameter exchange, robust/trust aggregation, server evaluation, and checkpointing.
-4. **Decision:** describe the 14-value RL observation, three executable actions, reward terms, safe-action mask, and explicit `no_safe_route` degraded state.
+4. **Decision:** distinguish v2's 14-value/three-route contract from v3's 18-value/four-action trust-aware contract and executable HOLD.
 5. **Control:** show how a route maps to an OpenFlow output port or mock state.
-6. **Observability:** describe event logging, API reads, WebSocket telemetry, and feature-ablation XAI.
+6. **Observability:** describe event logging, API reads, WebSocket telemetry, FL trust evidence, and the limited feature-ablation sensitivity diagnostic.
 7. **Evaluation:** distinguish generated trace robustness from the ns-3 UDP packet tier and explain paired confidence intervals versus greedy.
 8. **Honest boundaries:** explain synthetic/proxy data, incomplete advanced-feature wiring, security limitations, and how you would validate the next version.
 
@@ -1585,7 +1750,7 @@ A strong walkthrough should follow the data rather than listing libraries:
 - **Why FL:** it explores distributed learning and reduces raw-data movement; it does not by itself guarantee privacy.
 - **Why a recurrent model:** offline and runtime inputs are now ordered ten-step windows, so the model can use changing RF conditions rather than cloned snapshots.
 - **Why RL:** route selection is a sequential trade-off rather than a single threshold, and switching affects future reward.
-- **Why a separate route constraint:** learned policies can behave unexpectedly, while the controller has only three real forwarding actions. The guardrail is deterministic and auditable, and it exposes all-routes-unsafe rather than pretending a healthy route exists.
+- **Why a separate route constraint:** learned policies can behave unexpectedly. The guardrail is deterministic and auditable; v3 maps an all-routes-unsafe state to an actual SDN drop rather than pretending a healthy route exists.
 - **Why SDN:** detection becomes operational only when a control plane can enforce the selected route.
 - **Why a mock controller:** most contributors cannot run privileged OpenFlow/Mininet infrastructure for every test.
 
@@ -1593,19 +1758,19 @@ A strong walkthrough should follow the data rather than listing libraries:
 
 | Challenge | Current response | What you should say about it |
 |---|---|---|
-| Non-IID or unreliable clients | Trust, drift, anomaly filtering, clipping, quarantine | Useful research defenses; validate against stronger adversaries and trusted server-side measurements |
+| Non-IID or unreliable clients | Group-safe Dirichlet/RF skew, drift metrics, accepted-teacher FedDF, trust, clipping, and robust fallbacks | Matrix quantifies both poison recall and benign rejection; FedDF is scenario-dependent |
 | Sparse attack evidence | Synthetic profiles and dataset-derived link features | Enables repeatable prototyping; does not replace RF field validation |
 | Invalid cross-route replay | Versioned rows containing all three paths, strict validation, disjoint episode IDs, and trace fingerprints | Removes fabricated path variants and leakage; packet episodes now come from ns-3 counters, while representative RF traces remain missing |
-| RL unsafe decisions | Offline training plus a shared safe mask, deterministic constraint, and explicit all-routes-unsafe state | Practical and executable guardrail; a true hold/drop action requires SDN support and retraining |
+| RL unsafe decisions | Shared safe mask, deterministic constraint, versioned HOLD reward/action, and OpenFlow drop enforcement | Practical executable guardrail; v2 behavior remains explicit compatibility state |
 | Networking dependencies | Mock SDN, Ryu, Mininet, Mininet-WiFi, and a reproducible ns-3 UDP packet tier | Layered testing strategy; the current ns-3 topology is point-to-point and not equivalent to wireless hardware |
-| Operator understanding | Dashboard and feature ablation | Improves visibility, but explanation is local sensitivity, not causal proof |
+| Operator understanding | Dashboard and target-specific Integrated Gradients with completeness diagnostics | Improves visibility, but explanation is local attribution, not causal proof |
 | Service failure | Short timeouts, retries, and safe/greedy fallbacks | Maintains availability; production must make degraded mode visible rather than silent |
 
 ### Possible interviewer questions and strong answers
 
 **Why not simply choose the route with the lowest threat score?**
 
-That is the greedy baseline and runtime fallback. RL can also account for latency, loss, energy, route-switching cost, and longer-term consequences. FLARE compares them on identical per-episode traces, reports paired confidence intervals, and separately records policy actions, constraint overrides, and all-routes-unsafe states. In the latest synchronized IID suite, the deployed policy improved reward over greedy by about `20.10 ± 0.81`.
+That is the greedy baseline and runtime fallback. RL can also account for latency, loss, energy, route-switching cost, and longer-term consequences. FLARE compares them on identical per-episode traces, reports paired confidence intervals, and separately records policy actions, constraint overrides, and all-routes-unsafe states. Any numerical superiority claim requires a currently promoted matching manifest.
 
 **Does federated learning make the system private?**
 
@@ -1617,7 +1782,7 @@ For ten-step sequences and a small prototype, a BiLSTM is simpler and cheaper, a
 
 **How do you handle Byzantine clients?**
 
-The server maintains trust scores, detects abnormal update statistics, clips updates, can quarantine clients, and supports robust/trust-weighted aggregation. The limitation is that some evidence is client-reported, so a production design needs server-observable validation and stronger adversarial tests.
+The server computes majority-relative model-update evidence, persists trust across restarts, adaptively clips deltas, caps self-reported sample counts, and accepts, down-weights, quarantines, or rejects each update before trust-weighted aggregation. It can fall back to coordinate median or trimmed mean, and its three-seed attack study reports both successful poisoned-update rejection and benign false positives. A production design still needs certificate-bound drone identities and broader non-IID/adaptive-attacker validation.
 
 **How does a prediction change the network?**
 

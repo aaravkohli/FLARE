@@ -9,18 +9,18 @@
     "action_id": {
       "type": "integer",
       "minimum": 0,
-      "maximum": 2,
-      "description": "RL action index (0=direct, 1=satellite, 2=mesh)"
+      "maximum": 3,
+      "description": "RL action index (0=direct, 1=satellite, 2=mesh, 3=hold in routing_state_v3)"
     },
     "path_name": {
       "type": "string",
-      "enum": ["direct", "satellite", "mesh"],
+      "enum": ["direct", "satellite", "mesh", "hold"],
       "description": "Selected communication path name"
     },
     "original_action_id": {
       "type": "integer",
       "minimum": 0,
-      "maximum": 2,
+      "maximum": 3,
       "description": "Action emitted by the learned/greedy policy before the runtime constraint"
     },
     "safety_override": {
@@ -43,6 +43,7 @@
       "enum": [
         "policy_route_above_threshold",
         "all_routes_above_threshold",
+        "containment_required",
         null
       ]
     },
@@ -53,7 +54,12 @@
     },
     "all_unsafe_behavior": {
       "type": "string",
-      "enum": ["least_risk_route"]
+      "enum": ["least_risk_route", "hold"]
+    },
+    "network_action": {
+      "type": "string",
+      "enum": ["forward", "drop_data_plane"],
+      "description": "Concrete data-plane behavior corresponding to the routing decision"
     },
     "reward": {
       "type": "number",

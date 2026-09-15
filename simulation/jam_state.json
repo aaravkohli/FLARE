@@ -17,5 +17,10 @@
   "all": {
     "profile": "none",
     "paths": []
+  },
+  "drone_4": {
+    "profile": "none",
+    "paths": [],
+    "gps_drift": 0.0
   }
 }

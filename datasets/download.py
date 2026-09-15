@@ -1,6 +1,6 @@
 """
 datasets/download.py
-Downloads RadioML 2018.01A and DroneRF datasets for the FL anti-jamming project.
+Downloads RadioML 2018.01A and DroneRF datasets for FLARE communication-threat experiments.
 
 RadioML 2018.01A  — DeepSig open data, ~2 GB HDF5
 DroneRF           — IEEE DataPort public mirror, ~4 GB (3 archives)
@@ -289,7 +289,7 @@ def generate_synthetic_fallback(
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Download FL anti-jamming datasets")
+    parser = argparse.ArgumentParser(description="Download FLARE communication-threat datasets")
     parser.add_argument("--skip-radioml", action="store_true")
     parser.add_argument("--skip-dronerf", action="store_true")
     parser.add_argument("--synthetic-only", action="store_true",

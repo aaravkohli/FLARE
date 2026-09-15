@@ -3,6 +3,34 @@ async_fl:
   enabled: false
   max_staleness: 10
   staleness_alpha: 1.0
+attack_simulation:
+  dynamic_control_file: simulation/byzantine_state.json
+  noisy_std_multiplier: 0.25
+  poison_scale: 20.0
+byzantine_aggregation:
+  adaptive_clip_enabled: true
+  clip_mad_multiplier: 3.0
+  enabled: true
+  fallback_strategy: coordinate_median
+  malicious_score: 0.75
+  max_sample_count_ratio: 3.0
+  min_clients_for_detection: 3
+  min_clip_norm: 1.0e-06
+  robust_z_threshold: 3.5
+  heterogeneity_tolerance: 0.75
+  heterogeneous_population_threshold: 0.35
+  suspicious_min_evidence: 2
+  extreme_z_threshold: 8.0
+  extreme_norm_ratio: 5.0
+  opposing_cosine_threshold: -0.1
+  sample_count_iqr_multiplier: 1.5
+  signal_weights:
+    cosine: 0.3
+    distance: 0.35
+    history: 0.1
+    norm: 0.25
+  suspicious_fraction_for_fallback: 0.5
+  suspicious_score: 0.35
 client_selection:
   combined:
     poco_weight: 0.6
@@ -13,6 +41,10 @@ client_selection:
   strategy: combined
   ucb:
     beta: 0.5
+client_manager:
+  reconcile_interval_s: 2.0
+  simulation_jammed_clients:
+    - drone_3
 compression:
   enabled: false
   quantize:
@@ -23,6 +55,13 @@ compression:
     error_feedback: true
     ratio: 0.1
 data:
+  # preserve keeps source-assigned drone ownership. Experiments may select
+  # iid, mild_non_iid, or strong_non_iid without splitting temporal groups.
+  partition_mode: preserve
+  partition_seed: 42
+  non_iid_alpha: 0.5
+  feature_skew_enabled: false
+  feature_skew_strength: 1.0
   sequence_stride: 1
   split_seed: 42
   test_fraction: 0.2
@@ -53,6 +92,10 @@ distillation:
   kd_lr: 0.001
   proxy_samples: 500
   temperature: 3.0
+  min_teacher_disagreement: 1.0e-06
+  max_proxy_kl_regression: 0.0
+  max_validation_loss_regression: 0.01
+  trust_weighted_teachers: true
 drift_detection:
   action: flag
   combined_threshold: 0.5
@@ -69,6 +112,8 @@ drift_detection:
     ks: 0.3
     loss_spike: 0.3
 federation:
+  # Device identities are authorized dynamically from config/fleet_registry.yaml.
+  identity_source: fleet_registry
   fraction_fit: 1.0
   min_clients: 2
   num_rounds: 30
@@ -77,6 +122,17 @@ lifecycle:
   checkpoint_promotion_threshold: 0.85
   min_clients_for_retrain: 2
   retrain_interval_minutes: 60
+insider_detection:
+  min_packets: 20
+  forwarding_ratio_floor: 0.75
+  claim_gap_threshold: 0.25
+  control_rate_threshold: 25.0
+  replay_ratio_threshold: 0.2
+  suspicious_threshold: 0.35
+  malicious_threshold: 0.72
+  classification_signal_threshold: 0.5
+  history_alpha: 0.65
+  max_evidence_age_s: 3.0
 model:
   dropout: 0.2
   hidden_size: 64
@@ -89,8 +145,10 @@ paths:
   checkpoint_save: models/fl_model_checkpoint.pth
   metrics_csv: results/fl_advanced_metrics.csv
   metrics_json: results/fl_metrics_snapshot.json
+  training_candidate_save: models/fl_candidate.pth
   model_save: models/fl_model.pth
   personalized_models: models/personalized
+  trust_state: results/fl_trust_state.json
 personalization:
   enabled: true
   head_only: true
@@ -109,9 +167,13 @@ training:
   loss_weight_confidence: 0.2
   loss_weight_threat: 2.0
 trust:
-  alpha: 0.9
   enabled: true
-  initial_trust: 1.0
-  participation_bonus: 0.05
+  history_alpha: 0.7
+  history_size: 20
+  initial_trust: 0.8
   quarantine_rounds: 3
-  tau_min: 0.2
+  quarantine_trigger_rounds: 2
+  reject_trust_threshold: 0.15
+  suspicious_trust_threshold: 0.5
+  suspicious_weight: 0.25
+  tau_min: 0.15

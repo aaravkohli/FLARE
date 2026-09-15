@@ -17,10 +17,12 @@ from rl.reward import (
     PATH_ENERGY_COSTS,
     PATH_NAMES,
     REWARD_DEFINITION,
+    SECURE_REWARD_DEFINITION,
 )
+from schemas.contracts import ROUTING_ACTIONS_V3, ROUTING_STATE_V3
 
 
-CHECKPOINT_METADATA_VERSION = 2
+CHECKPOINT_METADATA_VERSION = 3
 OBSERVATION_DEFINITION = "routing_state_v2"
 _HASH_CHUNK_SIZE = 1024 * 1024
 
@@ -43,15 +45,21 @@ def _checkpoint_sha256(checkpoint_path: Path) -> str:
     return digest.hexdigest()
 
 
-def _reward_contract_sha256() -> str:
+def _reward_contract_sha256(
+    reward_definition: str = REWARD_DEFINITION,
+    observation_definition: str = OBSERVATION_DEFINITION,
+) -> str:
     """Bind a policy to every configured/static value used by its reward."""
     contract = {
-        "reward_definition": REWARD_DEFINITION,
+        "reward_definition": reward_definition,
         "weights": asdict(DEFAULT_REWARD_WEIGHTS),
         "path_names": list(PATH_NAMES),
         "path_energy_costs": list(PATH_ENERGY_COSTS),
         "max_latency_ms": list(MAX_LATENCY_MS),
     }
+    if observation_definition == ROUTING_STATE_V3:
+        contract["path_names"] = list(ROUTING_ACTIONS_V3)
+        contract["hold_penalty"] = 0.35
     encoded = json.dumps(contract, sort_keys=True, separators=(",", ":")).encode()
     return hashlib.sha256(encoded).hexdigest()
 
@@ -67,18 +75,27 @@ def write_checkpoint_metadata(
     training_mode: str,
     training_seed: int,
     training_provenance: Mapping[str, Any] | None = None,
+    observation_definition: str = OBSERVATION_DEFINITION,
+    reward_definition: str | None = None,
 ) -> Path:
     """Atomically write metadata bound to the exact checkpoint contents."""
     checkpoint = Path(checkpoint_path)
     if not checkpoint.is_file():
         raise FileNotFoundError(f"checkpoint not found at {checkpoint}")
 
+    resolved_reward = reward_definition or (
+        SECURE_REWARD_DEFINITION
+        if observation_definition == ROUTING_STATE_V3
+        else REWARD_DEFINITION
+    )
     metadata = {
         "metadata_version": CHECKPOINT_METADATA_VERSION,
         "algorithm": algorithm.lower(),
-        "reward_definition": REWARD_DEFINITION,
-        "reward_contract_sha256": _reward_contract_sha256(),
-        "observation_definition": OBSERVATION_DEFINITION,
+        "reward_definition": resolved_reward,
+        "reward_contract_sha256": _reward_contract_sha256(
+            resolved_reward, observation_definition
+        ),
+        "observation_definition": observation_definition,
         "observation_dim": int(observation_dim),
         "action_count": int(action_count),
         "max_episode_steps": int(max_episode_steps),
@@ -123,6 +140,8 @@ def validate_checkpoint_metadata(
     observation_dim: int,
     action_count: int,
     max_episode_steps: int,
+    observation_definition: str = OBSERVATION_DEFINITION,
+    reward_definition: str | None = None,
 ) -> Mapping[str, Any]:
     """Validate semantic compatibility and return the parsed metadata."""
     checkpoint = Path(checkpoint_path)
@@ -145,16 +164,33 @@ def validate_checkpoint_metadata(
     if not isinstance(metadata, dict):
         raise CheckpointCompatibilityError("checkpoint metadata must be a JSON object")
 
+    resolved_reward = reward_definition or (
+        SECURE_REWARD_DEFINITION
+        if observation_definition == ROUTING_STATE_V3
+        else REWARD_DEFINITION
+    )
     expected = {
-        "metadata_version": CHECKPOINT_METADATA_VERSION,
         "algorithm": algorithm.lower(),
-        "reward_definition": REWARD_DEFINITION,
-        "reward_contract_sha256": _reward_contract_sha256(),
-        "observation_definition": OBSERVATION_DEFINITION,
+        "reward_definition": resolved_reward,
+        "reward_contract_sha256": _reward_contract_sha256(
+            resolved_reward, observation_definition
+        ),
+        "observation_definition": observation_definition,
         "observation_dim": int(observation_dim),
         "action_count": int(action_count),
         "max_episode_steps": int(max_episode_steps),
     }
+    metadata_version = metadata.get("metadata_version")
+    compatible_versions = (
+        {2, CHECKPOINT_METADATA_VERSION}
+        if observation_definition == OBSERVATION_DEFINITION
+        else {CHECKPOINT_METADATA_VERSION}
+    )
+    if metadata_version not in compatible_versions:
+        raise CheckpointCompatibilityError(
+            f"checkpoint metadata is incompatible: metadata_version={metadata_version!r} "
+            f"(expected one of {sorted(compatible_versions)!r})"
+        )
     mismatches = [
         f"{key}={metadata.get(key)!r} (expected {value!r})"
         for key, value in expected.items()

@@ -19,6 +19,7 @@ RUN pip install --no-cache-dir \
 
 COPY sdn/ sdn/
 COPY config/ config/
+COPY fleet/ fleet/
 ENV PYTHONPATH=/app
 
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \

@@ -19,7 +19,8 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 # We import the local generator for physical environment telemetry mirroring.
 # In a real deployment, this would use a WebSocket client or MQTT subscriber.
-from simulation.generator import generate_metrics, DRONES
+from fleet.registry import active_drone_ids
+from simulation.generator import generate_metrics
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +45,7 @@ class SwarmStateRegistry:
                 "last_update": 0.0,
                 "ew_status": None,
                 "gps": None
-            } for d in DRONES
+            } for d in active_drone_ids()
         }
         
         # Analytics
@@ -78,7 +79,14 @@ class SwarmStateRegistry:
             start_t = time.time()
             
             with self._lock:
-                for drone_id in DRONES:
+                for drone_id in active_drone_ids():
+                    self.drones_state.setdefault(drone_id, {
+                        "battery": MAX_BATTERY,
+                        "metrics": None,
+                        "last_update": 0.0,
+                        "ew_status": None,
+                        "gps": None,
+                    })
                     # Ingest physical telemetry
                     metrics = generate_metrics(drone_id=drone_id)
                     

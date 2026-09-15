@@ -33,6 +33,7 @@ References:
 import argparse
 import hashlib
 import logging
+import os
 import sys
 import time
 from pathlib import Path
@@ -76,12 +77,53 @@ _DP_CFG = _FL_CFG.get("differential_privacy", {})
 _COMP_CFG = _FL_CFG.get("compression", {})
 _PERSONA_CFG = _FL_CFG.get("personalization", {})
 _DATA_CFG = _FL_CFG.get("data", {})
+_ATTACK_CFG = _FL_CFG.get("attack_simulation", {})
 _PROC = _BASE / "datasets" / "processed"
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [CLIENT] %(message)s")
 logger = logging.getLogger(__name__)
 
 ATTACK_CLASSES = ["none", "barrage", "sweep", "spot", "unknown"]
+CLIENT_ATTACK_MODES = ("normal", "noisy", "poisoned")
+
+
+def simulate_model_update_attack(
+    updated_weights: List[np.ndarray],
+    global_weights: List[np.ndarray],
+    mode: str,
+    *,
+    rng: Optional[np.random.Generator] = None,
+    noisy_std_multiplier: float = 0.75,
+    poison_scale: float = 20.0,
+) -> List[np.ndarray]:
+    """Apply a controlled simulation-only attack to an outgoing model update."""
+    if mode not in CLIENT_ATTACK_MODES:
+        raise ValueError(f"Unknown attack mode: {mode}")
+    if len(updated_weights) != len(global_weights):
+        raise ValueError("Updated and global model structures differ")
+    if mode == "normal":
+        return updated_weights
+
+    rng = rng or np.random.default_rng(0)
+    deltas = [
+        np.asarray(updated) - np.asarray(global_weight)
+        for updated, global_weight in zip(updated_weights, global_weights)
+    ]
+    if mode == "poisoned":
+        # Sign-flip/model-replacement attack: oppose the learned majority
+        # direction and amplify it enough to corrupt plain FedAvg.
+        return [
+            global_weight - poison_scale * delta
+            for global_weight, delta in zip(global_weights, deltas)
+        ]
+
+    flat_delta = np.concatenate([delta.reshape(-1) for delta in deltas])
+    delta_rms = float(np.sqrt(np.mean(flat_delta.astype(np.float64) ** 2))) if flat_delta.size else 0.0
+    noise_std = max(delta_rms * noisy_std_multiplier, 1e-7)
+    return [
+        updated + rng.normal(0.0, noise_std, size=updated.shape).astype(updated.dtype)
+        for updated in updated_weights
+    ]
 
 
 def _get_device() -> torch.device:
@@ -174,8 +216,9 @@ def load_real_data(
     Load real RF data for a single drone client from the preprocessed CSV.
     Falls back to synthetic data only when ``allow_synthetic_fallback`` is true.
     """
-    drone_num = "".join(filter(str.isdigit, client_id)) or "1"
-    csv_path = _PROC / f"drone_{drone_num}_train.csv"
+    if not client_id or any(character not in "abcdefghijklmnopqrstuvwxyz0123456789_-" for character in client_id):
+        raise ValueError("client_id cannot be mapped safely to a dataset partition")
+    csv_path = _PROC / f"{client_id}_train.csv"
 
     if not csv_path.exists():
         if not allow_synthetic_fallback:
@@ -296,8 +339,12 @@ class DroneFlClient(fl.client.NumPyClient):
         enable_compression: Optional[bool] = None,
         enable_personalization: Optional[bool] = None,
         require_real_data: bool = False,
+        attack_mode: str = "normal",
     ):
         self.client_id = client_id
+        if attack_mode not in CLIENT_ATTACK_MODES:
+            raise ValueError(f"attack_mode must be one of {CLIENT_ATTACK_MODES}")
+        self.attack_mode = attack_mode
         self.device = _get_device()
         logger.info("Client %s using device: %s", client_id, self.device)
 
@@ -588,6 +635,36 @@ class DroneFlClient(fl.client.NumPyClient):
             weights_to_send = [gw + cd for gw, cd in zip(global_w, compressed_deltas)]
             compression_stats = self._compressor.get_round_stats()
 
+        # Controlled Byzantine simulation is applied last, at the transmission
+        # boundary, so the server sees exactly the update an insider submits.
+        from simulation.byzantine_state import get_attack_mode
+        configured_state_path = os.getenv("FLARE_BYZANTINE_STATE_PATH")
+        state_path = (
+            Path(configured_state_path)
+            if configured_state_path
+            else _BASE / _ATTACK_CFG.get(
+                "dynamic_control_file", "simulation/byzantine_state.json"
+            )
+        )
+        effective_attack_mode = get_attack_mode(
+            self.client_id,
+            default=self.attack_mode,
+            path=state_path,
+        )
+        round_number = int(config.get("server_round", 0))
+        attack_seed = int.from_bytes(
+            hashlib.sha256(f"{self.client_id}:{round_number}:byzantine".encode()).digest()[:8],
+            byteorder="big",
+        )
+        weights_to_send = simulate_model_update_attack(
+            weights_to_send,
+            parameters,
+            effective_attack_mode,
+            rng=np.random.default_rng(attack_seed),
+            noisy_std_multiplier=float(_ATTACK_CFG.get("noisy_std_multiplier", 0.75)),
+            poison_scale=float(_ATTACK_CFG.get("poison_scale", 20.0)),
+        )
+
         # Step 7: Drift score for cosine signal
         curr_flat = np.concatenate([w.flatten() for w in updated_weights])
         cos_sim = 1.0
@@ -619,6 +696,7 @@ class DroneFlClient(fl.client.NumPyClient):
             # Personalization
             "persona_delta": persona_metrics.get("persona_delta", 0.0),
             "personal_loss": persona_metrics.get("personal_loss", 0.0),
+            "attack_simulation_mode": effective_attack_mode,
         }
 
         logger.info(
@@ -680,6 +758,12 @@ def main():
     parser.add_argument("--dp", action="store_true", help="Enable client-side DP-SGD")
     parser.add_argument("--compress", action="store_true", help="Enable gradient compression")
     parser.add_argument("--persona", action="store_true", help="Enable personalized FL")
+    parser.add_argument(
+        "--attack-mode",
+        choices=CLIENT_ATTACK_MODES,
+        default="normal",
+        help="Simulation only: alter the outgoing update (normal, noisy, or poisoned)",
+    )
     args = parser.parse_args()
 
     logger.info(
@@ -696,6 +780,7 @@ def main():
         enable_compression=args.compress or None,
         enable_personalization=args.persona or None,
         require_real_data=args.require_real_data,
+        attack_mode=args.attack_mode,
     )
     fl.client.start_numpy_client(server_address=args.server_address, client=client)
 

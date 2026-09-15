@@ -3,6 +3,16 @@ environment:
   max_steps: 500
   num_paths: 3
   obs_dim: 14
+runtime:
+  preferred_contract: routing_state_v3
+  v3_model_path: models/rl_model_v3.zip
+routing_v3:
+  observation_definition: routing_state_v3
+  obs_dim: 18
+  action_count: 4
+  all_unsafe_behavior: hold
+  hold_penalty: 0.35
+  containment_hold_threshold: 0.72
 paths:
   final_model_save: models/rl_final_model.zip
   log_dir: logs/rl_tensorboard
@@ -27,13 +37,7 @@ training:
   algo: dqn
   batch_size: 64
   buffer_size: 20000
-  double_q: true
-  dueling: true
   learning_rate: 0.0001
-  n_step: 3
-  prioritized_replay: true
-  prioritized_replay_alpha: 0.6
-  prioritized_replay_beta0: 0.4
   seed: 42
   evaluation_episodes: 50
   evaluation_seed: 42000

@@ -1,7 +1,4 @@
-"""
-simulation/jammer.py — Upgraded SOTA Electronic Warfare (EW) Simulator  [FLARE v2]
-
-CLI tool to inject advanced EW attacks and cyber-physical threats into the swarm.
+"""Controlled communication-impairment simulator for FLARE.
 
 Supported Attack Profiles:
   - spot           : Brute force jamming on a single target path
@@ -15,10 +12,10 @@ Supported Attack Profiles:
   - gps_spoofing   : GPS coordinate drift and latency injection
   - replay         : Frozen state replay (masks jamming with fake legacy metrics)
   - dos            : Denial of Service interface flooding (high latency, high loss)
-  - sybil          : Swarm node replication (overwhelms registries)
-  - model_poisoning: Federated learning weight poisoning (returns random weights)
-  - data_poisoning : Label manipulation during local training
-  - backdoor       : Trojan triggers embedded in models
+
+Model-update poisoning is simulated separately by ``fl/client.py`` and the
+Byzantine experiment/control API. Sybil, data-poisoning, and backdoor attacks
+are not implemented and therefore are deliberately not accepted here.
 
 Usage:
   python simulation/jammer.py --jam direct --profile reactive --duration 15
@@ -32,10 +29,14 @@ import json
 import logging
 import os
 import sqlite3
+import sys
 import tempfile
 import threading
 import time
 from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
+from fleet.registry import active_drone_ids, is_active_drone
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [JAMMER] %(message)s")
 logger = logging.getLogger(__name__)
@@ -43,12 +44,10 @@ logger = logging.getLogger(__name__)
 _BASE = Path(__file__).parent.parent
 _JAM_STATE_FILE = _BASE / "simulation" / "jam_state.json"
 VALID_PATHS = {"direct", "satellite", "mesh"}
-VALID_DRONES = {"drone_1", "drone_2", "drone_3"}
 
 VALID_PROFILES = {
     "none", "spot", "sweep", "barrage", "smart", "reactive", "adaptive",
-    "fhss", "spoofing", "gps_spoofing", "replay", "dos", "sybil",
-    "model_poisoning", "data_poisoning", "backdoor",
+    "fhss", "spoofing", "gps_spoofing", "replay", "dos",
 }
 
 _STATE_LOCK = threading.RLock()
@@ -57,7 +56,7 @@ _STATE_LOCK = threading.RLock()
 def _default_state() -> dict:
     return {
         drone_id: {"profile": "none", "paths": [], "gps_drift": 0.0}
-        for drone_id in sorted(VALID_DRONES)
+        for drone_id in active_drone_ids()
     }
 
 
@@ -69,7 +68,7 @@ def _load_state_unlocked() -> dict:
         state = json.loads(_JAM_STATE_FILE.read_text())
         if not isinstance(state, dict):
             return default
-        for drone_id in VALID_DRONES:
+        for drone_id in active_drone_ids():
             current = state.get(drone_id)
             if not isinstance(current, dict):
                 state[drone_id] = default[drone_id]
@@ -117,7 +116,7 @@ def _write_state(state: dict) -> None:
 
 def set_jamming_state(drone_id: str, paths: list[str], profile: str) -> list[str]:
     """Validate and atomically apply a jammer state update. Returns target drones."""
-    if drone_id != "all" and drone_id not in VALID_DRONES:
+    if drone_id != "all" and not is_active_drone(drone_id):
         raise ValueError(f"Invalid drone_id: {drone_id}")
     if profile not in VALID_PROFILES:
         raise ValueError(f"Invalid EW profile: {profile}")
@@ -125,7 +124,7 @@ def set_jamming_state(drone_id: str, paths: list[str], profile: str) -> list[str
     if invalid_paths:
         raise ValueError(f"Invalid paths: {sorted(invalid_paths)}")
 
-    targets = sorted(VALID_DRONES) if drone_id == "all" else [drone_id]
+    targets = list(active_drone_ids()) if drone_id == "all" else [drone_id]
     with _STATE_LOCK:
         state = _load_state_unlocked()
         for target in targets:
@@ -239,7 +238,7 @@ import random
 # ---------------------------------------------------------------------------
 
 def jam_paths(drone_id: str, paths: list[str], duration_s: float, profile: str = "spot") -> None:
-    """Enable jamming using SOTA EW profiles."""
+    """Enable one implemented communication-impairment profile."""
     if profile not in VALID_PROFILES:
         raise ValueError(f"Invalid EW profile: {profile}. Must be one of {VALID_PROFILES}")
 
@@ -279,7 +278,7 @@ def jam_paths(drone_id: str, paths: list[str], duration_s: float, profile: str =
 
 
 def clear_jamming(drone_id: str = None) -> None:
-    """Restore normal operations and clear all EW/Poisoning injection states."""
+    """Restore normal communication-simulation state."""
     target_key = "all" if drone_id is None else drone_id
     targets = set_jamming_state(target_key, [], "none")
     logger.info("EW state CLEARED. All communication links restored for targets: %s", targets)
@@ -290,7 +289,7 @@ def clear_jamming(drone_id: str = None) -> None:
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description="Upgraded SOTA EW Simulator (FLARE v2)")
+    parser = argparse.ArgumentParser(description="FLARE communication-impairment simulator")
     parser.add_argument(
         "--jam", nargs="+", choices=list(VALID_PATHS),
         help="Target paths to jam (direct, satellite, mesh)"
@@ -309,13 +308,13 @@ def main():
     )
     parser.add_argument(
         "--drone", type=str, default="drone_1",
-        help="Target drone node (drone_1, drone_2, drone_3, all)"
+        help="Target registered drone ID, or all"
     )
     args = parser.parse_args()
 
     if args.clear:
         clear_jamming(args.drone if args.drone != "all" else None)
-    elif args.jam or args.profile in ["barrage", "sweep", "gps_spoofing", "sybil", "model_poisoning"]:
+    elif args.jam or args.profile in ["barrage", "sweep", "gps_spoofing"]:
         jam_paths(args.drone, args.jam or [], args.duration, args.profile)
     else:
         parser.print_help()

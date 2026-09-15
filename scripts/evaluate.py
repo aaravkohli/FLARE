@@ -55,6 +55,7 @@ os.environ.setdefault("MPLCONFIGDIR", str(_PLOT_CACHE / "matplotlib"))
 os.environ.setdefault("XDG_CACHE_HOME", str(_PLOT_CACHE))
 
 from fl.data import build_temporal_windows
+from provenance import promote_run, write_experiment_run
 
 ATTACK_CLASSES = ["none", "barrage", "sweep", "spot", "unknown"]
 
@@ -542,6 +543,10 @@ def main():
         action="store_true",
         help="Skip evaluation of the generated packet-level ns-3 trace",
     )
+    parser.add_argument(
+        "--report", type=Path, default=_RESULTS / "evaluation_report.json"
+    )
+    parser.add_argument("--promote", action="store_true")
     args = parser.parse_args()
 
     if args.n_episodes < 2:
@@ -596,10 +601,63 @@ def main():
         "rl_ns3_packet_suite": rl_ns3_metrics,
         "baselines": baseline_metrics,
     }
+    associated_plots = {}
+    for name in ("confusion_matrix.png", "fl_training_curve.png"):
+        if name == "confusion_matrix.png" and "threat_detection" not in fl_metrics:
+            continue
+        if name == "fl_training_curve.png" and not (_RESULTS / "fl_round_metrics.csv").is_file():
+            continue
+        plot_path = _PLOTS / name
+        if plot_path.is_file():
+            associated_plots[f"plots/{name}"] = plot_path.read_bytes()
+    report["associated_artifacts"] = sorted(associated_plots)
 
-    report_path = _RESULTS / "evaluation_report.json"
-    report_path.write_text(json.dumps(report, indent=2))
-    logger.info("Evaluation report saved → %s", report_path)
+    dataset_paths = [args.test_csv]
+    if not args.skip_ns3_packet_suite:
+        dataset_paths.append(args.ns3_trace)
+    run_artifact = write_experiment_run(
+        base=_BASE,
+        experiment="model_evaluation",
+        protocol_version="fl_rl_evaluation_v2",
+        report=report,
+        seeds=[args.rl_eval_seed, args.rl_trace_seed],
+        evidence_category=(
+            "packet_simulation"
+            if not args.skip_ns3_packet_suite and args.ns3_trace.is_file()
+            else "controlled_simulation"
+        ),
+        config_paths=[Path("config/fl_config.yaml"), Path("config/rl_config.yaml")],
+        checkpoint_paths=[
+            args.model_path,
+            args.model_path.with_name(f"{args.model_path.name}.metadata.json"),
+            args.rl_model_path,
+            args.rl_model_path.with_name(f"{args.rl_model_path.name}.metadata.json"),
+        ],
+        dataset_paths=dataset_paths,
+        dataset_roles={
+            str(args.test_csv): "held_out_fl_evaluation",
+            **(
+                {str(args.ns3_trace): "packet_simulation_evaluation"}
+                if not args.skip_ns3_packet_suite else {}
+            ),
+        },
+        parameters={
+            "episodes": args.n_episodes,
+            "skip_rl_trace_suite": args.skip_rl_trace_suite,
+            "skip_ns3_packet_suite": args.skip_ns3_packet_suite,
+        },
+        extra_files=associated_plots,
+    )
+    if args.promote:
+        promote_run(
+            base=_BASE,
+            run_dir=run_artifact.run_dir,
+            published_path=args.report,
+            expected_experiment="model_evaluation",
+            expected_protocol="fl_rl_evaluation_v2",
+            required_seeds=[args.rl_eval_seed, args.rl_trace_seed],
+        )
+    logger.info("Immutable evaluation report saved → %s", run_artifact.report_path)
 
     # Print summary table
     print("\n" + "═" * 60)

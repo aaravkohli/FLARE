@@ -8,16 +8,30 @@ Sets up 5 switches:
   - s3 (Satellite Switch - high latency)
   - s4 (Mesh Switch - medium latency)
   - s5 (Egress Switch)
-And hosts:
-  - h1 (Base Station) connected to s5
-  - h2, h3, h4 (drone_1, drone_2, drone_3) connected to s1
+And hosts loaded from config/fleet_registry.yaml at startup.
 """
 
 import time
+import sys
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).parent.parent))
 from mininet.net import Mininet
 from mininet.node import OVSSwitch, RemoteController
 from mininet.link import TCLink
 from mininet.log import setLogLevel, info
+
+from fleet.registry import list_drones
+
+
+def disable_host_tx_checksum_offload(host):
+    """Make veth UDP checksums valid through the OVS netdev datapath."""
+    interface = f"{host.name}-eth0"
+    output = host.cmd(f"ethtool -K {interface} tx off && echo FLARE_OFFLOAD_OK")
+    if "FLARE_OFFLOAD_OK" not in output:
+        raise RuntimeError(
+            f"failed to disable TX checksum offload on {interface}: {output}"
+        )
 
 def setup_topology():
     import socket
@@ -40,10 +54,14 @@ def setup_topology():
 
     info('*** Adding hosts\n')
     h1 = net.addHost('h1', ip='10.0.0.1/24', mac='00:00:00:00:00:01')
+    drone_records = list_drones(enabled_only=True)
     drones = [
-        net.addHost('h2', ip='10.0.0.2/24', mac='00:00:00:00:00:02'),
-        net.addHost('h3', ip='10.0.0.3/24', mac='00:00:00:00:00:03'),
-        net.addHost('h4', ip='10.0.0.4/24', mac='00:00:00:00:00:04'),
+        net.addHost(
+            f"h{record['index'] + 1}",
+            ip=f"10.0.0.{record['index'] + 1}/24",
+            mac=record["mac"],
+        )
+        for record in drone_records
     ]
 
     info('*** Adding switches\n')
@@ -56,8 +74,8 @@ def setup_topology():
 
     info('*** Creating links\n')
     # Drone access ports mirror config/sdn_config.yaml.
-    for access_port, drone in enumerate(drones, start=4):
-        net.addLink(drone, s1, port2=access_port)
+    for record, drone in zip(drone_records, drones):
+        net.addLink(drone, s1, port2=int(record["access_port"]))
 
     # Ingress Switch (s1) to Path Switches (s2, s3, s4)
     # s1 Port 1 -> s2 Port 1 (Direct Path: 10ms delay, 100M, no loss)
@@ -88,23 +106,53 @@ def setup_topology():
     s4.start([c0])
     s5.start([c0])
 
+    # The userspace OVS datapath cannot complete veth-generated partial UDP
+    # checksums. Without this, switch counters advance but the Linux receiver
+    # rejects every UDP datagram with InCsumErrors.
+    for host in [h1, *drones]:
+        disable_host_tx_checksum_offload(host)
+    info('*** Disabled TX checksum offload on all Mininet hosts\n')
+
     # Let the OpenFlow handshake complete
     time.sleep(2)
 
     # Run iperf server in background on h1 (Base Station)
     info('*** Running iperf server on h1\n')
     h1.cmd('iperf -s -u -i 1 > /app/logs/iperf_server.log 2>&1 &')
+    h1.cmd(
+        'python3 sdn/control_traffic.py server '
+        '--counter-file /app/logs/control_packets.json '
+        '> /app/logs/control_server.log 2>&1 &'
+    )
+    h1.cmd(
+        'python3 sdn/control_traffic.py server --port 9001 '
+        '--counter-file /app/logs/data_packets.json '
+        '> /app/logs/data_server.log 2>&1 &'
+    )
 
     # Generate and monitor one traffic stream per drone.
-    for index, drone in enumerate(drones, start=1):
-        info(f'*** Starting traffic for drone_{index}\n')
+    for record, drone in zip(drone_records, drones):
+        drone_id = record["drone_id"]
+        Path(f"/app/logs/namespace_pid_{drone_id}.txt").write_text(
+            str(drone.pid), encoding="utf-8"
+        )
+        info(f'*** Starting traffic for {drone_id}\n')
         drone.cmd(
             f'iperf -c 10.0.0.1 -u -b 1M -t 999999 -i 1 '
-            f'> /app/logs/iperf_drone_{index}.log 2>&1 &'
+            f'> /app/logs/iperf_{drone_id}.log 2>&1 &'
         )
         drone.cmd(
             f'ping -i 0.5 10.0.0.1 '
-            f'> /app/logs/ping_drone_{index}.log 2>&1 &'
+            f'> /app/logs/ping_{drone_id}.log 2>&1 &'
+        )
+        drone.cmd(
+            'python3 sdn/control_traffic.py client '
+            f'> /app/logs/control_{drone_id}.log 2>&1 &'
+        )
+        drone.cmd(
+            'python3 sdn/control_traffic.py client '
+            '--port 9001 --payload flare-data-probe '
+            f'> /app/logs/data_{drone_id}.log 2>&1 &'
         )
 
     info('*** Network is running and generating traffic.\n')

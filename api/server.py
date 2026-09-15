@@ -1,5 +1,4 @@
-"""
-api/server.py — Anti-Jamming Drone System API
+"""FLARE cross-layer UAV cyber-resilience research API.
 
 Endpoints:
   POST /auth/token       — login, returns JWT token
@@ -16,12 +15,14 @@ Endpoints:
 
 import asyncio
 from collections import deque
+import hashlib
 import json
 import logging
 import math
 import os
 import sys
 import tempfile
+import threading
 import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -57,11 +58,20 @@ from sse_starlette.sse import EventSourceResponse
 
 from schemas.decision_event import DecisionEvent
 from api.readiness_history import ReadinessHistory
+from fleet.registry import (
+    DroneRegistrationError,
+    active_drone_ids,
+    is_active_drone,
+    list_drones,
+    register_drone,
+)
 from rl.safety import constrain_route_action, resolve_safety_config
+from runtime.model_deployment import DeploymentWatcher
 
 _BASE = Path(__file__).parent.parent
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
 _SDN_CFG = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
+_MODE_CFG = yaml.safe_load((_BASE / "config" / "mode.yaml").read_text())
 _SAFETY_THRESHOLD, _ALL_UNSAFE_BEHAVIOR = resolve_safety_config(
     _RL_CFG.get("safety", {})
 )
@@ -163,8 +173,24 @@ async def require_admin(user: dict = Depends(get_current_user)) -> dict:
 # Pydantic Models
 # ---------------------------------------------------------------------------
 
-VALID_DRONE_IDS = {"drone_1", "drone_2", "drone_3"}
-VALID_JAM_DRONE_IDS = VALID_DRONE_IDS | {"all"}
+# Mutable compatibility view used by older tests/imports. Runtime checks refresh
+# from the shared registry so enrollment takes effect without restarting the API.
+VALID_DRONE_IDS = set(active_drone_ids())
+
+
+def _active_drone_set() -> set[str]:
+    current = set(active_drone_ids())
+    VALID_DRONE_IDS.clear()
+    VALID_DRONE_IDS.update(current)
+    return current
+
+
+def _validate_active_drone(drone_id: str) -> str:
+    if not is_active_drone(drone_id):
+        raise ValueError(
+            f"drone_id must be an active enrolled drone; active={list(active_drone_ids())}"
+        )
+    return drone_id
 
 
 class Token(BaseModel):
@@ -179,6 +205,10 @@ class PredictRequest(BaseModel):
     path_scores: List[float]
     drone_id: str = "drone_1"
     prev_reward: float = 0.0
+    client_trust: float = Field(default=1.0, ge=0.0, le=1.0)
+    insider_risk: float = Field(default=0.0, ge=0.0, le=1.0)
+    containment_score: float = Field(default=0.0, ge=0.0, le=1.0)
+    evidence_freshness: float = Field(default=0.0, ge=0.0, le=1.0)
 
     @field_validator("path_scores")
     @classmethod
@@ -193,9 +223,7 @@ class PredictRequest(BaseModel):
     @field_validator("drone_id")
     @classmethod
     def validate_drone_id(cls, value):
-        if value not in VALID_DRONE_IDS:
-            raise ValueError(f"drone_id must be one of {sorted(VALID_DRONE_IDS)}")
-        return value
+        return _validate_active_drone(value)
 
     @field_validator("prev_reward")
     @classmethod
@@ -216,6 +244,8 @@ class PredictResponse(BaseModel):
     constraint_reason: Optional[str] = None
     safety_threshold: float
     all_unsafe_behavior: str
+    network_action: str = "forward"
+    routing_contract: str = "routing_state_v2"
     fl_confidence: Optional[float] = None
     attack_type: Optional[str] = None
     timestamp: float
@@ -228,6 +258,9 @@ class HealthResponse(BaseModel):
     uptime_s: float
     mode: str
     sdn_controller: str
+    fl_client_manager: str = "unknown"
+    active_fl_clients: int = 0
+    deployment: Dict[str, Any] = Field(default_factory=dict)
     version: str = "2.0.0"
 
 
@@ -297,8 +330,8 @@ class JamRequest(BaseModel):
     @field_validator("drone_id")
     @classmethod
     def validate_jam_drone_id(cls, value):
-        if value not in VALID_JAM_DRONE_IDS:
-            raise ValueError(f"drone_id must be one of {sorted(VALID_JAM_DRONE_IDS)}")
+        if value != "all":
+            _validate_active_drone(value)
         return value
 
     @field_validator("profile")
@@ -312,8 +345,7 @@ class JamRequest(BaseModel):
     @model_validator(mode="after")
     def validate_profile_paths(self):
         pathless_profiles = {
-            "none", "barrage", "sweep", "gps_spoofing", "sybil",
-            "model_poisoning", "data_poisoning", "backdoor",
+            "none", "barrage", "sweep", "gps_spoofing",
         }
         if self.profile not in pathless_profiles and not self.paths:
             raise ValueError(f"profile '{self.profile}' requires at least one target path")
@@ -322,12 +354,52 @@ class JamRequest(BaseModel):
         return self
 
 
+class InsiderSimulationRequest(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    profile: Literal[
+        "normal",
+        "selective_forwarding",
+        "telemetry_falsification",
+        "control_flood",
+        "replay",
+    ]
+
+
+class FleetRegistrationRequest(BaseModel):
+    """Admin-approved identity and topology binding for one new UAV."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    drone_id: str = Field(
+        min_length=3,
+        max_length=64,
+        pattern=r"^[a-z][a-z0-9_-]{2,63}$",
+    )
+    display_name: Optional[str] = Field(default=None, min_length=1, max_length=80)
+    mac: str = Field(pattern=r"^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$")
+    access_port: int = Field(ge=4, le=65535)
+    rssi_offset: float = Field(default=0.0, ge=-60.0, le=60.0)
+    pdr_offset: float = Field(default=0.0, ge=-1.0, le=1.0)
+    latency_factor: float = Field(default=1.0, ge=0.1, le=10.0)
+
+    @field_validator("rssi_offset", "pdr_offset", "latency_factor")
+    @classmethod
+    def validate_finite_rf_value(cls, value):
+        if not math.isfinite(value):
+            raise ValueError("RF profile values must be finite")
+        return value
+
+
 # ---------------------------------------------------------------------------
 # Global State
 # ---------------------------------------------------------------------------
 
 _rl_agents: Dict[str, Any] = {}
 _fl_model = None
+_fl_model_path: Optional[Path] = None
+_rl_model_path: Optional[Path] = None
+_routing_contract_name = "routing_state_v2"
 _start_time = time.time()
 _last_jam_time: Dict[str, float] = {}  # drone_id -> timestamp of last jam request
 _ws_clients: List[WebSocket] = []  # Connected WebSocket clients
@@ -342,9 +414,22 @@ _xai_metric_history = {
         path_name: deque(maxlen=_FL_SEQUENCE_LEN)
         for path_name in ("direct", "satellite", "mesh")
     }
-    for drone_id in VALID_DRONE_IDS
+    for drone_id in _active_drone_set()
 }
 _xai_last_event_ids: Dict[str, str] = {}
+_xai_explanation_cache: Dict[str, tuple[str, Optional[dict]]] = {}
+_routing_xai_cache: Dict[str, tuple[str, dict]] = {}
+_model_lock = threading.RLock()
+_DEPLOYMENT_CFG = _MODE_CFG.get("deployment", {})
+_deployment_watcher = DeploymentWatcher(
+    _BASE,
+    _BASE / _DEPLOYMENT_CFG.get(
+        "manifest_path", "models/deployment_manifest.json"
+    ),
+    poll_interval_s=float(_DEPLOYMENT_CFG.get("poll_interval_s", 0.5)),
+)
+_deployment_rollback: Optional[tuple] = None
+_deployment_just_activated = False
 
 try:
     _READINESS_HISTORY_LIMIT = int(os.getenv("AJ_READINESS_HISTORY_LIMIT", "100"))
@@ -353,9 +438,24 @@ except ValueError as exc:
 _READINESS_HISTORY_LIMIT = max(10, min(_READINESS_HISTORY_LIMIT, 1000))
 _readiness_history = ReadinessHistory(
     max_entries=_READINESS_HISTORY_LIMIT,
-    drone_ids=VALID_DRONE_IDS,
+    drone_ids=_active_drone_set(),
     route_names=("direct", "satellite", "mesh"),
 )
+
+
+def _sync_api_fleet() -> set[str]:
+    """Refresh per-drone API state from the canonical fleet registry."""
+    current = _active_drone_set()
+    for drone_id in current:
+        _xai_metric_history.setdefault(
+            drone_id,
+            {
+                path_name: deque(maxlen=_FL_SEQUENCE_LEN)
+                for path_name in ("direct", "satellite", "mesh")
+            },
+        )
+    _readiness_history.set_drone_ids(current)
+    return current
 
 _RUN_SUMMARY_COLUMNS = (
     "id, run_id, timestamp, step, drone_id, action_id, path_name, "
@@ -396,7 +496,7 @@ async def _latest_decision_events() -> Dict[str, dict]:
             continue
         if event.drone_id not in events:
             events[event.drone_id] = event.model_dump(mode="json")
-        if len(events) == len(VALID_DRONE_IDS):
+        if len(events) == len(_active_drone_set()):
             break
     return events
 
@@ -418,6 +518,37 @@ async def _latest_run_summaries() -> Dict[str, dict]:
         logger.debug("Experiment summary DB read error: %s", exc)
         return {}
     return {row["drone_id"]: dict(row) for row in rows}
+
+
+async def _latest_operational_events() -> Dict[str, dict]:
+    """Return the latest fail-closed operational state for each drone."""
+    db_path = _BASE / "experiments" / "experiment.db"
+    if not db_path.exists():
+        return {}
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            if "event_json" not in await _table_columns(db, "operational_events"):
+                return {}
+            cursor = await db.execute(
+                "SELECT event_json FROM operational_events "
+                "ORDER BY id DESC LIMIT 300"
+            )
+            rows = await cursor.fetchall()
+    except Exception as exc:
+        logger.debug("Operational event DB read error: %s", exc)
+        return {}
+    events: Dict[str, dict] = {}
+    for (raw_event,) in rows:
+        try:
+            event = json.loads(raw_event)
+            drone_id = str(event["drone_id"])
+            if event.get("schema_version") != "operational_safety_event_v1":
+                continue
+        except (KeyError, TypeError, ValueError, json.JSONDecodeError):
+            continue
+        if drone_id not in events:
+            events[drone_id] = event
+    return events
 
 
 def _decision_summary_from_event(event: dict) -> dict:
@@ -445,6 +576,169 @@ def _decision_summary_from_event(event: dict) -> dict:
     }
 
 
+def _path_sha256(path: Path | None) -> str | None:
+    if path is None or not path.is_file():
+        return None
+    digest = hashlib.sha256()
+    with path.open("rb") as handle:
+        for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return f"sha256:{digest.hexdigest()}"
+
+
+def _routing_explanation_for_event(drone_id: str, event: dict | None) -> dict:
+    if event is None:
+        return {"available": False, "reason": "canonical_event_unavailable"}
+    decision = event.get("decision") or {}
+    if decision.get("source") != "rl_model":
+        return {"available": False, "reason": "routing_fallback_has_no_q_value"}
+    observation = decision.get("observation")
+    if not isinstance(observation, list):
+        return {"available": False, "reason": "routing_observation_unavailable"}
+    with _model_lock:
+        agent = _rl_agents.get(drone_id)
+    if agent is None:
+        return {"available": False, "reason": "routing_model_unavailable"}
+    event_model_id = decision.get("model_id")
+    active_model_id = _path_sha256(_rl_model_path)
+    if event_model_id and active_model_id and event_model_id != active_model_id:
+        return {"available": False, "reason": "model_generation_mismatch"}
+    try:
+        with _model_lock:
+            explanation = agent.explain(
+                observation, int(decision["policy_action_id"])
+            )
+    except Exception as exc:
+        logger.error("Routing Q-value explanation failed for %s: %s", drone_id, exc)
+        _rollback_api_deployment(f"routing_explanation_failed: {exc}")
+        return {"available": False, "reason": "routing_explanation_failed"}
+    _commit_api_deployment_use()
+    return {
+        "available": True,
+        "diagnostic_only": True,
+        "event_id": event.get("event_id"),
+        "model_id": event_model_id or active_model_id,
+        "model_generation": decision.get("model_generation"),
+        "policy_action_id": decision.get("policy_action_id"),
+        "policy_path": decision.get("policy_path"),
+        "installed_action_id": decision.get("installed_action_id"),
+        "installed_path": decision.get("installed_path"),
+        "safety_override": bool(decision.get("safety_override", False)),
+        "explanation": explanation,
+    }
+
+
+def _load_api_fl_model(path: Path):
+    from fl.checkpoint import validate_fl_checkpoint_metadata
+    from fl.model import build_model
+
+    fl_cfg = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
+    validate_fl_checkpoint_metadata(
+        path,
+        model_config=fl_cfg["model"],
+        data_config=fl_cfg.get("data", {}),
+    )
+    model = build_model(fl_cfg["model"])
+    model.load_state_dict(torch.load(path, map_location="cpu"))
+    model.eval()
+    with torch.no_grad():
+        model(torch.zeros(
+            1,
+            int(fl_cfg["model"]["sequence_len"]),
+            int(fl_cfg["model"]["input_features"]),
+        ))
+    return model
+
+
+def _refresh_api_deployment() -> None:
+    """Validate and atomically expose a new model generation to API readers."""
+    global _fl_model, _fl_model_path, _rl_agents, _rl_model_path, _routing_contract_name
+    global _deployment_rollback, _deployment_just_activated
+    candidate = _deployment_watcher.candidate()
+    if candidate is None:
+        return
+    generation = int(candidate["generation"])
+    models = candidate["models"]
+    try:
+        next_fl = _fl_model
+        next_fl_path = _fl_model_path
+        next_agents = _rl_agents
+        next_path = _rl_model_path
+        next_contract = _routing_contract_name
+        if "fl" in models:
+            if models["fl"]["contract"] != "threat_model_v2":
+                raise ValueError("unsupported deployed FL contract")
+            next_fl = _load_api_fl_model(models["fl"]["resolved_path"])
+            next_fl_path = models["fl"]["resolved_path"]
+        if "routing" in models:
+            next_contract = str(models["routing"]["contract"])
+            if next_contract not in {"routing_state_v2", "routing_state_v3"}:
+                raise ValueError("unsupported deployed routing contract")
+            next_path = models["routing"]["resolved_path"]
+            from rl.agent import RLAgent
+            next_agents = {
+                drone_id: RLAgent(
+                    str(next_path), routing_contract_name=next_contract
+                )
+                for drone_id in sorted(_sync_api_fleet())
+            }
+        with _model_lock:
+            _deployment_rollback = (
+                _fl_model,
+                _fl_model_path,
+                _rl_agents,
+                _rl_model_path,
+                _routing_contract_name,
+                _deployment_watcher.active_generation,
+            )
+            _fl_model = next_fl
+            _fl_model_path = next_fl_path
+            _rl_agents = next_agents
+            _rl_model_path = next_path
+            _routing_contract_name = next_contract
+            _routing_xai_cache.clear()
+            _xai_explanation_cache.clear()
+            _deployment_watcher.activate(generation)
+            _deployment_just_activated = True
+        logger.info("API activated model deployment generation %d", generation)
+    except Exception as exc:
+        _deployment_watcher.reject(generation, exc)
+        logger.error("API rejected model deployment generation %d: %s", generation, exc)
+
+
+def _rollback_api_deployment(reason: str) -> None:
+    """Rollback the first use of a newly activated API model generation."""
+    global _fl_model, _fl_model_path, _rl_agents, _rl_model_path, _routing_contract_name
+    global _deployment_rollback, _deployment_just_activated
+    if not _deployment_just_activated or _deployment_rollback is None:
+        return
+    with _model_lock:
+        failed_generation = _deployment_watcher.active_generation
+        (
+            _fl_model,
+            _fl_model_path,
+            _rl_agents,
+            _rl_model_path,
+            _routing_contract_name,
+            previous_generation,
+        ) = _deployment_rollback
+        _deployment_watcher.active_generation = previous_generation
+        _deployment_watcher.reject(failed_generation, reason)
+        _deployment_just_activated = False
+        _routing_xai_cache.clear()
+        _xai_explanation_cache.clear()
+    logger.error(
+        "API rolled back model deployment generation %d: %s",
+        failed_generation,
+        reason,
+    )
+
+
+def _commit_api_deployment_use() -> None:
+    global _deployment_just_activated
+    _deployment_just_activated = False
+
+
 # ---------------------------------------------------------------------------
 # Startup / Shutdown
 # ---------------------------------------------------------------------------
@@ -452,24 +746,49 @@ def _decision_summary_from_event(event: dict) -> dict:
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    global _rl_agents, _fl_model
+    global _rl_agents, _fl_model, _fl_model_path, _rl_model_path, _routing_contract_name
+    global _deployment_rollback, _deployment_just_activated
 
     # Always rebuild the runtime wrappers from the currently validated artifact.
     # This prevents an in-process lifespan restart from retaining agents loaded
     # from a checkpoint that has since become missing or incompatible.
     _rl_agents = {}
     _fl_model = None
+    _fl_model_path = None
     _xai_last_event_ids.clear()
+    _xai_explanation_cache.clear()
+    _routing_xai_cache.clear()
+    _deployment_watcher.active_generation = 0
+    _deployment_watcher.failed_generation = None
+    _deployment_watcher.last_error = None
+    _deployment_watcher._last_checked_monotonic = 0.0
+    _deployment_rollback = None
+    _deployment_just_activated = False
     for drone_history in _xai_metric_history.values():
         for path_history in drone_history.values():
             path_history.clear()
-    rl_model_path = _BASE / "models" / "rl_model.zip"
+    preferred_contract = _RL_CFG.get("runtime", {}).get(
+        "preferred_contract", "routing_state_v2"
+    )
+    v3_model_path = _BASE / _RL_CFG.get("runtime", {}).get(
+        "v3_model_path", "models/rl_model_v3.zip"
+    )
+    if preferred_contract == "routing_state_v3" and v3_model_path.exists():
+        rl_model_path = v3_model_path
+        routing_contract_name = "routing_state_v3"
+    else:
+        rl_model_path = _BASE / _RL_CFG["paths"]["model_save"]
+        routing_contract_name = "routing_state_v2"
+    _rl_model_path = rl_model_path if rl_model_path.exists() else None
+    _routing_contract_name = routing_contract_name
     if rl_model_path.exists():
         try:
             from rl.agent import RLAgent
             _rl_agents = {
-                drone_id: RLAgent(str(rl_model_path))
-                for drone_id in sorted(VALID_DRONE_IDS)
+                drone_id: RLAgent(
+                    str(rl_model_path), routing_contract_name=routing_contract_name
+                )
+                for drone_id in sorted(_sync_api_fleet())
             }
             logger.info("RL agents loaded for %d drones.", len(_rl_agents))
         except Exception as e:
@@ -480,20 +799,15 @@ async def lifespan(app: FastAPI):
     fl_model_path = _BASE / "models" / "fl_model.pth"
     if fl_model_path.exists():
         try:
-            from fl.checkpoint import validate_fl_checkpoint_metadata
-            from fl.model import build_model
-            fl_cfg = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
-            validate_fl_checkpoint_metadata(
-                fl_model_path,
-                model_config=fl_cfg["model"],
-                data_config=fl_cfg.get("data", {}),
-            )
-            _fl_model = build_model(fl_cfg["model"])
-            _fl_model.load_state_dict(torch.load(fl_model_path, map_location="cpu"))
-            _fl_model.eval()
+            _fl_model = _load_api_fl_model(fl_model_path)
+            _fl_model_path = fl_model_path
             logger.info("FL model loaded.")
         except Exception as e:
             logger.warning("Failed to load FL model: %s", e)
+
+    # A manifest generation is authoritative when present. Candidate models
+    # are fully loaded and smoke-tested before either API reference changes.
+    _refresh_api_deployment()
 
     # Start background telemetry broadcaster
     broadcaster_task = asyncio.create_task(telemetry_broadcaster())
@@ -514,8 +828,11 @@ async def lifespan(app: FastAPI):
 # ---------------------------------------------------------------------------
 
 app = FastAPI(
-    title="Anti-Jamming Drone System API",
-    description="Production-ready API for autonomous anti-jamming FL+RL+SDN pipeline",
+    title="FLARE UAV Cyber-Resilience API",
+    description=(
+        "Research API for communication-threat detection, Byzantine-resilient "
+        "federated learning, safe DQN routing, and SDN recovery"
+    ),
     version="2.0.0",
     lifespan=lifespan,
     docs_url="/api/docs",
@@ -586,6 +903,101 @@ async def login(request: Request, form_data: OAuth2PasswordRequestForm = Depends
         expires_delta=timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES),
     )
     return Token(access_token=token, token_type="bearer", username=user["username"])
+
+
+@app.get("/fleet/drones", tags=["Fleet"])
+async def get_fleet(_: dict = Depends(get_current_user)) -> dict:
+    """Return the canonical active fleet used by every runtime layer."""
+    _sync_api_fleet()
+    manager = _fl_client_manager_status()
+    client_rows = manager.get("clients", {}) if isinstance(manager, dict) else {}
+    drones = []
+    for drone in list_drones(enabled_only=True):
+        row = dict(drone)
+        row["fl_client"] = client_rows.get(
+            drone["drone_id"], {"status": "awaiting_manager_reconciliation"}
+        )
+        drones.append(row)
+    return {"drones": drones, "count": len(active_drone_ids()), "fl_client_manager": manager}
+
+
+def _fl_client_manager_status() -> dict:
+    path = Path(os.getenv(
+        "FLARE_CLIENT_MANAGER_STATUS",
+        str(_BASE / "runtime" / "fl_clients.json"),
+    ))
+    if not path.is_file():
+        return {"status": "unavailable", "clients": {}}
+    try:
+        payload = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return {"status": "invalid", "clients": {}}
+    if not isinstance(payload, dict) or payload.get("schema_version") != "fl_client_manager_status_v1":
+        return {"status": "invalid", "clients": {}}
+    updated_at = payload.get("updated_at")
+    try:
+        age_s = max(0.0, time.time() - float(updated_at))
+    except (TypeError, ValueError):
+        return {"status": "invalid", "clients": {}}
+    reconcile_s = float(
+        yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
+        .get("client_manager", {})
+        .get("reconcile_interval_s", 2.0)
+    )
+    payload["age_s"] = age_s
+    payload["status"] = "active" if age_s <= max(5.0, 3 * reconcile_s) else "stale"
+    return payload
+
+
+@app.get("/fleet/clients", tags=["Fleet"])
+async def get_fl_clients(_: dict = Depends(get_current_user)) -> dict:
+    """Return manager-observed Flower client process and data readiness."""
+    return _fl_client_manager_status()
+
+
+@app.post("/fleet/drones", status_code=status.HTTP_201_CREATED, tags=["Fleet"])
+async def enroll_drone(
+    req: FleetRegistrationRequest,
+    _: dict = Depends(require_admin),
+) -> dict:
+    """Enroll one authenticated UAV identity and expose it to live simulation."""
+    try:
+        drone = register_drone(**req.model_dump())
+    except DroneRegistrationError as exc:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=str(exc)) from exc
+
+    _sync_api_fleet()
+    if _rl_model_path is not None and drone["drone_id"] not in _rl_agents:
+        try:
+            from rl.agent import RLAgent
+
+            _rl_agents[drone["drone_id"]] = RLAgent(
+                str(_rl_model_path), routing_contract_name=_routing_contract_name
+            )
+        except Exception as exc:
+            logger.warning("Could not initialize RL wrapper for %s: %s", drone["drone_id"], exc)
+
+    logger.info(
+        "Fleet enrollment accepted: %s MAC=%s access_port=%s",
+        drone["drone_id"],
+        drone["mac"],
+        drone["access_port"],
+    )
+    manager = _fl_client_manager_status()
+    client_status = manager.get("clients", {}).get(
+        drone["drone_id"], {"status": "awaiting_manager_reconciliation"}
+    )
+    return {
+        "status": "enrolled",
+        "drone": drone,
+        "runtime": {
+            "telemetry_detection": "active",
+            "routing": "active" if drone["drone_id"] in _rl_agents else "greedy_fallback",
+            "fl_identity": "authorized",
+            "fl_participation": client_status.get("status", "awaiting_client_connection"),
+            "fl_client_manager": manager.get("status", "unavailable"),
+        },
+    }
 
 
 # ---------------------------------------------------------------------------
@@ -683,7 +1095,7 @@ async def _fetch_sdn_readiness() -> SDNReadiness:
                 str(path) for path in paths if str(path) in routable_paths
             ]
             for drone_id, paths in available_paths.items()
-            if drone_id in VALID_DRONE_IDS and isinstance(paths, list)
+            if is_active_drone(str(drone_id)) and isinstance(paths, list)
         },
     )
 
@@ -691,14 +1103,29 @@ async def _fetch_sdn_readiness() -> SDNReadiness:
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health():
     """Public liveness check — no auth required."""
+    _refresh_api_deployment()
     runtime_mode, sdn_controller = _runtime_mode_and_sdn_controller()
+    manager = _fl_client_manager_status()
+    active_clients = sum(
+        row.get("status") == "active"
+        for row in manager.get("clients", {}).values()
+        if isinstance(row, dict)
+    )
     return HealthResponse(
         status="ok",
-        rl_loaded=len(_rl_agents) == len(VALID_DRONE_IDS),
+        rl_loaded=set(_rl_agents) >= _active_drone_set(),
         fl_loaded=_fl_model is not None,
         uptime_s=round(time.time() - _start_time, 2),
         mode=runtime_mode,
         sdn_controller=sdn_controller,
+        fl_client_manager=str(manager.get("status", "unavailable")),
+        active_fl_clients=active_clients,
+        deployment={
+            **_deployment_watcher.status(),
+            "fl_model_hash": _path_sha256(_fl_model_path),
+            "routing_model_hash": _path_sha256(_rl_model_path),
+            "routing_contract": _routing_contract_name,
+        },
     )
 
 
@@ -757,7 +1184,14 @@ async def predict(
     rl_agent = _rl_agents.get(req.drone_id)
     if rl_agent is not None:
         try:
-            decision = rl_agent.predict(path_scores, reward=req.prev_reward)
+            decision = rl_agent.predict(
+                path_scores,
+                reward=req.prev_reward,
+                client_trust=req.client_trust,
+                insider_risk=req.insider_risk,
+                containment_score=req.containment_score,
+                evidence_freshness=req.evidence_freshness,
+            )
         except Exception as e:
             logger.warning("RL predict failed: %s. Using greedy.", e)
             decision = _greedy_predict(path_scores)
@@ -777,6 +1211,8 @@ async def predict(
         all_unsafe_behavior=decision.get(
             "all_unsafe_behavior", "least_risk_route"
         ),
+        network_action=decision.get("network_action", "forward"),
+        routing_contract=decision.get("routing_contract", "routing_state_v2"),
         fl_confidence=fl_confidence,
         attack_type=attack_type,
         timestamp=time.time(),
@@ -789,17 +1225,56 @@ async def live_metrics(
     _: dict = Depends(get_current_user),
 ) -> dict:
     """Latest telemetry that actually drove a routing decision. Requires JWT auth."""
-    if drone_id not in VALID_DRONE_IDS:
-        raise HTTPException(status_code=400, detail=f"drone_id must be one of {sorted(VALID_DRONE_IDS)}")
+    if not is_active_drone(drone_id):
+        raise HTTPException(status_code=400, detail=f"Unknown or disabled drone_id: {drone_id}")
 
     events = await _latest_decision_events()
+    operational = await _latest_operational_events()
+    safety_event = operational.get(drone_id)
+    decision_event = events.get(drone_id)
+    if safety_event is not None and (
+        decision_event is None
+        or float(safety_event["timestamp"]) >= float(decision_event["timestamp"])
+    ):
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "reason": "telemetry_unavailable",
+                "drone_id": drone_id,
+                "control_state": safety_event,
+            },
+        )
     if drone_id in events:
         return events[drone_id]["telemetry"]
 
+    if _runtime_mode_and_sdn_controller()[0] == "real":
+        raise HTTPException(
+            status_code=503,
+            detail={"reason": "waiting_for_valid_live_telemetry", "drone_id": drone_id},
+        )
     from simulation.generator import generate_metrics
     metrics = generate_metrics(drone_id=drone_id)
     metrics["source"] = "legacy_api_fallback"
     return metrics
+
+
+@app.get("/explanations/routing/{drone_id}", tags=["Explainability"])
+async def routing_explanation(
+    drone_id: str,
+    _: dict = Depends(get_current_user),
+) -> dict:
+    """Explain the DQN policy action from the exact persisted observation."""
+    _refresh_api_deployment()
+    if not is_active_drone(drone_id):
+        raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
+    event = (await _latest_decision_events()).get(drone_id)
+    token = event.get("event_id") if event else "missing"
+    cached = _routing_xai_cache.get(drone_id)
+    if cached is not None and cached[0] == token:
+        return cached[1]
+    result = await asyncio.to_thread(_routing_explanation_for_event, drone_id, event)
+    _routing_xai_cache[drone_id] = (token, result)
+    return result
 
 
 @app.get("/swarm/status", tags=["Swarm"])
@@ -823,6 +1298,22 @@ async def swarm_status(
         drone_id: _decision_summary_from_event(event)
         for drone_id, event in events.items()
     })
+    operational = await _latest_operational_events()
+    for drone_id, event in operational.items():
+        if drone_id not in result or float(event["timestamp"]) >= float(
+            events.get(drone_id, {}).get("timestamp", 0.0)
+        ):
+            result[drone_id] = {
+                "path_name": "hold",
+                "threat_level": "UNKNOWN",
+                "reward": None,
+                "step": event["step"],
+                "source": "operational_safety_event",
+                "network_action": "hold",
+                "telemetry_status": "unavailable",
+                "sdn_applied": bool(event.get("sdn", {}).get("applied")),
+                "error": event.get("telemetry", {}).get("error"),
+            }
     return {"drones": result}
 
 
@@ -836,8 +1327,20 @@ async def swarm_all_metrics(
         drone_id: event["telemetry"]
         for drone_id, event in events.items()
     }
-    missing = VALID_DRONE_IDS - result.keys()
+    missing = _active_drone_set() - result.keys()
     if not missing:
+        return result
+
+    if _runtime_mode_and_sdn_controller()[0] == "real":
+        operational = await _latest_operational_events()
+        for drone_id in missing:
+            result[drone_id] = {
+                "drone_id": drone_id,
+                "available": False,
+                "source": "unavailable",
+                "reason": "waiting_for_valid_live_telemetry",
+                "control_state": operational.get(drone_id),
+            }
         return result
 
     from simulation.generator import generate_swarm_metrics
@@ -893,8 +1396,8 @@ async def metrics_history(
 
 def _clear_jamming_after(drone_id: str, duration: float, request_time: float):
     time.sleep(duration)
-    # If 'all', check drone_1's timestamp as reference
-    check_id = "drone_1" if drone_id == "all" else drone_id
+    ids = active_drone_ids()
+    check_id = ids[0] if drone_id == "all" and ids else drone_id
     if _last_jam_time.get(check_id) == request_time:
         from simulation.jammer import clear_jamming
         clear_jamming(drone_id)
@@ -950,10 +1453,9 @@ async def trigger_jamming(
     _: dict = Depends(require_admin),
 ):
     """Trigger or clear jamming. Requires JWT auth."""
-    from simulation.generator import DRONES
     from simulation.jammer import clear_jamming, set_jamming_state
 
-    targets = DRONES if req.drone_id == "all" else [req.drone_id]
+    targets = list(active_drone_ids()) if req.drone_id == "all" else [req.drone_id]
     previous_events = await _latest_decision_events()
     if req.profile == "none":
         clear_jamming(req.drone_id)
@@ -992,12 +1494,22 @@ async def trigger_jamming(
 # Byzantine & Swarm Security Control
 # ---------------------------------------------------------------------------
 
+def _require_byzantine_simulation_mode() -> None:
+    runtime_mode, _ = _runtime_mode_and_sdn_controller()
+    if IS_PRODUCTION or runtime_mode != "simulation":
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Byzantine attack injection is available only in simulation mode",
+        )
+
 @app.post("/swarm/compromise/{drone_id}", tags=["Control"])
 async def compromise_drone(drone_id: str, _: dict = Depends(require_admin)):
     """Mark a drone as compromised (triggers simulated Byzantine model poisoning)."""
-    from simulation.generator import DRONES
-    if drone_id not in DRONES:
+    _require_byzantine_simulation_mode()
+    if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
+    from simulation.byzantine_state import set_attack_mode
+    set_attack_mode(drone_id, "poisoned")
     _compromised_drones.add(drone_id)
     logger.info("Byzantine fault active: %s marked as COMPROMISED (model poisoning).", drone_id)
     return {"status": "compromised", "drone_id": drone_id}
@@ -1006,12 +1518,95 @@ async def compromise_drone(drone_id: str, _: dict = Depends(require_admin)):
 @app.post("/swarm/restore/{drone_id}", tags=["Control"])
 async def restore_drone(drone_id: str, _: dict = Depends(require_admin)):
     """Restore a previously compromised drone to healthy status."""
-    if drone_id not in VALID_DRONE_IDS:
+    _require_byzantine_simulation_mode()
+    if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
     if drone_id in _compromised_drones:
         _compromised_drones.remove(drone_id)
+    from simulation.byzantine_state import set_attack_mode
+    set_attack_mode(drone_id, "normal")
     logger.info("Byzantine fault cleared: %s RESTORED to normal operations.", drone_id)
     return {"status": "normal", "drone_id": drone_id}
+
+
+@app.get("/swarm/insider", tags=["Control"])
+async def get_insider_profiles(_: dict = Depends(get_current_user)):
+    """Return the active controlled insider profile for every simulated drone."""
+    from simulation.insider_state import load_insider_state
+
+    configured = load_insider_state()
+    return {
+        "simulation_enabled": (
+            not IS_PRODUCTION
+            and _runtime_mode_and_sdn_controller()[0] == "simulation"
+        ),
+        "profiles": {
+            drone_id: configured.get(drone_id, "normal")
+            for drone_id in active_drone_ids()
+        },
+    }
+
+
+@app.get("/swarm/insider/{drone_id}", tags=["Control"])
+async def get_insider_evidence(
+    drone_id: str,
+    _: dict = Depends(get_current_user),
+):
+    """Return the latest canonical insider decision for dashboard recovery."""
+    if not is_active_drone(drone_id):
+        raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
+
+    from simulation.insider_state import load_insider_state
+
+    current_profile = load_insider_state().get(drone_id, "normal")
+    event = (await _latest_decision_events()).get(drone_id)
+    if event is None:
+        return {
+            "available": False,
+            "reason": "waiting_for_orchestrator",
+            "drone_id": drone_id,
+            "current_profile": current_profile,
+        }
+
+    security_evidence = event.get("telemetry", {}).get("security_evidence") or {}
+    observed_profile = security_evidence.get("simulation_profile")
+    event_age_s = max(0.0, time.time() - float(event["timestamp"]))
+    decision = event.get("decision") or {}
+    return {
+        "available": True,
+        "drone_id": drone_id,
+        "current_profile": current_profile,
+        "observed_profile": observed_profile,
+        "profile_synchronized": observed_profile == current_profile,
+        "event_id": event.get("event_id"),
+        "event_timestamp": event["timestamp"],
+        "event_age_s": event_age_s,
+        "analysis": event.get("insider_analysis"),
+        "containment": event.get("containment"),
+        "decision": {
+            "installed_path": decision.get("installed_path"),
+            "requested_path": decision.get("requested_path"),
+            "network_action": decision.get("network_action"),
+            "constraint_reason": decision.get("constraint_reason"),
+        },
+        "sdn_applied": bool(event.get("sdn", {}).get("applied")),
+    }
+
+
+@app.post("/swarm/insider/{drone_id}", tags=["Control"])
+async def simulate_insider_behavior(
+    drone_id: str,
+    req: InsiderSimulationRequest,
+    _: dict = Depends(require_admin),
+):
+    """Configure one controlled telemetry-insider scenario in simulation."""
+    _require_byzantine_simulation_mode()
+    if not is_active_drone(drone_id):
+        raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
+    from simulation.insider_state import set_insider_profile
+
+    set_insider_profile(drone_id, req.profile)
+    return {"status": "ok", "drone_id": drone_id, "profile": req.profile}
  
  
 # ---------------------------------------------------------------------------
@@ -1145,7 +1740,15 @@ async def get_fl_metrics(_: dict = Depends(get_current_user)):
                 "jains_fairness": 1.0,
                 "drift_rate": 0.0,
                 "mean_drift_score": 0.0,
-                "kd_loss": 0.0
+                "kd_loss": 0.0,
+                "aggregation_method": "awaiting_first_round",
+                "suspected_malicious_clients": 0,
+                "rejected_updates": 0,
+                "poisoning_attempts_detected": 0,
+                "effective_clip_norm": None,
+                "sample_count_cap": None,
+                "sample_count_capped_clients": 0,
+                "client_security": []
             },
             "history": []
         }
@@ -1155,6 +1758,29 @@ async def get_fl_metrics(_: dict = Depends(get_current_user)):
     except Exception as e:
         logger.exception("Failed to read FL metrics")
         raise HTTPException(status_code=500, detail="Failed to read FL metrics") from e
+
+
+@app.post("/api/fl/security/self-test", tags=["Federated Learning"])
+async def run_fl_security_self_test(_: dict = Depends(require_admin)):
+    """Prove poisoned-update rejection in an isolated, non-mutating sandbox.
+
+    Unlike the research-only client attack controls, this endpoint never
+    changes a Flower client, the deployed global model, or persistent trust.
+    It applies the configured production analysis policy to deterministic
+    in-memory parameter copies and returns the complete decision evidence.
+    """
+    from fl.aggregator import run_shadow_protection_self_test
+
+    config_path = _BASE / "config" / "fl_config.yaml"
+    try:
+        fl_config = yaml.safe_load(config_path.read_text(encoding="utf-8")) or {}
+        return run_shadow_protection_self_test(fl_config)
+    except (OSError, TypeError, ValueError, KeyError) as exc:
+        logger.exception("FL protection self-test failed")
+        raise HTTPException(
+            status_code=500,
+            detail="FL protection self-test could not be completed",
+        ) from exc
 
 
 @app.get("/api/report/generate", tags=["Report"])
@@ -1476,25 +2102,78 @@ async def generate_evaluation_report(
 
 
 # ---------------------------------------------------------------------------
-# Explainable AI (XAI) Local Perturbation Engine
+# Model Sensitivity Diagnostic (Single-Feature Ablation)
 # ---------------------------------------------------------------------------
 
-def _calculate_xai_attributions(
+def _normalise_explanation_sequence(
+    path_metrics: dict,
+    path_history: Optional[List[dict]] = None,
+) -> torch.Tensor:
+    """Build the exact normalized model input used by live explanations."""
+    import numpy as np
+
+    mins = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
+    maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
+    history = list(path_history or [path_metrics])[-_FL_SEQUENCE_LEN:]
+    frames = []
+    for snapshot in history:
+        features = np.array([
+            snapshot.get("rssi", -50.0),
+            snapshot.get("pdr", 0.9),
+            snapshot.get("sinr", 20.0),
+            snapshot.get("latency", 20.0),
+            snapshot.get("packet_loss", 0.0),
+        ], dtype=np.float32)
+        frames.append(np.clip((features - mins) / (maxs - mins + 1e-8), 0.0, 1.0))
+    if len(frames) < _FL_SEQUENCE_LEN:
+        frames = [frames[0]] * (_FL_SEQUENCE_LEN - len(frames)) + frames
+    return torch.tensor(np.stack(frames)[None, ...], dtype=torch.float32)
+
+
+def _calculate_model_explanation(
     model,
     path_metrics: dict | None,
     path_history: Optional[List[dict]] = None,
-) -> dict:
+    *,
+    target_head: Literal["threat", "attack"] = "threat",
+    target_index: int = 0,
+) -> Optional[dict]:
+    """Return a target-specific IG explanation, or no result on real failure."""
+    if model is None or not path_metrics:
+        return None
+    try:
+        from fl.explainability import integrated_gradients
+        with _model_lock:
+            result = integrated_gradients(
+                model,
+                _normalise_explanation_sequence(path_metrics, path_history),
+                target_head=target_head,
+                target_index=target_index,
+                steps=32,
+            )
+        _commit_api_deployment_use()
+        return result
+    except Exception as exc:
+        logger.error("Integrated Gradients explanation failed: %s", exc)
+        _rollback_api_deployment(f"fl_explanation_failed: {exc}")
+        return None
+
+def _calculate_feature_sensitivity(
+    model,
+    path_metrics: dict | None,
+    path_history: Optional[List[dict]] = None,
+) -> Optional[dict]:
     """
-    Calculate local feature attribution weights for the 5 RF metrics
-    using input perturbation study on the current path metrics.
+    Calculate local feature-sensitivity percentages for the five RF metrics.
+
+    This is a single-feature ablation diagnostic, not SHAP/LIME, and the
+    magnitudes are associations rather than causal explanations.
     """
     import numpy as np
     import torch
     
-    # Defaults in case model is not loaded or metrics are missing
-    defaults = {"rssi": 15, "pdr": 30, "sinr": 40, "latency": 10, "packet_loss": 5}
     if model is None or not path_metrics:
-        return defaults
+        return None
         
     try:
         # Normalize the oldest-first rolling path history. At startup, left-pad
@@ -1552,8 +2231,8 @@ def _calculate_xai_attributions(
             "packet_loss": pcts[4],
         }
     except Exception as e:
-        logger.error("XAI perturbation failed: %s. Using default weights.", e)
-        return defaults
+        logger.error("Feature-sensitivity ablation failed: %s", e)
+        return None
 
 
 # ---------------------------------------------------------------------------
@@ -1579,35 +2258,18 @@ async def telemetry_broadcaster():
 
     while True:
         try:
+            _refresh_api_deployment()
             if _ws_clients:
                 events = await _latest_decision_events()
                 legacy_summaries = await _latest_run_summaries()
-                missing = VALID_DRONE_IDS - events.keys()
+                missing = _sync_api_fleet() - events.keys()
                 fallback_metrics: Dict[str, dict] = {}
                 if missing:
-                    from simulation.generator import generate_swarm_metrics
-                    fallback_metrics = generate_swarm_metrics()
-                    for drone_id in missing:
-                        fallback_metrics[drone_id]["source"] = "legacy_api_fallback"
-
-                from simulation.generator import _load_jam_state
-                jam_state = _load_jam_state()
-
-                import numpy as np
-                byzantine_status = []
-                for drone in sorted(VALID_DRONE_IDS):
-                    drone_jam = jam_state.get(drone, {"profile": "none"})
-                    profile = drone_jam.get("profile", "none")
-                    is_comp = drone in _compromised_drones or profile in ["model_poisoning", "data_poisoning"]
-
-                    anomaly_score = 4.2 + np.random.uniform(0.5, 1.5) if is_comp else 0.2 + np.random.uniform(0.1, 0.3)
-                    byzantine_status.append({
-                        "drone_id": drone,
-                        "status": "COMPROMISED" if is_comp else "NORMAL",
-                        "anomaly_score": round(anomaly_score, 2),
-                        "z_score": round(anomaly_score * 0.8, 2),
-                        "action": "REJECTED" if is_comp else "ACCEPTED"
-                    })
+                    if _runtime_mode_and_sdn_controller()[0] == "simulation":
+                        from simulation.generator import generate_swarm_metrics
+                        fallback_metrics = generate_swarm_metrics()
+                        for drone_id in missing:
+                            fallback_metrics[drone_id]["source"] = "legacy_api_fallback"
 
                 fl_metrics = None
                 fl_metrics_path = _BASE / "results" / "fl_metrics_snapshot.json"
@@ -1618,13 +2280,48 @@ async def telemetry_broadcaster():
                     except Exception:
                         pass
 
-                for drone_id in sorted(VALID_DRONE_IDS):
+                from simulation.byzantine_state import load_attack_state
+                attack_state = load_attack_state()
+                security_rows = (
+                    fl_metrics.get("latest", {}).get("client_security", [])
+                    if isinstance(fl_metrics, dict)
+                    else []
+                )
+                security_by_client = {
+                    row.get("client_id"): row
+                    for row in security_rows
+                    if isinstance(row, dict) and row.get("client_id")
+                }
+                byzantine_status = []
+                for drone in active_drone_ids():
+                    row = dict(security_by_client.get(drone, {}))
+                    row.setdefault("client_id", drone)
+                    row.setdefault(
+                        "status",
+                        "ATTACK_ARMED" if attack_state.get(drone) == "poisoned" else "NO_UPDATE",
+                    )
+                    row.setdefault("action", "PENDING")
+                    row["simulation_mode"] = attack_state.get(drone, "normal")
+                    byzantine_status.append(row)
+
+                for drone_id in active_drone_ids():
                     event = events.get(drone_id)
                     if event is not None:
                         decision = _decision_summary_from_event(event)
                         metrics = event["telemetry"]
                         message_timestamp = event["timestamp"]
                     else:
+                        if drone_id not in fallback_metrics:
+                            operational = await _latest_operational_events()
+                            safety = operational.get(drone_id, {})
+                            await _broadcast_to_ws({
+                                "type": "telemetry_unavailable",
+                                "timestamp": safety.get("timestamp", time.time()),
+                                "drone_id": drone_id,
+                                "telemetry_status": "unavailable",
+                                "control_state": safety or None,
+                            })
+                            continue
                         legacy = legacy_summaries.get(drone_id, {})
                         decision = {
                             "path_name": legacy.get("path_name", "direct"),
@@ -1637,6 +2334,9 @@ async def telemetry_broadcaster():
                         metrics = fallback_metrics[drone_id]
                         message_timestamp = metrics["timestamp"]
                     active_path = decision.get("path_name", "direct")
+                    explanation_path = (
+                        active_path if active_path in ("direct", "satellite", "mesh") else "direct"
+                    )
                     paths = metrics.get("paths", [])
                     history_token = (
                         event["event_id"]
@@ -1657,6 +2357,31 @@ async def telemetry_broadcaster():
                         ),
                         paths[0] if paths else None,
                     )
+                    cached_explanation = _xai_explanation_cache.get(drone_id)
+                    if cached_explanation is None or cached_explanation[0] != history_token:
+                        explanation = await asyncio.to_thread(
+                            _calculate_model_explanation,
+                            _fl_model,
+                            active_path_metrics,
+                            list(_xai_metric_history[drone_id][explanation_path]),
+                            target_head="threat",
+                            target_index=(
+                                ("direct", "satellite", "mesh").index(explanation_path)
+                            ),
+                        )
+                        _xai_explanation_cache[drone_id] = (history_token, explanation)
+                    else:
+                        explanation = cached_explanation[1]
+                    routing_cached = _routing_xai_cache.get(drone_id)
+                    if routing_cached is None or routing_cached[0] != history_token:
+                        routing_explanation = await asyncio.to_thread(
+                            _routing_explanation_for_event, drone_id, event
+                        )
+                        _routing_xai_cache[drone_id] = (
+                            history_token, routing_explanation
+                        )
+                    else:
+                        routing_explanation = routing_cached[1]
                     await _broadcast_to_ws({
                         "type": "telemetry",
                         "timestamp": message_timestamp,
@@ -1664,11 +2389,8 @@ async def telemetry_broadcaster():
                         "metrics": metrics,
                         "event": event,
                         "telemetry_age_s": max(0.0, time.time() - message_timestamp),
-                        "xai": _calculate_xai_attributions(
-                            _fl_model,
-                            active_path_metrics,
-                            list(_xai_metric_history[drone_id][active_path]),
-                        ),
+                        "explanation": explanation,
+                        "routing_explanation": routing_explanation,
                         "byzantine": byzantine_status,
                         "fl_metrics": fl_metrics,
                     })

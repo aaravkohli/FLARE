@@ -23,6 +23,7 @@ import json
 import logging
 import os
 from pathlib import Path
+import time
 
 import yaml
 from ryu.app.wsgi import ControllerBase, WSGIApplication, route
@@ -35,17 +36,29 @@ from ryu.controller.handler import (
     set_ev_cls,
 )
 from ryu.lib import dpid as dpid_lib, hub
+from ryu.lib.packet import ethernet, packet
 from ryu.ofproto import ofproto_v1_3
 from webob import Response
 
-from sdn.flow_manager import install_fallback_rule, install_flow, select_safe_path
+from sdn.flow_manager import (
+    clear_containment,
+    install_containment,
+    install_fallback_rule,
+    install_flow,
+    install_hold_flow,
+    select_safe_path,
+)
 from sdn.route_contract import (
-    VALID_DRONES,
+    HOLD_PATH,
+    ROUTE_COMMANDS,
     ROUTABLE_PATHS,
     action_id_for_path,
     normalize_installed_path,
     validate_route_action,
 )
+from fleet.registry import is_active_drone
+from fleet.registry import list_drones
+from sdn.evidence import ControllerEvidenceStore
 from sdn.topology_state import TopologyState, port_descriptor_is_up
 
 logger = logging.getLogger(__name__)
@@ -69,7 +82,7 @@ if os.getenv("AJ_ENV", "development").lower() in {"production", "prod"} and (
 
 class AntiJammingController(app_manager.RyuApp):
     """
-    Ryu application for anti-jamming drone network routing.
+    Ryu application for FLARE communication-recovery routing.
     Exposes a REST API on port 8080 for RL agent decisions.
     """
 
@@ -82,9 +95,120 @@ class AntiJammingController(app_manager.RyuApp):
         self._barrier_waiters: dict[tuple[int, int], object] = {}
         self._port_inventory_parts: dict[int, dict[int, bool]] = {}
         self._installed_routes: dict[str, str] = {}
+        self._containment: dict[str, dict] = {}
+        self._evidence = ControllerEvidenceStore(
+            source="ryu_openflow", independent=True
+        )
         wsgi = kwargs["wsgi"]
         wsgi.register(SDNRestController, {AntiJammingController.__name__: self})
         logger.info("AntiJammingController started. REST API ready on :8080")
+        self._evidence_monitor = hub.spawn(self._monitor_evidence)
+
+    def _monitor_evidence(self):
+        while True:
+            for datapath in list(_KNOWN_DATAPATHS.values()):
+                try:
+                    datapath.send_msg(
+                        datapath.ofproto_parser.OFPFlowStatsRequest(datapath)
+                    )
+                    if datapath.id == self._topology.ingress_dpid:
+                        datapath.send_msg(
+                            datapath.ofproto_parser.OFPPortStatsRequest(
+                                datapath, 0, datapath.ofproto.OFPP_ANY
+                            )
+                        )
+                except Exception:
+                    logger.exception("Failed to request OpenFlow evidence statistics")
+            hub.sleep(1.0)
+
+    @set_ev_cls(ofp_event.EventOFPPortStatsReply, MAIN_DISPATCHER)
+    def port_statistics_handler(self, ev):
+        """Observe receive errors/drops on registry-bound ingress access ports."""
+        if ev.msg.datapath.id != self._topology.ingress_dpid:
+            return
+        by_port = {
+            int(drone["access_port"]): drone["drone_id"]
+            for drone in list_drones(enabled_only=True)
+        }
+        now = time.time()
+        for statistic in ev.msg.body:
+            drone_id = by_port.get(int(statistic.port_no))
+            if drone_id is None:
+                continue
+            self._evidence.update_port_observation(
+                drone_id,
+                received_packets=int(statistic.rx_packets),
+                dropped_packets=int(statistic.rx_dropped),
+                error_packets=int(statistic.rx_errors),
+                timestamp=now,
+            )
+
+    @set_ev_cls(ofp_event.EventOFPFlowStatsReply, MAIN_DISPATCHER)
+    def flow_statistics_handler(self, ev):
+        if ev.msg.datapath.id != self._topology.ingress_dpid:
+            return
+        observations = {
+            drone["drone_id"]: {
+                "mac": drone["mac"], "received": 0, "forwarded": 0, "dropped": 0
+            }
+            for drone in list_drones(enabled_only=True)
+        }
+        by_mac = {value["mac"]: key for key, value in observations.items()}
+        for statistic in ev.msg.body:
+            source_mac = statistic.match.get("eth_src")
+            drone_id = by_mac.get(str(source_mac).lower()) if source_mac else None
+            if drone_id is None:
+                continue
+            packet_count = max(0, int(getattr(statistic, "packet_count", 0)))
+            has_output = any(
+                getattr(instruction, "actions", None)
+                for instruction in getattr(statistic, "instructions", [])
+            )
+            observations[drone_id]["received"] += packet_count
+            if has_output:
+                observations[drone_id]["forwarded"] += packet_count
+            else:
+                observations[drone_id]["dropped"] += packet_count
+        now = time.time()
+        for drone_id, observation in observations.items():
+            if observation["received"]:
+                self._evidence.update_flow_observation(
+                    drone_id,
+                    received_packets=observation["received"],
+                    forwarded_packets=observation["forwarded"],
+                    dropped_packets=observation["dropped"],
+                    observed_source_mac=observation["mac"],
+                    timestamp=now,
+                )
+
+    @set_ev_cls(ofp_event.EventOFPPacketIn, MAIN_DISPATCHER)
+    def packet_in_handler(self, ev):
+        """Bind an observed Ethernet source to its physical ingress identity."""
+        datapath = ev.msg.datapath
+        if datapath.id != self._topology.ingress_dpid:
+            return
+        ingress_port = ev.msg.match.get("in_port")
+        drone = next(
+            (
+                row for row in list_drones(enabled_only=True)
+                if int(row["access_port"]) == ingress_port
+            ),
+            None,
+        )
+        if drone is None:
+            return
+        frame = packet.Packet(ev.msg.data).get_protocol(ethernet.ethernet)
+        if frame is None:
+            return
+        # Only packets emitted from a participant-bound access port count as
+        # participant-originated control-plane load. FLARE's own REST route
+        # and containment calls must never become DoS evidence.
+        self._evidence.record_control_message(
+            drone["drone_id"], timestamp=time.time()
+        )
+        self._evidence.update_source_identity(
+            drone["drone_id"], frame.src, timestamp=time.time()
+        )
 
     # ------------------------------------------------------------------
     # OpenFlow event handlers
@@ -206,6 +330,39 @@ class AntiJammingController(app_manager.RyuApp):
                 "topology": topology,
             }
 
+        datapaths = [
+            _KNOWN_DATAPATHS[dpid]
+            for dpid in sorted(self._topology.expected_dpids)
+        ]
+        if path_name == HOLD_PATH:
+            try:
+                for datapath in datapaths:
+                    install_hold_flow(datapath, drone_id)
+            except Exception as exc:
+                logger.exception("Hold-rule installation failed for %s", drone_id)
+                return {"status": "error", "reason": "hold_installation_failed", "error": str(exc)}
+            acknowledged, timed_out = self._wait_for_barriers(datapaths)
+            if timed_out:
+                return {
+                    "status": "uncertain",
+                    "reason": "barrier_timeout",
+                    "installed_path": HOLD_PATH,
+                    "installed_action_id": 3,
+                    "acknowledged_switches": acknowledged,
+                    "unacknowledged_switches": timed_out,
+                }
+            self._installed_routes[drone_id] = HOLD_PATH
+            return {
+                "status": "ok",
+                "installed_path": HOLD_PATH,
+                "installed_action_id": 3,
+                "requested_path": HOLD_PATH,
+                "failover_applied": False,
+                "switches_updated": len(datapaths),
+                "acknowledged_switches": acknowledged,
+                "enforcement": "drop_data_plane",
+            }
+
         available_paths = self._topology.available_paths(drone_id)
         if not available_paths:
             logger.error("No usable route remains for %s.", drone_id)
@@ -218,13 +375,22 @@ class AntiJammingController(app_manager.RyuApp):
         controller_path = select_safe_path(path_name, available_paths)
         installed_path = normalize_installed_path(controller_path)
 
-        datapaths = [
-            _KNOWN_DATAPATHS[dpid]
-            for dpid in sorted(self._topology.expected_dpids)
-        ]
         try:
             for datapath in datapaths:
+                # A route-level HOLD is reversible. Preserve independently
+                # installed containment, but clear a prior HOLD rule when the
+                # participant has no active restrictive containment policy.
+                containment_mode = self._containment.get(drone_id, {}).get("mode", "normal")
+                if containment_mode == "normal":
+                    clear_containment(datapath, drone_id)
                 install_flow(datapath, installed_path, drone_id)
+                if containment_mode in {"restricted", "control_only"}:
+                    install_containment(
+                        datapath,
+                        drone_id,
+                        containment_mode,
+                        control_path=installed_path,
+                    )
         except Exception as exc:
             logger.exception("Flow installation failed for %s", drone_id)
             return {
@@ -266,6 +432,43 @@ class AntiJammingController(app_manager.RyuApp):
             "acknowledged_switches": acknowledged,
         }
 
+    def apply_containment(self, drone_id: str, mode: str, reason: str) -> dict:
+        if not self._topology.ready:
+            return {"status": "error", "reason": "topology_not_ready"}
+        control_path = self._installed_routes.get(drone_id)
+        if mode in {"restricted", "control_only"} and control_path not in {
+            "direct", "satellite", "mesh"
+        }:
+            return {"status": "error", "reason": "control_route_unavailable"}
+        datapaths = [
+            _KNOWN_DATAPATHS[dpid]
+            for dpid in sorted(self._topology.expected_dpids)
+        ]
+        try:
+            for datapath in datapaths:
+                install_containment(
+                    datapath, drone_id, mode, control_path=control_path
+                )
+        except Exception as exc:
+            logger.exception("Containment installation failed for %s", drone_id)
+            return {"status": "error", "reason": "containment_installation_failed", "error": str(exc)}
+        acknowledged, timed_out = self._wait_for_barriers(datapaths)
+        result = {
+            "status": "uncertain" if timed_out else "ok",
+            "drone_id": drone_id,
+            "mode": mode,
+            "reason": reason,
+            "enforcement": (
+                "allow_all" if mode == "normal" else
+                "control_only" if mode in {"restricted", "control_only"} else
+                "drop_all"
+            ),
+            "acknowledged_switches": acknowledged,
+            "unacknowledged_switches": timed_out,
+        }
+        self._containment[drone_id] = result
+        return result
+
 
 class SDNRestController(ControllerBase):
     """REST API surface for the Ryu controller."""
@@ -304,7 +507,7 @@ class SDNRestController(ControllerBase):
         path_name = body.get("path_name")
         drone_id = body.get("drone_id", "drone_1")
         action_id = body.get("action_id")
-        if path_name not in ROUTABLE_PATHS or drone_id not in VALID_DRONES:
+        if path_name not in ROUTE_COMMANDS or not is_active_drone(drone_id):
             return Response(
                 status=422,
                 content_type="application/json",
@@ -326,6 +529,32 @@ class SDNRestController(ControllerBase):
             body=json.dumps(result).encode(),
         )
 
+    @route("sdn", "/sdn/containment", methods=["POST"])
+    def containment(self, req, **kwargs):
+        if not self._authorized(req):
+            return self._unauthorized_response()
+        try:
+            body = json.loads(req.body)
+        except json.JSONDecodeError:
+            return Response(status=400, json={"error": "Invalid JSON"})
+        drone_id = body.get("drone_id")
+        mode = body.get("mode")
+        reason = str(body.get("reason", "cross_layer_policy"))
+        if not is_active_drone(drone_id) or mode not in {
+            "normal", "restricted", "control_only", "quarantined"
+        }:
+            return Response(
+                status=422,
+                content_type="application/json",
+                body=json.dumps({"error": "Invalid drone_id or containment mode"}).encode(),
+            )
+        result = self.controller.apply_containment(drone_id, mode, reason)
+        return Response(
+            status=200 if result.get("status") == "ok" else 503,
+            content_type="application/json",
+            body=json.dumps(result).encode(),
+        )
+
     @route("sdn", "/sdn/flows", methods=["GET"])
     def get_flows(self, req, **kwargs):
         if not self._authorized(req):
@@ -336,8 +565,26 @@ class SDNRestController(ControllerBase):
             body=json.dumps({
                 "switches": switches,
                 "installed_routes": self.controller._installed_routes,
+                "containment": self.controller._containment,
                 "topology": self.controller._topology.snapshot(),
             }).encode(),
+        )
+
+    @route("sdn", "/sdn/evidence/{drone_id}", methods=["GET"])
+    def evidence(self, req, drone_id, **kwargs):
+        if not self._authorized(req):
+            return self._unauthorized_response()
+        if not is_active_drone(drone_id):
+            return Response(
+                status=404,
+                content_type="application/json",
+                body=json.dumps({"error": "Unknown drone_id"}).encode(),
+            )
+        snapshot = self.controller._evidence.snapshot(drone_id)
+        return Response(
+            status=200 if snapshot.get("available") else 503,
+            content_type="application/json",
+            body=json.dumps(snapshot).encode(),
         )
 
     @route("sdn", "/health", methods=["GET"])

@@ -6,6 +6,8 @@ import asyncio
 import csv
 import json
 import sqlite3
+from collections import deque
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
@@ -16,6 +18,7 @@ from pydantic import ValidationError
 import api.server as api_server
 import orchestrator.loop as orchestrator
 import simulation.generator as generator
+from fl.insider import InsiderTelemetryAnalyzer
 from schemas.decision_event import DecisionEvent
 from rl.reward import REWARD_DEFINITION, compute_routing_reward
 
@@ -116,9 +119,9 @@ def test_swarm_fl_inference_uses_one_batched_model_call():
     assert all(len(result[drone_id]["path_scores"]) == 3 for drone_id in result)
 
 
-def test_xai_ablation_uses_one_six_variant_model_call():
+def test_feature_sensitivity_uses_one_six_variant_model_call():
     model = CountingThreatModel()
-    attribution = api_server._calculate_xai_attributions(
+    attribution = api_server._calculate_feature_sensitivity(
         model,
         _metrics("drone_1")["paths"][0],
     )
@@ -126,6 +129,13 @@ def test_xai_ablation_uses_one_six_variant_model_call():
     assert model.calls == 1
     assert model.batch_sizes == [6]
     assert sum(attribution.values()) == 100
+
+
+def test_feature_sensitivity_has_no_fabricated_fallback():
+    assert api_server._calculate_feature_sensitivity(
+        None, _metrics("drone_1")["paths"][0]
+    ) is None
+    assert api_server._calculate_feature_sensitivity(CountingThreatModel(), None) is None
 
 
 def test_experiment_batch_uses_one_database_transaction(tmp_path, monkeypatch):
@@ -196,7 +206,7 @@ def test_constraint_mask_must_match_decision_driving_scores():
     assert event.decision.no_safe_route is True
 
 
-def test_orchestrator_persists_the_exact_decision_driving_telemetry(monkeypatch):
+def test_orchestrator_persists_the_exact_decision_driving_telemetry(monkeypatch, make_orchestrator):
     class SafetyOverrideAgent:
         def predict(self, _scores, **_kwargs):
             return {
@@ -209,18 +219,28 @@ def test_orchestrator_persists_the_exact_decision_driving_telemetry(monkeypatch)
                 "original_action_id": 0,
             }
 
-    runtime = orchestrator.Orchestrator.__new__(orchestrator.Orchestrator)
-    runtime.DRONES = ["drone_1", "drone_2", "drone_3"]
+    runtime = make_orchestrator()
     runtime._step = 0
     runtime._fl_model = None
     runtime._fl_model_id = None
     runtime._rl_model_id = None
     runtime._rl_agents = {"drone_1": SafetyOverrideAgent()}
+    runtime._rl_path = Path("missing-model.zip")
+    runtime._routing_contract_name = "routing_state_v2"
+    runtime._sequence_len = int(orchestrator._FL_CFG["model"]["sequence_len"])
+    runtime._metric_history = {
+        drone_id: deque(maxlen=runtime._sequence_len)
+        for drone_id in runtime.DRONES
+    }
     runtime._prev_rewards = {drone_id: 0.0 for drone_id in runtime.DRONES}
     runtime._prev_path = {drone_id: None for drone_id in runtime.DRONES}
     runtime._prev_path_time = {drone_id: None for drone_id in runtime.DRONES}
     runtime._last_good_decision = {drone_id: None for drone_id in runtime.DRONES}
     runtime._last_good_ts = {drone_id: 0.0 for drone_id in runtime.DRONES}
+    runtime._containment_modes = {drone_id: "normal" for drone_id in runtime.DRONES}
+    runtime._insider_analyzer = InsiderTelemetryAnalyzer(
+        **orchestrator._FL_CFG.get("insider_detection", {})
+    )
     telemetry = {drone_id: _metrics(drone_id) for drone_id in runtime.DRONES}
 
     async def collect_metrics(_client):
@@ -296,9 +316,10 @@ def test_live_and_swarm_metrics_prefer_persisted_canonical_events(
 
 def test_swarm_generation_reads_one_consistent_jammer_snapshot(monkeypatch):
     load_calls = 0
+    active_drones = list(generator.active_drone_ids())
     state = {
         drone_id: {"profile": "none", "paths": [], "gps_drift": 0.0}
-        for drone_id in generator.DRONES
+        for drone_id in active_drones
     }
 
     def load_state():
@@ -310,10 +331,10 @@ def test_swarm_generation_reads_one_consistent_jammer_snapshot(monkeypatch):
     metrics = generator.generate_swarm_metrics()
 
     assert load_calls == 1
-    assert set(metrics) == set(generator.DRONES)
+    assert set(metrics) == set(active_drones)
 
 
-def test_real_sensor_collection_awaits_all_async_responses(monkeypatch):
+def test_real_sensor_collection_awaits_all_async_responses(monkeypatch, make_orchestrator):
     class FakeResponse:
         def __init__(self, drone_id):
             self.drone_id = drone_id
@@ -333,8 +354,7 @@ def test_real_sensor_collection_awaits_all_async_responses(monkeypatch):
             return FakeResponse(params["drone_id"])
 
     monkeypatch.setattr(orchestrator, "MODE", "real")
-    instance = orchestrator.Orchestrator.__new__(orchestrator.Orchestrator)
-    instance.DRONES = ["drone_1", "drone_2", "drone_3"]
+    instance = make_orchestrator()
     client = FakeAsyncClient()
 
     result = asyncio.run(instance._collect_metrics(client))

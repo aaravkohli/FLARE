@@ -10,12 +10,15 @@ Provides:
 This module is imported by sdn/controller.py (Ryu REAL mode).
 """
 
+from __future__ import annotations
+
 import logging
 from typing import Optional
 
 import yaml
 from pathlib import Path
 
+from fleet.registry import get_drone, list_drones
 from sdn.route_contract import VALID_PATHS
 
 _BASE = Path(__file__).parent.parent
@@ -23,7 +26,6 @@ _SDN_CFG = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
 _PORT_MAP = _SDN_CFG["port_map"]
 _PRIORITY_MAP = _SDN_CFG["flow_priority"]
 _FAILOVER = _SDN_CFG["failover_priority"]
-_DRONES = _SDN_CFG["drones"]
 
 _DYNAMIC_PRIORITIES = sorted(
     {
@@ -34,6 +36,12 @@ _DYNAMIC_PRIORITIES = sorted(
 _ROUTE_PRIORITY = max(_DYNAMIC_PRIORITIES)
 _ACCESS_PRIORITY = _ROUTE_PRIORITY + 10
 _ROUTE_COOKIE_BASE = 0xF1A00000
+_CONTAINMENT_COOKIE_BASE = 0xF1B00000
+_CONTAINMENT_ALLOW_PRIORITY = int(_PRIORITY_MAP.get("containment_allow", 300))
+_CONTAINMENT_DROP_PRIORITY = int(_PRIORITY_MAP.get("containment_drop", 290))
+_CONTROL_UDP_PORTS = tuple(
+    int(value) for value in _SDN_CFG.get("controller", {}).get("control_udp_ports", [9000])
+)
 
 logger = logging.getLogger(__name__)
 
@@ -99,11 +107,101 @@ def _delete_old_route_rules(datapath, match) -> None:
         datapath.send_msg(flow_mod)
 
 
+def _delete_containment_rule(datapath, match, priority: int) -> None:
+    ofproto = datapath.ofproto
+    parser = datapath.ofproto_parser
+    datapath.send_msg(parser.OFPFlowMod(
+        datapath=datapath,
+        command=ofproto.OFPFC_DELETE_STRICT,
+        priority=priority,
+        match=match,
+        out_port=ofproto.OFPP_ANY,
+        out_group=ofproto.OFPG_ANY,
+    ))
+
+
+def clear_containment(datapath, drone_id: str) -> None:
+    """Remove all FLARE containment rules for one drone."""
+    parser = datapath.ofproto_parser
+    drone_mac = _drone_config(drone_id)["mac"]
+    matches = [parser.OFPMatch(eth_src=drone_mac), parser.OFPMatch(eth_dst=drone_mac)]
+    for match in matches:
+        _delete_containment_rule(datapath, match, _CONTAINMENT_DROP_PRIORITY)
+    for port in _CONTROL_UDP_PORTS:
+        _delete_containment_rule(
+            datapath,
+            parser.OFPMatch(eth_type=0x0800, ip_proto=17, eth_src=drone_mac, udp_dst=port),
+            _CONTAINMENT_ALLOW_PRIORITY,
+        )
+
+
+def install_hold_flow(datapath, drone_id: str) -> None:
+    """Fail closed for one drone by installing explicit empty-action drops."""
+    clear_containment(datapath, drone_id)
+    parser = datapath.ofproto_parser
+    drone = _drone_config(drone_id)
+    cookie = _CONTAINMENT_COOKIE_BASE + int(drone["index"])
+    if datapath.id == 1:
+        _send_flow(
+            datapath, _CONTAINMENT_DROP_PRIORITY,
+            parser.OFPMatch(eth_src=drone["mac"]), [], cookie=cookie,
+        )
+    elif datapath.id == 5:
+        _send_flow(
+            datapath, _CONTAINMENT_DROP_PRIORITY,
+            parser.OFPMatch(eth_dst=drone["mac"]), [], cookie=cookie,
+        )
+
+
+def install_containment(
+    datapath, drone_id: str, mode: str, *, control_path: str | None = None
+) -> None:
+    """Install NORMAL, CONTROL_ONLY/RESTRICTED, or QUARANTINED enforcement."""
+    if mode not in {"normal", "restricted", "control_only", "quarantined"}:
+        raise ValueError(f"unknown containment mode: {mode!r}")
+    if mode in {"restricted", "control_only"} and control_path not in {
+        "direct", "satellite", "mesh"
+    }:
+        raise ValueError("control-only containment requires an installed forwarding route")
+    clear_containment(datapath, drone_id)
+    if mode == "normal":
+        return
+    if mode == "quarantined":
+        install_hold_flow(datapath, drone_id)
+        return
+    if datapath.id != 1:
+        return
+    parser = datapath.ofproto_parser
+    drone = _drone_config(drone_id)
+    cookie = _CONTAINMENT_COOKIE_BASE + int(drone["index"])
+    # Control packets must follow the currently installed explicit ingress
+    # route. OFPP_NORMAL depends on OVS learning state and is not a reliable
+    # forwarding path in this controlled OpenFlow topology.
+    control_output = parser.OFPActionOutput(int(_PORT_MAP[control_path]))
+    for port in _CONTROL_UDP_PORTS:
+        _send_flow(
+            datapath,
+            _CONTAINMENT_ALLOW_PRIORITY,
+            parser.OFPMatch(
+                eth_type=0x0800, ip_proto=17, eth_src=drone["mac"], udp_dst=port
+            ),
+            [control_output],
+            cookie=cookie,
+        )
+    _send_flow(
+        datapath,
+        _CONTAINMENT_DROP_PRIORITY,
+        parser.OFPMatch(eth_src=drone["mac"]),
+        [],
+        cookie=cookie,
+    )
+
+
 def _drone_config(drone_id: str) -> dict:
-    try:
-        return _DRONES[drone_id]
-    except KeyError as exc:
-        raise ValueError(f"Unknown drone_id: {drone_id!r}") from exc
+    drone = get_drone(drone_id, enabled_only=True)
+    if drone is None:
+        raise ValueError(f"Unknown drone_id or disabled identity: {drone_id!r}")
+    return drone
 
 
 def install_flow(datapath, path_name: str, drone_id: str = "drone_1") -> None:
@@ -131,7 +229,7 @@ def install_flow(datapath, path_name: str, drone_id: str = "drone_1") -> None:
 
     if dpid == 1:
         # Select the outbound path independently for each drone.
-        match_drone = parser.OFPMatch(eth_src=drone_mac)
+        match_drone = parser.OFPMatch(in_port=access_port, eth_src=drone_mac)
         _delete_old_route_rules(datapath, match_drone)
         # Clean rules installed by the former single-drone implementation.
         _delete_old_route_rules(datapath, parser.OFPMatch(in_port=4))
@@ -190,8 +288,10 @@ def install_fallback_rule(datapath) -> None:
     parser = datapath.ofproto_parser
 
     if dpid == 1:
-        for drone in _DRONES.values():
-            match_out = parser.OFPMatch(eth_src=drone["mac"])
+        for drone in list_drones(enabled_only=True):
+            match_out = parser.OFPMatch(
+                in_port=int(drone["access_port"]), eth_src=drone["mac"]
+            )
             _send_flow(datapath, 10, match_out, [parser.OFPActionOutput(3)])
             match_back = parser.OFPMatch(eth_dst=drone["mac"])
             _send_flow(
@@ -200,8 +300,17 @@ def install_fallback_rule(datapath) -> None:
                 match_back,
                 [parser.OFPActionOutput(int(drone["access_port"]))],
             )
+        # Unknown or identity-mismatched access traffic is sent only to the
+        # authenticated controller for source/port evidence and is not
+        # forwarded by this table-miss rule.
+        _send_flow(
+            datapath,
+            0,
+            parser.OFPMatch(),
+            [parser.OFPActionOutput(datapath.ofproto.OFPP_CONTROLLER)],
+        )
     elif dpid == 5:
-        for drone in _DRONES.values():
+        for drone in list_drones(enabled_only=True):
             match = parser.OFPMatch(eth_dst=drone["mac"])
             actions = [parser.OFPActionOutput(3)]
             _send_flow(datapath, 10, match, actions)

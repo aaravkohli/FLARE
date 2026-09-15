@@ -1,7 +1,6 @@
-"""
-fl/distillation.py — Knowledge Distillation for FL (FedDF)  [FLARE v2]
+"""FedDF-style server ensemble distillation for FLARE.
 
-Implements Federated Dataset Distillation (FedDF):
+Implements the model-fusion method described by Lin et al. (2020):
   1. Collect K client models {θ_1, ..., θ_K} after a round
   2. Generate synthetic RF proxy dataset (unlabelled, server-side)
   3. Compute ensemble soft labels: q_x = (1/K) Σ_k softmax(θ_k(x) / T)
@@ -9,11 +8,9 @@ Implements Federated Dataset Distillation (FedDF):
         L_KD = KL(q_x || softmax(θ(x) / T))
   5. Optionally mix with hard cross-entropy labels (α blending)
 
-Why FedDF over plain FedAvg?
-  - Handles heterogeneous model architectures (not used here, but extensible)
-  - Reduces forgetting by distilling ensemble knowledge into global model
-  - Particularly beneficial with non-IID client data (our RF scenario)
-  - Better calibrated uncertainty estimates in the final global model
+In FLARE every teacher currently has the same BiLSTM architecture. The method
+is evaluated as a possible mitigation for non-IID client drift; improvement is
+an experimental question, not an assumption made by this module.
 
 Reference:
   Lin, T. et al. (2020). Ensemble Distillation for Robust Model Fusion in
@@ -35,18 +32,19 @@ Proxy Dataset:
   Uses the existing synthetic RF data generator — same feature space as
   client data, no real data required at the server.
 
-Computational overhead:
-  Runs every kd_every_n_rounds rounds.
-  Cost: K forward passes per proxy batch × kd_epochs × n_batches.
-  Typically ~2-5% of a full training round at default settings.
+Computational overhead is K teacher forward passes per proxy batch plus the
+configured student optimization epochs. It runs on the configured round
+interval, and no fixed percentage-overhead claim is made here.
 
 Unit-test hooks: run `python -m fl.distillation` for self-test.
 """
 
 from __future__ import annotations
 
+import copy
 import logging
-from typing import List, Optional, Tuple
+import time
+from typing import Callable, List, Optional, Sequence, Tuple
 
 import numpy as np
 import torch
@@ -95,14 +93,30 @@ def generate_proxy_dataset(
     mins = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
     maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
 
-    for _ in range(n_samples):
-        jammed = rng.random() < 0.35  # 35% jammed proxy samples
+    # Deterministically cover four operational RF environments instead of
+    # drawing only a binary normal/jammed proxy population.
+    environments = ("open_terrain", "urban", "far_from_jammer", "near_jammer")
+    for sample_index in range(n_samples):
+        environment = environments[sample_index % len(environments)]
+        jammed = environment == "near_jammer"
         if jammed:
             rssi = rng.uniform(-110.0, -85.0)
             pdr = rng.uniform(0.0, 0.4)
             sinr = rng.uniform(-5.0, 5.0)
             latency = rng.uniform(200.0, 800.0)
             pkt_loss = rng.uniform(0.3, 0.9)
+        elif environment == "urban":
+            rssi = rng.uniform(-90.0, -60.0)
+            pdr = rng.uniform(0.45, 0.85)
+            sinr = rng.uniform(2.0, 15.0)
+            latency = rng.uniform(60.0, 260.0)
+            pkt_loss = rng.uniform(0.08, 0.35)
+        elif environment == "far_from_jammer":
+            rssi = rng.uniform(-88.0, -65.0)
+            pdr = rng.uniform(0.60, 0.92)
+            sinr = rng.uniform(5.0, 20.0)
+            latency = rng.uniform(30.0, 160.0)
+            pkt_loss = rng.uniform(0.03, 0.20)
         else:
             rssi = rng.uniform(-75.0, -40.0)
             pdr = rng.uniform(0.7, 1.0)
@@ -132,6 +146,7 @@ def compute_ensemble_soft_labels(
     temperature: float = 3.0,
     batch_size: int = 256,
     device: Optional[torch.device] = None,
+    teacher_weights: Optional[Sequence[float]] = None,
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     Compute ensemble soft labels for the attack classification head.
@@ -157,6 +172,19 @@ def compute_ensemble_soft_labels(
     if device is None:
         device = next(client_models[0].parameters()).device
 
+    if not client_models:
+        raise ValueError("client_models cannot be empty")
+    if teacher_weights is None:
+        normalized_teacher_weights = np.full(len(client_models), 1.0 / len(client_models))
+    else:
+        raw_weights = np.asarray(teacher_weights, dtype=np.float64)
+        if raw_weights.shape != (len(client_models),) or np.any(~np.isfinite(raw_weights)):
+            raise ValueError("teacher_weights must contain one finite value per teacher")
+        raw_weights = np.clip(raw_weights, 0.0, None)
+        if float(raw_weights.sum()) <= 0.0:
+            raise ValueError("at least one teacher weight must be positive")
+        normalized_teacher_weights = raw_weights / raw_weights.sum()
+
     n_samples = len(X)
     loader = DataLoader(TensorDataset(X), batch_size=batch_size, shuffle=False)
 
@@ -169,17 +197,14 @@ def compute_ensemble_soft_labels(
         batch_attack_soft = torch.zeros(len(xb), client_models[0].head_attack.out_features, device=device)
         batch_threat_soft = torch.zeros(len(xb), client_models[0].head_threat.out_features, device=device)
 
-        for model in client_models:
+        for model, teacher_weight in zip(client_models, normalized_teacher_weights):
             model.eval()
             out = model(xb)
             # Attack: softmax with temperature
             attack_soft = F.softmax(out.attack_logits / temperature, dim=-1)
-            batch_attack_soft = batch_attack_soft + attack_soft
+            batch_attack_soft = batch_attack_soft + float(teacher_weight) * attack_soft
             # Threat: sigmoid (already probabilistic)
-            batch_threat_soft = batch_threat_soft + out.path_scores
-
-        batch_attack_soft = batch_attack_soft / len(client_models)
-        batch_threat_soft = batch_threat_soft / len(client_models)
+            batch_threat_soft = batch_threat_soft + float(teacher_weight) * out.path_scores
 
         all_attack_logits.append(batch_attack_soft.cpu())
         all_threat_scores.append(batch_threat_soft.cpu())
@@ -187,6 +212,43 @@ def compute_ensemble_soft_labels(
     attack_soft = torch.cat(all_attack_logits, dim=0)
     threat_soft = torch.cat(all_threat_scores, dim=0)
     return attack_soft, threat_soft
+
+
+@torch.no_grad()
+def measure_teacher_disagreement(
+    client_models: List[nn.Module],
+    X: torch.Tensor,
+    *,
+    temperature: float = 3.0,
+    device: Optional[torch.device] = None,
+) -> float:
+    """Mean predictive variance across teachers on the proxy population."""
+    if len(client_models) < 2:
+        return 0.0
+    device = device or next(client_models[0].parameters()).device
+    sample = X.to(device)
+    predictions = []
+    for model in client_models:
+        model.eval()
+        predictions.append(F.softmax(model(sample).attack_logits / temperature, dim=-1))
+    return float(torch.stack(predictions).var(dim=0, unbiased=False).mean().cpu())
+
+
+@torch.no_grad()
+def _student_teacher_kl(
+    global_model: nn.Module,
+    X: torch.Tensor,
+    attack_soft: torch.Tensor,
+    temperature: float,
+    device: torch.device,
+) -> float:
+    global_model.eval()
+    output = global_model(X.to(device))
+    log_soft = F.log_softmax(output.attack_logits / temperature, dim=-1)
+    return float(
+        F.kl_div(log_soft, attack_soft.to(device), reduction="batchmean").cpu()
+        * (temperature ** 2)
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -203,6 +265,11 @@ def feddf_distillation_step(
     alpha_kd: float = 0.7,
     batch_size: int = 128,
     device: Optional[torch.device] = None,
+    teacher_weights: Optional[Sequence[float]] = None,
+    min_teacher_disagreement: float = 0.0,
+    max_proxy_kl_regression: float = 0.0,
+    validation_loss_fn: Optional[Callable[[nn.Module], float]] = None,
+    max_validation_loss_regression: float = 0.0,
 ) -> dict:
     """
     Full FedDF distillation step: distill ensemble into global model.
@@ -236,16 +303,44 @@ def feddf_distillation_step(
 
     if not client_models:
         logger.warning("[KD] No client models provided — skipping distillation.")
-        return {"kd_loss": 0.0, "ce_loss": 0.0, "total_loss": 0.0, "kd_improvement": 0.0}
+        return {"applied": False, "skip_reason": "no_teachers", "kd_improvement": 0.0}
 
     K = len(client_models)
     logger.info("[KD] Starting FedDF distillation: K=%d teachers, T=%.1f, epochs=%d",
                 K, temperature, kd_epochs)
 
-    # Step 1: Compute ensemble soft labels (no grad needed)
+    started_at = time.perf_counter()
+    disagreement = measure_teacher_disagreement(
+        client_models,
+        proxy_X,
+        temperature=temperature,
+        device=device,
+    )
+    if disagreement < max(0.0, min_teacher_disagreement):
+        return {
+            "applied": False,
+            "skip_reason": "teacher_disagreement_below_threshold",
+            "teacher_disagreement": disagreement,
+            "n_teachers": K,
+            "duration_ms": round((time.perf_counter() - started_at) * 1000.0, 3),
+        }
+
+    # Step 1: Compute trust-weighted ensemble soft labels (no grad needed)
     proxy_X_dev = proxy_X.to(device)
     attack_soft, threat_soft = compute_ensemble_soft_labels(
-        client_models, proxy_X_dev, temperature=temperature, batch_size=batch_size, device=device
+        client_models,
+        proxy_X_dev,
+        temperature=temperature,
+        batch_size=batch_size,
+        device=device,
+        teacher_weights=teacher_weights,
+    )
+    state_before = copy.deepcopy(global_model.state_dict())
+    validation_loss_before = (
+        float(validation_loss_fn(global_model)) if validation_loss_fn is not None else None
+    )
+    proxy_kl_before = _student_teacher_kl(
+        global_model, proxy_X, attack_soft, temperature, device
     )
     # Hard labels from ensemble argmax (pseudo-labels)
     attack_hard = attack_soft.argmax(dim=-1).to(device)
@@ -311,18 +406,48 @@ def feddf_distillation_step(
     avg_ce = total_ce_loss / n_batches
     avg_total = alpha_kd * avg_kd + (1.0 - alpha_kd) * avg_ce
 
+    proxy_kl_after = _student_teacher_kl(
+        global_model, proxy_X, attack_soft, temperature, device
+    )
+    validation_loss_after = (
+        float(validation_loss_fn(global_model)) if validation_loss_fn is not None else None
+    )
+    rollback_reason = None
+    if proxy_kl_after > proxy_kl_before + max(0.0, max_proxy_kl_regression):
+        rollback_reason = "proxy_kl_regressed"
+    if (
+        validation_loss_before is not None
+        and validation_loss_after is not None
+        and validation_loss_after
+        > validation_loss_before + max(0.0, max_validation_loss_regression)
+    ):
+        rollback_reason = "validation_loss_regressed"
+    if rollback_reason is not None:
+        global_model.load_state_dict(state_before)
+
     logger.info(
         "[KD] Distillation complete: avg_kd_loss=%.4f, avg_ce_loss=%.4f",
         avg_kd, avg_ce,
     )
 
     return {
+        "applied": rollback_reason is None,
+        "rolled_back": rollback_reason is not None,
+        "rollback_reason": rollback_reason,
         "kd_loss": round(avg_kd, 4),
         "ce_loss": round(avg_ce, 4),
         "total_loss": round(avg_total, 4),
         "n_teachers": K,
         "kd_epochs": kd_epochs,
         "temperature": temperature,
+        "teacher_disagreement": round(disagreement, 8),
+        "proxy_kl_before": round(proxy_kl_before, 6),
+        "proxy_kl_after": round(proxy_kl_after, 6),
+        "kd_improvement": round(proxy_kl_before - proxy_kl_after, 6),
+        "validation_loss_before": validation_loss_before,
+        "validation_loss_after": validation_loss_after,
+        "trust_weighted_teachers": teacher_weights is not None,
+        "duration_ms": round((time.perf_counter() - started_at) * 1000.0, 3),
     }
 
 
@@ -350,6 +475,9 @@ class DistillationController:
         seq_len: int = 10,
         n_features: int = 5,
         device: Optional[torch.device] = None,
+        min_teacher_disagreement: float = 0.0,
+        max_proxy_kl_regression: float = 0.0,
+        max_validation_loss_regression: float = 0.0,
     ):
         self.enabled = enabled
         self.temperature = temperature
@@ -359,6 +487,11 @@ class DistillationController:
         self.kd_lr = kd_lr
         self.alpha_kd = alpha_kd
         self.device = device or torch.device("cpu")
+        self.min_teacher_disagreement = max(0.0, float(min_teacher_disagreement))
+        self.max_proxy_kl_regression = max(0.0, float(max_proxy_kl_regression))
+        self.max_validation_loss_regression = max(
+            0.0, float(max_validation_loss_regression)
+        )
 
         # Pre-generate proxy dataset once
         if enabled:
@@ -381,6 +514,8 @@ class DistillationController:
         round_num: int,
         global_model: nn.Module,
         client_models: List[nn.Module],
+        teacher_weights: Optional[Sequence[float]] = None,
+        validation_loss_fn: Optional[Callable[[nn.Module], float]] = None,
     ) -> Optional[dict]:
         """
         Run distillation if the schedule and conditions are met.
@@ -410,8 +545,19 @@ class DistillationController:
             kd_lr=self.kd_lr,
             alpha_kd=self.alpha_kd,
             device=self.device,
+            teacher_weights=teacher_weights,
+            min_teacher_disagreement=self.min_teacher_disagreement,
+            max_proxy_kl_regression=self.max_proxy_kl_regression,
+            validation_loss_fn=validation_loss_fn,
+            max_validation_loss_regression=self.max_validation_loss_regression,
         )
         metrics["round"] = round_num
+        metrics["proxy_environment_coverage"] = [
+            "open_terrain",
+            "urban",
+            "far_from_jammer",
+            "near_jammer",
+        ]
         self._kd_history.append(metrics)
         return metrics
 

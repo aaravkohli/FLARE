@@ -123,8 +123,8 @@ def test_environment_scores_the_state_seen_by_the_policy_before_transition():
     assert observation[:3].tolist() == [1.0, 1.0, 1.0]
 
 
-def test_orchestrator_uses_shared_reward_implementation():
-    runtime = Orchestrator.__new__(Orchestrator)
+def test_orchestrator_uses_shared_reward_implementation(make_orchestrator):
+    runtime = make_orchestrator()
 
     runtime_reward = runtime._compute_reward(
         PATH_SCORES,

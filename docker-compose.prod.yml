@@ -10,6 +10,8 @@ networks:
 volumes:
   experiments:
   logs:
+  fl-results:
+  fl-runtime:
 
 services:
 
@@ -23,6 +25,8 @@ services:
       - "8090:8090"
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
+      - fl-results:/app/results
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.connect(('localhost',8090))\" 2>/dev/null && echo ok || exit 1"]
@@ -31,7 +35,7 @@ services:
       retries: 5
       start_period: 20s
 
-  fl-client-1:
+  fl-client-manager:
     build:
       context: .
       dockerfile: docker/Dockerfile.fl
@@ -39,35 +43,12 @@ services:
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
       - ${PROCESSED_DATA_DIR:?Set PROCESSED_DATA_DIR}:/app/datasets/processed:ro
-    command: python fl/client.py --client_id drone_1 --server_address fl-server:8090 --real --require-real-data
-    restart: on-failure
-    depends_on:
-      fl-server:
-        condition: service_healthy
-
-  fl-client-2:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.fl
-    networks: [antijam-net]
-    volumes:
-      - ${MODEL_DIR:-./models}:/app/models
-      - ${PROCESSED_DATA_DIR:?Set PROCESSED_DATA_DIR}:/app/datasets/processed:ro
-    command: python fl/client.py --client_id drone_2 --server_address fl-server:8090 --real --require-real-data
-    restart: on-failure
-    depends_on:
-      fl-server:
-        condition: service_healthy
-
-  fl-client-3:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.fl
-    networks: [antijam-net]
-    volumes:
-      - ${MODEL_DIR:-./models}:/app/models
-      - ${PROCESSED_DATA_DIR:?Set PROCESSED_DATA_DIR}:/app/datasets/processed:ro
-    command: python fl/client.py --client_id drone_3 --server_address fl-server:8090 --real --require-real-data
+      - fl-runtime:/app/client-runtime
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+    environment:
+      - PYTHONPATH=/app
+      - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
+    command: python -m fl.client_manager --server-address fl-server:8090 --real --require-real-data --processed-dir /app/datasets/processed --status-path /app/client-runtime/fl_clients.json
     restart: on-failure
     depends_on:
       fl-server:
@@ -86,6 +67,7 @@ services:
       - "6633:6633"   # OpenFlow
     volumes:
       - logs:/app/logs
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     environment:
       - PYTHONPATH=/app
       - AJ_ENV=production
@@ -110,6 +92,9 @@ services:
       - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
       - logs:/app/logs
+      - fl-results:/app/results:ro
+      - fl-runtime:/app/client-runtime:ro
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml
     environment:
       - PYTHONPATH=/app
       - AJ_ENV=production
@@ -121,6 +106,7 @@ services:
       - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
       - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:?Set AJ_ADMIN_PASSWORD}
       - AJ_CORS_ORIGINS=${AJ_CORS_ORIGINS:?Set AJ_CORS_ORIGINS}
+      - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
@@ -140,6 +126,7 @@ services:
       - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
       - logs:/app/logs
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     environment:
       - PYTHONPATH=/app
       - MODE=real
@@ -170,6 +157,7 @@ services:
 
   # ── Mininet virtual network topology emulation ────────────────────────────
   mininet:
+    profiles: ["packet-validation"]
     build:
       context: .
       dockerfile: docker/Dockerfile.mininet
@@ -178,6 +166,7 @@ services:
     networks: [antijam-net]
     volumes:
       - logs:/app/logs
+      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
     depends_on:
       sdn-controller:
         condition: service_healthy
