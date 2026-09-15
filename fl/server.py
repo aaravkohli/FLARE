@@ -165,8 +165,9 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
                 quarantine_rounds=_TRUST_CFG.get("quarantine_rounds", 3),
                 quarantine_trigger_rounds=_TRUST_CFG.get("quarantine_trigger_rounds", 2),
                 history_size=_TRUST_CFG.get("history_size", 20),
-                state_path=str(
-                    _BASE / _PATHS_CFG.get("trust_state", "results/fl_trust_state.json")
+                state_path=os.getenv(
+                    "FLARE_FL_TRUST_STATE",
+                    str(_BASE / _PATHS_CFG.get("trust_state", "results/fl_trust_state.json")),
                 ),
             )
             analyzer = UpdateAnalyzer(
@@ -290,8 +291,14 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
 
     def _init_metrics(self):
         from fl.metrics import FLMetricsTracker
-        metrics_csv = str(_BASE / _PATHS_CFG.get("metrics_csv", "results/fl_advanced_metrics.csv"))
-        metrics_json = str(_BASE / _PATHS_CFG.get("metrics_json", "results/fl_metrics_snapshot.json"))
+        metrics_csv = os.getenv(
+            "FLARE_FL_METRICS_CSV",
+            str(_BASE / _PATHS_CFG.get("metrics_csv", "results/fl_advanced_metrics.csv")),
+        )
+        metrics_json = os.getenv(
+            "FLARE_FL_METRICS_JSON",
+            str(_BASE / _PATHS_CFG.get("metrics_json", "results/fl_metrics_snapshot.json")),
+        )
         self._metrics = FLMetricsTracker(
             csv_path=metrics_csv,
             json_path=metrics_json,
@@ -655,7 +662,9 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             )
 
             # Legacy CSV (backward compatibility)
-            csv_path = _RESULTS / "fl_round_metrics.csv"
+            csv_path = Path(os.getenv(
+                "FLARE_FL_LEGACY_METRICS_CSV", str(_RESULTS / "fl_round_metrics.csv")
+            ))
             mode = "w" if server_round == 1 else "a"
             with open(csv_path, mode, newline="") as f:
                 writer = csv.DictWriter(

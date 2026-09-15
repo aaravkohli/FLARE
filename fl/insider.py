@@ -37,6 +37,7 @@ class InsiderEvidence:
     duplicate_sequence_ratio: Optional[float]
     timestamp: float
     controller_timestamp: float
+    controller_policy_dropped_packets: int = 0
 
     @classmethod
     def from_mapping(cls, value: Mapping[str, object]) -> "InsiderEvidence":
@@ -52,6 +53,9 @@ class InsiderEvidence:
             ),
             timestamp=float(value["timestamp"]),
             controller_timestamp=float(value["controller_timestamp"]),
+            controller_policy_dropped_packets=int(
+                value.get("controller_policy_dropped_packets") or 0
+            ),
         )
         numeric = asdict(evidence)
         if any(
@@ -65,6 +69,7 @@ class InsiderEvidence:
             "controller_forwarded_packets",
             "reported_forwarded_packets",
             "control_messages_per_s",
+            "controller_policy_dropped_packets",
         )):
             raise ValueError("insider evidence values cannot be negative")
         if (
@@ -87,6 +92,7 @@ class InsiderAnalysis:
     control_rate_score: float
     replay_score: float
     evidence_freshness: float
+    policy_filtered: bool
     evidence_contract: str = INSIDER_EVIDENCE_CONTRACT
 
     def to_dict(self) -> dict:
@@ -143,14 +149,23 @@ class InsiderTelemetryAnalyzer:
 
     def analyze(self, client_id: str, raw: Mapping[str, object]) -> InsiderAnalysis:
         evidence = InsiderEvidence.from_mapping(raw)
-        received = max(evidence.controller_rx_packets, 1)
+        policy_filtered = evidence.controller_policy_dropped_packets > 0
+        eligible_received = max(
+            evidence.controller_rx_packets
+            - evidence.controller_policy_dropped_packets,
+            0,
+        )
+        received = max(eligible_received, 1)
         forwarding_ratio = min(
             1.0, evidence.controller_forwarded_packets / received
         )
-        claim_gap = abs(
-            evidence.reported_forwarded_packets - evidence.controller_forwarded_packets
-        ) / max(evidence.reported_forwarded_packets, evidence.controller_forwarded_packets, 1)
-        enough_packets = evidence.controller_rx_packets >= self.min_packets
+        claim_gap = (
+            0.0 if policy_filtered else
+            abs(
+                evidence.reported_forwarded_packets - evidence.controller_forwarded_packets
+            ) / max(evidence.reported_forwarded_packets, evidence.controller_forwarded_packets, 1)
+        )
+        enough_packets = eligible_received >= self.min_packets
         drop_score = (
             self._severity(
                 forwarding_ratio, self.forwarding_ratio_floor, inverse=True
@@ -215,6 +230,7 @@ class InsiderTelemetryAnalyzer:
             control_rate_score=control_score,
             replay_score=replay_score,
             evidence_freshness=freshness,
+            policy_filtered=policy_filtered,
         )
 
     def risk(self, client_id: str) -> float:

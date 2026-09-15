@@ -18,8 +18,11 @@ from security.network_detector import NetworkThreatAnalyzer
 
 
 BASE = Path(__file__).parent.parent
-PROTOCOL = "controlled_network_security_v1"
-PROFILES = ("normal", "dos", "identity_spoofing", "metric_falsification", "replay")
+PROTOCOL = "controlled_network_security_v2"
+PROFILES = (
+    "normal", "policy_hold", "dos", "identity_spoofing",
+    "metric_falsification", "replay",
+)
 
 
 def _sample(profile: str, rng: np.random.Generator, timestamp: float) -> tuple[dict, float]:
@@ -32,6 +35,16 @@ def _sample(profile: str, rng: np.random.Generator, timestamp: float) -> tuple[d
         "controller_forwarded_packets": forwarded,
         "reported_forwarded_packets": reported,
         "controller_dropped_packets": received - forwarded,
+        "controller_policy_dropped_packets": 0,
+        "controller_port_rx_packets": received,
+        "controller_port_dropped_packets": received - forwarded,
+        "controller_port_error_packets": 0,
+        "controller_port_window_rx_packets": received,
+        "controller_port_window_dropped_packets": received - forwarded,
+        "controller_port_window_error_packets": 0,
+        "port_timestamp": timestamp,
+        "port_window_seconds": 1.0,
+        "drop_counter_semantics": "ingress_port_receive_drop_error",
         "packet_rate_per_s": float(rng.uniform(20.0, 90.0)),
         "control_messages_per_s": float(rng.uniform(2.0, 12.0)),
         "duplicate_sequence_ratio": float(rng.uniform(0.0, 0.04)),
@@ -48,10 +61,22 @@ def _sample(profile: str, rng: np.random.Generator, timestamp: float) -> tuple[d
         },
     }
     latency = float(rng.uniform(15.0, 80.0))
-    if profile == "dos":
+    if profile == "policy_hold":
+        evidence.update({
+            "controller_forwarded_packets": 0,
+            "reported_forwarded_packets": 0,
+            "controller_policy_dropped_packets": received,
+            "controller_dropped_packets": 0,
+            "controller_port_dropped_packets": 0,
+            "controller_port_window_dropped_packets": 0,
+        })
+    elif profile == "dos":
+        attack_dropped = int(rng.integers(120, 201))
         evidence.update({
             "controller_forwarded_packets": int(rng.integers(0, 12)),
-            "controller_dropped_packets": int(rng.integers(120, 201)),
+            "controller_dropped_packets": attack_dropped,
+            "controller_port_dropped_packets": attack_dropped,
+            "controller_port_window_dropped_packets": attack_dropped,
             "packet_rate_per_s": float(rng.uniform(550.0, 950.0)),
         })
         latency = float(rng.uniform(850.0, 1200.0))
@@ -90,7 +115,7 @@ def run(*, seeds: list[int], samples_per_profile: int) -> dict:
                     max_path_latency_ms=latency,
                     now=timestamp,
                 )
-                actual = profile != "normal"
+                actual = profile not in {"normal", "policy_hold"}
                 unavailable = analysis.status == "UNAVAILABLE"
                 unavailable_count += int(unavailable)
                 detected = analysis.status in {"SUSPICIOUS", "MALICIOUS"}

@@ -88,6 +88,8 @@ def test_disjoint_capture_preflight_is_structure_only(tmp_path: Path) -> None:
     assert report["validation_category"] == "structure_only"
     assert report["source_review_required"] is True
     assert report["captures"][0]["rows"] == {"rf": 1, "network": 1, "labels": 1}
+    assert report["captures"][0]["three_path_rf_network_inputs_structurally_present"] is False
+    assert report["captures"][0]["offline_model_replay_ready"] is False
     assert report["captures"][0]["max_network_alignment_lag_ms"] == 200.0
     assert len(report["captures"][0]["dataset_fingerprint"]) == 64
     assert report["captures"][1]["attack_classes"] == "sealed_for_held_out_evaluation"

@@ -1,5 +1,6 @@
 evidence:
   max_age_s: 3.0
+  max_window_alignment_s: 0.5
   real_controller_required: true
   controller_endpoint: /sdn/evidence/{drone_id}
   request_timeout_s: 2.0

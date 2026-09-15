@@ -88,7 +88,7 @@ Historical files under `results/` are not current evidence unless they have a ma
 <!-- PROMOTED-EVIDENCE:START -->
 | Evidence set | Promoted run | Category | Seeds | Report SHA-256 |
 |---|---|---|---|---|
-| Network DoS/spoofing detector | `20260915T075021.230452Z-ac64c960cc91` | `controlled_simulation` | `[7, 42, 99]` | `bf28287eaf17092cd4cdf70a8eaed4f8fd3e14be9fde23cf1f68c38b1b8cb0fd` |
+| Network DoS/spoofing detector | `20260915T082949.225063Z-37e96820b9bc` | `controlled_simulation` | `[7, 42, 99]` | `e32c229bde7a772c08e9de2d0a7cb74dd97b92e6169d564e8c47c13b12c54359` |
 <!-- PROMOTED-EVIDENCE:END -->
 
 Current implementation checks may be reported from fresh command output, but numerical research-performance claims must come from this promoted evidence chain. Packet-level OpenFlow, wireless/RF, and hardware evidence remain separate validation categories.
@@ -535,7 +535,7 @@ For replay and robustness work, `rl/traces.py` defines the strict `synchronized_
 
 For local work, `sdn/mock_sdn.py` accepts route, HOLD, and containment commands and remembers independent state per drone. `sdn/route_contract.py` gives action/path pairs one shared definition and both controllers reject mismatches. With Ryu, `sdn/controller.py` delegates flow construction to `sdn/flow_manager.py`: routes use output actions, HOLD/quarantine use empty-action drops, and restricted/control-only mode permits configured telemetry UDP ports before a higher-priority drop. `sdn/topology_state.py` requires all expected switches and port inventories, derives per-drone route availability from OpenFlow port state, and fails closed while topology state is incomplete. After each update, the controller waits for OpenFlow barrier replies from all five switches before reporting success.
 
-The Ryu evidence endpoint labels ingress flow counters separately from registry-bound ingress-port receive drops/errors. `controller_policy_dropped_packets` counts installed HOLD/containment drop-flow packets and is **not** scored as DoS loss; `controller_dropped_packets` is supplied only with fresh port statistics and `drop_counter_semantics=ingress_port_receive_drop_error`. Unsupported or stale port signals remain absent. Its compatible `control_messages_per_s` field counts access-port OpenFlow `PacketIn` events, **not** FLARE's own route/containment REST commands, and includes `control_rate_observer=access_port_packet_in`. A source MAC is marked observed only when a fresh `PacketIn` on a registry-bound port supplies it; the expected MAC in a flow match is not independent identity observation. Real-mode evidence joins reject malformed counters and RF/controller timestamps more than three seconds apart. MAC/port binding is still not device authentication or radio attestation.
+The Ryu evidence endpoint labels ingress flow counters separately from registry-bound ingress-port receive drops/errors. `controller_policy_dropped_packets` counts installed HOLD/containment drop-flow packets and is **not** scored as DoS loss. Fresh port statistics expose cumulative totals with `drop_counter_semantics=ingress_port_receive_drop_error`; the version-2 network detector scores only a valid, at-most-three-second delta between consecutive port samples. A first sample, counter reset, stale sample, or unsupported port signal supplies no DoS loss window rather than a fabricated zero or a policy-drop fallback. Its compatible `control_messages_per_s` field counts access-port OpenFlow `PacketIn` events, **not** FLARE's own route/containment REST commands, and includes `control_rate_observer=access_port_packet_in`. A source MAC is marked observed only when a fresh `PacketIn` on a registry-bound port supplies it; the expected MAC in a flow match is not independent identity observation. Real-mode evidence joins reject malformed counters and RF/controller timestamps more than three seconds apart. MAC/port binding is still not device authentication or radio attestation.
 
 The wired Mininet topology creates one host per enabled fleet-registry identity at startup and connects each to its configured ingress access port. Three middle switches have representative link properties:
 
@@ -1056,7 +1056,7 @@ The standard environment simulates episodes using configured network distributio
 
 Evaluation scripts now produce immutable, source-categorized runs. Published comparisons must be promoted from the required seed protocol and listed in the promoted-evidence block; generated synthetic scenarios and point-to-point ns-3 packet traces remain separate from representative RF or hardware validation.
 
-The deferred external-evidence milestone has a [capture pre-registration protocol](docs/external_validation_protocol.md) and `scripts/preflight_external_capture.py`. Its preflight checks file hashes, independent-observer declarations, UTC alignment, and disjoint development/held-out campaigns, but labels its output `structure_only` and requires human source review. No external capture has passed it in this repository; it is not a real-RF evaluation or accuracy result.
+The deferred external-evidence milestone has a [capture pre-registration protocol](docs/external_validation_protocol.md) and `scripts/preflight_external_capture.py`. Historical v1 captures remain structurally readable but lack complete routing/network-detector inputs. The additive v2 preflight requires synchronized three-route five-feature RF triplets, separate participant reports, flow-versus-ingress-port counter semantics, fresh source-identity timestamps, frozen registry bindings, reviewed labels, hashes, UTC/window alignment, and disjoint development/held-out campaigns. Missing controller or participant samples remain counted as unavailable evidence rather than being discarded; present but unaligned observations fail. Its output is still `structure_only` and requires human source review. No representative external capture or offline held-out model replay has passed in this repository; this is not a real-RF evaluation or accuracy result.
 
 A separate [controlled ns-3 Wi-Fi mobility protocol](docs/wifi_mobility_packet_protocol.md) exercises receiver-derived UDP delivery as one moving node leaves a fixed base under an 802.11b LogDistance model. `scripts/run_wifi_mobility_study.py` saves immutable packet-simulation runs; it is not online route integration, real RF evidence, or a three-path UAV benchmark.
 
@@ -1113,7 +1113,7 @@ Use `npm ci` for a reproducible installation from the committed lockfile. Use `n
 | `SDN_PORT` | FastAPI readiness probe | `config/sdn_config.yaml` controller port, normally `8080` | Override only when the API reaches SDN on a nonstandard port |
 | `AJ_SDN_READINESS_TIMEOUT` | FastAPI readiness probe | Controller `timeout_s`, normally `1.0` second | Keep bounded so readiness checks cannot exhaust API workers |
 | `AJ_READINESS_HISTORY_LIMIT` | FastAPI | `100`, clamped to 10–1000 | Bounds in-memory readiness transitions per API process; use centralized observability for multi-worker persistence |
-| `VITE_API_BASE_URL` | React build | `http://localhost:8000` | Set to the externally reachable API base before `npm run build` |
+| `VITE_API_BASE_URL` | React build | `http://127.0.0.1:8000` | Set to the externally reachable API base before `npm run build` |
 | `MODE` | Orchestrator | Falls back to `config/mode.yaml` | Set to exactly `simulation` or `real`; environment value takes precedence |
 | `MODEL_DIR` | Docker Compose | `./models` | Host directory bind-mounted into model producers/consumers |
 | `PROCESSED_DATA_DIR` | Production Compose FL clients | No production default | Required directory containing the three processed client CSVs; mounted read-only |
@@ -1238,7 +1238,7 @@ cd frontend-react
 npm run dev
 ```
 
-Open `http://localhost:5173`. The backend is normally at `http://localhost:8000` and the mock controller at `http://localhost:8080`.
+Open `http://localhost:5173`. The local frontend targets `http://127.0.0.1:8000` by default; the mock controller is normally at `http://localhost:8080`.
 
 ### Website-controlled insider demonstration
 
@@ -1352,11 +1352,11 @@ Selects `dqn` or `sac` and contains training/environment hyperparameters. Runtim
 
 ### `config/sdn_config.yaml`
 
-Defines controller address and barrier timeout, expected switch IDs, route-to-port/transit mapping, priorities, control UDP ports, and failover ordering. Drone identity/access-port bindings come from the fleet registry. Keep the switch IDs consistent with `sdn/mininet_topo.py`. Ryu fails closed until port-description replies arrive, updates route availability from OpenFlow port-status events, and samples controller-owned flow counters. These observations do not fabricate unsupported replay evidence and are not an active RF, latency, throughput, or end-to-end reachability probe.
+Defines controller address and barrier timeout, expected switch IDs, route-to-port/transit mapping, priorities, control UDP ports, and failover ordering. Drone identity/access-port bindings come from the fleet registry. Keep the switch IDs consistent with `sdn/mininet_topo.py`. Ryu fails closed until port-description replies arrive, updates route availability from OpenFlow port-status events, and samples controller-owned flow and ingress-port counters. These observations do not fabricate unsupported replay evidence and are not an active RF, latency, throughput, or end-to-end reachability probe.
 
 ### `config/security_config.yaml`
 
-Versions the controller-evidence URL and timeout, maximum evidence age, DoS and network/telemetry-spoofing signal thresholds and weights, EWMA history, and response mapping. In real mode the detector requires authenticated evidence whose controller response explicitly identifies itself as independent; missing, stale, malformed, mock, or untrusted evidence yields `UNAVAILABLE`, not zero risk.
+Versions the controller-evidence URL and timeout, maximum evidence age, DoS and network/telemetry-spoofing signal thresholds and weights, EWMA history, and response mapping. In real mode the detector requires authenticated evidence whose controller response explicitly identifies itself as independent; missing, stale, malformed, mock, or untrusted evidence yields `UNAVAILABLE`, not zero risk. An absent optional ingress-port loss window is identified as unsupported and cannot be replaced by policy-drop counts. The version-2 controlled study adds a benign policy-HOLD profile and simulated port-stat windows; its synthetic provenance remains non-independent even though it exercises the real-mode scoring contract.
 
 ### JSON schemas
 
@@ -1448,7 +1448,7 @@ Test counts and pass/fail state are intentionally not hardcoded here because the
 
 The live API scripts cover authenticated requests, invalid-input rejection, concurrency, telemetry history, jammer lifecycle, compromise/restore controls, FL metrics, and SDN state. Their outcome is revision- and environment-specific and must be reported from a fresh run.
 
-The reusable `scripts/sdn_smoke_test.sh` builds an isolated privileged topology, requires complete switch inventory and barrier acknowledgements, verifies receiver-observed UDP data and control delivery on direct/satellite/mesh routes, and exercises route replacement, deterministic link failover, HOLD, restricted/control-only, quarantine, dynamic registry bindings, and authenticated controller evidence. A test-only mismatched-MAC frame also verifies that Ryu observes an access-port `PacketIn` identity and traffic-derived rate. It fails when Docker, privileged networking, TUN/TAP, OVS, Ryu, or Mininet is unavailable; mock SDN is never substituted. A pass validates only the wired packet-simulation topology, not wireless or hardware behavior. On 2026-09-15, a source-bound local run passed with the five enabled registry identities; this is an environment-specific integration check, not a performance benchmark.
+The reusable `scripts/sdn_smoke_test.sh` builds an isolated privileged topology, requires complete switch inventory and barrier acknowledgements, verifies receiver-observed UDP data and control delivery on direct/satellite/mesh routes, and exercises route replacement, deterministic link failover, HOLD, restricted/control-only, quarantine, dynamic registry bindings, and authenticated controller evidence. A test-only mismatched-MAC frame verifies access-port `PacketIn` identity and traffic-derived rate. The gate also requires two consecutive ingress-port drop/error samples and checks that both cumulative counters and their recent loss window stay unchanged while an installed HOLD drop flow accumulates policy-drop packets. It fails when Docker, privileged networking, TUN/TAP, OVS, Ryu, or Mininet is unavailable; mock SDN is never substituted. A pass validates only the wired packet-simulation topology, not wireless or hardware behavior. On 2026-09-15, a source-bound local run passed with the five enabled registry identities; this is an environment-specific integration check, not a performance benchmark.
 
 The following browser snapshot predates the current provenance/runtime changes and is retained as unverified history, not current evidence. It covered login, WebSocket state, telemetry, selection, charts, scenario injection, FL controls, report export, and responsive layout. The revised unavailable-telemetry, network-evidence, deployment-generation, and routing-XAI states require a fresh live browser regression.
 

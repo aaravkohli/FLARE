@@ -276,6 +276,7 @@ def test_security_audit_is_written_to_metrics_snapshot(tmp_path):
     tracker.commit(3)
 
     snapshot = json.loads((tmp_path / "metrics.json").read_text())
+    assert snapshot["latest"]["timestamp"].endswith("+00:00")
     assert snapshot["latest"]["poisoning_attempts_detected"] == 2
     assert snapshot["latest"]["client_security"][0]["action"] == "REJECTED"
 

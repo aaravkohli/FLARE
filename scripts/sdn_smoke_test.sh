@@ -148,6 +148,8 @@ assert "packet_counters" in payload["supported_signals"], payload
 assert payload["control_rate_observer"] == "access_port_packet_in", payload
 assert payload["drop_counter_semantics"] == "ingress_port_receive_drop_error", payload
 assert "port_receive_drop_counters" in payload["supported_signals"], payload
+assert "port_receive_drop_window" in payload["supported_signals"], payload
+assert 0 < payload["port_window_seconds"] <= 3.0, payload
 assert payload["controller_dropped_packets"] == (
     payload["controller_port_dropped_packets"]
     + payload["controller_port_error_packets"]
@@ -167,6 +169,7 @@ import json, sys
 payload = json.loads(sys.argv[1])
 assert payload.get("drop_counter_semantics") == "ingress_port_receive_drop_error", payload
 assert payload.get("port_timestamp") is not None, payload
+assert "port_receive_drop_window" in payload.get("supported_signals", []), payload
 ' "$port_evidence" >/dev/null 2>&1; then
       return 0
     fi
@@ -196,6 +199,8 @@ assert payload["controller_dropped_packets"] == (
 assert payload["drop_counter_semantics"] == "ingress_port_receive_drop_error", payload
 assert payload["controller_port_dropped_packets"] == int(sys.argv[2]), payload
 assert payload["controller_port_error_packets"] == int(sys.argv[3]), payload
+assert payload["controller_port_window_dropped_packets"] == 0, payload
+assert payload["controller_port_window_error_packets"] == 0, payload
 ' "$drop_evidence" "$baseline_port_dropped" "$baseline_port_errors" >/dev/null 2>&1; then
       return 0
     fi

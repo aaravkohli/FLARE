@@ -26,7 +26,7 @@ services:
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
       - fl-results:/app/results
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.connect(('localhost',8090))\" 2>/dev/null && echo ok || exit 1"]
@@ -44,7 +44,7 @@ services:
       - ${MODEL_DIR:-./models}:/app/models
       - ${PROCESSED_DATA_DIR:?Set PROCESSED_DATA_DIR}:/app/datasets/processed:ro
       - fl-runtime:/app/client-runtime
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     environment:
       - PYTHONPATH=/app
       - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
@@ -67,7 +67,7 @@ services:
       - "6633:6633"   # OpenFlow
     volumes:
       - logs:/app/logs
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     environment:
       - PYTHONPATH=/app
       - AJ_ENV=production
@@ -94,7 +94,7 @@ services:
       - logs:/app/logs
       - fl-results:/app/results:ro
       - fl-runtime:/app/client-runtime:ro
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml
+      - ./config:/app/config
     environment:
       - PYTHONPATH=/app
       - AJ_ENV=production
@@ -126,7 +126,7 @@ services:
       - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
       - logs:/app/logs
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     environment:
       - PYTHONPATH=/app
       - MODE=real
@@ -166,7 +166,7 @@ services:
     networks: [antijam-net]
     volumes:
       - logs:/app/logs
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     depends_on:
       sdn-controller:
         condition: service_healthy

@@ -31,7 +31,7 @@ drones:
       pdr_offset: -0.1
       latency_factor: 1.7
   drone_4:
-    display_name: Deon
+    display_name: Drone 4
     index: 4
     mac: 02:00:00:00:00:04
     access_port: 7

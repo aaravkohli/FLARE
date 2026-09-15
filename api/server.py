@@ -64,6 +64,7 @@ from fleet.registry import (
     is_active_drone,
     list_drones,
     register_drone,
+    update_drone,
 )
 from rl.safety import constrain_route_action, resolve_safety_config
 from runtime.model_deployment import DeploymentWatcher
@@ -387,6 +388,25 @@ class FleetRegistrationRequest(BaseModel):
     @classmethod
     def validate_finite_rf_value(cls, value):
         if not math.isfinite(value):
+            raise ValueError("RF profile values must be finite")
+        return value
+
+
+class FleetEditRequest(BaseModel):
+    """Safe mutable fields only; an identity/topology rebind requires offline work."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    display_name: Optional[str] = Field(default=None, min_length=1, max_length=80)
+    rssi_offset: Optional[float] = Field(default=None, ge=-60.0, le=60.0)
+    pdr_offset: Optional[float] = Field(default=None, ge=-1.0, le=1.0)
+    latency_factor: Optional[float] = Field(default=None, ge=0.1, le=10.0)
+    enabled: Optional[bool] = None
+
+    @field_validator("rssi_offset", "pdr_offset", "latency_factor")
+    @classmethod
+    def validate_finite_rf_value(cls, value):
+        if value is not None and not math.isfinite(value):
             raise ValueError("RF profile values must be finite")
         return value
 
@@ -859,7 +879,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=_cors_origins,
     allow_credentials=True,
-    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
     allow_headers=["Authorization", "Content-Type"],
 )
 
@@ -919,6 +939,12 @@ async def get_fleet(_: dict = Depends(get_current_user)) -> dict:
         )
         drones.append(row)
     return {"drones": drones, "count": len(active_drone_ids()), "fl_client_manager": manager}
+
+
+@app.get("/fleet/drones/manage", tags=["Fleet"])
+async def get_manageable_fleet(_: dict = Depends(require_admin)) -> dict:
+    """List enabled and disabled identities for reversible fleet administration."""
+    return {"drones": list_drones(enabled_only=False)}
 
 
 def _fl_client_manager_status() -> dict:
@@ -997,6 +1023,40 @@ async def enroll_drone(
             "fl_participation": client_status.get("status", "awaiting_client_connection"),
             "fl_client_manager": manager.get("status", "unavailable"),
         },
+    }
+
+
+@app.patch("/fleet/drones/{drone_id}", tags=["Fleet"])
+async def edit_drone(
+    drone_id: str,
+    req: FleetEditRequest,
+    _: dict = Depends(require_admin),
+) -> dict:
+    """Edit display identity or simulation profile; soft-disable only in mock mode."""
+    changes = req.model_dump(exclude_unset=True)
+    if not changes or any(value is None for value in changes.values()):
+        raise HTTPException(status_code=400, detail="Provide at least one non-null editable field")
+    runtime_mode, sdn_controller = _runtime_mode_and_sdn_controller()
+    simulation_fields = {"rssi_offset", "pdr_offset", "latency_factor", "enabled"}
+    if simulation_fields.intersection(changes) and (
+        IS_PRODUCTION or runtime_mode != "simulation" or sdn_controller != "mock"
+    ):
+        raise HTTPException(
+            status_code=409,
+            detail="RF-profile or enabled-state edits require development mock-SDN simulation; "
+                   "real controller bindings need an offline rebind/retirement procedure",
+        )
+    try:
+        drone = update_drone(drone_id, **changes)
+    except DroneRegistrationError as exc:
+        raise HTTPException(status_code=409, detail=str(exc)) from exc
+    _sync_api_fleet()
+    logger.info("Fleet registry updated: %s fields=%s", drone_id, sorted(changes))
+    return {
+        "status": "updated",
+        "drone": drone,
+        "fl_client_manager": _fl_client_manager_status().get("status", "unavailable"),
+        "note": "mock-SDN is simulated; this action does not prove packet enforcement",
     }
 
 

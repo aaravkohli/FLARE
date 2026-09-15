@@ -28,8 +28,8 @@ ROUTING_ACTION_COUNTS = {
 
 DECISION_EVENT_V2 = "2.1"
 DECISION_EVENT_V3 = "3.0"
-INSIDER_EVIDENCE_CONTRACT = "insider_evidence_v1"
-NETWORK_SECURITY_EVIDENCE_CONTRACT = "network_security_evidence_v1"
+INSIDER_EVIDENCE_CONTRACT = "insider_evidence_v2"
+NETWORK_SECURITY_EVIDENCE_CONTRACT = "network_security_evidence_v2"
 EXPLANATION_CONTRACT = "integrated_gradients_v1"
 ROUTING_EXPLANATION_CONTRACT = "routing_integrated_gradients_v1"
 

@@ -144,6 +144,74 @@ def get_drone(drone_id: str, *, enabled_only: bool = True) -> dict[str, Any] | N
     return None
 
 
+def _persist_records(records: Mapping[str, Mapping[str, Any]]) -> None:
+    """Atomically replace the registry while keeping disabled identities reserved."""
+    global _CACHE, _CACHE_MTIME_NS
+    payload = {
+        "version": 1,
+        "drones": {
+            key: {field: value for field, value in value.items() if field != "drone_id"}
+            for key, value in sorted(records.items(), key=lambda item: item[1]["index"])
+        },
+    }
+    _REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
+    fd, temporary_name = tempfile.mkstemp(
+        prefix=f".{_REGISTRY_PATH.name}.", suffix=".tmp", dir=_REGISTRY_PATH.parent
+    )
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as handle:
+            yaml.safe_dump(payload, handle, sort_keys=False)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_name, _REGISTRY_PATH)
+    finally:
+        if os.path.exists(temporary_name):
+            os.unlink(temporary_name)
+    _CACHE = None
+    _CACHE_MTIME_NS = None
+
+
+def update_drone(
+    drone_id: str,
+    *,
+    display_name: str | None = None,
+    rssi_offset: float | None = None,
+    pdr_offset: float | None = None,
+    latency_factor: float | None = None,
+    enabled: bool | None = None,
+) -> dict[str, Any]:
+    """Edit safe registry fields; identity and SDN topology bindings are immutable."""
+    with _LOCK:
+        records = {
+            record["drone_id"]: record
+            for record in list_drones(enabled_only=False, force_reload=True)
+        }
+        normalized_id = str(drone_id).strip().lower()
+        if normalized_id not in records:
+            raise DroneRegistrationError(f"drone_id {normalized_id!r} is not registered")
+        record = deepcopy(records[normalized_id])
+        if display_name is not None:
+            record["display_name"] = display_name
+        rf = record["rf_profile"]
+        if rssi_offset is not None:
+            rf["rssi_offset"] = rssi_offset
+        if pdr_offset is not None:
+            rf["pdr_offset"] = pdr_offset
+        if latency_factor is not None:
+            rf["latency_factor"] = latency_factor
+        if enabled is not None:
+            record["enabled"] = enabled
+        record = _validate_record(normalized_id, record)
+        if not record["enabled"] and sum(
+            candidate["enabled"] if key != normalized_id else False
+            for key, candidate in records.items()
+        ) < 2:
+            raise DroneRegistrationError("at least two active drones are required for Flower rounds")
+        records[normalized_id] = record
+        _persist_records(records)
+        return deepcopy(record)
+
+
 def register_drone(
     *,
     drone_id: str,
@@ -180,26 +248,5 @@ def register_drone(
             },
         })
         records[normalized_id] = record
-        payload = {
-            "version": 1,
-            "drones": {
-                key: {field: value for field, value in value.items() if field != "drone_id"}
-                for key, value in sorted(records.items(), key=lambda item: item[1]["index"])
-            },
-        }
-        _REGISTRY_PATH.parent.mkdir(parents=True, exist_ok=True)
-        fd, temporary_name = tempfile.mkstemp(
-            prefix=f".{_REGISTRY_PATH.name}.", suffix=".tmp", dir=_REGISTRY_PATH.parent
-        )
-        try:
-            with os.fdopen(fd, "w", encoding="utf-8") as handle:
-                yaml.safe_dump(payload, handle, sort_keys=False)
-                handle.flush()
-                os.fsync(handle.fileno())
-            os.replace(temporary_name, _REGISTRY_PATH)
-        finally:
-            if os.path.exists(temporary_name):
-                os.unlink(temporary_name)
-        _CACHE = None
-        _CACHE_MTIME_NS = None
+        _persist_records(records)
         return deepcopy(record)

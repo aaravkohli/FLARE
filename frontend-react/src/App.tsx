@@ -35,7 +35,7 @@ import type {
   MissionTelemetryPayload,
 } from './mission-simulation/types';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000').replace(/\/$/, '');
+const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
 const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
 const TelemetryCharts = React.lazy(() => import('./TelemetryCharts'));
 
@@ -145,6 +145,14 @@ interface FleetDrone {
     pdr_offset: number;
     latency_factor: number;
   };
+  fl_client?: { status: string; pid?: number | null; dataset?: string | null };
+}
+
+interface FlClientManagerStatus {
+  status: string;
+  mode?: string;
+  age_s?: number;
+  clients?: Record<string, { status: string; pid?: number | null; dataset?: string | null }>;
 }
 
 interface FlProtectionSelfTest {
@@ -212,6 +220,7 @@ interface NetworkSecurityAnalysis {
   evidence_source: string;
   evidence_independent: boolean;
   reason: string;
+  available_signals?: string[];
 }
 
 interface RoutingExplanation {
@@ -296,6 +305,8 @@ interface CanonicalEventPayload {
     ew_status?: { active_attack?: string | null } | null;
     security_evidence?: {
       simulation_profile?: InsiderProfile | null;
+      controller_policy_dropped_packets?: number | null;
+      drop_counter_semantics?: string | null;
       provenance?: {
         category: string;
         observer_id: string;
@@ -362,6 +373,14 @@ function App() {
     { drone_id: 'drone_2', display_name: 'Drone 2', index: 2, mac: '00:00:00:00:00:03', access_port: 5, enabled: true, rf_profile: { rssi_offset: 0, pdr_offset: 0, latency_factor: 1 } },
     { drone_id: 'drone_3', display_name: 'Drone 3', index: 3, mac: '00:00:00:00:00:04', access_port: 6, enabled: true, rf_profile: { rssi_offset: 0, pdr_offset: 0, latency_factor: 1 } }
   ]);
+  const [managedFleetDrones, setManagedFleetDrones] = useState<FleetDrone[]>([]);
+  const [canManageFleet, setCanManageFleet] = useState(false);
+  const [flClientManager, setFlClientManager] = useState<FlClientManagerStatus | null>(null);
+  const [editingDrone, setEditingDrone] = useState<FleetDrone | null>(null);
+  const [editDraft, setEditDraft] = useState({ display_name: '', rssi_offset: 0, pdr_offset: 0, latency_factor: 1 });
+  const [editError, setEditError] = useState<string | null>(null);
+  const [editBusy, setEditBusy] = useState(false);
+  const [confirmDisable, setConfirmDisable] = useState(false);
   const [showEnrollment, setShowEnrollment] = useState(false);
   const [isEnrolling, setIsEnrolling] = useState(false);
   const [enrollmentError, setEnrollmentError] = useState<string | null>(null);
@@ -453,9 +472,11 @@ function App() {
     fetchFleet();
     fetchInsiderProfiles();
     const healthTimer = window.setInterval(fetchSystemHealth, 5000);
+    const fleetTimer = window.setInterval(fetchFleet, 5000);
 
     return () => {
       window.clearInterval(healthTimer);
+      window.clearInterval(fleetTimer);
       shouldReconnectRef.current = false;
       if (reconnectTimerRef.current !== null) {
         window.clearTimeout(reconnectTimerRef.current);
@@ -718,6 +739,18 @@ function App() {
       const drones: FleetDrone[] = Array.isArray(data.drones) ? data.drones : [];
       if (!drones.length) throw new Error('Fleet registry returned no active drones');
       setFleetDrones(drones);
+      setFlClientManager(data.fl_client_manager || null);
+      const manageRes = await fetch(`${API_BASE_URL}/fleet/drones/manage`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (manageRes.ok) {
+        const manageData = await manageRes.json();
+        setManagedFleetDrones(Array.isArray(manageData.drones) ? manageData.drones : []);
+        setCanManageFleet(true);
+      } else if (manageRes.status === 403) {
+        setManagedFleetDrones([]);
+        setCanManageFleet(false);
+      }
       setInsiderProfiles(prev => {
         const next = { ...prev };
         drones.forEach(drone => { next[drone.drone_id] ??= 'normal'; });
@@ -736,6 +769,77 @@ function App() {
       }
     } catch (err: any) {
       addLog(`Failed to discover fleet: ${err.message}`);
+    }
+  };
+
+  const openFleetEditor = (droneId: string) => {
+    const drone = managedFleetDrones.find(row => row.drone_id === droneId);
+    if (!drone) return;
+    setEditingDrone(drone);
+    setEditDraft({
+      display_name: drone.display_name,
+      rssi_offset: drone.rf_profile.rssi_offset,
+      pdr_offset: drone.rf_profile.pdr_offset,
+      latency_factor: drone.rf_profile.latency_factor
+    });
+    setEditError(null);
+    setConfirmDisable(false);
+  };
+
+  const patchFleetDrone = async (droneId: string, changes: Record<string, unknown>) => {
+    let res: Response;
+    try {
+      res = await fetch(`${API_BASE_URL}/fleet/drones/${encodeURIComponent(droneId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify(changes)
+      });
+    } catch {
+      throw new Error(`Cannot reach the API at ${API_BASE_URL}. Check the backend and allowed frontend origin, then retry.`);
+    }
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.detail || `Fleet edit failed (${res.status})`);
+    await fetchFleet();
+    return data;
+  };
+
+  const saveFleetEdit = async (event: React.FormEvent) => {
+    event.preventDefault();
+    if (!editingDrone || editBusy || !token) return;
+    setEditBusy(true);
+    setEditError(null);
+    try {
+      const simulationEditable = systemMode.toLowerCase() === 'simulation' && sdnController.toLowerCase().startsWith('mock');
+      await patchFleetDrone(
+        editingDrone.drone_id,
+        simulationEditable ? editDraft : { display_name: editDraft.display_name }
+      );
+      addLog(`${editingDrone.drone_id.toUpperCase()} details updated.`);
+      setEditingDrone(null);
+    } catch (err: any) {
+      setEditError(err.message || 'Could not save UAV details');
+    } finally {
+      setEditBusy(false);
+    }
+  };
+
+  const toggleFleetDrone = async () => {
+    if (!editingDrone || editBusy || !token) return;
+    if (editingDrone.enabled && !confirmDisable) {
+      setConfirmDisable(true);
+      return;
+    }
+    setEditBusy(true);
+    setEditError(null);
+    try {
+      await patchFleetDrone(editingDrone.drone_id, { enabled: !editingDrone.enabled });
+      addLog(`${editingDrone.drone_id.toUpperCase()} ${editingDrone.enabled ? 'disabled' : 're-enabled'} in the simulation fleet.`);
+      setEditingDrone(null);
+      setConfirmDisable(false);
+    } catch (err: any) {
+      setEditError(err.message || 'Could not update UAV availability');
+    } finally {
+      setEditBusy(false);
     }
   };
 
@@ -1220,13 +1324,26 @@ function App() {
   const canonicalEvent = missionPayload?.event;
   const evidenceProvenance = canonicalEvent?.telemetry?.security_evidence?.provenance;
   const networkSecurity = canonicalEvent?.network_security_analysis;
+  const lossEvidenceLabel = networkSecurity?.available_signals?.includes('port_receive_drop')
+    ? evidenceProvenance?.category === 'ryu_openflow' ? 'ingress port window' : 'simulated port window'
+    : networkSecurity?.available_signals?.includes('drop') ? 'simulated counters' : 'not observed';
   const routingExplanation = missionPayload?.routing_explanation;
   const topRoutingAttributions = routingExplanation?.available
     ? [...(routingExplanation.explanation?.feature_attributions || [])]
         .sort((a, b) => Math.abs(b.signed_attribution) - Math.abs(a.signed_attribution))
         .slice(0, 5)
     : [];
-  const activeFlSecurity = byzantineStatus.find(client => client.client_id === activeDrone);
+  const latestFlRows: ClientSecurityMetric[] = Array.isArray(flMetrics?.latest?.client_security)
+    ? flMetrics.latest.client_security : [];
+  const flSnapshotMismatch = latestFlRows.some(row => !fleetDrones.some(drone => drone.drone_id === row.client_id));
+  const flSnapshotTimestamp = typeof flMetrics?.latest?.timestamp === 'string' ? flMetrics.latest.timestamp : null;
+  const flSnapshotHasZone = Boolean(flSnapshotTimestamp && /(?:Z|[+-]\d\d:\d\d)$/.test(flSnapshotTimestamp));
+  const flSnapshotAge = flSnapshotHasZone && flSnapshotTimestamp
+    ? Math.max(0, Math.round((Date.now() - Date.parse(flSnapshotTimestamp)) / 1000)) : null;
+  const displayedByzantineStatus: ClientSecurityMetric[] = flSnapshotMismatch
+    ? fleetDrones.map(drone => ({ client_id: drone.drone_id, status: 'NO_UPDATE' as const, action: 'PENDING' as const }))
+    : byzantineStatus;
+  const activeFlSecurity = displayedByzantineStatus.find(client => client.client_id === activeDrone);
   const trafficDefenseActive = activeInsiderProfile !== 'normal';
   const activeTrafficBaseline = trafficDefenseBaseline?.droneId === activeDrone
     ? trafficDefenseBaseline
@@ -1399,6 +1516,7 @@ function App() {
         sdnReadiness={sdnReadiness}
         readinessHistory={readinessHistory}
         fleetDrones={fleetDrones}
+        inactiveDrones={managedFleetDrones.filter(drone => !drone.enabled)}
         activeDrone={activeDrone}
         activePath={activePath}
         threatLevel={threatLevel}
@@ -1410,9 +1528,33 @@ function App() {
         enrollment={enrollmentForm}
         onToggleEnrollment={() => { setShowEnrollment(value => !value); setEnrollmentError(null); }}
         onSelectDrone={selectDrone}
+        onEditDrone={canManageFleet ? openFleetEditor : undefined}
         onExportReport={downloadReport}
         onLock={() => setToken(null)}
       />
+
+      {editingDrone && canManageFleet && <section className="content-section glass-panel mb-6 p-5" aria-labelledby="fleet-edit-heading">
+        <div className="mb-4 flex items-start justify-between gap-3">
+          <div><h2 id="fleet-edit-heading" className="text-sm font-semibold text-gray-100">Edit {editingDrone.display_name}</h2><p className="mt-1 text-xs text-gray-500">{editingDrone.drone_id} · MAC {editingDrone.mac} · SDN port {editingDrone.access_port}</p></div>
+          <button type="button" onClick={() => { setEditingDrone(null); setConfirmDisable(false); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-300 hover:border-white/30" aria-label="Close UAV editor"><X className="h-4 w-4" /></button>
+        </div>
+        <form onSubmit={saveFleetEdit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="text-xs text-gray-400">Display name<input required maxLength={80} value={editDraft.display_name} onChange={e => setEditDraft(prev => ({ ...prev, display_name: e.target.value }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+          {systemMode.toLowerCase() === 'simulation' && sdnController.toLowerCase().startsWith('mock') && <>
+            <label className="text-xs text-gray-400">RSSI offset (dB)<input required type="number" min={-60} max={60} step="any" value={editDraft.rssi_offset} onChange={e => setEditDraft(prev => ({ ...prev, rssi_offset: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+            <label className="text-xs text-gray-400">PDR offset<input required type="number" min={-1} max={1} step="any" value={editDraft.pdr_offset} onChange={e => setEditDraft(prev => ({ ...prev, pdr_offset: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+            <label className="text-xs text-gray-400">Latency factor<input required type="number" min={0.1} max={10} step="any" value={editDraft.latency_factor} onChange={e => setEditDraft(prev => ({ ...prev, latency_factor: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+          </>}
+          {editError && <p role="alert" className="sm:col-span-2 lg:col-span-4 text-xs text-rose-300">{editError}</p>}
+          <div className="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-4">
+            <button type="submit" disabled={editBusy} className="min-h-10 rounded-lg bg-blue-500 px-4 text-xs font-semibold text-slate-950 disabled:opacity-50">{editBusy ? 'Saving…' : 'Save details'}</button>
+            {systemMode.toLowerCase() === 'simulation' && sdnController.toLowerCase().startsWith('mock') && <button type="button" disabled={editBusy} onClick={toggleFleetDrone} className={`min-h-10 rounded-lg border px-4 text-xs font-semibold disabled:opacity-50 ${editingDrone.enabled ? 'border-amber-500/35 text-amber-300' : 'border-emerald-500/35 text-emerald-300'}`}>{editingDrone.enabled ? confirmDisable ? 'Confirm disable' : 'Disable UAV' : 'Re-enable UAV'}</button>}
+            {confirmDisable && <button type="button" onClick={() => setConfirmDisable(false)} className="min-h-10 px-3 text-xs text-gray-400">Cancel disable</button>}
+          </div>
+        </form>
+        <p className="mt-3 text-xs text-gray-500">Drone ID, MAC, and SDN port are fixed during live operation. RF offsets affect synthetic simulation only.</p>
+        {confirmDisable && <p className="mt-3 text-xs text-amber-300">This removes the UAV from active simulation discovery and stops its Flower client after reconciliation. History and identity remain. Mock-SDN state is not real packet enforcement.</p>}
+      </section>}
 
       {showLegacyCommandOverview && <>
       {/* HEADER SECTION */}
@@ -1615,6 +1757,8 @@ function App() {
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">Observer</dt><dd className="max-w-[65%] truncate font-mono text-gray-200" title={evidenceProvenance?.observer_id}>{evidenceProvenance?.observer_id || 'unavailable'}</dd></div>
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">Independent</dt><dd className={evidenceProvenance?.independent ? 'text-emerald-300' : 'text-amber-300'}>{evidenceProvenance?.independent ? 'yes' : 'no'}</dd></div>
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">DoS / spoof risk</dt><dd className="font-mono text-gray-200">{networkSecurity ? `${networkSecurity.dos_score.toFixed(2)} / ${networkSecurity.spoofing_score.toFixed(2)}` : '—'}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="text-gray-500">Loss evidence</dt><dd className="text-right font-mono text-gray-200">{lossEvidenceLabel}</dd></div>
+                {canonicalEvent?.telemetry?.security_evidence?.controller_policy_dropped_packets != null && <div className="flex justify-between gap-3"><dt className="text-gray-500">Policy drops</dt><dd className="text-right font-mono text-gray-200">{canonicalEvent.telemetry.security_evidence.controller_policy_dropped_packets.toLocaleString()} excluded</dd></div>}
               </dl>
             </div>
 
@@ -2455,7 +2599,8 @@ function App() {
       {/* SECURE FEDERATED LEARNING CONFIGURATION & PRIVACY CONTROL CENTER */}
       {flConfig && <SecureFlControlCenter
         config={flConfig}
-        metrics={flMetrics}
+        metrics={flSnapshotMismatch ? null : flMetrics}
+        evidenceWarning={flSnapshotMismatch ? 'A test-fleet snapshot was withheld. Start a new Flower round with the enrolled fleet.' : undefined}
         isSaving={isSavingConfig}
         onConfigChange={setFlConfig}
         onSave={saveFlConfig}
@@ -2864,7 +3009,9 @@ function App() {
                   <Activity className="w-3.5 h-3.5 text-blue-400" />
                   FL Live Metrics Console
                 </h3>
-                {flMetrics && flMetrics.latest ? (
+                {flSnapshotMismatch ? (
+                  <div className="py-8 text-center text-[11px] text-amber-300">Test-fleet metrics withheld. Awaiting a round from the enrolled fleet.</div>
+                ) : flMetrics && flMetrics.latest ? (
                   <div className="space-y-3.5 text-xs">
                     <div className="flex justify-between items-center">
                       <span className="text-gray-400">FL Round</span>
@@ -2947,19 +3094,26 @@ function App() {
             <p className="text-[10px] text-gray-500 mt-0.5">Model-delta evidence, historical trust, and Byzantine aggregation actions</p>
           </div>
           <span className="rounded border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-blue-400">
-            {flMetrics?.latest?.aggregation_method || 'Awaiting aggregation'}
+            {flSnapshotMismatch ? 'Test snapshot withheld' : flMetrics?.latest?.aggregation_method || 'Awaiting aggregation'}
           </span>
+        </div>
+        <div className={`mb-4 rounded-lg border px-3 py-2 text-xs ${flSnapshotMismatch ? 'border-amber-500/30 bg-amber-500/5 text-amber-200' : 'border-white/10 bg-white/[0.02] text-gray-400'}`} role="status">
+          {flSnapshotMismatch ? 'FL snapshot belongs to a different fleet (including a test client); its security verdicts are withheld.' : `Last completed FL round: ${flMetrics?.last_round ?? 'none'}.`}
+          {' '}Snapshot age: {flSnapshotAge == null ? flSnapshotTimestamp ? 'unknown (legacy timestamp has no time zone)' : 'unavailable' : flSnapshotAge < 60 ? `${flSnapshotAge}s` : `${Math.floor(flSnapshotAge / 60)}m`}.
+          {' '}Client manager: {flClientManager?.status || 'unavailable'}.
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {byzantineStatus.map((drone) => {
+          {displayedByzantineStatus.map((drone) => {
             const isMalicious = drone.status === 'MALICIOUS' || drone.action === 'REJECTED';
             const isSuspicious = drone.status === 'SUSPICIOUS' || drone.action === 'DOWN_WEIGHTED';
+            const isPending = drone.action === 'PENDING';
+            const clientReadiness = flClientManager?.clients?.[drone.client_id]?.status || 'not observed';
             return (
               <div key={drone.client_id} className={`p-4 rounded-xl border transition-all ${isMalicious ? 'bg-red-950/15 border-red-500/30' : isSuspicious ? 'bg-amber-950/10 border-amber-500/25' : 'bg-white/5 border-white/5'}`}>
                 <div className="flex justify-between items-center mb-2.5">
                   <span className="text-xs font-bold text-gray-200">{drone.client_id.toUpperCase().replace('_', ' ')}</span>
-                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isMalicious ? 'bg-red-500/10 border border-red-500/20 text-red-400' : isSuspicious ? 'bg-amber-500/10 border border-amber-500/20 text-amber-300' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
+                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isMalicious ? 'bg-red-500/10 border border-red-500/20 text-red-400' : isSuspicious ? 'bg-amber-500/10 border border-amber-500/20 text-amber-300' : isPending ? 'bg-white/5 border border-white/10 text-gray-300' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
                     {drone.status}
                   </span>
                 </div>
@@ -2991,13 +3145,13 @@ function App() {
                   </div>
                   <div className="flex justify-between items-center pt-1 border-t border-white/5">
                     <span className="text-gray-500">Aggregation Filter</span>
-                    <span className={`font-bold uppercase ${isMalicious ? 'text-red-400 text-glow-red' : isSuspicious ? 'text-amber-300' : 'text-emerald-400'}`}>{drone.action}</span>
+                    <span className={`font-bold uppercase ${isMalicious ? 'text-red-400 text-glow-red' : isSuspicious ? 'text-amber-300' : isPending ? 'text-gray-300' : 'text-emerald-400'}`}>{drone.action}</span>
                   </div>
                 </div>
 
-                <div className="mt-3.5 flex min-h-9 items-center justify-center gap-2 rounded-lg border border-emerald-500/15 bg-emerald-500/[0.04] px-3 text-[9px] font-bold uppercase text-emerald-300">
+                <div className={`mt-3.5 flex min-h-9 items-center justify-center gap-2 rounded-lg border px-3 text-[9px] font-bold uppercase ${isPending ? 'border-white/10 bg-white/[0.02] text-gray-400' : 'border-emerald-500/15 bg-emerald-500/[0.04] text-emerald-300'}`}>
                   <Lock className="h-3 w-3" />
-                  Protected · read-only monitoring
+                  {isPending ? `No update inspected · client ${clientReadiness.replaceAll('_', ' ')}` : 'Protected · read-only monitoring'}
                 </div>
               </div>
             );

@@ -29,7 +29,7 @@ services:
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
       - fl-results:/app/results
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     environment:
       - PYTHONPATH=/app
     healthcheck:
@@ -50,7 +50,7 @@ services:
       - ${MODEL_DIR:-./models}:/app/models
       - byzantine-state:/app/runtime
       - fl-runtime:/app/client-runtime
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     environment:
       - PYTHONPATH=/app
       - FLARE_BYZANTINE_STATE_PATH=/app/runtime/byzantine_state.json
@@ -71,7 +71,7 @@ services:
       - "8080:8080"
     volumes:
       - logs:/app/logs
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     environment:
       - PYTHONPATH=/app
       - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
@@ -97,7 +97,7 @@ services:
       - fl-results:/app/results:ro
       - byzantine-state:/app/runtime
       - fl-runtime:/app/client-runtime:ro
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml
+      - ./config:/app/config
     environment:
       - PYTHONPATH=/app
       - MODE=simulation
@@ -129,7 +129,7 @@ services:
       - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
       - logs:/app/logs
-      - ./config/fleet_registry.yaml:/app/config/fleet_registry.yaml:ro
+      - ./config:/app/config:ro
     environment:
       - PYTHONPATH=/app
       - MODE=simulation
@@ -147,7 +147,7 @@ services:
       context: .
       dockerfile: docker/Dockerfile.frontend
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:8000}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8000}
     container_name: flare-frontend
     networks: [antijam-net]
     ports:

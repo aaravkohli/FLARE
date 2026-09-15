@@ -22,5 +22,10 @@
     "profile": "none",
     "paths": [],
     "gps_drift": 0.0
+  },
+  "drone_5": {
+    "profile": "none",
+    "paths": [],
+    "gps_drift": 0.0
   }
 }

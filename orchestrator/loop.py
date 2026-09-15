@@ -805,6 +805,11 @@ class Orchestrator:
                         max_join_skew_s=float(
                             _SECURITY_CFG.get("evidence", {}).get("max_age_s", 3.0)
                         ),
+                        max_window_alignment_s=float(
+                            _SECURITY_CFG.get("evidence", {}).get(
+                                "max_window_alignment_s", 0.5
+                            )
+                        ),
                     )
                 collected_at = time.time()
                 payload["source_collected_at"] = collected_at

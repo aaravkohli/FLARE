@@ -10,7 +10,7 @@ from fleet.registry import get_drone
 
 
 class ControllerEvidenceStore:
-    """Keep cumulative OpenFlow observations separate from UAV reports."""
+    """Keep cumulative OpenFlow totals and valid sample deltas separate."""
 
     def __init__(self, *, source: str, independent: bool):
         self.source = source
@@ -37,24 +37,44 @@ class ControllerEvidenceStore:
         timestamp: float | None = None,
     ) -> None:
         observed_at = float(timestamp or time.time())
-        previous = self._observations.get(drone_id)
-        packet_rate = 0.0
-        if previous is not None:
-            elapsed = max(
-                observed_at - float(previous["controller_timestamp"]), 1e-6
-            )
-            packet_rate = max(
-                0.0,
-                (int(received_packets) - int(previous["controller_rx_packets"]))
-                / elapsed,
-            )
-        self._observations[drone_id] = {
+        counters = {
             "controller_rx_packets": max(0, int(received_packets)),
             "controller_forwarded_packets": max(0, int(forwarded_packets)),
             "controller_policy_dropped_packets": max(0, int(dropped_packets)),
+        }
+        previous = self._observations.get(drone_id)
+        window: dict[str, Any] = {}
+        if previous is not None:
+            elapsed = observed_at - float(previous["controller_timestamp"])
+            if 0.0 < elapsed <= 3.0 and all(
+                counters[key] >= previous[key] for key in counters
+            ):
+                window = {
+                    "controller_flow_window_rx_packets": (
+                        counters["controller_rx_packets"]
+                        - previous["controller_rx_packets"]
+                    ),
+                    "controller_flow_window_forwarded_packets": (
+                        counters["controller_forwarded_packets"]
+                        - previous["controller_forwarded_packets"]
+                    ),
+                    "controller_flow_window_policy_dropped_packets": (
+                        counters["controller_policy_dropped_packets"]
+                        - previous["controller_policy_dropped_packets"]
+                    ),
+                    "flow_window_start": float(previous["controller_timestamp"]),
+                    "flow_window_seconds": elapsed,
+                    "packet_rate_per_s": (
+                        counters["controller_rx_packets"]
+                        - previous["controller_rx_packets"]
+                    ) / elapsed,
+                }
+        self._observations[drone_id] = {
+            **counters,
             "observed_source_mac": str(observed_source_mac).lower(),
             "controller_timestamp": observed_at,
-            "packet_rate_per_s": packet_rate,
+            "flow_totals_scope": "installed_rule_cumulative",
+            **window,
         }
 
     def update_source_identity(
@@ -75,11 +95,36 @@ class ControllerEvidenceStore:
         timestamp: float | None = None,
     ) -> None:
         """Keep physical ingress receive drops separate from installed flow drops."""
-        self._port_observations[drone_id] = {
+        observed_at = float(timestamp if timestamp is not None else time.time())
+        counters = {
             "controller_port_rx_packets": max(0, int(received_packets)),
             "controller_port_dropped_packets": max(0, int(dropped_packets)),
             "controller_port_error_packets": max(0, int(error_packets)),
-            "port_timestamp": float(timestamp if timestamp is not None else time.time()),
+        }
+        previous = self._port_observations.get(drone_id)
+        window: dict[str, Any] = {}
+        if previous is not None:
+            elapsed = observed_at - float(previous["port_timestamp"])
+            if 0.0 < elapsed <= 3.0 and all(
+                counters[key] >= previous[key] for key in counters
+            ):
+                window = {
+                    "controller_port_window_rx_packets": (
+                        counters["controller_port_rx_packets"]
+                        - previous["controller_port_rx_packets"]
+                    ),
+                    "controller_port_window_dropped_packets": (
+                        counters["controller_port_dropped_packets"]
+                        - previous["controller_port_dropped_packets"]
+                    ),
+                    "controller_port_window_error_packets": (
+                        counters["controller_port_error_packets"]
+                        - previous["controller_port_error_packets"]
+                    ),
+                    "port_window_seconds": elapsed,
+                }
+        self._port_observations[drone_id] = {
+            **counters, "port_timestamp": observed_at, **window,
         }
 
     def snapshot(self, drone_id: str, *, now: float | None = None) -> dict[str, Any]:
@@ -103,6 +148,8 @@ class ControllerEvidenceStore:
         if identity is not None and observed_now - identity[1] <= 3.0:
             observed_mac, identity_observed_at = identity
         supported_signals = ["packet_counters", "policy_drop_counters", "control_rate"]
+        if "flow_window_seconds" in record:
+            supported_signals.append("flow_sample_window")
         port = self._port_observations.get(drone_id)
         port_fields: dict[str, Any] = {}
         if port is not None and 0.0 <= observed_now - port["port_timestamp"] <= 3.0:
@@ -115,6 +162,8 @@ class ControllerEvidenceStore:
                 "drop_counter_semantics": "ingress_port_receive_drop_error",
             }
             supported_signals.extend(["port_receive_drop_counters", "port_receive_errors"])
+            if "port_window_seconds" in port:
+                supported_signals.append("port_receive_drop_window")
         if identity_observed_at is not None:
             supported_signals.append("source_mac")
         return {
@@ -126,7 +175,6 @@ class ControllerEvidenceStore:
             "expected_source_mac": drone["mac"] if drone else None,
             "control_messages_per_s": float(len(events)),
             "control_rate_observer": "access_port_packet_in",
-            "packet_rate_per_s": float(record.get("packet_rate_per_s", 0.0)),
             "supported_signals": supported_signals,
             "source": self.source,
             "independent": self.independent,

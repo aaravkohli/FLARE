@@ -5,7 +5,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from fl.client_manager import FleetClientManager
-from fleet.registry import register_drone
+from fleet.registry import register_drone, update_drone
 
 
 class FakeProcess:
@@ -79,4 +79,21 @@ def test_real_manager_never_starts_a_client_without_its_own_partition(tmp_path):
     assert status["clients"]["drone_2"]["status"] == "real_data_unavailable"
     assert "drone_2" not in manager._processes
     assert manager.dataset_path("drone_2").name == "drone_2_train.csv"
+    manager.stop()
+
+
+def test_disabled_identity_stops_its_client_and_reenable_starts_a_new_one(tmp_path):
+    manager = _manager(tmp_path)
+    first = manager.reconcile_once()
+    old_process = manager._processes["drone_3"]
+    old_pid = first["clients"]["drone_3"]["pid"]
+    update_drone("drone_3", enabled=False)
+    disabled = manager.reconcile_once()
+    assert "drone_3" not in disabled["clients"]
+    assert "drone_3" not in manager._processes
+    assert old_process.poll() == 0
+    update_drone("drone_3", enabled=True)
+    restored = manager.reconcile_once()
+    assert restored["clients"]["drone_3"]["pid"] != old_pid
+    assert restored["clients"]["drone_3"]["status"] == "active"
     manager.stop()

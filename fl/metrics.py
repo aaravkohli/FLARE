@@ -63,6 +63,7 @@ import logging
 import os
 import tempfile
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -177,7 +178,7 @@ class FLMetricsTracker:
         """Reset accumulator for a new round."""
         self._current = self._empty_row()
         self._current["round"] = round_num
-        self._current["timestamp"] = time.strftime("%Y-%m-%dT%H:%M:%S")
+        self._current["timestamp"] = datetime.now(timezone.utc).isoformat(timespec="seconds")
         self._round_start = time.time()
 
     def update(self, key: str, value: Any) -> None:

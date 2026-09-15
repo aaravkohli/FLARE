@@ -3,6 +3,7 @@ import {
   AlertTriangle,
   FileText,
   LockKeyhole,
+  Pencil,
   Server,
   UserPlus,
   Wifi,
@@ -45,6 +46,7 @@ interface CommandOverviewProps {
   sdnReadiness: SdnReadiness | null;
   readinessHistory: ReadinessEvent[];
   fleetDrones: FleetDrone[];
+  inactiveDrones?: FleetDrone[];
   activeDrone: string;
   activePath: string;
   threatLevel: string;
@@ -56,6 +58,7 @@ interface CommandOverviewProps {
   enrollment: ReactNode;
   onToggleEnrollment: () => void;
   onSelectDrone: (drone: string) => void;
+  onEditDrone?: (droneId: string) => void;
   onExportReport: () => void;
   onLock: () => void;
 }
@@ -87,6 +90,7 @@ export default function CommandOverview({
   sdnReadiness,
   readinessHistory,
   fleetDrones,
+  inactiveDrones = [],
   activeDrone,
   activePath,
   threatLevel,
@@ -98,6 +102,7 @@ export default function CommandOverview({
   enrollment,
   onToggleEnrollment,
   onSelectDrone,
+  onEditDrone,
   onExportReport,
   onLock,
 }: CommandOverviewProps) {
@@ -179,13 +184,11 @@ export default function CommandOverview({
           const hasAttention = selected && (threatLevel === 'HIGH' || threatLevel === 'MEDIUM' || noSafeRoute);
 
           return (
-            <button
-              type="button"
+            <div
               key={drone.drone_id}
               className={`cvo-drone${selected ? ' cvo-drone--selected' : ''}${hasAttention ? ' cvo-drone--attention' : ''}${!drone.enabled ? ' cvo-drone--disabled' : ''}`}
-              onClick={() => onSelectDrone(drone.drone_id)}
-              aria-pressed={selected}
             >
+              <button type="button" className="cvo-drone__select" onClick={() => onSelectDrone(drone.drone_id)} aria-pressed={selected} aria-label={`Select ${drone.display_name}`}>
               <div className="cvo-drone__header">
                 <div>
                   <h3>{drone.display_name}</h3>
@@ -199,10 +202,18 @@ export default function CommandOverview({
                 <span>{formatPdr(metric?.pdr)}</span>
                 <span>{formatLatency(metric?.latency)}</span>
               </div>
-            </button>
+              </button>
+              {onEditDrone && <button type="button" className="cvo-drone__edit" onClick={() => onEditDrone(drone.drone_id)} aria-label={`Edit ${drone.display_name}`}><Pencil aria-hidden="true" /> Edit</button>}
+            </div>
           );
         })}
       </div>
+      {onEditDrone && inactiveDrones.length > 0 && (
+        <div className="command-overview__inactive" aria-label="Disabled UAVs">
+          <h3>Disabled UAVs</h3>
+          {inactiveDrones.map(drone => <div key={drone.drone_id} className="command-overview__inactive-row"><span>{drone.display_name} <small>{drone.drone_id}</small></span><button type="button" onClick={() => onEditDrone(drone.drone_id)}><Pencil aria-hidden="true" /> Edit</button></div>)}
+        </div>
+      )}
     </section>
   );
 }

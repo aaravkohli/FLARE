@@ -20,6 +20,7 @@ type ConfigSection = 'safeguards' | 'federation';
 interface SecureFlControlCenterProps {
   config: FlConfig;
   metrics: FlMetrics;
+  evidenceWarning?: string;
   isSaving: boolean;
   onConfigChange: (config: FlConfig) => void;
   onSave: (config: FlConfig) => Promise<boolean>;
@@ -93,7 +94,7 @@ function Metric({ label, value, tone = 'neutral' }: { label: string; value: stri
   );
 }
 
-export default function SecureFlControlCenter({ config, metrics, isSaving, onConfigChange, onSave }: SecureFlControlCenterProps) {
+export default function SecureFlControlCenter({ config, metrics, evidenceWarning, isSaving, onConfigChange, onSave }: SecureFlControlCenterProps) {
   const [section, setSection] = useState<ConfigSection>('safeguards');
   const [saveState, setSaveState] = useState<'idle' | 'saved' | 'error'>('idle');
   const baselineRef = useRef('');
@@ -154,6 +155,8 @@ export default function SecureFlControlCenter({ config, metrics, isSaving, onCon
           </button>
         </div>
       </header>
+
+      {evidenceWarning && <p className="mx-6 mb-4 rounded-lg border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs text-amber-200" role="status">{evidenceWarning}</p>}
 
       <div className="flc__posture" aria-label="Federated learning posture">
         <Metric label="Protection layers" value={`${protectionEnabled} active`} tone={protectionEnabled >= 2 ? 'nominal' : 'warning'} />
@@ -265,7 +268,7 @@ export default function SecureFlControlCenter({ config, metrics, isSaving, onCon
 
         <aside className="flc__live" aria-label="Live federated learning evidence">
           <div className="flc__live-heading">
-            <span><Activity aria-hidden="true" /> Live federation evidence</span>
+            <span><Activity aria-hidden="true" /> Federation evidence</span>
             <span className="flc__live-dot">Telemetry</span>
           </div>
           {latest ? (
@@ -284,7 +287,7 @@ export default function SecureFlControlCenter({ config, metrics, isSaving, onCon
               </div>
             </>
           ) : (
-            <div className="flc__empty"><SlidersHorizontal aria-hidden="true" /> Awaiting federated metrics</div>
+            <div className="flc__empty"><SlidersHorizontal aria-hidden="true" /> {evidenceWarning || 'Awaiting federated metrics'}</div>
           )}
         </aside>
       </div>

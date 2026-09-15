@@ -73,6 +73,15 @@ app = FastAPI(title="Mock SDN Controller", version="1.0.0")
 _flow_table: dict = {}
 _available_paths = {"direct", "satellite", "mesh"}  # All paths up by default
 _containment_table: dict = {}
+
+
+def _prune_inactive_fleet_state() -> None:
+    """Keep mock route/containment displays aligned with the active registry."""
+    active = set(active_drone_ids())
+    for table in (_flow_table, _containment_table):
+        for drone_id in list(table):
+            if drone_id not in active:
+                table.pop(drone_id, None)
 _evidence_store = ControllerEvidenceStore(source="mock_sdn", independent=False)
 
 
@@ -250,6 +259,7 @@ async def apply_containment(
 @app.get("/sdn/flows")
 async def get_flow_table(_: None = Depends(require_sdn_token)) -> dict:
     """Return current simulated flow table."""
+    _prune_inactive_fleet_state()
     return {
         "flow_table": _flow_table,
         "containment": _containment_table,
@@ -313,12 +323,14 @@ async def simulate_path_restore(
 
 @app.get("/health")
 async def health() -> dict:
+    _prune_inactive_fleet_state()
     return {"status": "ok", "mode": "mock", "flows": len(_flow_table)}
 
 
 @app.get("/ready")
 async def readiness() -> dict:
     """Expose the same readiness shape as the real controller."""
+    _prune_inactive_fleet_state()
     available_paths = [
         path for path in ROUTABLE_PATHS if path in _available_paths
     ]

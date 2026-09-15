@@ -301,6 +301,10 @@ def test_production_fl_client_manager_mounts_and_requires_real_data():
         for volume in service["volumes"]
     )
     assert any(
-        volume.endswith(":/app/config/fleet_registry.yaml:ro")
+        volume.endswith(":/app/config:ro")
         for volume in service["volumes"]
+    )
+    assert any(
+        volume.endswith(":/app/config")
+        for volume in compose["services"]["api"]["volumes"]
     )

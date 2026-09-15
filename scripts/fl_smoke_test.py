@@ -98,6 +98,10 @@ def run(*, timeout_s: float = 60.0, rounds: int = 2) -> dict:
             **os.environ,
             "PYTHONPATH": str(BASE),
             "FLARE_FLEET_REGISTRY": str(registry_path),
+            "FLARE_FL_METRICS_JSON": str(temporary / "fl_metrics_snapshot.json"),
+            "FLARE_FL_METRICS_CSV": str(temporary / "fl_advanced_metrics.csv"),
+            "FLARE_FL_LEGACY_METRICS_CSV": str(temporary / "fl_round_metrics.csv"),
+            "FLARE_FL_TRUST_STATE": str(temporary / "fl_trust_state.json"),
         }
         with server_log_path.open("w", encoding="utf-8") as server_log, manager_log_path.open(
             "w", encoding="utf-8"

@@ -14,7 +14,7 @@ from typing import Any, Mapping
 import numpy as np
 
 
-NETWORK_EVIDENCE_CONTRACT = "network_security_evidence_v1"
+NETWORK_EVIDENCE_CONTRACT = "network_security_evidence_v2"
 
 
 @dataclass(frozen=True)
@@ -131,6 +131,14 @@ class NetworkThreatAnalyzer:
                 "duplicate_sequence_ratio", "controller_policy_dropped_packets",
                 "controller_port_rx_packets", "controller_port_dropped_packets",
                 "controller_port_error_packets", "port_timestamp",
+                "controller_port_window_rx_packets",
+                "controller_port_window_dropped_packets",
+                "controller_port_window_error_packets", "port_window_seconds",
+                "controller_policy_total_dropped_packets",
+                "controller_flow_total_rx_packets",
+                "controller_flow_total_forwarded_packets",
+                "report_window_seconds", "flow_window_seconds",
+                "report_window_start", "flow_window_start", "window_alignment_s",
             ):
                 optional_value = raw.get(optional_key)
                 if optional_value is not None:
@@ -166,6 +174,22 @@ class NetworkThreatAnalyzer:
             return self.unavailable("evidence_stale", source)
         if abs(reported_timestamp - controller_timestamp) > age_limit:
             return self.unavailable("evidence_timestamp_misaligned", source)
+        if require_independent and source == "ryu_openflow":
+            if raw.get("counter_scope") != "aligned_sample_window_v1":
+                return self.unavailable("comparable_counter_window_required", source)
+            window_fields = (
+                "report_window_seconds", "flow_window_seconds",
+                "report_window_start", "flow_window_start", "window_alignment_s",
+            )
+            if any(raw.get(key) is None for key in window_fields):
+                return self.unavailable("comparable_counter_window_required", source)
+            if (
+                not 0 < float(raw["report_window_seconds"]) <= age_limit
+                or not 0 < float(raw["flow_window_seconds"]) <= age_limit
+                or float(raw["window_alignment_s"]) > 0.5
+                or abs(float(raw["report_window_start"]) - float(raw["flow_window_start"])) > 0.5
+            ):
+                return self.unavailable("counter_window_misaligned", source)
         freshness = float(np.clip(1.0 - age / age_limit, 0.0, 1.0))
 
         port_keys = (
@@ -174,10 +198,25 @@ class NetworkThreatAnalyzer:
             "controller_dropped_packets", "drop_counter_semantics",
         )
         port_present = any(raw.get(key) is not None for key in port_keys)
+        window_keys = (
+            "controller_port_window_rx_packets",
+            "controller_port_window_dropped_packets",
+            "controller_port_window_error_packets", "port_window_seconds",
+        )
+        window_present = any(raw.get(key) is not None for key in window_keys)
+        port_contract = (
+            source == "ryu_openflow"
+            or raw.get("drop_counter_semantics") is not None
+            or window_present
+        )
         port_drop_available = False
-        if source == "ryu_openflow":
+        if port_contract:
             if port_present and any(raw.get(key) is None for key in port_keys):
                 return self.unavailable("port_drop_contract_invalid", source)
+            if window_present and (
+                not port_present or any(raw.get(key) is None for key in window_keys)
+            ):
+                return self.unavailable("port_drop_window_invalid", source)
             if port_present:
                 if raw["drop_counter_semantics"] != "ingress_port_receive_drop_error":
                     return self.unavailable("port_drop_semantics_invalid", source)
@@ -195,8 +234,26 @@ class NetworkThreatAnalyzer:
                 )
                 if dropped != float(raw["controller_dropped_packets"]):
                     return self.unavailable("port_drop_contract_invalid", source)
-                received = float(raw["controller_port_rx_packets"])
-                port_drop_available = True
+                if window_present:
+                    if (
+                        float(raw["port_window_seconds"]) <= 0.0
+                        or float(raw["port_window_seconds"]) > age_limit
+                        or any(not float(raw[key]).is_integer() for key in window_keys[:3])
+                        or any(
+                            float(raw[window_key]) > float(raw[cumulative_key])
+                            for window_key, cumulative_key in zip(
+                                window_keys[:3], port_keys[:3]
+                            )
+                        )
+                    ):
+                        return self.unavailable("port_drop_window_invalid", source)
+                    received = float(raw["controller_port_window_rx_packets"])
+                    dropped = float(raw["controller_port_window_dropped_packets"]) + float(
+                        raw["controller_port_window_error_packets"]
+                    )
+                    port_drop_available = True
+                else:
+                    received, dropped = 0.0, 0.0
             else:
                 received, dropped = 0.0, 0.0
         else:
@@ -247,8 +304,18 @@ class NetworkThreatAnalyzer:
                 return self.unavailable("identity_observation_untrusted", source)
         reported_forwarded = float(raw["reported_forwarded_packets"])
         controller_forwarded = float(raw["controller_forwarded_packets"])
-        claim_gap = abs(reported_forwarded - controller_forwarded) / max(
-            reported_forwarded, controller_forwarded, 1.0
+        policy_dropped = float(raw.get("controller_policy_dropped_packets") or 0.0)
+        if policy_dropped > float(raw["controller_rx_packets"]):
+            return self.unavailable("policy_drop_contract_invalid", source)
+        claim_filtered = (
+            policy_dropped > 0.0
+            and raw.get("counter_scope") == "aligned_sample_window_v1"
+        )
+        claim_gap = (
+            0.0 if claim_filtered else
+            abs(reported_forwarded - controller_forwarded) / max(
+                reported_forwarded, controller_forwarded, 1.0
+            )
         )
         claim_score = self._ratio_score(
             claim_gap,
@@ -299,9 +366,10 @@ class NetworkThreatAnalyzer:
             response = "restricted"
         elif status == "MALICIOUS":
             response = "quarantined" if identity_mismatch else "control_only"
-        available_signals = ["control_rate", "latency", "claim_gap"]
+        available_signals = ["control_rate", "latency"]
+        available_signals.append("claim_gap_policy_filtered" if claim_filtered else "claim_gap")
         if port_drop_available:
-            available_signals.append("port_receive_drop" if source == "ryu_openflow" else "drop")
+            available_signals.append("port_receive_drop" if port_contract else "drop")
         if raw.get("controller_policy_dropped_packets") is not None:
             available_signals.append("policy_drop_not_scored")
         if raw.get("packet_rate_per_s") is not None:
@@ -328,6 +396,10 @@ class NetworkThreatAnalyzer:
             evidence_source=source,
             evidence_independent=independent,
             response_hint=response,
-            reason=("identity_mismatch" if identity_mismatch else "evidence_scored"),
+            reason=(
+                "identity_mismatch" if identity_mismatch
+                else "policy_filtered_claim_gap" if claim_filtered
+                else "evidence_scored"
+            ),
             available_signals=tuple(available_signals),
         )

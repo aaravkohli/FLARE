@@ -43,12 +43,25 @@ class SecurityEvidence(_StrictModel):
     duplicate_sequence_ratio: Optional[float] = Field(default=None, ge=0.0, le=1.0)
     timestamp: float = Field(gt=0.0)
     controller_timestamp: float = Field(gt=0.0)
+    counter_scope: Optional[Literal["aligned_sample_window_v1"]] = None
+    report_window_seconds: Optional[float] = Field(default=None, gt=0.0, le=3.0)
+    flow_window_seconds: Optional[float] = Field(default=None, gt=0.0, le=3.0)
+    report_window_start: Optional[float] = Field(default=None, gt=0.0)
+    flow_window_start: Optional[float] = Field(default=None, gt=0.0)
+    window_alignment_s: Optional[float] = Field(default=None, ge=0.0, le=3.0)
     simulation_profile: Optional[str] = None
     controller_dropped_packets: Optional[int] = Field(default=None, ge=0)
     controller_policy_dropped_packets: Optional[int] = Field(default=None, ge=0)
+    controller_policy_total_dropped_packets: Optional[int] = Field(default=None, ge=0)
+    controller_flow_total_rx_packets: Optional[int] = Field(default=None, ge=0)
+    controller_flow_total_forwarded_packets: Optional[int] = Field(default=None, ge=0)
     controller_port_rx_packets: Optional[int] = Field(default=None, ge=0)
     controller_port_dropped_packets: Optional[int] = Field(default=None, ge=0)
     controller_port_error_packets: Optional[int] = Field(default=None, ge=0)
+    controller_port_window_rx_packets: Optional[int] = Field(default=None, ge=0)
+    controller_port_window_dropped_packets: Optional[int] = Field(default=None, ge=0)
+    controller_port_window_error_packets: Optional[int] = Field(default=None, ge=0)
+    port_window_seconds: Optional[float] = Field(default=None, gt=0.0)
     port_timestamp: Optional[float] = Field(default=None, gt=0.0)
     drop_counter_semantics: Optional[Literal["ingress_port_receive_drop_error"]] = None
     packet_rate_per_s: Optional[float] = Field(default=None, ge=0.0)
@@ -233,7 +246,10 @@ class InsiderTrace(_StrictModel):
     control_rate_score: float = Field(ge=0.0, le=1.0)
     replay_score: float = Field(ge=0.0, le=1.0)
     evidence_freshness: float = Field(ge=0.0, le=1.0)
-    evidence_contract: Literal["insider_evidence_v1"] = "insider_evidence_v1"
+    policy_filtered: bool = False
+    evidence_contract: Literal[
+        "insider_evidence_v1", "insider_evidence_v2"
+    ] = "insider_evidence_v1"
 
 
 class ContainmentTrace(_StrictModel):
@@ -269,7 +285,9 @@ class NetworkSecurityTrace(_StrictModel):
     response_hint: Literal["none", "normal", "restricted", "control_only", "quarantined"]
     reason: str
     available_signals: list[str] = Field(default_factory=list)
-    evidence_contract: Literal["network_security_evidence_v1"]
+    evidence_contract: Literal[
+        "network_security_evidence_v1", "network_security_evidence_v2"
+    ]
 
 
 class DecisionEvent(_StrictModel):

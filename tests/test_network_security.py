@@ -9,6 +9,7 @@ from types import SimpleNamespace
 import pytest
 
 import orchestrator.loop as orchestrator
+from fl.insider import InsiderTelemetryAnalyzer
 from security.network_detector import NetworkThreatAnalyzer
 from security.adapters import merge_security_evidence
 import sdn.mock_sdn as mock_sdn
@@ -37,11 +38,21 @@ def _evidence(**overrides) -> dict:
         "controller_port_rx_packets": 100,
         "controller_port_dropped_packets": 2,
         "controller_port_error_packets": 0,
+        "controller_port_window_rx_packets": 100,
+        "controller_port_window_dropped_packets": 2,
+        "controller_port_window_error_packets": 0,
+        "port_window_seconds": 1.0,
         "port_timestamp": now,
         "drop_counter_semantics": "ingress_port_receive_drop_error",
         "packet_rate_per_s": 50.0,
         "timestamp": now,
         "controller_timestamp": now,
+        "counter_scope": "aligned_sample_window_v1",
+        "report_window_seconds": 1.0,
+        "flow_window_seconds": 1.0,
+        "report_window_start": now - 1.0,
+        "flow_window_start": now - 1.0,
+        "window_alignment_s": 0.0,
         "observed_source_mac": "00:00:00:00:00:02",
         "expected_source_mac": "00:00:00:00:00:02",
         "provenance": {
@@ -72,6 +83,7 @@ def test_dos_requires_corroborating_signals_and_requests_control_only():
             controller_forwarded_packets=5,
             controller_dropped_packets=150,
             controller_port_dropped_packets=150,
+            controller_port_window_dropped_packets=150,
             packet_rate_per_s=800.0,
         ),
         max_path_latency_ms=900.0,
@@ -87,9 +99,10 @@ def test_installed_policy_drops_cannot_become_real_dos_evidence():
         "drone_1",
         _evidence(
             controller_forwarded_packets=0,
-            reported_forwarded_packets=0,
+            reported_forwarded_packets=100,
             controller_policy_dropped_packets=100,
             controller_port_dropped_packets=0,
+            controller_port_window_dropped_packets=0,
             controller_dropped_packets=0,
         ),
         max_path_latency_ms=30.0,
@@ -97,8 +110,34 @@ def test_installed_policy_drops_cannot_become_real_dos_evidence():
     )
     assert result.status == "NORMAL"
     assert result.drop_score == 0.0
+    assert result.claim_gap_score == 0.0
+    assert "network_spoofing" not in result.detected_classes
     assert "policy_drop_not_scored" in result.available_signals
+    assert "claim_gap_policy_filtered" in result.available_signals
     assert "port_receive_drop" in result.available_signals
+
+
+def test_insider_analyzer_filters_sdn_ordered_drops_but_keeps_control_evidence():
+    evidence = _evidence(
+        controller_forwarded_packets=0,
+        reported_forwarded_packets=100,
+        controller_policy_dropped_packets=100,
+    )
+    baseline = InsiderTelemetryAnalyzer(history_alpha=0.0).analyze(
+        "drone_1", evidence
+    )
+    assert baseline.status == "NORMAL"
+    assert baseline.policy_filtered is True
+    assert baseline.telemetry_claim_gap == 0.0
+    assert baseline.predicted_class == "normal"
+    active = InsiderTelemetryAnalyzer(history_alpha=0.0).analyze(
+        "drone_1", {**evidence, "control_messages_per_s": 100.0,
+                    "duplicate_sequence_ratio": 0.8}
+    )
+    assert active.status == "MALICIOUS"
+    assert active.policy_filtered is True
+    assert active.control_rate_score > 0
+    assert active.replay_score > 0
 
 
 def test_missing_real_port_statistics_are_unsupported_not_policy_drop_fallback():
@@ -111,6 +150,9 @@ def test_missing_real_port_statistics_are_unsupported_not_policy_drop_fallback()
         "controller_port_rx_packets", "controller_port_dropped_packets",
         "controller_port_error_packets", "port_timestamp",
         "controller_dropped_packets", "drop_counter_semantics",
+        "controller_port_window_rx_packets",
+        "controller_port_window_dropped_packets",
+        "controller_port_window_error_packets", "port_window_seconds",
     ):
         raw.pop(key)
     result = NetworkThreatAnalyzer(_config()).analyze(
@@ -125,6 +167,28 @@ def test_missing_real_port_statistics_are_unsupported_not_policy_drop_fallback()
         "drone_1", {**raw, "controller_dropped_packets": 100},
         max_path_latency_ms=30.0, require_independent=True,
     ).reason == "port_drop_contract_invalid"
+
+
+def test_real_dos_loss_uses_recent_port_delta_not_lifetime_counters():
+    result = NetworkThreatAnalyzer(_config()).analyze(
+        "drone_1",
+        _evidence(
+            controller_port_rx_packets=10_000,
+            controller_port_dropped_packets=5_000,
+            controller_dropped_packets=5_000,
+            controller_port_window_rx_packets=100,
+            controller_port_window_dropped_packets=0,
+        ),
+        max_path_latency_ms=30.0,
+        require_independent=True,
+    )
+    assert result.status == "NORMAL"
+    assert result.drop_score == 0.0
+    raw = _evidence(port_window_seconds=10.0)
+    assert NetworkThreatAnalyzer(_config()).analyze(
+        "drone_1", raw, max_path_latency_ms=30.0,
+        require_independent=True,
+    ).reason == "port_drop_window_invalid"
 
 
 def test_authenticated_source_identity_mismatch_requests_quarantine():
@@ -197,10 +261,19 @@ def test_timestamp_join_rejects_misaligned_or_malformed_counter_evidence():
         "reported_tx_packets": 100,
         "reported_forwarded_packets": 98,
         "timestamp": now,
+        "report_counter_scope": "sample_window",
+        "report_window_seconds": 1.0,
     }
     controller = {
         "controller_rx_packets": 100,
         "controller_forwarded_packets": 98,
+        "controller_policy_dropped_packets": 0,
+        "controller_flow_window_rx_packets": 100,
+        "controller_flow_window_forwarded_packets": 98,
+        "controller_flow_window_policy_dropped_packets": 0,
+        "flow_totals_scope": "installed_rule_cumulative",
+        "flow_window_start": now - 0.8,
+        "flow_window_seconds": 1.0,
         "control_messages_per_s": 2.0,
         "controller_timestamp": now + 0.2,
         "identity_observed_at": now,
@@ -213,6 +286,27 @@ def test_timestamp_join_rejects_misaligned_or_malformed_counter_evidence():
     assert joined is not None
     assert joined["identity_observed_at"] == now
     assert joined["control_rate_observer"] == "access_port_packet_in"
+    assert joined["counter_scope"] == "aligned_sample_window_v1"
+    assert joined["controller_rx_packets"] == 100
+    assert joined["window_alignment_s"] < 0.21
+    assert merge_security_evidence(
+        {key: value for key, value in reported.items() if key != "report_counter_scope"},
+        controller, category="ryu_openflow", observer_id="controller-test",
+        independent=True,
+    ) is None
+    assert merge_security_evidence(
+        reported,
+        {key: value for key, value in controller.items()
+         if key != "controller_flow_window_rx_packets"},
+        category="ryu_openflow", observer_id="controller-test",
+        independent=True,
+    ) is None
+    assert merge_security_evidence(
+        reported, {**controller, "flow_window_start": now - 1.8,
+                   "flow_window_seconds": 2.0},
+        category="ryu_openflow", observer_id="controller-test",
+        independent=True,
+    ) is None
     assert merge_security_evidence(
         reported, {**controller, "controller_timestamp": now + 5.0},
         category="ryu_openflow", observer_id="controller-test",
@@ -228,6 +322,44 @@ def test_timestamp_join_rejects_misaligned_or_malformed_counter_evidence():
         observer_id="controller-test", independent=True,
         max_join_skew_s=float("nan"),
     ) is None
+
+
+def test_real_join_uses_flow_delta_not_cumulative_installed_rule_totals():
+    now = time.time()
+    reported = {
+        "reported_tx_packets": 100,
+        "reported_forwarded_packets": 100,
+        "report_counter_scope": "sample_window",
+        "report_window_seconds": 1.0,
+        "timestamp": now,
+    }
+    controller = {
+        "controller_rx_packets": 10_000,
+        "controller_forwarded_packets": 9_800,
+        "controller_policy_dropped_packets": 200,
+        "controller_flow_window_rx_packets": 100,
+        "controller_flow_window_forwarded_packets": 0,
+        "controller_flow_window_policy_dropped_packets": 100,
+        "flow_totals_scope": "installed_rule_cumulative",
+        "flow_window_start": now - 1.0,
+        "flow_window_seconds": 1.0,
+        "control_messages_per_s": 2.0,
+        "controller_timestamp": now,
+    }
+    joined = merge_security_evidence(
+        reported, controller, category="ryu_openflow",
+        observer_id="controller-test", independent=True,
+    )
+    assert joined is not None
+    assert joined["controller_rx_packets"] == 100
+    assert joined["controller_forwarded_packets"] == 0
+    assert joined["controller_policy_dropped_packets"] == 100
+    assert joined["controller_flow_total_rx_packets"] == 10_000
+    assert joined["controller_policy_total_dropped_packets"] == 200
+    assert NetworkThreatAnalyzer(_config()).analyze(
+        "drone_1", joined, max_path_latency_ms=30.0,
+        require_independent=True,
+    ).status == "NORMAL"
 
 
 def test_scenario_label_is_not_a_detector_feature():
@@ -480,11 +612,18 @@ def test_controller_evidence_endpoint_requires_authentication():
 
 def test_frozen_controlled_detector_study_passes_promotion_thresholds():
     report = run_network_study(seeds=[7, 42, 99], samples_per_profile=10)
+    assert report["experiment"] == "controlled_network_security_v2"
     assert report["evidence_category"] == "controlled_simulation"
     assert report["promotion_gate"]["passed"] is True
     assert report["binary_detection"]["precision"] >= 0.90
     assert report["binary_detection"]["recall"] >= 0.90
     assert report["binary_detection"]["unavailable_count"] == 0
+    assert {"normal", "policy_hold"}.issubset(report["profiles"])
+    assert all(
+        row["status"] == "NORMAL"
+        for row in report["records"]
+        if row["ground_truth"] == "policy_hold"
+    )
 
 
 def test_unavailable_evidence_cannot_improve_recall_or_pass_study_gate(monkeypatch):
@@ -493,7 +632,7 @@ def test_unavailable_evidence_cannot_improve_recall_or_pass_study_gate(monkeypat
             pass
 
         def analyze(self, sample_id, _evidence, **_kwargs):
-            if "_normal_" in sample_id:
+            if "_normal_" in sample_id or "_policy_hold_" in sample_id:
                 status = "NORMAL"
             elif "_dos_0" in sample_id:
                 status = "UNAVAILABLE"

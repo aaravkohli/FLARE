@@ -44,7 +44,7 @@ client_selection:
 client_manager:
   reconcile_interval_s: 2.0
   simulation_jammed_clients:
-    - drone_3
+  - drone_3
 compression:
   enabled: false
   quantize:
@@ -55,8 +55,6 @@ compression:
     error_feedback: true
     ratio: 0.1
 data:
-  # preserve keeps source-assigned drone ownership. Experiments may select
-  # iid, mild_non_iid, or strong_non_iid without splitting temporal groups.
   partition_mode: preserve
   partition_seed: 42
   non_iid_alpha: 0.5
@@ -112,7 +110,6 @@ drift_detection:
     ks: 0.3
     loss_spike: 0.3
 federation:
-  # Device identities are authorized dynamically from config/fleet_registry.yaml.
   identity_source: fleet_registry
   fraction_fit: 1.0
   min_clients: 2
@@ -173,7 +170,7 @@ trust:
   initial_trust: 0.8
   quarantine_rounds: 3
   quarantine_trigger_rounds: 2
-  reject_trust_threshold: 0.15
+  reject_trust_threshold: 0.1
   suspicious_trust_threshold: 0.5
   suspicious_weight: 0.25
   tau_min: 0.15
