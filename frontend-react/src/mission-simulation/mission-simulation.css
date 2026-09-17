@@ -335,9 +335,6 @@
   stroke: #a8b2bf;
   stroke-width: 1.6;
   vector-effect: non-scaling-stroke;
-  animation: missionDroneDrift 14s ease-in-out var(--drift-delay, 0s) infinite alternate;
-  transform-box: fill-box;
-  transform-origin: center;
 }
 
 .mission-drone--selected .mission-drone__body {
@@ -782,7 +779,6 @@
 .mission-timeline__event--latest span { color: #eef1f5; font-weight: 600; }
 
 @keyframes missionPacketFlow { to { stroke-dashoffset: -100; } }
-@keyframes missionDroneDrift { 0% { transform: translate(-2px, 1px) rotate(-1deg); } 100% { transform: translate(3px, -3px) rotate(1deg); } }
 @keyframes missionRfRing { 0% { opacity: 0; transform: scale(0.82); } 28% { opacity: 0.72; } 100% { opacity: 0; transform: scale(1.08); } }
 @keyframes missionSweep { to { transform: translate(104px, -26px); } }
 @keyframes missionCongestion { 50% { opacity: 0.2; } }
@@ -891,3 +887,90 @@
 .mission-simulation[data-paused='true'] .mission-congestion circle {
   animation-play-state: paused;
 }
+
+/* Deterministic world geometry; no CSS transform animation on aircraft. */
+.mission-patrol { fill: none; stroke: #738291; stroke-width: 0.8; stroke-opacity: 0.35; stroke-dasharray: 3 8; pointer-events: none; }
+.mission-waypoint { fill: #a7b3bc; fill-opacity: 0.35; stroke: none; pointer-events: none; }
+.mission-drone-shadow { fill: #000; opacity: 0.28; pointer-events: none; }
+.mission-airspace[data-world-frozen='true'] .mission-packets { animation-play-state: paused; }
+.mission-world-label { position: absolute; right: 14px; bottom: 10px; color: #9aa2ae; font-size: 10px; pointer-events: none; }
+
+/* The world and telemetry occupy separate space; HTML remains the control plane. */
+.mission-stage[data-world-renderer="three"] { display: grid; grid-template-columns: minmax(0, 1fr) 240px; }
+.mission-stage[data-world-renderer="three"][data-telemetry-open="false"] { grid-template-columns: minmax(0, 1fr); }
+.mission-stage[data-world-renderer="three"] .mission-telemetry { position: static; width: auto; margin: 0; border-radius: 0; border-width: 0 0 0 1px; box-shadow: none; }
+.mission-world { min-width: 0; background: #0c1118; }
+.mission-world-canvas { display: block; width: 100%; height: 440px; touch-action: pan-y; }
+.mission-camera-controls, .mission-world-assets, .mission-world-fleet { display: flex; flex-wrap: wrap; gap: 4px; padding: 8px 12px; }
+.mission-camera-controls { border-bottom: 1px solid var(--mission-line); }
+.mission-world button { color: #aeb8c3; background: transparent; border: 1px solid transparent; border-radius: 5px; padding: 8px 10px; min-height: 36px; font-size: 11px; cursor: pointer; }
+.mission-world button:hover, .mission-world button[aria-pressed="true"] { color: #eef3f6; background: #202c36; border-color: #3a4b59; }
+.mission-world button:focus-visible { outline: 2px solid #a6c8df; outline-offset: 2px; }
+.mission-world button:disabled { opacity: .4; cursor: default; }
+.mission-world-assets { border-top: 1px solid var(--mission-line); }
+.mission-world-fleet { padding-top: 0; }
+.mission-world-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 12px 8px; color: #99a7b3; font-size: 10px; }
+.mission-world-loading { min-height: 500px; padding: 24px; color: #aeb8c3; }
+@media (max-width: 1100px) {
+  .mission-stage[data-world-renderer="three"] { grid-template-columns: minmax(0, 1fr); }
+  .mission-stage[data-world-renderer="three"] .mission-telemetry { border-width: 1px 0 0; }
+  .mission-stage[data-world-renderer="three"] .mission-telemetry__list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 24px; }
+  .mission-world button { min-height: 44px; }
+}
+.mission-world-viewport { position: relative; }
+.mission-world-labels { position: absolute; inset: 0; overflow: hidden; pointer-events: none; }
+.mission-world-labels span { position: absolute; top: 0; left: 0; color: #b6c2cc; font: 9px ui-monospace, monospace; white-space: nowrap; text-shadow: 0 1px 3px #000; }
+.mission-renderer-fallback { padding: 8px 16px; font-size: 11px; color: #9aabb9; }
+.mission-renderer-fallback button { margin-left: 12px; color: #c6d7e5; background: #202c36; border: 0; border-radius: 4px; padding: 8px; cursor: pointer; }
+.mission-network-caption { display: flex; flex-wrap: wrap; gap: 6px 16px; padding: 8px 14px; color: #a3afbb; font-size: 10px; border-top: 1px solid var(--mission-line); }
+.mission-threat-caption { padding: 8px 14px; color: #c3b4a4; font-size: 11px; border-top: 1px solid var(--mission-line); }
+.mission-stage[data-world-renderer="three"] .mission-path-warning { top: 68px; }
+.mission-stage[data-world-renderer="three"] .mission-route-notice { top: 68px; bottom: auto; right: 14px; left: auto; }
+
+.mission-decision { border-top: 1px solid var(--border-color, #29323d); padding: 16px 20px; color: #c3cbd4; }
+.mission-decision__heading { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; font-size: 12px; margin-bottom: 14px; }
+.mission-decision__heading > span { color: #aebdca; }
+.mission-decision__stages { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.mission-decision__stages > div { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
+.mission-decision__stages span, .mission-decision__stages small { color: #8e9aa8; font-size: 11px; overflow-wrap: anywhere; }
+.mission-decision__stages strong { font-size: 12px; font-weight: 500; }
+.mission-decision__explain { margin-top: 16px; font-size: 12px; }
+.mission-decision__explain summary { cursor: pointer; padding: 6px 0; }
+.mission-decision__explain summary:focus-visible { outline: 2px solid #a6c8df; outline-offset: 3px; }
+.mission-decision__table { overflow-x: auto; margin: 12px 0; }
+.mission-decision table { width: 100%; border-collapse: collapse; text-align: left; font-variant-numeric: tabular-nums; }
+.mission-decision caption { text-align: left; color: #8e9aa8; padding-bottom: 8px; }
+.mission-decision th, .mission-decision td { padding: 8px; border-bottom: 1px solid #29323d; white-space: nowrap; font-weight: 400; }
+.mission-decision dl { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.mission-decision dt, .mission-decision p { color: #8e9aa8; }
+.mission-decision dd { margin: 4px 0 0; }
+@media (max-width: 900px) {
+  .mission-decision__stages { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .mission-decision dl { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* Final mission-only readability and interaction refinements. */
+.mission-world-labels span { font-size: 11px; color: #d1dae2; }
+.mission-camera-controls { gap: 6px; }
+.mission-camera-controls button { min-width: 40px; min-height: 40px; font-size: 12px; }
+.mission-world-fleet button, .mission-world-assets button { font-size: 12px; }
+.mission-world-notes { padding: 8px 14px; color: #a3afbb; font-size: 12px; border-top: 1px solid var(--mission-line); }
+.mission-world-notes summary { cursor: pointer; padding: 4px 0; }
+.mission-world-notes p { max-width: 80ch; line-height: 1.6; margin: 8px 0; }
+.mission-simulation button:focus-visible, .mission-simulation summary:focus-visible,
+.mission-simulation select:focus-visible, .mission-simulation input:focus-visible { outline: 2px solid #a6c8df; outline-offset: 3px; }
+.mission-decision__stages span, .mission-decision__stages small { font-size: 12px; }
+@media (max-width: 1100px) { .mission-camera-controls button { min-height: 44px; min-width: 44px; } }
+.mission-timeline__event span { white-space: normal; overflow-wrap: anywhere; }
+
+/* Perspective mission environment; compact HTML overlay labels. */
+.mission-world-canvas { height: 510px; cursor: grab; }
+.mission-world-labels span { padding: 3px 6px; font: 11px ui-monospace, monospace; line-height: 16px; border-radius: 3px; color: #acbac3; }
+.mission-world-labels span[data-selected="true"] { color: #e0e8ed; background: #18222bcc; border-left: 2px solid #8daaba; }
+.mission-world-footer { position: relative; padding: 8px 14px; border-top: 1px solid var(--mission-line); }
+.mission-world-notes { padding: 0; border: 0; font-size: 11px; }
+.mission-world-notes summary { padding: 6px 0; }
+.mission-world-notes p { position: absolute; z-index: 8; right: 12px; bottom: 38px; width: min(360px, calc(100% - 24px)); margin: 0; padding: 14px; background: #151e27; border: 1px solid #3b4956; border-radius: 6px; color: #bcc8d1; font-size: 12px; box-shadow: 0 6px 24px #0005; }
+.mission-camera-controls { align-items: center; }
+@media (max-width: 1100px) { .mission-world-canvas { height: 480px; } }
+@media (max-width: 800px) { .mission-world-canvas { height: 450px; } .mission-camera-controls { gap: 2px; padding-inline: 8px; } .mission-camera-controls button { padding-inline: 8px; } }

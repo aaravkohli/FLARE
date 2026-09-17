@@ -61,6 +61,15 @@ export function adaptMissionSimulationState(
   const noSafeRoute = Boolean(event?.decision?.no_safe_route ?? payload?.decision.no_safe_route ?? fallback.noSafeRoute);
 
   return {
+    eventId: event?.event_id,
+    inferenceSource: event?.inference?.source,
+    decisionSource: event?.decision?.source,
+    networkDetection: event?.network_security_analysis,
+    reportedSafetyOverride: event?.decision?.safety_override ?? payload?.decision.safety_override,
+    reportedThreatLevel: event?.decision?.threat_level ?? payload?.decision.threat_level,
+    installedRoute: event?.decision && 'installed_path' in event.decision
+      ? asRoute(event.decision.installed_path) ?? null
+      : payload?.decision.sdn_applied === true ? asRoute(payload.decision.path_name) ?? null : null,
     droneId: payload?.metrics.drone_id || fallback.droneId,
     timestamp: payload?.metrics.timestamp || payload?.timestamp,
     source: payload?.metrics.source,

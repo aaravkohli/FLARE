@@ -71,6 +71,7 @@ export interface MissionCanonicalEvent {
     insider_risk: number;
   } | null;
   decision?: {
+    source?: string;
     model_generation?: number | null;
     policy_path?: string;
     installed_path?: string | null;
@@ -90,6 +91,11 @@ export interface MissionCanonicalEvent {
     error?: string | null;
     response?: Record<string, unknown> | null;
   };
+  network_security_analysis?: {
+    status: 'NORMAL' | 'SUSPICIOUS' | 'MALICIOUS' | 'UNAVAILABLE';
+    detected_classes: string[];
+    evidence_source: string;
+  } | null;
   outcome?: {
     reward?: number;
     recovery_ms?: number | null;
@@ -148,11 +154,18 @@ export interface MissionRouteState {
 }
 
 export interface MissionSimulationState {
+  eventId?: string;
+  inferenceSource?: string;
+  decisionSource?: string;
+  networkDetection?: MissionCanonicalEvent['network_security_analysis'];
+  reportedSafetyOverride?: boolean;
+  reportedThreatLevel?: string;
   droneId: string;
   timestamp?: number;
   source?: MissionTelemetryPayload['metrics']['source'];
   routes: MissionRouteState[];
   selectedRoute: MissionRoute;
+  installedRoute?: MissionRoute | null;
   requestedRoute?: MissionRoute;
   policyRoute?: MissionRoute;
   threatLevel: string;

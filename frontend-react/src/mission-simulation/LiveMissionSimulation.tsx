@@ -1,16 +1,15 @@
-import React, { memo, useEffect, useMemo, useRef, useState } from 'react';
+import DecisionPanel from './DecisionPanel';
+import { emptyDecisionHistory, reduceDecisionHistory, PHASE_LABELS } from './world/decisionPresentation';
+import type { DecisionEventItem as MissionEvent } from './world/decisionPresentation';
+import { threatVisual } from './world/threatState';
+import React, { lazy, Suspense, memo, useReducer, useEffect, useMemo, useRef, useState } from 'react';
 import {
   AlertTriangle,
-  ArrowRight,
-  BrainCircuit,
   ChevronDown,
-  Network,
   Pause,
   PanelRightClose,
   PanelRightOpen,
   Play,
-  Radio,
-  ShieldCheck,
 } from 'lucide-react';
 import { adaptMissionSimulationState } from './adapter';
 import type {
@@ -23,6 +22,20 @@ import type {
   MissionTelemetryPayload,
 } from './types';
 import './mission-simulation.css';
+import { createClock } from './world/clock';
+import type { VisualClock } from './world/clock';
+import { createWorld } from './world/dynamics';
+import { BASE } from './world/projection';
+import { MISSION_SATELLITE_ORBIT } from './world/satelliteOrbit';
+import { useSvgWorld } from './world/useSvgWorld';
+
+class WorldRenderBoundary extends React.Component<{ onFallback: () => void; children: React.ReactNode }, { failed: boolean }> {
+  state = { failed: false };
+  static getDerivedStateFromError() { return { failed: true }; }
+  componentDidCatch() { this.props.onFallback(); }
+  render() { return this.state.failed ? null : this.props.children; }
+}
+const MissionWorldCanvas = lazy(() => import('./world/MissionWorldCanvas'));
 
 const ROUTES: CommunicationRoute[] = ['direct', 'satellite', 'mesh'];
 const ROUTE_LABELS: Record<MissionRoute, string> = {
@@ -72,25 +85,6 @@ interface LiveMissionSimulationProps {
   onApplyAttack: (path: CommunicationRoute, profile: AttackProfile) => Promise<void>;
 }
 
-interface Point { x: number; y: number }
-
-interface MissionEvent {
-  id: string;
-  at: number;
-  label: string;
-  tone: 'quiet' | 'info' | 'warning' | 'success';
-}
-
-const DRONE_POSITIONS: Point[] = [
-  { x: 390, y: 166 },
-  { x: 590, y: 218 },
-  { x: 430, y: 306 },
-  { x: 720, y: 300 },
-  { x: 250, y: 265 },
-];
-const BASE: Point = { x: 126, y: 352 };
-const SATELLITE: Point = { x: 626, y: 64 };
-
 const TELEMETRY_LABELS: Record<string, string> = {
   rssi: 'RSSI',
   pdr: 'PDR',
@@ -98,17 +92,6 @@ const TELEMETRY_LABELS: Record<string, string> = {
   latency: 'Latency',
   packet_loss: 'Packet loss',
 };
-
-function useCompactLayout() {
-  const [compact, setCompact] = useState(() => window.matchMedia('(max-width: 640px)').matches);
-  useEffect(() => {
-    const query = window.matchMedia('(max-width: 640px)');
-    const update = (event: MediaQueryListEvent) => setCompact(event.matches);
-    query.addEventListener('change', update);
-    return () => query.removeEventListener('change', update);
-  }, []);
-  return compact;
-}
 
 function formatPercent(value?: number, digits = 1) {
   return value === undefined ? '—' : `${(value * 100).toFixed(digits)}%`;
@@ -172,29 +155,8 @@ function threatPresentation(level: string, containmentMode?: string) {
   return { label: 'Threat pending', tone: 'neutral' } as const;
 }
 
-function dronePosition(index: number): Point {
-  return DRONE_POSITIONS[index % DRONE_POSITIONS.length];
-}
-
-function curvedPath(from: Point, to: Point, lift = 0) {
-  const midX = (from.x + to.x) / 2;
-  const midY = (from.y + to.y) / 2 - lift;
-  return `M ${from.x} ${from.y} Q ${midX} ${midY} ${to.x} ${to.y}`;
-}
-
-function pathGeometry(route: CommunicationRoute, drone: Point, relay: Point) {
-  if (route === 'satellite') {
-    return `${curvedPath(drone, SATELLITE, 18)} ${curvedPath(SATELLITE, BASE, 38)}`;
-  }
-  if (route === 'mesh') {
-    return `${curvedPath(drone, relay, 12)} ${curvedPath(relay, BASE, 22)}`;
-  }
-  return curvedPath(drone, BASE, 48);
-}
-
 const CommunicationPath = memo(function CommunicationPath({
   route,
-  path,
   active,
   degraded,
   latency,
@@ -202,7 +164,6 @@ const CommunicationPath = memo(function CommunicationPath({
   onInspect,
 }: {
   route: CommunicationRoute;
-  path: string;
   active: boolean;
   degraded: boolean;
   latency?: number;
@@ -211,13 +172,12 @@ const CommunicationPath = memo(function CommunicationPath({
 }) {
   return (
     <g className={`mission-route mission-route--${route}${active ? ' mission-route--active' : ''}${degraded ? ' mission-route--degraded' : ''}`}>
-      <path className="mission-route__line" d={path} pathLength="100" />
+      <path className="mission-route__line" pathLength="100" />
       {active && (
         <g>
-          <path className="mission-route__packet-track" d={path} pathLength="100" />
+          <path className="mission-route__packet-track" pathLength="100" />
           <path
             className={`mission-packets${degraded ? ' mission-packets--degraded' : ''}${paused ? ' mission-packets--paused' : ''}`}
-            d={path}
             pathLength="100"
             style={{ '--packet-duration': `${latency === undefined ? 2.8 : Math.min(5.8, Math.max(1.5, latency / 105))}s` } as React.CSSProperties}
             aria-hidden="true"
@@ -225,7 +185,6 @@ const CommunicationPath = memo(function CommunicationPath({
         </g>
       )}
       <path
-        d={path}
         className="mission-route__hitarea"
         onClick={() => onInspect(route)}
         role="button"
@@ -239,36 +198,33 @@ const CommunicationPath = memo(function CommunicationPath({
   );
 });
 
-function DroneMarker({ drone, point, selected, route, onSelect, order }: {
+function DroneMarker({ drone, selected, route, onSelect }: {
   drone: MissionFleetDrone;
-  point: Point;
   selected: boolean;
   route: MissionRoute;
   onSelect: (id: string) => void;
-  order: number;
 }) {
   const label = drone.display_name || drone.drone_id.replaceAll('_', ' ');
   return (
     <g
       className={`mission-drone${selected ? ' mission-drone--selected' : ''}`}
-      transform={`translate(${point.x} ${point.y})`}
-      style={{ '--drift-delay': `${order * -3.1}s` } as React.CSSProperties}
+      data-world-drone={drone.drone_id}
       role="button"
       tabIndex={0}
       aria-label={`${label}${selected ? ', selected and active' : ''}`}
       onClick={() => onSelect(drone.drone_id)}
       onKeyDown={event => {
-        if (event.key === 'Enter' || event.key === ' ') onSelect(drone.drone_id);
+        if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelect(drone.drone_id); }
       }}
     >
       <circle className="mission-drone__hitarea" r="34" />
       {selected && <circle className="mission-drone__selection" r="25" />}
       <g className="mission-drone__body" aria-hidden="true">
-        <path d="M-13 0H13M-8-7L8 7M8-7L-8 7M-3-2H3V4H-3Z" />
-        <circle cx="-12" cy="0" r="3.2" />
-        <circle cx="12" cy="0" r="3.2" />
-        <circle cx="-8" cy="-7" r="3.2" />
-        <circle cx="8" cy="-7" r="3.2" />
+        <path d="M-10-8L10 8M-10 8L10-8M-5-3H5L10 0L5 3H-5Z" />
+        <circle cx="-10" cy="-8" r="3.2" />
+        <circle cx="10" cy="8" r="3.2" />
+        <circle cx="-10" cy="8" r="3.2" />
+        <circle cx="10" cy="-8" r="3.2" />
       </g>
       <text className="mission-drone__id" textAnchor="middle" y="41">D{drone.index}</text>
       <text className="mission-drone__status" textAnchor="middle" y="55">
@@ -278,16 +234,13 @@ function DroneMarker({ drone, point, selected, route, onSelect, order }: {
   );
 }
 
-function AttackVisualization({ state, selectedDrone }: {
-  state: MissionSimulationState;
-  selectedDrone: Point;
-}) {
+function AttackVisualization({ state }: { state: MissionSimulationState }) {
   const profile = state.activeAttack;
   if (profile === 'none') return null;
   const isTelemetryAttack = profile === 'spoofing' || profile === 'gps_spoofing' || profile === 'replay';
   if (isTelemetryAttack) {
     return (
-      <g className="mission-anomaly" transform={`translate(${selectedDrone.x + 30} ${selectedDrone.y - 44})`}>
+      <g className="mission-anomaly">
         <rect x="-8" y="-15" width="150" height="30" rx="8" />
         <text x="6" y="4">{profile === 'gps_spoofing' ? 'GPS INTEGRITY WARNING' : profile === 'replay' ? 'STALE TELEMETRY WARNING' : 'SIGNAL INTEGRITY WARNING'}</text>
       </g>
@@ -316,19 +269,17 @@ function AttackVisualization({ state, selectedDrone }: {
   );
 }
 
-function AirspaceRouteAnnotation({ state, point }: { state: MissionSimulationState; point: Point }) {
+function AirspaceRouteAnnotation({ state }: { state: MissionSimulationState }) {
   const isHold = state.selectedRoute === 'hold';
   const containment = state.constraintReason === 'containment_required'
     || Boolean(state.containmentMode && state.containmentMode !== 'normal');
   const width = isHold ? 218 : 164;
   const height = isHold ? 112 : 50;
-  const x = Math.max(20, point.x - width - 42);
-  const y = Math.max(42, point.y - (isHold ? 112 : 72));
   return (
-    <g className={`mission-airspace-note${isHold ? ' mission-airspace-note--hold' : ''}`} transform={`translate(${x} ${y})`}>
+    <g className={`mission-airspace-note${isHold ? ' mission-airspace-note--hold' : ''}`} transform="translate(24 54)">
       <rect width={width} height={height} rx="12" />
       <text className="mission-airspace-note__title" x="14" y="20">
-        {isHold ? (containment ? 'FORWARDING SUSPENDED' : 'NO SAFE FORWARDING PATH') : 'ACTIVE ROUTE'}
+        {isHold ? (containment ? 'FORWARDING SUSPENDED' : 'NO SAFE FORWARDING PATH') : state.installedRoute ? 'INSTALLED ROUTE' : 'INSTALLATION UNKNOWN'}
       </text>
       {isHold ? (
         <>
@@ -342,7 +293,7 @@ function AirspaceRouteAnnotation({ state, point }: { state: MissionSimulationSta
         </>
       ) : (
         <text className="mission-airspace-note__value" x="14" y="39">
-          {ROUTE_LABELS[state.selectedRoute]} · Threat {state.routes.find(route => route.active)?.threatScore?.toFixed(2) ?? '—'}
+          {state.installedRoute ? ROUTE_LABELS[state.installedRoute] : 'Awaiting confirmation'}
         </text>
       )}
     </g>
@@ -358,6 +309,7 @@ function AirspaceCanvas({
   onSelectDrone,
   onInspectRoute,
   onSelectAsset,
+  worldClock,
 }: {
   state: MissionSimulationState;
   drones: MissionFleetDrone[];
@@ -367,25 +319,19 @@ function AirspaceCanvas({
   onSelectDrone: (id: string) => void;
   onInspectRoute: (route: CommunicationRoute) => void;
   onSelectAsset: (asset: 'satellite' | 'base' | 'jammer') => void;
+  worldClock: React.RefObject<VisualClock>;
 }) {
-  const compact = useCompactLayout();
-  const selectedIndex = Math.max(0, drones.findIndex(drone => drone.drone_id === selectedDroneId));
-  const selectedPoint = dronePosition(selectedIndex);
-  const relayIndex = drones.length > 1 ? (selectedIndex + 1) % drones.length : (selectedIndex + 1) % 3;
-  const paths = useMemo(() => {
-    const drone = dronePosition(selectedIndex);
-    const relay = dronePosition(relayIndex);
-    return Object.fromEntries(
-      ROUTES.map(route => [route, pathGeometry(route, drone, relay)]),
-    ) as Record<CommunicationRoute, string>;
-  }, [relayIndex, selectedIndex]);
+  const svgRef = useRef<SVGSVGElement>(null);
+  useSvgWorld(svgRef, worldClock, drones.map(drone => drone.drone_id), selectedDroneId, paused);
 
   return (
+    <>
     <svg
-      viewBox={compact ? '0 0 760 430' : '0 0 900 400'}
+      ref={svgRef}
+      viewBox="0 0 900 440"
       className="mission-airspace"
       role="img"
-      aria-label={`${selectedDroneId.replaceAll('_', ' ')} mission airspace. ${ROUTE_LABELS[state.selectedRoute]} communication route active. Visual drone motion does not represent flight control.`}
+      aria-label={`${selectedDroneId.replaceAll('_', ' ')} mission airspace. ${ROUTE_LABELS[state.selectedRoute]} communication route active. Simulated patrol motion, not flight control. Network links are schematic; mesh peer identity is not measured.`}
     >
       <defs>
         <pattern id="mission-grid" width="52" height="52" patternUnits="userSpaceOnUse">
@@ -400,15 +346,17 @@ function AirspaceCanvas({
       <rect width="900" height="470" fill="url(#mission-horizon)" />
       <rect width="900" height="470" fill="url(#mission-grid)" />
       <path className="mission-terrain" d="M0 386L110 348L190 370L290 338L360 369L470 329L560 366L660 334L760 370L900 322V470H0Z" />
-      <text className="mission-coordinate" x="24" y="30">AIRSPACE / VISUAL SIMULATION</text>
+      <text className="mission-coordinate" x="24" y="30">AIRSPACE / SIMULATED PATROL</text>
       <text className="mission-coordinate" x="876" y="30" textAnchor="end">NOT FLIGHT CONTROL</text>
 
+      <path className="mission-patrol" aria-hidden="true" />
+      <circle className="mission-waypoint" r="3" aria-hidden="true" />
+      {drones.map(drone => <ellipse key={drone.drone_id} data-world-shadow={drone.drone_id} className="mission-drone-shadow" rx="10" ry="3" aria-hidden="true" />)}
       {state.routes.map(route => (
         <CommunicationPath
           key={route.id}
           route={route.id}
-          path={paths[route.id]}
-          active={route.active && state.selectedRoute !== 'hold'}
+          active={state.installedRoute === route.id && state.selectedRoute !== 'hold' && state.networkAction !== 'hold'}
           degraded={route.jammed || (route.active && (route.metric?.packet_loss ?? 0) > 0.2)}
           latency={route.metric?.latency}
           paused={paused}
@@ -418,19 +366,18 @@ function AirspaceCanvas({
 
       <g
         className="mission-satellite"
-        transform={`translate(${SATELLITE.x} ${SATELLITE.y})`}
         role="button"
         tabIndex={0}
         aria-label="Inspect satellite relay"
         onClick={() => onSelectAsset('satellite')}
         onKeyDown={event => {
-          if (event.key === 'Enter' || event.key === ' ') onSelectAsset('satellite');
+          if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onSelectAsset('satellite'); }
         }}
       >
         <circle className="mission-asset-hitarea" r="30" />
         <path d="M-9-5L9 5M-14-9L-6-5L-10 2L-18-2ZM14 9L6 5L10-2L18 2ZM-4-4L4-9L9-1L1 4Z" />
         <path className="mission-satellite__signal" d="M-2 10Q0 16 6 18M3 7Q8 11 13 11" />
-        <text textAnchor="middle" y="31">SAT RELAY</text>
+        <text textAnchor="middle" y="31">SAT RELAY · 1×</text>
       </g>
 
       <g
@@ -460,24 +407,24 @@ function AirspaceCanvas({
             if (event.key === 'Enter' || event.key === ' ') onSelectAsset('jammer');
           }}
         >
-          <AttackVisualization state={state} selectedDrone={selectedPoint} />
+          <AttackVisualization state={state} />
         </g>
       )}
 
-      <AirspaceRouteAnnotation state={state} point={selectedPoint} />
+      <AirspaceRouteAnnotation state={state} />
 
-      {drones.slice(0, 5).map((drone, index) => (
+      {drones.map(drone => (
         <DroneMarker
           key={drone.drone_id}
           drone={drone}
-          point={dronePosition(index)}
-          order={index}
           selected={drone.drone_id === selectedDroneId}
           route={droneRoutes[drone.drone_id] || 'direct'}
           onSelect={onSelectDrone}
         />
       ))}
     </svg>
+    <span className="mission-world-label">Simulation time · 1× · compressed orbital scale · Mesh hops unavailable</span>
+    </>
   );
 }
 
@@ -538,7 +485,7 @@ function LogicalTopologyView({ state, droneName }: { state: MissionSimulationSta
 }
 
 function MissionStatus({ state }: { state: MissionSimulationState }) {
-  const status = threatPresentation(state.threatLevel, state.containmentMode);
+  const status = threatPresentation(state.reportedThreatLevel ?? "UNKNOWN", state.containmentMode);
   return (
     <div className={`mission-status mission-status--${status.tone}`} role="status">
       <span className="mission-status__dot" aria-hidden="true" />
@@ -547,43 +494,13 @@ function MissionStatus({ state }: { state: MissionSimulationState }) {
   );
 }
 
-function flareActionSummary(
-  state: MissionSimulationState,
-  droneName: string,
-  clearedAttack: AttackProfile | null,
-) {
-  if (state.selectedRoute === 'hold' && state.containmentMode && state.containmentMode !== 'normal') {
-    return `Insider containment is active. ${droneName} forwarding has been suspended.`;
-  }
-  if (state.selectedRoute === 'hold') {
-    return 'No safe communication path is available. The safety policy has suspended forwarding.';
-  }
-  if (state.safetyOverride && state.policyRoute && state.requestedRoute) {
-    return `${ROUTE_LABELS[state.policyRoute]} was unsafe. The safety gate overrode DQN and installed ${ROUTE_LABELS[state.requestedRoute]}.`;
-  }
-  if (state.activeAttack !== 'none') {
-    const affected = state.jammedPaths[0];
-    if (affected && affected !== state.selectedRoute) {
-      return `${ROUTE_LABELS[affected]} communication is degraded. FLARE is forwarding ${droneName} through ${ROUTE_LABELS[state.selectedRoute]}.`;
-    }
-    return `${attackLabel(state.activeAttack)} is affecting ${attackTarget(state).toLowerCase()}. FLARE is monitoring route health.`;
-  }
-  if (clearedAttack && state.threatLevel === 'LOW') {
-    return `Network recovered. ${ROUTE_LABELS[state.selectedRoute]} communication is active.`;
-  }
-  if (state.threatLevel === 'HIGH' || state.threatLevel === 'MEDIUM') {
-    return `Communication threat detected. ${ROUTE_LABELS[state.selectedRoute]} remains the installed route.`;
-  }
-  return `${droneName} is communicating through the ${ROUTE_LABELS[state.selectedRoute]} link.`;
-}
-
 function MissionStateSummary({ state, clearedAttack }: {
   state: MissionSimulationState;
   clearedAttack: AttackProfile | null;
 }) {
   const network = state.containmentMode && state.containmentMode !== 'normal'
     ? 'Containment'
-    : state.threatLevel === 'LOW' ? 'Nominal' : state.threatLevel === 'MEDIUM' ? 'Elevated' : state.threatLevel === 'HIGH' ? 'Critical' : 'Pending';
+    : state.reportedThreatLevel === 'LOW' ? 'Low reported threat' : state.reportedThreatLevel === 'MEDIUM' ? 'Elevated' : state.reportedThreatLevel === 'HIGH' ? 'Critical' : 'Unavailable';
   const attack = state.activeAttack !== 'none'
     ? `${attackLabel(state.activeAttack)} · Active`
     : clearedAttack ? `${attackLabel(clearedAttack)} · Cleared` : 'None';
@@ -591,7 +508,7 @@ function MissionStateSummary({ state, clearedAttack }: {
     <dl className="mission-state-summary" aria-label="Mission state summary">
       <div><dt>Network</dt><dd>{network}</dd></div>
       <div><dt>Attack</dt><dd>{attack}</dd></div>
-      <div><dt>Routing</dt><dd>{ROUTE_LABELS[state.selectedRoute]}</dd></div>
+      <div><dt>Installed</dt><dd>{state.installedRoute ? ROUTE_LABELS[state.installedRoute] : 'Unknown'}</dd></div>
     </dl>
   );
 }
@@ -625,19 +542,19 @@ function RouteSelector({ state, inspectedRoute, onInspect }: {
 }
 
 function NetworkStateStrip({ state }: { state: MissionSimulationState }) {
-  if (state.selectedRoute !== 'hold') return null;
+  if (state.installedRoute !== 'hold' && state.networkAction !== 'hold') return null;
   const containment = state.containmentMode && state.containmentMode !== 'normal';
   return (
     <div className="mission-hold" role="status">
       <span className="mission-hold__mark" aria-hidden="true"><Pause /></span>
       <div className="mission-hold__copy">
-        <strong>Network hold</strong>
-        <span>{containment ? 'Forwarding suspended by containment policy.' : 'No safe communication route available. Safety policy has suspended forwarding.'}</span>
+        <strong>{state.installedRoute === 'hold' ? 'Network hold' : 'HOLD requested · apply unconfirmed'}</strong>
+        <span>{containment ? 'Forwarding suspended by containment policy.' : state.noSafeRoute ? 'No safe communication route reported. Visual forwarding suspended.' : 'Runtime HOLD reported. Visual forwarding suspended.'}</span>
       </div>
       <div className="mission-hold__scores">
         {state.routes.map(route => (
           <span key={route.id}>
-            {ROUTE_LABELS[route.id]} {formatPercent(route.threatScore, 0)} {containment ? 'threat' : 'unsafe'}
+            {ROUTE_LABELS[route.id]} {formatPercent(route.threatScore, 0)} {route.safe === false ? 'unsafe' : 'threat'}
           </span>
         ))}
       </div>
@@ -653,8 +570,8 @@ function SelectedDroneTelemetry({ state, inspectedRoute, onCollapse }: {
   const route = state.routes.find(item => item.id === inspectedRoute) || state.routes[0];
   const metric = route.metric;
   const primary: Array<[string, string]> = [
-    ['Current route', ROUTE_LABELS[state.selectedRoute]],
-    ['Threat', route.threatScore === undefined ? state.threatLevel : `${route.threatScore.toFixed(2)} · ${state.threatLevel}`],
+    ['Installed route', state.installedRoute ? ROUTE_LABELS[state.installedRoute] : 'Unknown'],
+    ['Threat', route.threatScore === undefined ? state.reportedThreatLevel ?? 'Unavailable' : `${route.threatScore.toFixed(2)} · ${state.reportedThreatLevel ?? 'Unavailable'}`],
     ['PDR', formatPercent(metric?.pdr)],
     ['Latency', formatMetric(metric?.latency, 'ms')],
     ['Loss', formatPercent(metric?.packet_loss)],
@@ -699,85 +616,6 @@ function SelectedDroneTelemetry({ state, inspectedRoute, onCollapse }: {
         </dl>
       </details>
     </aside>
-  );
-}
-
-function DecisionEngineStatus({ state, controller }: { state: MissionSimulationState; controller: string }) {
-  const modelRoute = state.policyRoute || state.requestedRoute || state.selectedRoute;
-  const routeThreats = state.routes
-    .map(route => route.threatScore)
-    .filter((score): score is number => score !== undefined);
-  const activeThreat = state.routes.find(route => route.active)?.threatScore
-    ?? (routeThreats.length ? Math.max(...routeThreats) : undefined);
-  const safetyCopy = state.noSafeRoute
-    ? state.constraintReason === 'containment_required' ? 'Containment required' : 'All routes unsafe'
-    : state.safetyOverride ? 'Unsafe' : 'Validated';
-  const sdnCopy = state.selectedRoute === 'hold'
-    ? state.sdnApplied ? 'Forwarding suspended' : 'Suspension pending'
-    : state.sdnApplied ? 'Route installed' : state.sdnError ? 'Apply failed' : 'Apply pending';
-  return (
-    <section className="mission-pipeline" aria-label="FLARE decision pipeline">
-      <div className="mission-pipeline__heading">
-        <span>FLARE decision pipeline</span>
-        <span>Telemetry → enforcement</span>
-      </div>
-      <div className="mission-pipeline__flow">
-        <div className="mission-pipeline__stage">
-          <Radio aria-hidden="true" />
-          <span>BiLSTM</span>
-          <strong>{state.threatLevel === 'LOW' ? 'Low threat' : 'Threat detected'}</strong>
-          <small>{activeThreat?.toFixed(2) ?? '—'}</small>
-        </div>
-        <ArrowRight className="mission-pipeline__arrow" aria-hidden="true" />
-        <div className="mission-pipeline__stage">
-          <BrainCircuit aria-hidden="true" />
-          <span>DQN</span>
-          <strong>{ROUTE_LABELS[modelRoute]}</strong>
-          <small>Model selection</small>
-        </div>
-        <ArrowRight className="mission-pipeline__arrow" aria-hidden="true" />
-        <div className={`mission-pipeline__stage mission-pipeline__stage--${state.noSafeRoute || state.safetyOverride ? 'warning' : 'safe'}`}>
-          <ShieldCheck aria-hidden="true" />
-          <span>Safety gate</span>
-          <strong>{safetyCopy}</strong>
-          <small>{state.constraintReason ? titleCase(state.constraintReason) : 'Deterministic policy'}</small>
-        </div>
-        {state.safetyOverride && state.requestedRoute && (
-          <>
-            <ArrowRight className="mission-pipeline__arrow" aria-hidden="true" />
-            <div className="mission-pipeline__stage mission-pipeline__stage--override">
-              <span>Override</span>
-              <strong>{ROUTE_LABELS[state.requestedRoute]}</strong>
-              <small>Final route</small>
-            </div>
-          </>
-        )}
-        {state.selectedRoute === 'hold' && (
-          <>
-            <ArrowRight className="mission-pipeline__arrow" aria-hidden="true" />
-            <div className="mission-pipeline__stage mission-pipeline__stage--warning">
-              <Pause aria-hidden="true" />
-              <span>Hold</span>
-              <strong>No forwarding</strong>
-              <small>Safety policy active</small>
-            </div>
-          </>
-        )}
-        <ArrowRight className="mission-pipeline__arrow" aria-hidden="true" />
-        <div className={`mission-pipeline__stage${state.sdnApplied ? ' mission-pipeline__stage--safe' : ''}`}>
-          <Network aria-hidden="true" />
-          <span>SDN</span>
-          <strong>{sdnCopy}</strong>
-          <small>{ROUTE_LABELS[state.selectedRoute]}</small>
-        </div>
-      </div>
-      <div className="mission-pipeline__meta">
-        <span>Reward <b>{state.reward >= 0 ? '+' : ''}{state.reward.toFixed(3)}</b></span>
-        <span>Step <b>{state.rlStep}</b></span>
-        <span>{controller}</span>
-        {state.tickElapsedMs != null && <span>Control cycle <b>{state.tickElapsedMs.toFixed(1)} ms</b></span>}
-      </div>
-    </section>
   );
 }
 
@@ -905,6 +743,8 @@ function EventTimeline({ events }: { events: MissionEvent[] }) {
 }
 
 export default function LiveMissionSimulation(props: LiveMissionSimulationProps) {
+  const worldClock = useRef(createClock(createWorld([])));
+  const [renderer, setRenderer] = useState(import.meta.env.VITE_MISSION_RENDERER === 'svg' ? 'svg' : 'three');
   const state = useMemo(() => adaptMissionSimulationState(props.payload, {
     droneId: props.activeDrone,
     route: props.activePath,
@@ -931,7 +771,8 @@ export default function LiveMissionSimulation(props: LiveMissionSimulationProps)
   const [selectedAsset, setSelectedAsset] = useState<'satellite' | 'base' | 'jammer' | null>(null);
   const [routeNotice, setRouteNotice] = useState<{ from: MissionRoute; to: MissionRoute } | null>(null);
   const [clearedAttack, setClearedAttack] = useState<AttackProfile | null>(null);
-  const [events, setEvents] = useState<MissionEvent[]>([]);
+  const [history, dispatchDecision] = useReducer(reduceDecisionHistory, undefined, () => emptyDecisionHistory(props.activeDrone));
+  const events = history.droneId === props.activeDrone ? history.events : [];
   const previous = useRef<MissionSimulationState | null>(null);
 
   useEffect(() => {
@@ -939,84 +780,19 @@ export default function LiveMissionSimulation(props: LiveMissionSimulationProps)
   }, [state.droneId, state.selectedRoute]);
 
   useEffect(() => {
+    dispatchDecision({ state, selectedId: props.activeDrone });
     const prior = previous.current;
-    const at = state.timestamp || Date.now() / 1000;
-    const next: MissionEvent[] = [];
-    if (!prior || prior.droneId !== state.droneId) {
-      next.push({ id: `${at}-linked`, at, label: 'Live telemetry linked', tone: 'info' });
+    if (!prior || prior.droneId !== props.activeDrone || state.droneId !== props.activeDrone) {
+      setRouteNotice(null); setClearedAttack(null); setSelectedAsset(null);
     } else {
-      if (prior.activeAttack !== state.activeAttack) {
-        if (state.activeAttack === 'none' && prior.activeAttack !== 'none') setClearedAttack(prior.activeAttack);
-        if (state.activeAttack !== 'none') setClearedAttack(null);
-        next.push({
-          id: `${at}-attack-${state.activeAttack}`,
-          at,
-          label: state.activeAttack === 'none' ? 'Communication impairment cleared' : `${titleCase(state.activeAttack)} detected`,
-          tone: state.activeAttack === 'none' ? 'success' : 'warning',
-        });
+      if (prior.activeAttack !== 'none' && state.activeAttack === 'none') setClearedAttack(prior.activeAttack);
+      if (state.activeAttack !== 'none') setClearedAttack(null);
+      if (state.installedRoute != null && prior.installedRoute != null && state.installedRoute !== prior.installedRoute && state.sdnApplied === true) {
+        setRouteNotice({from: prior.installedRoute,to: state.installedRoute});
       }
-      if (state.activeAttack !== 'none') {
-        for (const route of state.routes) {
-          const before = prior.routes.find(item => item.id === route.id)?.threatScore;
-          const after = route.threatScore;
-          if (before !== undefined && after !== undefined && Math.abs(after - before) >= 0.08) {
-            next.push({
-              id: `${at}-route-threat-${route.id}`,
-              at,
-              label: `${ROUTE_LABELS[route.id]} threat ${before.toFixed(2)} → ${after.toFixed(2)}`,
-              tone: after > before ? 'warning' : 'success',
-            });
-            break;
-          }
-        }
-      }
-      if (prior.threatLevel !== state.threatLevel) {
-        next.push({ id: `${at}-threat-${state.threatLevel}`, at, label: `Threat ${prior.threatLevel} → ${state.threatLevel}`, tone: state.threatLevel === 'LOW' ? 'success' : 'warning' });
-      }
-      if (prior.selectedRoute !== state.selectedRoute) {
-        const dqnRoute = state.policyRoute || state.requestedRoute || state.selectedRoute;
-        next.push({ id: `${at}-route-${state.selectedRoute}`, at, label: `DQN selected ${ROUTE_LABELS[dqnRoute]}`, tone: 'info' });
-        if (state.selectedRoute === 'hold' && state.noSafeRoute) {
-          next.push({ id: `${at}-all-unsafe`, at, label: 'All three routes exceeded the safety threshold', tone: 'warning' });
-        } else if (state.selectedRoute === 'hold') {
-          next.push({ id: `${at}-containment-hold`, at, label: 'Containment policy required network hold', tone: 'warning' });
-        }
-        next.push({
-          id: `${at}-safety-${state.selectedRoute}`,
-          at,
-          label: state.selectedRoute === 'hold'
-            ? state.noSafeRoute
-              ? 'Deterministic safety policy activated network hold'
-              : 'Containment policy activated network hold'
-            : state.safetyOverride
-              ? 'Deterministic safety override applied'
-              : 'Route passed deterministic safety policy',
-          tone: state.selectedRoute === 'hold' || state.safetyOverride ? 'warning' : 'success',
-        });
-        setRouteNotice({ from: prior.selectedRoute, to: state.selectedRoute });
-      }
-      if (
-        prior.threatLevel !== 'LOW'
-        && state.threatLevel === 'LOW'
-        && state.activeAttack === 'none'
-        && state.selectedRoute !== 'hold'
-      ) {
-        next.push({ id: `${at}-recovered`, at, label: `Link recovered · ${ROUTE_LABELS[state.selectedRoute]} active`, tone: 'success' });
-      }
-      if ((!prior.sdnApplied && state.sdnApplied) || (prior.selectedRoute !== state.selectedRoute && state.sdnApplied)) {
-        next.push({
-          id: `${at}-sdn-${state.selectedRoute}`,
-          at,
-          label: state.selectedRoute === 'hold' ? 'SDN applied network hold' : `SDN installed ${ROUTE_LABELS[state.selectedRoute]} route`,
-          tone: 'success',
-        });
-      }
-    }
-    if (next.length) {
-      setEvents(current => (!prior || prior.droneId !== state.droneId ? next : [...current, ...next]).slice(-10));
     }
     previous.current = state;
-  }, [state]);
+  }, [state, props.activeDrone]);
 
   useEffect(() => {
     if (!routeNotice) return;
@@ -1039,16 +815,11 @@ export default function LiveMissionSimulation(props: LiveMissionSimulationProps)
   const selectedAssetCopy = selectedAsset === 'base'
     ? `Controller · ${props.sdnController} · ${state.sdnApplied ? 'route applied' : 'awaiting route state'}`
     : selectedAsset === 'satellite'
-      ? `Satellite fallback · ${formatMetric(state.routes.find(route => route.id === 'satellite')?.metric?.latency, 'ms')}`
+      ? `Simulated circular orbit · ${(MISSION_SATELLITE_ORBIT.config.altitudeM / 1000).toFixed(0)} km altitude · ${(MISSION_SATELLITE_ORBIT.config.inclinationRad * 180 / Math.PI).toFixed(0)}° inclination · ${(MISSION_SATELLITE_ORBIT.periodSeconds / 60).toFixed(1)} min period · 1× time · compressed sky position, not observed coverage · Link latency ${formatMetric(state.routes.find(route => route.id === 'satellite')?.metric?.latency, 'ms')}`
       : selectedAsset === 'jammer'
-        ? `${attackLabel(state.activeAttack)} · ${attackTarget(state)} · active`
+        ? `${threatVisual(state, props.activeDrone).label} · ${attackTarget(state)} · Visual regions are schematic; no measured source location. Physical UAV motion is unchanged.`
         : null;
-  const missionPhase = state.selectedRoute === 'hold'
-    ? 'hold'
-    : routeNotice ? 'rerouting'
-    : state.activeAttack !== 'none' ? 'attack'
-    : clearedAttack && state.threatLevel === 'LOW' ? 'recovery'
-    : 'normal';
+  const missionPhase = history.droneId === props.activeDrone && state.droneId === props.activeDrone ? history.phase : 'awaiting-evidence';
 
   return (
     <section className="content-section mission-simulation" data-paused={paused} data-phase={missionPhase} aria-labelledby="mission-title">
@@ -1056,8 +827,8 @@ export default function LiveMissionSimulation(props: LiveMissionSimulationProps)
         <div>
           <div className="mission-eyebrow"><span>FLARE / Mission network</span><span>{state.source ? titleCase(state.source) : 'Awaiting source'}</span></div>
           <h2 id="mission-title">Live Mission Network</h2>
-          <p>{activeDroneName} · communication resilience active</p>
-          <p className="mission-action-summary">{flareActionSummary(state, activeDroneName, clearedAttack)}</p>
+          <p>{activeDroneName}</p>
+          <p className="mission-action-summary">{PHASE_LABELS[missionPhase]}{state.droneId === props.activeDrone && state.installedRoute ? ` · Installed: ${ROUTE_LABELS[state.installedRoute]}` : ''}</p>
         </div>
         <div className="mission-simulation__header-actions">
           <MissionStatus state={state} />
@@ -1071,16 +842,22 @@ export default function LiveMissionSimulation(props: LiveMissionSimulationProps)
       <div className="mission-context-bar">
         <MissionStateSummary state={state} clearedAttack={clearedAttack} />
         <div className="mission-view-toggle" role="group" aria-label="Mission visualization">
-          <button type="button" className={viewMode === 'mission' ? 'is-active' : ''} aria-pressed={viewMode === 'mission'} onClick={() => setViewMode('mission')}>Mission view</button>
-          <button type="button" className={viewMode === 'topology' ? 'is-active' : ''} aria-pressed={viewMode === 'topology'} onClick={() => setViewMode('topology')}>Logical topology</button>
+          <button type="button" className={viewMode === 'mission' ? 'is-active' : ''} aria-pressed={viewMode === 'mission'} onClick={() => setViewMode('mission')}>World</button>
+          <button type="button" className={viewMode === 'topology' ? 'is-active' : ''} aria-pressed={viewMode === 'topology'} onClick={() => setViewMode('topology')} title="Logical topology">Network</button>
         </div>
       </div>
 
-      <div className="mission-stage" data-telemetry-open={telemetryOpen}>
+      <div className="mission-stage" data-world-renderer={viewMode === 'mission' ? renderer : 'topology'} data-telemetry-open={telemetryOpen}>
         <div className="mission-stage__canvas">
-          {viewMode === 'mission' ? (
+          {viewMode === 'mission' && renderer === 'svg' && <div className="mission-renderer-fallback" role="status">2D mission view <button type="button" onClick={() => setRenderer('three')}>Try 3D view</button></div>}
+          {viewMode === 'mission' && renderer === 'three' ? (
+            <WorldRenderBoundary onFallback={() => setRenderer('svg')}><Suspense fallback={<div className="mission-world-loading">Loading mission world…</div>}>
+              <MissionWorldCanvas state={state} worldClock={worldClock} drones={props.fleetDrones} selectedDroneId={props.activeDrone} paused={paused} onDismiss={() => { setSelectedAsset(null); setTelemetryOpen(false); }} onSelectDrone={id => { props.onSelectDrone(id); setTelemetryOpen(true); setSelectedAsset(null); }} onSelectAsset={setSelectedAsset} onFallback={() => setRenderer('svg')} />
+            </Suspense></WorldRenderBoundary>
+          ) : viewMode === 'mission' ? (
             <AirspaceCanvas
               state={state}
+              worldClock={worldClock}
               drones={props.fleetDrones}
               droneRoutes={droneRoutes}
               selectedDroneId={props.activeDrone}
@@ -1090,16 +867,16 @@ export default function LiveMissionSimulation(props: LiveMissionSimulationProps)
               onSelectAsset={setSelectedAsset}
             />
           ) : <LogicalTopologyView state={state} droneName={activeDroneName} />}
-          {routeNotice && (
+          {routeNotice && routeNotice.to === state.installedRoute && state.sdnApplied === true && (
             <div className="mission-route-notice" role="status">
               <span>Route updated</span>
               <strong>{ROUTE_LABELS[routeNotice.from]} → {ROUTE_LABELS[routeNotice.to]}</strong>
-              <small>{state.sdnApplied ? state.selectedRoute === 'hold' ? 'SDN hold policy applied' : 'SDN rule installed' : 'SDN update pending'}{state.tickElapsedMs != null ? ` · ${state.tickElapsedMs.toFixed(1)} ms cycle` : ''}</small>
+              <small>{state.installedRoute === 'hold' ? 'SDN hold policy applied' : 'SDN rule installed'}</small>
             </div>
           )}
           {selectedAssetCopy && (
             <button type="button" className="mission-asset-popover" onClick={() => setSelectedAsset(null)} aria-label="Close asset details">
-              <strong>{selectedAsset ? titleCase(selectedAsset) : ''}</strong><span>{selectedAssetCopy}</span>
+              <strong>{selectedAsset === 'jammer' ? 'Threat details' : selectedAsset ? titleCase(selectedAsset) : ''}</strong><span>{selectedAssetCopy}</span>
             </button>
           )}
           {inspectedState?.jammed && <div className="mission-path-warning"><AlertTriangle aria-hidden="true" /> {titleCase(inspectedRoute)} path degraded</div>}
@@ -1129,7 +906,7 @@ export default function LiveMissionSimulation(props: LiveMissionSimulationProps)
       <RouteSelector state={state} inspectedRoute={inspectedRoute} onInspect={setInspectedRoute} />
       <NetworkStateStrip state={state} />
 
-      <DecisionEngineStatus state={state} controller={props.sdnController} />
+      <DecisionPanel state={state.droneId === props.activeDrone ? state : adaptMissionSimulationState(null, { droneId: props.activeDrone, route: "direct", threatLevel: "UNKNOWN", reward: 0, step: 0, noSafeRoute: false, availablePaths: [] })} phase={missionPhase} controller={props.sdnController} />
 
       <div className="mission-lower-grid">
         <div className="mission-evidence-wrap"><DecisionEvidence state={state} /></div>
