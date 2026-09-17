@@ -11,9 +11,10 @@ Verifies:
 import urllib.request
 import urllib.parse
 import json
+import os
 import sys
 
-BASE_URL = "http://localhost:8000"
+BASE_URL = os.getenv("API_BASE_URL", "http://localhost:8000")
 
 def run_test():
     print("=== Testing FLARE v2 Federated Learning API ===")

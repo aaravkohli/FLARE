@@ -13,7 +13,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
@@ -79,6 +79,7 @@ class RLAgent:
         self.device = "cpu"  # Keep CPU for fast inference latency
         self.routing_contract = routing_contract_name or ROUTING_STATE_V2
         contract = routing_contract(self.routing_contract)
+        self.model: Any = None  # Set to DiscreteSACAgent or SB3 DQN below
 
         # State tracking for stateful observation assembly
         self._prev_action: Optional[int] = None
@@ -333,7 +334,7 @@ class RLAgent:
         from schemas.contracts import ROUTING_EXPLANATION_CONTRACT
 
         result = integrated_gradients_q_values(
-            self.model.q_net,
+            self.model.q_net,  # type: ignore[attr-defined]
             torch.tensor(values, dtype=torch.float32),
             action_id=int(action_id),
             steps=32,

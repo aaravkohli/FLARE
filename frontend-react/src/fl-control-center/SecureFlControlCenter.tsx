@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import {
   Activity,
   BrainCircuit,
@@ -97,14 +97,15 @@ function Metric({ label, value, tone = 'neutral' }: { label: string; value: stri
 export default function SecureFlControlCenter({ config, metrics, evidenceWarning, isSaving, onConfigChange, onSave }: SecureFlControlCenterProps) {
   const [section, setSection] = useState<ConfigSection>('safeguards');
   const [saveState, setSaveState] = useState<'idle' | 'saved' | 'error'>('idle');
-  const baselineRef = useRef('');
   const latest = metrics?.latest;
   const serialized = useMemo(() => JSON.stringify(config), [config]);
-  const dirty = baselineRef.current !== '' && baselineRef.current !== serialized;
+  const [baseline, setBaseline] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!baselineRef.current) baselineRef.current = serialized;
+    setBaseline(prev => (prev === null ? serialized : prev));
   }, [serialized]);
+
+  const dirty = baseline !== null && baseline !== serialized;
 
   const change = (next: FlConfig) => {
     setSaveState('idle');
@@ -119,7 +120,7 @@ export default function SecureFlControlCenter({ config, metrics, evidenceWarning
   const save = async () => {
     const saved = await onSave(config);
     if (saved) {
-      baselineRef.current = JSON.stringify(config);
+      setBaseline(JSON.stringify(config));
       setSaveState('saved');
     } else {
       setSaveState('error');
@@ -127,8 +128,8 @@ export default function SecureFlControlCenter({ config, metrics, evidenceWarning
   };
 
   const revert = () => {
-    if (!baselineRef.current) return;
-    change(deepCopy(JSON.parse(baselineRef.current)));
+    if (!baseline) return;
+    change(deepCopy(JSON.parse(baseline)));
   };
 
   const protectionEnabled = [

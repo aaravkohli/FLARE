@@ -1,0 +1,29 @@
+{
+  "venvPath": ".",
+  "venv": "venv",
+  "pythonVersion": "3.11",
+  "pythonPlatform": "Darwin",
+  "pythonPath": "./venv/bin/python3",
+  "typeCheckingMode": "basic",
+  "useLibraryCodeForTypes": true,
+  "reportMissingImports": false,
+  "reportMissingModuleSource": false,
+  "reportPrivateImportUsage": false,
+  "include": [
+    "api",
+    "fl",
+    "rl",
+    "simulation",
+    "orchestrator",
+    "sdn",
+    "fleet",
+    "schemas",
+    "runtime"
+  ],
+  "exclude": [
+    "venv",
+    "frontend-react",
+    "**/__pycache__",
+    "**/*.pyc"
+  ]
+}

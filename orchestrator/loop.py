@@ -36,7 +36,8 @@ import uuid
 from pathlib import Path
 from typing import Literal, Optional
 
-# Ensure project root is on sys.path when running as `python -m orchestrator.loop`
+# Ensure project root is on sys.path when running as
+# `python -m orchestrator.loop`
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import httpx
@@ -64,10 +65,10 @@ from rl.reward import (
 from rl.safety import constrain_route_action, resolve_safety_config
 
 _BASE = Path(__file__).parent.parent
-_MODE_CFG  = yaml.safe_load((_BASE / "config" / "mode.yaml").read_text())
-_FL_CFG    = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
-_SDN_CFG   = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
-_RL_CFG    = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
+_MODE_CFG = yaml.safe_load((_BASE / "config" / "mode.yaml").read_text())
+_FL_CFG = yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())
+_SDN_CFG = yaml.safe_load((_BASE / "config" / "sdn_config.yaml").read_text())
+_RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
 _SECURITY_CFG = yaml.safe_load(
     (_BASE / "config" / "security_config.yaml").read_text()
 )
@@ -78,9 +79,9 @@ MODE = os.getenv("MODE", _MODE_CFG["mode"]).strip().lower()
 if MODE not in _MODE_CFG or MODE not in {"simulation", "real"}:
     raise RuntimeError("MODE must be either 'simulation' or 'real'")
 LOOP_INTERVAL = _MODE_CFG[MODE]["loop_interval_s"]
-SDN_HOST  = os.getenv("SDN_HOST", _SDN_CFG["controller"]["host"])
-SDN_PORT  = _SDN_CFG["controller"]["port"]
-SDN_URL   = f"http://{SDN_HOST}:{SDN_PORT}/sdn/route"
+SDN_HOST = os.getenv("SDN_HOST", _SDN_CFG["controller"]["host"])
+SDN_PORT = int(os.getenv("SDN_PORT", _SDN_CFG["controller"]["port"]))
+SDN_URL = os.getenv("SDN_CONTROLLER_URL", f"http://{SDN_HOST}:{SDN_PORT}/sdn/route")
 SDN_TIMEOUT = _SDN_CFG["controller"]["timeout_s"]
 SDN_API_TOKEN = os.getenv("AJ_SDN_TOKEN", "antijam-development-sdn-token")
 _EVIDENCE_CFG = _SECURITY_CFG.get("evidence", {})
@@ -118,6 +119,7 @@ class TelemetryCollectionResult:
             "error": self.error,
         }
 
+
 # Paths
 os.makedirs(_BASE / "logs", exist_ok=True)
 os.makedirs(_BASE / "experiments", exist_ok=True)
@@ -125,6 +127,7 @@ os.makedirs(_BASE / "experiments", exist_ok=True)
 # ---------------------------------------------------------------------------
 # Structured logging
 # ---------------------------------------------------------------------------
+
 
 class _JsonFormatter(logging.Formatter):
     def format(self, record):
@@ -150,8 +153,19 @@ logger = logging.getLogger("orchestrator")
 # Experiment logging: CSV + SQLite
 # ---------------------------------------------------------------------------
 
+
+def _resolve_db_path() -> Path:
+    custom = os.getenv("DATABASE_PATH") or os.getenv("DATABASE_URL")
+    if custom:
+        if custom.startswith("sqlite:///"):
+            custom = custom[len("sqlite:///"):]
+        p = Path(custom)
+        return p if p.is_absolute() else _BASE / p
+    return _BASE / "experiments" / "experiment.db"
+
+
 _CSV_PATH = _BASE / "experiments" / f"run_{RUN_ID}.csv"
-_DB_PATH  = _BASE / "experiments" / "experiment.db"
+_DB_PATH = _resolve_db_path()
 _CSV_FIELDS = [
     "timestamp", "run_id", "step", "drone_id", "action_id", "path_name",
     "threat_level", "reward", "recovery_ms", "packet_loss",
@@ -350,7 +364,7 @@ def _fl_infer_batch(
     confidences = output.confidence.squeeze(-1).cpu().numpy()
     attack_indices = output.attack_logits.argmax(dim=1).cpu().numpy()
 
-    grouped = {
+    grouped: dict[str, dict[str, list]] = {
         drone_id: {"path_scores": [], "confidences": [], "attack_types": []}
         for drone_id in metrics_by_drone
     }
@@ -419,7 +433,7 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str)
         "drone_id": drone_id,
         "action_id": action_id_for_path(path_name),
     }
-    last_err = None
+    last_err: Optional[Exception] = None
     for attempt, delay in enumerate([0.0, 0.1, 0.4]):
         try:
             if delay:
@@ -447,7 +461,9 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str)
         except (httpx.HTTPError, httpx.TimeoutException) as e:
             last_err = e
             logger.warning("SDN push attempt %d failed: %s", attempt + 1, e)
-    raise last_err
+    if last_err is not None:
+        raise last_err
+    raise RuntimeError("SDN push failed: maximum retries reached")
 
 
 async def _push_containment(
@@ -490,7 +506,7 @@ class Orchestrator:
             _BASE / _FL_CFG["paths"]["model_save"]
         ) if self._fl_model is not None else None
         self._step = 0
-        
+
         self.DRONES = list(active_drone_ids())
         self._prev_path = {d: None for d in self.DRONES}
         self._prev_path_time = {d: None for d in self.DRONES}
@@ -1300,8 +1316,8 @@ class Orchestrator:
             while self._running:
                 try:
                     await self._run_step(client)
-                except Exception as e:
-                    logger.exception("Unexpected error in step %d: %s", self._step, e)
+                except Exception:
+                    logger.exception("Unexpected error in step %d", self._step)
                 await asyncio.sleep(LOOP_INTERVAL)
 
     def stop(self):

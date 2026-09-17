@@ -33,6 +33,7 @@ from fl.trust import TrustManager, UpdateAnalysis, UpdateAnalyzer, robust_upper_
 
 logger = logging.getLogger(__name__)
 
+
 # ---------------------------------------------------------------------------
 # Layer 1: Gradient Clipping
 # ---------------------------------------------------------------------------
@@ -188,9 +189,9 @@ def fedavg(
         num_examples = [1] * n
     total = max(sum(num_examples), 1)
 
-    aggregated = []
+    aggregated: list[np.ndarray] = []
     for layer_idx in range(len(all_weights[0])):
-        weighted = sum(
+        weighted: np.ndarray = sum(  # type: ignore[assignment]
             (ne / total) * ws[layer_idx]
             for ws, ne in zip(all_weights, num_examples)
         )
@@ -670,9 +671,9 @@ def trust_weighted_aggregate(
         total = max(sum(agg_weights), 1e-10)
         agg_weights = [w / total for w in agg_weights]
 
-    aggregated = []
+    aggregated: list[np.ndarray] = []
     for layer_idx in range(len(all_weights[0])):
-        weighted = sum(
+        weighted: np.ndarray = sum(  # type: ignore[assignment]
             w * ws[layer_idx]
             for w, ws in zip(agg_weights, all_weights)
         )

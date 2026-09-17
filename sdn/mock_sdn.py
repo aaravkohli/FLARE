@@ -11,8 +11,8 @@ Usage:
   python sdn/mock_sdn.py
 """
 
-import logging
 import hmac
+import logging
 import os
 import sys
 import time
@@ -26,14 +26,12 @@ import yaml
 from fastapi import Depends, FastAPI, Header, HTTPException, status
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from fleet.registry import active_drone_ids, is_active_drone
-from fleet.registry import get_drone
+from fleet.registry import active_drone_ids, get_drone, is_active_drone
 from sdn.evidence import ControllerEvidenceStore
-
 from sdn.route_contract import (
     HOLD_PATH,
-    ROUTE_COMMANDS,
     ROUTABLE_PATHS,
+    ROUTE_COMMANDS,
     VALID_PATHS,
     action_id_for_path,
     normalize_installed_path,
@@ -82,6 +80,8 @@ def _prune_inactive_fleet_state() -> None:
         for drone_id in list(table):
             if drone_id not in active:
                 table.pop(drone_id, None)
+
+
 _evidence_store = ControllerEvidenceStore(source="mock_sdn", independent=False)
 
 
@@ -351,6 +351,7 @@ async def readiness() -> dict:
 
 
 if __name__ == "__main__":
-    port = _SDN_CFG["controller"]["port"]
-    logger.info("Mock SDN controller starting on port %d", port)
-    uvicorn.run(app, host="0.0.0.0", port=port)
+    host = os.getenv("SDN_HOST_BIND", "0.0.0.0")
+    port = int(os.getenv("SDN_PORT", _SDN_CFG["controller"]["port"]))
+    logger.info("Mock SDN controller starting on %s:%d", host, port)
+    uvicorn.run(app, host=host, port=port)

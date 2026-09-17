@@ -43,6 +43,7 @@ class RoutingContract:
 
 def routing_contract(name: str) -> RoutingContract:
     """Return a validated routing contract description."""
+    actions: tuple[str, ...]
     if name == ROUTING_STATE_V2:
         actions = ROUTING_ACTIONS_V2
     elif name == ROUTING_STATE_V3:

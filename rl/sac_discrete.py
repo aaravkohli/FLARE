@@ -34,7 +34,7 @@ import os
 import random
 from collections import deque
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Optional, Tuple
 
 import numpy as np
 import torch
@@ -113,7 +113,7 @@ class ReplayBuffer:
     """Standard off-policy transition buffer."""
 
     def __init__(self, max_size: int = 20000):
-        self.buffer = deque(maxlen=max_size)
+        self.buffer: deque = deque(maxlen=max_size)
 
     def push(
         self,
@@ -229,16 +229,16 @@ class DiscreteSACAgent:
         with torch.no_grad():
             # Get action probabilities for next state: π(a'|s')
             next_state_probs, next_state_log_probs = self.actor.evaluate(next_states_t)
-            
+
             # Get target Q-values: min Q_target(s', a')
             q1_next = self.critic1_target(next_states_t)
             q2_next = self.critic2_target(next_states_t)
             min_q_next = torch.min(q1_next, q2_next)
-            
+
             # Target V: value expectation with entropy penalty
             # V(s') = Σ_a' [ π(a'|s') · (min Q(s', a') - α · log π(a'|s')) ]
             next_v = (next_state_probs * (min_q_next - alpha * next_state_log_probs)).sum(dim=-1, keepdim=True)
-            
+
             # Target Q-value: y = r + γ·(1-d)·V(s')
             target_q = rewards_t + (1.0 - dones_t) * self.gamma * next_v
 
@@ -256,7 +256,7 @@ class DiscreteSACAgent:
         # 2. Actor Update
         # -------------------------------------------------------------------
         probs, log_probs = self.actor.evaluate(states_t)
-        
+
         with torch.no_grad():
             q1 = self.critic1(states_t)
             q2 = self.critic2(states_t)
@@ -343,12 +343,12 @@ if __name__ == "__main__":
     state = np.random.randn(14).astype(np.float32)
     a, _ = agent.predict(state)
     assert a in [0, 1, 2], f"Expected action in [0, 1, 2], got {a}"
-    
+
     # Train step check
     buffer = ReplayBuffer()
     for _ in range(100):
         buffer.push(state, a, 1.0, state, False)
-    
+
     metrics = agent.update_parameters(buffer, batch_size=32)
     assert "critic_loss" in metrics
     print(f"Discrete SAC agent self-test passed. Loss: {metrics['critic_loss']:.4f}")

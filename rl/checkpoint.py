@@ -50,7 +50,7 @@ def _reward_contract_sha256(
     observation_definition: str = OBSERVATION_DEFINITION,
 ) -> str:
     """Bind a policy to every configured/static value used by its reward."""
-    contract = {
+    contract: dict[str, Any] = {
         "reward_definition": reward_definition,
         "weights": asdict(DEFAULT_REWARD_WEIGHTS),
         "path_names": list(PATH_NAMES),

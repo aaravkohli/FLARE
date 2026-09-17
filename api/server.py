@@ -12,9 +12,9 @@ Endpoints:
   GET  /stream           — protected SSE stream of orchestrator decisions
   WS   /ws               — authenticated WebSocket telemetry stream
 """
+# flake8: noqa: E402
 
 import asyncio
-from collections import deque
 import hashlib
 import json
 import logging
@@ -24,29 +24,31 @@ import sys
 import tempfile
 import threading
 import time
+from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import List, Optional, Dict, Any, Set, Literal
+from typing import Any, Literal
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import aiosqlite
 import httpx
+import numpy as np
 import torch
 import uvicorn
 import yaml
 from fastapi import (
+    BackgroundTasks,
     Depends,
     FastAPI,
     HTTPException,
-    BackgroundTasks,
-    WebSocket,
-    WebSocketDisconnect,
-    status,
     Query,
     Request,
     Response,
+    WebSocket,
+    WebSocketDisconnect,
+    status,
 )
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
@@ -56,7 +58,6 @@ from passlib.context import CryptContext
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from sse_starlette.sse import EventSourceResponse
 
-from schemas.decision_event import DecisionEvent
 from api.readiness_history import ReadinessHistory
 from fleet.registry import (
     DroneRegistrationError,
@@ -68,6 +69,7 @@ from fleet.registry import (
 )
 from rl.safety import constrain_route_action, resolve_safety_config
 from runtime.model_deployment import DeploymentWatcher
+from schemas.decision_event import DecisionEvent
 
 _BASE = Path(__file__).parent.parent
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
@@ -110,7 +112,7 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 # Simple in-memory user store — production deployments should use a persistent
 # identity provider. The local-development default is admin/antijam2026.
 _USERS: dict = {}  # filled at module load below
-_login_failures: Dict[str, List[float]] = {}
+_login_failures: dict[str, list[float]] = {}
 LOGIN_WINDOW_SECONDS = 60
 LOGIN_MAX_FAILURES = 5
 _DUMMY_PASSWORD_HASH = pwd_context.hash("invalid-user-password-placeholder")
@@ -126,6 +128,7 @@ def _build_users():
         }
     }
 
+
 _USERS = _build_users()
 
 
@@ -133,7 +136,7 @@ def _verify_password(plain: str, hashed: str) -> bool:
     return pwd_context.verify(plain, hashed)
 
 
-def _create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -> str:
+def _create_access_token(data: dict, expires_delta: timedelta | None = None) -> str:
     to_encode = data.copy()
     expire = datetime.now(timezone.utc) + (expires_delta or timedelta(minutes=15))
     to_encode.update({"exp": expire})
@@ -148,9 +151,10 @@ def _authenticate_token(token: str) -> dict:
     )
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        username: str = payload.get("sub")
+        username = payload.get("sub")
         if username is None:
             raise credentials_exception
+        username = str(username)
     except JWTError:
         raise credentials_exception
 
@@ -203,7 +207,7 @@ class Token(BaseModel):
 class PredictRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    path_scores: List[float]
+    path_scores: list[float]
     drone_id: str = "drone_1"
     prev_reward: float = 0.0
     client_trust: float = Field(default=1.0, ge=0.0, le=1.0)
@@ -240,15 +244,15 @@ class PredictResponse(BaseModel):
     threat_level: str
     original_action_id: int
     safety_override: bool
-    safe_action_mask: List[bool]
+    safe_action_mask: list[bool]
     no_safe_route: bool
-    constraint_reason: Optional[str] = None
+    constraint_reason: str | None = None
     safety_threshold: float
     all_unsafe_behavior: str
     network_action: str = "forward"
     routing_contract: str = "routing_state_v2"
-    fl_confidence: Optional[float] = None
-    attack_type: Optional[str] = None
+    fl_confidence: float | None = None
+    attack_type: str | None = None
     timestamp: float
 
 
@@ -261,7 +265,7 @@ class HealthResponse(BaseModel):
     sdn_controller: str
     fl_client_manager: str = "unknown"
     active_fl_clients: int = 0
-    deployment: Dict[str, Any] = Field(default_factory=dict)
+    deployment: dict[str, Any] = Field(default_factory=dict)
     version: str = "2.0.0"
 
 
@@ -271,8 +275,8 @@ class SDNReadiness(BaseModel):
     status: str
     connected_switches: int = 0
     expected_switches: int = 0
-    available_paths: Dict[str, List[str]] = Field(default_factory=dict)
-    error: Optional[str] = None
+    available_paths: dict[str, list[str]] = Field(default_factory=dict)
+    error: str | None = None
 
 
 class ReadinessTransition(BaseModel):
@@ -284,9 +288,9 @@ class ReadinessTransition(BaseModel):
     status: str
     connected_switches: int
     expected_switches: int
-    available_paths: Dict[str, List[str]]
-    unavailable_paths: Dict[str, List[str]]
-    error: Optional[str] = None
+    available_paths: dict[str, list[str]]
+    unavailable_paths: dict[str, list[str]]
+    error: str | None = None
 
 
 class ReadinessResponse(BaseModel):
@@ -297,7 +301,7 @@ class ReadinessResponse(BaseModel):
 
 
 class ReadinessHistoryResponse(BaseModel):
-    events: List[ReadinessTransition]
+    events: list[ReadinessTransition]
     count: int
     capacity: int
 
@@ -305,7 +309,7 @@ class ReadinessHistoryResponse(BaseModel):
 class JamRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    paths: List[str] = Field(default_factory=list, max_length=3)
+    paths: list[str] = Field(default_factory=list, max_length=3)
     duration: float = Field(default=10.0, ge=0.0, le=3600.0)
     drone_id: str = "drone_1"
     profile: str = "spot"
@@ -377,7 +381,7 @@ class FleetRegistrationRequest(BaseModel):
         max_length=64,
         pattern=r"^[a-z][a-z0-9_-]{2,63}$",
     )
-    display_name: Optional[str] = Field(default=None, min_length=1, max_length=80)
+    display_name: str | None = Field(default=None, min_length=1, max_length=80)
     mac: str = Field(pattern=r"^(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}$")
     access_port: int = Field(ge=4, le=65535)
     rssi_offset: float = Field(default=0.0, ge=-60.0, le=60.0)
@@ -397,11 +401,11 @@ class FleetEditRequest(BaseModel):
 
     model_config = ConfigDict(extra="forbid")
 
-    display_name: Optional[str] = Field(default=None, min_length=1, max_length=80)
-    rssi_offset: Optional[float] = Field(default=None, ge=-60.0, le=60.0)
-    pdr_offset: Optional[float] = Field(default=None, ge=-1.0, le=1.0)
-    latency_factor: Optional[float] = Field(default=None, ge=0.1, le=10.0)
-    enabled: Optional[bool] = None
+    display_name: str | None = Field(default=None, min_length=1, max_length=80)
+    rssi_offset: float | None = Field(default=None, ge=-60.0, le=60.0)
+    pdr_offset: float | None = Field(default=None, ge=-1.0, le=1.0)
+    latency_factor: float | None = Field(default=None, ge=0.1, le=10.0)
+    enabled: bool | None = None
 
     @field_validator("rssi_offset", "pdr_offset", "latency_factor")
     @classmethod
@@ -415,30 +419,32 @@ class FleetEditRequest(BaseModel):
 # Global State
 # ---------------------------------------------------------------------------
 
-_rl_agents: Dict[str, Any] = {}
+_rl_agents: dict[str, Any] = {}
 _fl_model = None
-_fl_model_path: Optional[Path] = None
-_rl_model_path: Optional[Path] = None
+_fl_model_path: Path | None = None
+_rl_model_path: Path | None = None
 _routing_contract_name = "routing_state_v2"
 _start_time = time.time()
-_last_jam_time: Dict[str, float] = {}  # drone_id -> timestamp of last jam request
-_ws_clients: List[WebSocket] = []  # Connected WebSocket clients
-_compromised_drones: Set[str] = set()  # Set of compromised drones (Byzantine test)
+# drone_id -> timestamp of last jam request
+_last_jam_time: dict[str, float] = {}
+_ws_clients: list[WebSocket] = []  # Connected WebSocket clients
+# Set of compromised drones (Byzantine test)
+_compromised_drones: set[str] = set()
 _FL_SEQUENCE_LEN = int(
     yaml.safe_load((_BASE / "config" / "fl_config.yaml").read_text())["model"][
         "sequence_len"
     ]
 )
-_xai_metric_history = {
+_xai_metric_history: dict[str, dict[str, deque]] = {
     drone_id: {
         path_name: deque(maxlen=_FL_SEQUENCE_LEN)
         for path_name in ("direct", "satellite", "mesh")
     }
     for drone_id in _active_drone_set()
 }
-_xai_last_event_ids: Dict[str, str] = {}
-_xai_explanation_cache: Dict[str, tuple[str, Optional[dict]]] = {}
-_routing_xai_cache: Dict[str, tuple[str, dict]] = {}
+_xai_last_event_ids: dict[str, str] = {}
+_xai_explanation_cache: dict[str, tuple[str, dict | None]] = {}
+_routing_xai_cache: dict[str, tuple[str, dict]] = {}
 _model_lock = threading.RLock()
 _DEPLOYMENT_CFG = _MODE_CFG.get("deployment", {})
 _deployment_watcher = DeploymentWatcher(
@@ -448,7 +454,7 @@ _deployment_watcher = DeploymentWatcher(
     ),
     poll_interval_s=float(_DEPLOYMENT_CFG.get("poll_interval_s", 0.5)),
 )
-_deployment_rollback: Optional[tuple] = None
+_deployment_rollback: tuple | None = None
 _deployment_just_activated = False
 
 try:
@@ -477,6 +483,7 @@ def _sync_api_fleet() -> set[str]:
     _readiness_history.set_drone_ids(current)
     return current
 
+
 _RUN_SUMMARY_COLUMNS = (
     "id, run_id, timestamp, step, drone_id, action_id, path_name, "
     "threat_level, reward, recovery_ms, packet_loss, fl_confidence, attack_type"
@@ -488,9 +495,18 @@ async def _table_columns(db: aiosqlite.Connection, table: str) -> set[str]:
     return {row[1] for row in await cursor.fetchall()}
 
 
-async def _latest_decision_events() -> Dict[str, dict]:
+def _get_db_path() -> Path:
+    custom = os.getenv("DATABASE_PATH") or os.getenv("DATABASE_URL")
+    if custom:
+        custom = custom.removeprefix("sqlite:///")
+        p = Path(custom)
+        return p if p.is_absolute() else _BASE / p
+    return _BASE / "experiments" / "experiment.db"
+
+
+async def _latest_decision_events() -> dict[str, dict]:
     """Return the latest valid canonical event for each drone, if available."""
-    db_path = _BASE / "experiments" / "experiment.db"
+    db_path = _get_db_path()
     if not db_path.exists():
         return {}
 
@@ -507,7 +523,7 @@ async def _latest_decision_events() -> Dict[str, dict]:
         logger.debug("Canonical event DB read error: %s", exc)
         return {}
 
-    events: Dict[str, dict] = {}
+    events: dict[str, dict] = {}
     for (raw_event,) in rows:
         try:
             event = DecisionEvent.model_validate_json(raw_event)
@@ -521,9 +537,9 @@ async def _latest_decision_events() -> Dict[str, dict]:
     return events
 
 
-async def _latest_run_summaries() -> Dict[str, dict]:
+async def _latest_run_summaries() -> dict[str, dict]:
     """Read legacy summary columns without leaking the large event_json field."""
-    db_path = _BASE / "experiments" / "experiment.db"
+    db_path = _get_db_path()
     if not db_path.exists():
         return {}
     try:
@@ -540,9 +556,9 @@ async def _latest_run_summaries() -> Dict[str, dict]:
     return {row["drone_id"]: dict(row) for row in rows}
 
 
-async def _latest_operational_events() -> Dict[str, dict]:
+async def _latest_operational_events() -> dict[str, dict]:
     """Return the latest fail-closed operational state for each drone."""
-    db_path = _BASE / "experiments" / "experiment.db"
+    db_path = _get_db_path()
     if not db_path.exists():
         return {}
     try:
@@ -557,7 +573,7 @@ async def _latest_operational_events() -> Dict[str, dict]:
     except Exception as exc:
         logger.debug("Operational event DB read error: %s", exc)
         return {}
-    events: Dict[str, dict] = {}
+    events: dict[str, dict] = {}
     for (raw_event,) in rows:
         try:
             event = json.loads(raw_event)
@@ -729,7 +745,7 @@ def _refresh_api_deployment() -> None:
 def _rollback_api_deployment(reason: str) -> None:
     """Rollback the first use of a newly activated API model generation."""
     global _fl_model, _fl_model_path, _rl_agents, _rl_model_path, _routing_contract_name
-    global _deployment_rollback, _deployment_just_activated
+    global _deployment_just_activated
     if not _deployment_just_activated or _deployment_rollback is None:
         return
     with _model_lock:
@@ -880,7 +896,7 @@ app.add_middleware(
     allow_origins=_cors_origins,
     allow_credentials=True,
     allow_methods=["GET", "POST", "PATCH", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type"],
+    allow_headers=["Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With"],
 )
 
 
@@ -961,6 +977,8 @@ def _fl_client_manager_status() -> dict:
     if not isinstance(payload, dict) or payload.get("schema_version") != "fl_client_manager_status_v1":
         return {"status": "invalid", "clients": {}}
     updated_at = payload.get("updated_at")
+    if updated_at is None:
+        return {"status": "invalid", "clients": {}}
     try:
         age_s = max(0.0, time.time() - float(updated_at))
     except (TypeError, ValueError):
@@ -1065,7 +1083,7 @@ async def edit_drone(
 # ---------------------------------------------------------------------------
 
 
-def _greedy_predict(path_scores: List[float]) -> dict:
+def _greedy_predict(path_scores: list[float]) -> dict:
     policy_action = int(min(range(3), key=lambda i: path_scores[i]))
     constrained = constrain_route_action(
         policy_action,
@@ -1206,6 +1224,18 @@ async def readiness(response: Response) -> ReadinessResponse:
     )
 
 
+@app.get("/api/health", response_model=HealthResponse, tags=["System"], include_in_schema=False)
+async def api_health():
+    """Alias for /health."""
+    return await health()
+
+
+@app.get("/api/status", response_model=ReadinessResponse, tags=["System"], include_in_schema=False)
+async def api_status(response: Response) -> ReadinessResponse:
+    """Alias for /ready."""
+    return await readiness(response)
+
+
 @app.get(
     "/ready/history",
     response_model=ReadinessHistoryResponse,
@@ -1328,7 +1358,7 @@ async def routing_explanation(
     if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
     event = (await _latest_decision_events()).get(drone_id)
-    token = event.get("event_id") if event else "missing"
+    token = str(event.get("event_id")) if event and event.get("event_id") is not None else "missing"
     cached = _routing_xai_cache.get(drone_id)
     if cached is not None and cached[0] == token:
         return cached[1]
@@ -1417,7 +1447,7 @@ async def metrics_history(
     _: dict = Depends(get_current_user),
 ) -> dict:
     """Return last `limit` orchestrator decisions for charting. Requires JWT auth."""
-    db_path = _BASE / "experiments" / "experiment.db"
+    db_path = _get_db_path()
     if not db_path.exists():
         return {"rows": []}
 
@@ -1435,7 +1465,7 @@ async def metrics_history(
 
     # Reverse so oldest-first for charting
     result = []
-    for row in reversed(rows):
+    for row in reversed(list(rows)):
         summary = dict(row)
         raw_event = summary.pop("event_json", None)
         if raw_event:
@@ -1467,9 +1497,9 @@ def _clear_jamming_after(drone_id: str, duration: float, request_time: float):
 
 
 async def _wait_for_jam_visibility(
-    targets: List[str],
-    previous_events: Dict[str, dict],
-    expected_profile: Optional[str],
+    targets: list[str],
+    previous_events: dict[str, dict],
+    expected_profile: str | None,
     *,
     timeout_s: float = 1.25,
 ) -> bool:
@@ -1489,7 +1519,8 @@ async def _wait_for_jam_visibility(
         for target in targets:
             current = current_events.get(target)
             previous = previous_events.get(target)
-            if current is None or current.get("event_id") == previous.get("event_id"):
+            prev_id = previous.get("event_id") if previous is not None else None
+            if current is None or current.get("event_id") == prev_id:
                 visible = False
                 break
             active_attack = (
@@ -1530,11 +1561,11 @@ async def trigger_jamming(
         return {"status": "cleared", "drone_id": req.drone_id}
 
     targets = set_jamming_state(req.drone_id, req.paths, req.profile)
-    
+
     req_time = time.time()
     for t in targets:
         _last_jam_time[t] = req_time
-        
+
     bg_tasks.add_task(_clear_jamming_after, req.drone_id, req.duration, req_time)
     await _wait_for_jam_visibility(
         targets,
@@ -1562,6 +1593,7 @@ def _require_byzantine_simulation_mode() -> None:
             detail="Byzantine attack injection is available only in simulation mode",
         )
 
+
 @app.post("/swarm/compromise/{drone_id}", tags=["Control"])
 async def compromise_drone(drone_id: str, _: dict = Depends(require_admin)):
     """Mark a drone as compromised (triggers simulated Byzantine model poisoning)."""
@@ -1581,8 +1613,7 @@ async def restore_drone(drone_id: str, _: dict = Depends(require_admin)):
     _require_byzantine_simulation_mode()
     if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
-    if drone_id in _compromised_drones:
-        _compromised_drones.remove(drone_id)
+    _compromised_drones.discard(drone_id)
     from simulation.byzantine_state import set_attack_mode
     set_attack_mode(drone_id, "normal")
     logger.info("Byzantine fault cleared: %s RESTORED to normal operations.", drone_id)
@@ -1667,8 +1698,8 @@ async def simulate_insider_behavior(
 
     set_insider_profile(drone_id, req.profile)
     return {"status": "ok", "drone_id": drone_id, "profile": req.profile}
- 
- 
+
+
 # ---------------------------------------------------------------------------
 # Federated Learning Controls & Metrics API
 # ---------------------------------------------------------------------------
@@ -1685,6 +1716,7 @@ async def get_fl_config(_: dict = Depends(get_current_user)):
     except Exception as e:
         logger.exception("Failed to read FL config")
         raise HTTPException(status_code=500, detail="Failed to read FL config") from e
+
 
 def _validate_config_patch(patch: Any, current: Any, path: str = "config") -> None:
     """Reject unknown keys, shape changes, non-finite numbers, and type changes."""
@@ -1737,7 +1769,7 @@ def _deep_merge(current: dict, patch: dict) -> dict:
 
 def _write_yaml_atomic(path: Path, value: dict) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    temp_path: Optional[Path] = None
+    temp_path: Path | None = None
     try:
         with tempfile.NamedTemporaryFile(
             mode="w",
@@ -1776,6 +1808,7 @@ async def update_fl_config(new_config: dict, _: dict = Depends(require_admin)):
         logger.exception("Failed to update FL config")
         raise HTTPException(status_code=500, detail="Failed to update FL config") from e
 
+
 @app.get("/api/fl/metrics", tags=["Federated Learning"])
 async def get_fl_metrics(_: dict = Depends(get_current_user)):
     """Retrieve the latest Federated Learning metrics from results/fl_metrics_snapshot.json."""
@@ -1813,7 +1846,7 @@ async def get_fl_metrics(_: dict = Depends(get_current_user)):
             "history": []
         }
     try:
-        with open(metrics_path, "r") as f:
+        with open(metrics_path) as f:
             return json.load(f)
     except Exception as e:
         logger.exception("Failed to read FL metrics")
@@ -1849,14 +1882,14 @@ async def generate_evaluation_report(
 ):
     """Generate and export a premium Capstone Evaluation Report in HTML format."""
     from fastapi.responses import HTMLResponse
-    db_path = _BASE / "experiments" / "experiment.db"
-    
+    db_path = _get_db_path()
+
     # 1. Gather stats from SQLite (or defaults if missing)
     total_steps = 0
-    path_dist = {"direct": 0, "satellite": 0, "mesh": 0}
+    path_dist: dict[str, float] = {"direct": 0.0, "satellite": 0.0, "mesh": 0.0}
     avg_reward = 0.0
     avg_loss = 0.0
-    
+
     if db_path.exists():
         try:
             async with aiosqlite.connect(db_path) as db:
@@ -1865,7 +1898,7 @@ async def generate_evaluation_report(
                 cursor = await db.execute("SELECT COUNT(*) as count FROM runs")
                 row = await cursor.fetchone()
                 total_steps = row["count"] if row else 0
-                
+
                 # Path distribution
                 cursor = await db.execute("SELECT path_name, COUNT(*) as count FROM runs GROUP BY path_name")
                 rows = await cursor.fetchall()
@@ -1874,12 +1907,12 @@ async def generate_evaluation_report(
                     pname = r["path_name"]
                     pcount = r["count"]
                     if pname in path_dist:
-                        path_dist[pname] = pcount
+                        path_dist[pname] = float(pcount)
                         total_paths += pcount
                 if total_paths > 0:
-                    for k in path_dist:
-                        path_dist[k] = round((path_dist[k] / total_paths) * 100, 1)
-                        
+                    for k, val in path_dist.items():
+                        path_dist[k] = round((val / total_paths) * 100, 1)
+
                 # Averages
                 cursor = await db.execute("SELECT AVG(reward) as reward, AVG(packet_loss) as loss FROM runs")
                 row = await cursor.fetchone()
@@ -1888,7 +1921,7 @@ async def generate_evaluation_report(
                     avg_loss = round((row["loss"] or 0.0) * 100, 2)
         except Exception as e:
             logger.error("Report database read failed: %s", e)
-            
+
     has_sufficient_data = total_steps >= 10
     report_notice = (
         "Metrics below were calculated from recorded experiment data."
@@ -1906,7 +1939,7 @@ async def generate_evaluation_report(
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>Capstone Evaluation Report — Team 2</title>
         <style>
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');
+            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap');  # noqa: E501
             :root {{
                 --bg: #0b0f19;
                 --card-bg: #111827;
@@ -2055,8 +2088,16 @@ async def generate_evaluation_report(
                 font-weight: 600;
                 text-transform: uppercase;
             }}
-            .badge-success {{ background-color: rgba(16,185,129,0.1); color: var(--accent-emerald); border: 1px solid rgba(16,185,129,0.2); }}
-            .badge-warn {{ background-color: rgba(244,63,94,0.1); color: var(--accent-rose); border: 1px solid rgba(244,63,94,0.2); }}
+            .badge-success {{
+                background-color: rgba(16,185,129,0.1);
+                color: var(--accent-emerald);
+                border: 1px solid rgba(16,185,129,0.2);
+            }}
+            .badge-warn {{
+                background-color: rgba(244,63,94,0.1);
+                color: var(--accent-rose);
+                border: 1px solid rgba(244,63,94,0.2);
+            }}
             footer {{
                 margin-top: 50px;
                 border-top: 1px solid var(--border);
@@ -2110,7 +2151,9 @@ async def generate_evaluation_report(
             </div>
 
             <h2>1. System Performance Overview</h2>
-            <p>This report summarizes the experiment decisions currently stored by FLARE. Path distribution and averages are descriptive values from the available records; they are not model-accuracy or convergence claims.</p>
+            <p>This report summarizes the experiment decisions currently stored by FLARE.
+            Path distribution and averages are descriptive values from the available records;
+            they are not model-accuracy or convergence claims.</p>
 
             <h2>2. Communication Link Interface Path Distribution</h2>
             <table>
@@ -2149,10 +2192,14 @@ async def generate_evaluation_report(
             </table>
 
             <h2>3. Secure Aggregation Audit Summary</h2>
-            <p>The configured aggregation pipeline can apply update clipping, anomaly filtering, trust-weighted or robust averaging, and server-side noise. The exact method used in a round must be verified from the exported FL round metrics rather than inferred from this report.</p>
+            <p>The configured aggregation pipeline can apply update clipping, anomaly filtering,
+            trust-weighted or robust averaging, and server-side noise. The exact method used
+            in a round must be verified from the exported FL round metrics rather than
+            inferred from this report.</p>
 
             <footer>
-                Capstone Project Team 2 — Grade Evaluation Deliverable. Compiled dynamically at {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}.
+                Capstone Project Team 2 — Grade Evaluation Deliverable.
+                Compiled dynamically at {datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S UTC")}.
             </footer>
         </div>
     </body>
@@ -2165,13 +2212,12 @@ async def generate_evaluation_report(
 # Model Sensitivity Diagnostic (Single-Feature Ablation)
 # ---------------------------------------------------------------------------
 
+
 def _normalise_explanation_sequence(
     path_metrics: dict,
-    path_history: Optional[List[dict]] = None,
+    path_history: list[dict] | None = None,
 ) -> torch.Tensor:
     """Build the exact normalized model input used by live explanations."""
-    import numpy as np
-
     mins = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
     maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
     history = list(path_history or [path_metrics])[-_FL_SEQUENCE_LEN:]
@@ -2193,11 +2239,11 @@ def _normalise_explanation_sequence(
 def _calculate_model_explanation(
     model,
     path_metrics: dict | None,
-    path_history: Optional[List[dict]] = None,
+    path_history: list[dict] | None = None,
     *,
     target_head: Literal["threat", "attack"] = "threat",
     target_index: int = 0,
-) -> Optional[dict]:
+) -> dict | None:
     """Return a target-specific IG explanation, or no result on real failure."""
     if model is None or not path_metrics:
         return None
@@ -2218,28 +2264,26 @@ def _calculate_model_explanation(
         _rollback_api_deployment(f"fl_explanation_failed: {exc}")
         return None
 
+
 def _calculate_feature_sensitivity(
     model,
     path_metrics: dict | None,
-    path_history: Optional[List[dict]] = None,
-) -> Optional[dict]:
+    path_history: list[dict] | None = None,
+) -> dict | None:
     """
     Calculate local feature-sensitivity percentages for the five RF metrics.
 
     This is a single-feature ablation diagnostic, not SHAP/LIME, and the
     magnitudes are associations rather than causal explanations.
     """
-    import numpy as np
-    import torch
-    
     if model is None or not path_metrics:
         return None
-        
+
     try:
         # Normalize the oldest-first rolling path history. At startup, left-pad
         # the earliest real observation until a full model sequence is available.
-        mins  = np.array([-120.0, 0.0, -10.0,  0.0,   0.0], dtype=np.float32)
-        maxs  = np.array([ -20.0, 1.0,  30.0, 1000.0, 1.0], dtype=np.float32)
+        mins = np.array([-120.0, 0.0, -10.0, 0.0, 0.0], dtype=np.float32)
+        maxs = np.array([-20.0, 1.0, 30.0, 1000.0, 1.0], dtype=np.float32)
         history = list(path_history or [path_metrics])[-_FL_SEQUENCE_LEN:]
         frames = []
         for snapshot in history:
@@ -2248,13 +2292,15 @@ def _calculate_feature_sensitivity(
                 snapshot.get("pdr", 0.9),
                 snapshot.get("sinr", 20.0),
                 snapshot.get("latency", 20.0),
-                snapshot.get("packet_loss", 0.0),
+                snapshot.get("packet_loss", 0.05),
             ], dtype=np.float32)
-            frames.append(np.clip((features - mins) / (maxs - mins + 1e-8), 0.0, 1.0))
-        if len(frames) < _FL_SEQUENCE_LEN:
+            features = np.clip((features - mins) / (maxs - mins + 1e-6), 0.0, 1.0)
+            frames.append(features)
+
+        while len(frames) < _FL_SEQUENCE_LEN:
             frames = [frames[0]] * (_FL_SEQUENCE_LEN - len(frames)) + frames
         seq = np.stack(frames).astype(np.float32)
-        
+
         # Build one base sequence and five feature-ablation variants, then run
         # all six in a single model call.
         variants = [seq]
@@ -2273,7 +2319,7 @@ def _calculate_feature_sensitivity(
             abs(p_base - float(p_pert)) + 0.02
             for p_pert in predictions[1:]
         ]
-            
+
         total = sum(influences)
         if total > 0:
             pcts = [int((inf / total) * 100) for inf in influences]
@@ -2282,7 +2328,7 @@ def _calculate_feature_sensitivity(
             pcts[0] += diff
         else:
             pcts = [20, 20, 20, 20, 20]
-            
+
         return {
             "rssi": pcts[0],
             "pdr": pcts[1],
@@ -2323,7 +2369,7 @@ async def telemetry_broadcaster():
                 events = await _latest_decision_events()
                 legacy_summaries = await _latest_run_summaries()
                 missing = _sync_api_fleet() - events.keys()
-                fallback_metrics: Dict[str, dict] = {}
+                fallback_metrics: dict[str, dict] = {}
                 if missing:
                     if _runtime_mode_and_sdn_controller()[0] == "simulation":
                         from simulation.generator import generate_swarm_metrics
@@ -2335,7 +2381,7 @@ async def telemetry_broadcaster():
                 fl_metrics_path = _BASE / "results" / "fl_metrics_snapshot.json"
                 if fl_metrics_path.exists():
                     try:
-                        with open(fl_metrics_path, "r") as f:
+                        with open(fl_metrics_path) as f:
                             fl_metrics = json.load(f)
                     except Exception:
                         pass
@@ -2467,8 +2513,8 @@ async def stream_decisions(_: dict = Depends(get_current_user)):
     Requires a bearer token. Streaming clients must support Authorization headers.
     """
     async def event_generator():
-        db_path = _BASE / "experiments" / "experiment.db"
-        last_id: Optional[int] = None
+        db_path = _get_db_path()
+        last_id: int | None = None
         while True:
             if db_path.exists():
                 try:
@@ -2483,7 +2529,8 @@ async def stream_decisions(_: dict = Depends(get_current_user)):
                                 f"SELECT {selected_columns} FROM runs "
                                 "ORDER BY id DESC LIMIT 3"
                             )
-                            rows = list(reversed(await cursor.fetchall()))
+                            _fetched = list(await cursor.fetchall())
+                            rows = list(reversed(_fetched))
                         else:
                             cursor = await db.execute(
                                 f"SELECT {selected_columns} FROM runs "
@@ -2491,9 +2538,10 @@ async def stream_decisions(_: dict = Depends(get_current_user)):
                                 (last_id,),
                             )
                             rows = await cursor.fetchall()
-                        for row in rows:
-                            last_id = row["id"]
-                            payload = dict(row)
+                        for _row in rows:
+                            _r: dict[str, Any] = dict(_row)  # type: ignore[arg-type]
+                            last_id = _r["id"]
+                            payload = _r
                             raw_event = payload.pop("event_json", None)
                             if raw_event:
                                 payload = DecisionEvent.model_validate_json(raw_event).model_dump(
@@ -2562,4 +2610,6 @@ else:
 
 
 if __name__ == "__main__":
-    uvicorn.run("api.server:app", host="0.0.0.0", port=8000, reload=False)
+    host = os.getenv("API_HOST", os.getenv("HOST", "0.0.0.0"))
+    port = int(os.getenv("API_PORT", os.getenv("PORT", "8000")))
+    uvicorn.run("api.server:app", host=host, port=port, reload=False)

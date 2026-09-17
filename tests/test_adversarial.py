@@ -11,7 +11,7 @@ Tests attempt to:
 5. Validate all endpoints with boundary/edge cases
 6. Verify error handling and graceful degradation
 
-Run: cd /Users/aaravkohli/Capstone && python tests/test_adversarial.py
+Run: python tests/test_adversarial.py
 """
 
 import asyncio
@@ -27,7 +27,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-BASE_URL = "http://127.0.0.1:8000"
+BASE_URL = os.getenv("API_BASE_URL", "http://127.0.0.1:8000")
 PASS_COLOR = "\033[92m"  # green
 FAIL_COLOR = "\033[91m"  # red
 WARN_COLOR = "\033[93m"  # yellow

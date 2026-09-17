@@ -561,7 +561,9 @@ class TrustManager:
             self._trust[client_id] = trust
             self._rounds[client_id] += 1
             self._norm_history.setdefault(client_id, deque(maxlen=self.history_size)).append(analysis.update_norm)
-            self._deviation_history.setdefault(client_id, deque(maxlen=self.history_size)).append(analysis.deviation_score)
+            self._deviation_history.setdefault(
+                client_id, deque(maxlen=self.history_size)
+            ).append(analysis.deviation_score)
             analysis.trust_score = trust
 
             if analysis.status != "NORMAL":
@@ -600,7 +602,7 @@ class TrustManager:
     def snapshot(self) -> List[dict]:
         rows = []
         for client_id in sorted(self._trust):
-            deviations = self._deviation_history.get(client_id, [])
+            deviations: list[float] = list(self._deviation_history.get(client_id, []))
             rows.append({
                 "client_id": client_id,
                 "trust_score": round(self._trust[client_id], 6),
@@ -955,9 +957,9 @@ def trust_weighted_fedavg(
         agg_weights = [w / total for w in agg_weights]
 
     n_layers = len(client_weights[0])
-    aggregated = []
+    aggregated: list[np.ndarray] = []
     for layer_idx in range(n_layers):
-        weighted = sum(
+        weighted: np.ndarray = sum(  # type: ignore[assignment]
             w * ws[layer_idx]
             for w, ws in zip(agg_weights, client_weights)
         )

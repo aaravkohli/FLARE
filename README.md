@@ -1073,30 +1073,53 @@ A separate [controlled ns-3 Wi-Fi mobility protocol](docs/wifi_mobility_packet_p
 - The packet-trace workflow requires a configured/built ns-3 tree at `ns-3-dev/` (verified with the vendored ns-3.48 development revision) and a C++20 compiler. It does not require root privileges.
 - Substantial storage is required if retaining RadioML, DroneRF, ns-3, Mininet-WiFi, models, logs, and frontend dependencies.
 
-### Python environment
+### One-command automated setup (macOS / Linux)
+
+Run the automated setup script to check prerequisites, create `venv`, install Python and frontend dependencies, copy `.env`, and build the frontend bundle:
+
+```bash
+./scripts/setup.sh
+# or using Makefile:
+make setup
+```
+
+### Manual setup by platform
+
+#### macOS / Linux
 
 From the repository root:
 
 ```bash
-python3.11 -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
+
+cd frontend-react
+npm ci
+npm run build
+cd ..
+```
+
+#### Windows (PowerShell / Command Prompt)
+
+```powershell
+python -m venv venv
+.\venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+python -m pip install -r requirements.txt
+
+cd frontend-react
+npm ci
+npm run build
+cd ..
 ```
 
 If DroneRF RAR extraction is needed, install the missing Python/system support separately, for example `rarfile` plus an `unrar`-compatible executable. Ryu is best run through its dedicated Dockerfile because its dependency constraints may conflict with the modern API/ML environment.
 
-### Frontend environment
-
-```bash
-cd frontend-react
-npm ci
-cd ..
-```
-
-Use `npm ci` for a reproducible installation from the committed lockfile. Use `npm install` only when intentionally changing dependencies and commit the resulting `package-lock.json` update. The frontend currently requires patched PostCSS `8.5.26` or newer within the declared compatible range; the synchronized lockfile resolves the previously reported PostCSS and Nano ID advisories.
-
 ### Environment variables
+
+Copy `.env.example` to `.env` to customize settings. Application defaults support local execution out of the box.
 
 | Variable | Used by | Default/behavior | Production guidance |
 |---|---|---|---|
@@ -1104,19 +1127,27 @@ Use `npm ci` for a reproducible installation from the committed lockfile. Use `n
 | `AJ_SECRET_KEY` | FastAPI JWT | Development-only built-in value | Required in production; unique random value of at least 32 characters |
 | `AJ_ADMIN_USERNAME` | FastAPI | `admin` | Set the deployment operator ID |
 | `AJ_ADMIN_PASSWORD` | FastAPI | Development-only `antijam2026` | Required in production; inject through a secret store |
-| `AJ_CORS_ORIGINS` | FastAPI | Local Vite origins in development | Required in production; comma-separated exact trusted origins, never `*` |
-| `AJ_SDN_MODE` | FastAPI health/readiness metadata | Derived from `MODE` (`mock` for simulation, otherwise `ryu`) | Set explicitly to the deployed controller implementation |
-| `AJ_SDN_TOKEN` | Orchestrator, mock SDN, Ryu | Shared development-only token | Required in production; unique value of at least 24 characters |
-| `AJ_SENSOR_API_URL` | Orchestrator real mode | `http://localhost:9000` | Set to the trusted RF sensor-adapter base URL |
-| `AJ_STATIC_DIR` | FastAPI | `frontend-react/dist` when it exists | Optional absolute/static bundle path when intentionally serving the UI from FastAPI |
-| `SDN_HOST` | API and orchestrator | `config/sdn_config.yaml` host, normally loopback | Set to the mock/Ryu service DNS name in containers |
-| `SDN_PORT` | FastAPI readiness probe | `config/sdn_config.yaml` controller port, normally `8080` | Override only when the API reaches SDN on a nonstandard port |
-| `AJ_SDN_READINESS_TIMEOUT` | FastAPI readiness probe | Controller `timeout_s`, normally `1.0` second | Keep bounded so readiness checks cannot exhaust API workers |
-| `AJ_READINESS_HISTORY_LIMIT` | FastAPI | `100`, clamped to 10–1000 | Bounds in-memory readiness transitions per API process; use centralized observability for multi-worker persistence |
-| `VITE_API_BASE_URL` | React build | `http://127.0.0.1:8000` | Set to the externally reachable API base before `npm run build` |
+| `AJ_CORS_ORIGINS` | FastAPI CORS | `http://localhost:5173,http://127.0.0.1:5173` | Add LAN origin (e.g. `http://192.168.1.50:5173`) for cross-device access; required in production |
+| `API_HOST` | FastAPI uvicorn runner | `0.0.0.0` (binds all interfaces) | Set to `127.0.0.1` for loopback-only or `0.0.0.0` for LAN/containers |
+| `API_PORT` | FastAPI / Uvicorn | `8000` | Port for the primary REST and WebSocket API |
+| `FRONTEND_PORT` | Vite dev / Compose | `5173` | Port for the frontend React operator dashboard |
+| `VITE_API_BASE_URL` | React client | Dynamic (same host:8000 or proxy) | Set to explicit external API URL if frontend is hosted separately |
 | `MODE` | Orchestrator | Falls back to `config/mode.yaml` | Set to exactly `simulation` or `real`; environment value takes precedence |
-| `MODEL_DIR` | Docker Compose | `./models` | Host directory bind-mounted into model producers/consumers |
-| `PROCESSED_DATA_DIR` | Production Compose FL clients | No production default | Required directory containing the three processed client CSVs; mounted read-only |
+| `AJ_SDN_MODE` | FastAPI health/readiness metadata | Derived from `MODE` (`mock` for simulation, otherwise `ryu`) | Set explicitly to the deployed controller implementation |
+| `SDN_HOST` | API and orchestrator | `config/sdn_config.yaml` host, normally `127.0.0.1` | Set to the mock/Ryu service DNS name in containers |
+| `SDN_PORT` | API, orchestrator, mock SDN | `8080` | Port for the SDN controller REST API |
+| `SDN_HOST_BIND` | Mock SDN controller | `0.0.0.0` | Binding interface for mock SDN server |
+| `AJ_SDN_TOKEN` | Orchestrator, mock SDN, Ryu | Shared development-only token | Required in production; unique value of at least 24 characters |
+| `AJ_SDN_READINESS_TIMEOUT` | FastAPI readiness probe | Controller `timeout_s`, normally `1.0` second | Keep bounded so readiness checks cannot exhaust API workers |
+| `AJ_READINESS_HISTORY_LIMIT` | FastAPI | `100`, clamped to 10–1000 | Bounds in-memory readiness transitions per API process |
+| `FL_SERVER_HOST` | FL Server | `0.0.0.0` | FL server socket bind host |
+| `FL_SERVER_PORT` | FL Server | `8090` | FL server socket bind port |
+| `FL_SERVER_ADDRESS` | FL Server & Clients | `0.0.0.0:8090` | Full address string (`host:port`) for Flower connections |
+| `DATABASE_PATH` | Orchestrator & API | `experiments/experiment.db` | Path or `sqlite:///` URI for persistent run storage |
+| `MODEL_DIR` | RL / FL / Docker Compose | `./models` | Directory for trained checkpoints and deployment manifests |
+| `PROCESSED_DATA_DIR` | Production Compose FL clients | `./datasets/processed` | Directory containing processed client CSVs |
+| `AJ_SENSOR_API_URL` | Orchestrator real mode | `http://localhost:9000` | Set to the trusted RF sensor-adapter base URL |
+| `AJ_STATIC_DIR` | FastAPI | `frontend-react/dist` when it exists | Optional path when serving frontend assets directly from FastAPI |
 
 Flower client identity/data selection and RL options are CLI flags (`--client_id`, `--real`, `--require-real-data`, `--jammed`, `--dp`, `--compress`, `--persona`, and `--algo`), not environment variables. `--require-real-data` is the production fail-closed guard: a missing, undersized, or temporally invalid processed file terminates the client instead of substituting synthetic samples. The orchestrator reads its SDN port from `config/sdn_config.yaml`; the API readiness probe additionally accepts `SDN_PORT` for nonstandard service layouts.
 
@@ -1213,9 +1244,56 @@ RL checkpoints encode more than observation/action shapes: a shape-compatible po
 
 ## Running the project
 
-### Option A: local simulation launcher
+### Quickstart: one-command start
 
-Activate the virtual environment, then run:
+#### macOS / Linux
+```bash
+./scripts/start.sh
+# or using Makefile:
+make start
+```
+This automatically launches all backend services (FL server, FL clients, Mock SDN, API server, Orchestrator loop) and the React frontend dev server on port 5173.
+
+To run headless without the frontend UI:
+```bash
+./scripts/start.sh --no-frontend
+```
+
+#### Windows (PowerShell)
+```powershell
+.\scripts\start.ps1
+# or using the cross-platform Python orchestrator:
+python scripts\start.py
+```
+
+#### Diagnostic health check
+Verify the health and readiness of all running services at any time:
+```bash
+python scripts/healthcheck.py
+# or using Makefile:
+make health
+```
+
+### Cross-device & LAN access (Mobile / Tablet / Laptop)
+
+FLARE is fully responsive and supports touch, trackpad, and mouse across mobile (320px+), tablet (768px+), and desktop screens:
+
+1. In `.env`, add your local computer's IP address to `AJ_CORS_ORIGINS`:
+   ```bash
+   AJ_CORS_ORIGINS=http://localhost:5173,http://127.0.0.1:5173,http://192.168.1.50:5173
+   ```
+2. Ensure `API_HOST=0.0.0.0` (the default in `.env.example`).
+3. Start the system with `./scripts/start.sh` or `python scripts/start.py`.
+4. On your mobile device, tablet, or another computer on the same Wi-Fi/LAN, navigate to:
+   ```text
+   http://192.168.1.50:5173
+   ```
+   (Replace `192.168.1.50` with your machine's actual LAN IP).
+   The frontend automatically resolves the backend API at `http://192.168.1.50:8000` and connects real-time WebSocket telemetry without any hardcoded localhost assumptions.
+
+### Dedicated simulation script (background daemon)
+
+If you prefer starting background simulation daemons independently:
 
 ```bash
 ./run_local_simulation.sh
@@ -1227,18 +1305,20 @@ Stop recorded processes with:
 
 ```bash
 ./stop_local_simulation.sh
+# or using Makefile:
+make stop
 ```
 
 The stop script validates both the command marker and working directory before terminating a PID. If its PID file is missing, it discovers only matching processes whose working directory is this repository; it no longer uses global `pkill` matching. Running the stop script repeatedly is safe.
 
-The launcher mentions port 5173 but does not start Vite. Start the dashboard in a second terminal:
+If using `./run_local_simulation.sh`, start the frontend in a second terminal:
 
 ```bash
 cd frontend-react
 npm run dev
 ```
 
-Open `http://localhost:5173`. The local frontend targets `http://127.0.0.1:8000` by default; the mock controller is normally at `http://localhost:8080`.
+Open `http://localhost:5173`. The mock controller is normally at `http://localhost:8080` and the API at `http://localhost:8000`.
 
 ### Website-controlled insider demonstration
 

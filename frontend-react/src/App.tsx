@@ -35,8 +35,35 @@ import type {
   MissionTelemetryPayload,
 } from './mission-simulation/types';
 
-const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000').replace(/\/$/, '');
-const WS_BASE_URL = API_BASE_URL.replace(/^http/, 'ws');
+function resolveApiBaseUrl(): string {
+  const envUrl = import.meta.env.VITE_API_BASE_URL;
+  if (envUrl && typeof envUrl === 'string' && envUrl.trim() !== '') {
+    return envUrl.trim().replace(/\/$/, '');
+  }
+  if (typeof window !== 'undefined' && window.location) {
+    const { hostname, protocol, port } = window.location;
+    if (port === '80' || port === '443' || port === '') {
+      return '';
+    }
+    return `${protocol}//${hostname}:8000`;
+  }
+  return 'http://127.0.0.1:8000';
+}
+
+function resolveWsBaseUrl(apiBase: string): string {
+  if (typeof window !== 'undefined' && window.location) {
+    const isHttps = window.location.protocol === 'https:';
+    const wsScheme = isHttps ? 'wss:' : 'ws:';
+    if (!apiBase || apiBase.startsWith('/')) {
+      return `${wsScheme}//${window.location.host}${apiBase}`;
+    }
+    return apiBase.replace(/^https?:/, wsScheme);
+  }
+  return apiBase.replace(/^http/, 'ws');
+}
+
+const API_BASE_URL = resolveApiBaseUrl();
+const WS_BASE_URL = resolveWsBaseUrl(API_BASE_URL);
 const TelemetryCharts = React.lazy(() => import('./TelemetryCharts'));
 
 const formatRiskPercent = (value: number | null | undefined): string =>
@@ -445,6 +472,7 @@ function App() {
 
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimerRef = useRef<number | null>(null);
+  const reconnectAttemptsRef = useRef(0);
   const shouldReconnectRef = useRef(false);
   const activeDroneRef = useRef(activeDrone);
   const scenarioMenuRef = useRef<HTMLDivElement | null>(null);
@@ -603,6 +631,7 @@ function App() {
     wsRef.current = ws;
 
     ws.onopen = () => {
+      reconnectAttemptsRef.current = 0;
       ws.send(JSON.stringify({ type: 'auth', token }));
       setWsStatus('connected');
       addLog('WebSocket link established. Receiving real-time RF payload.');
@@ -718,8 +747,12 @@ function App() {
     ws.onclose = () => {
       setWsStatus('disconnected');
       if (shouldReconnectRef.current) {
-        addLog('WebSocket link closed. Attempting reconnect in 3s...');
-        reconnectTimerRef.current = window.setTimeout(connectWebSocket, 3000);
+        const attempt = reconnectAttemptsRef.current;
+        const delay = Math.min(1000 * Math.pow(1.8, attempt) + Math.random() * 400, 15000);
+        reconnectAttemptsRef.current = attempt + 1;
+        const delaySec = (delay / 1000).toFixed(1);
+        addLog(`WebSocket link closed. Reconnecting in ${delaySec}s (retry #${attempt + 1})...`);
+        reconnectTimerRef.current = window.setTimeout(connectWebSocket, delay);
       }
     };
 

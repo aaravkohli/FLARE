@@ -542,7 +542,7 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             "suspected_malicious_clients": audit.get("suspected_malicious_clients", 0),
             "rejected_updates": audit.get("rejected_updates", len(audit["excluded"])),
         })
-        committed = self._metrics.commit(server_round)
+        self._metrics.commit(server_round)
 
         if self._convergence_tracker is not None and eval_metrics.get("threat_f1"):
             self._convergence_tracker.record(server_round, eval_metrics["threat_f1"])
@@ -616,10 +616,9 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             return {}
 
         try:
-            from sklearn.metrics import f1_score, accuracy_score
-            from torch.utils.data import DataLoader, TensorDataset
-
             import pandas as pd
+            from sklearn.metrics import accuracy_score, f1_score
+            from torch.utils.data import DataLoader, TensorDataset
 
             windows = build_temporal_windows(
                 pd.read_csv(test_csv),
@@ -735,7 +734,12 @@ def run_server(
         },
     )
 
-    resolved_server_address = server_address or _FED_CFG["server_address"]
+    env_addr = os.getenv("FL_SERVER_ADDRESS")
+    if not env_addr and (os.getenv("FL_SERVER_HOST") or os.getenv("FL_SERVER_PORT")):
+        host = os.getenv("FL_SERVER_HOST", "0.0.0.0")
+        port = os.getenv("FL_SERVER_PORT", "8090")
+        env_addr = f"{host}:{port}"
+    resolved_server_address = server_address or env_addr or _FED_CFG["server_address"]
     logger.info(
         "Starting FLARE v2 FL server on %s for %d rounds.",
         resolved_server_address, num_rounds,

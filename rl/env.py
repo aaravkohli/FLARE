@@ -27,7 +27,7 @@ from __future__ import annotations
 
 import logging
 from pathlib import Path
-from typing import Optional, Tuple
+from typing import Any, Optional, Tuple
 
 import gymnasium as gym
 import numpy as np
@@ -122,7 +122,10 @@ class DronePathEnv(gym.Env):
         # Initialise latencies and losses consistent with scores
         for i in range(3):
             self._path_latencies[i] = float(self._get_latency_norm(i, self._path_scores[i]))
-            self._path_losses[i] = float(np.clip(self._path_scores[i] * 0.8 + self.np_random.uniform(0.0, 0.05), 0.0, 1.0))
+            noise = self.np_random.uniform(0.0, 0.05)
+            self._path_losses[i] = float(
+                np.clip(self._path_scores[i] * 0.8 + noise, 0.0, 1.0)
+            )
 
         # An all-zero action vector explicitly represents "no previous route".
         # Encoding Direct here would disagree with the first-step reward, which
@@ -211,12 +214,26 @@ class DronePathEnv(gym.Env):
         """Compatibility wrapper returning the shared reward total."""
         return self._reward_breakdown(action).total
 
+    def _render_human(
+        self,
+        action: int,
+        reward: float,
+        path_scores: Optional[np.ndarray] = None,
+    ) -> None:
+        """Render a one-line summary to stdout (override in subclasses for richer output)."""
+        displayed_scores = self._path_scores if path_scores is None else path_scores
+        print(
+            f"[ENV] step={self._step:4d} | "
+            f"threats=[{','.join(f'{s:.2f}' for s in displayed_scores)}] | "
+            f"action={PATH_NAMES[action]:9s} | reward={reward:+.3f}"
+        )
+
     def _reward_breakdown(self, action: int) -> RewardBreakdown:
         return compute_routing_reward(
             action,
-            self._path_scores,
-            self._path_latencies,
-            self._path_losses,
+            list(self._path_scores),
+            list(self._path_latencies),
+            list(self._path_losses),
             previous_action=self._prev_action,
         )
 
@@ -326,9 +343,9 @@ class TrustAwareDronePathEnv(DronePathEnv):
         # cost so the learnable optimum becomes HOLD under corroborated risk.
         result = compute_secure_routing_reward(
             action,
-            self._path_scores,
-            self._path_latencies,
-            self._path_losses,
+            list(self._path_scores),
+            list(self._path_latencies),
+            list(self._path_losses),
             previous_action=self._prev_action,
             hold_penalty=float(_RL_CFG.get("routing_v3", {}).get("hold_penalty", 0.35)),
         )
@@ -339,19 +356,6 @@ class TrustAwareDronePathEnv(DronePathEnv):
             payload.pop("held", None)
             return RewardBreakdown(**payload)
         return result
-
-    def _render_human(
-        self,
-        action: int,
-        reward: float,
-        path_scores: Optional[np.ndarray] = None,
-    ) -> None:
-        displayed_scores = self._path_scores if path_scores is None else path_scores
-        print(
-            f"[ENV] step={self._step:4d} | "
-            f"threats=[{','.join(f'{s:.2f}' for s in displayed_scores)}] | "
-            f"action={PATH_NAMES[action]:9s} | reward={reward:+.3f}"
-        )
 
 
 # ---------------------------------------------------------------------------
@@ -539,7 +543,7 @@ class DigitalTwinEnv(DronePathEnv):
         self.registry = twin_registry
         self.registry.start_sync()
         self.target_drone = "drone_1"
-        self._current_twin_state = {}
+        self._current_twin_state: dict[str, Any] = {}
 
     def reset(
         self, *, seed: Optional[int] = None, options: Optional[dict] = None

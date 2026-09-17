@@ -52,7 +52,7 @@ def _load_jam_state() -> dict:
 
 
 # In-memory replay buffer cache for replaying healthy metrics
-_REPLAY_CACHE: Dict[str, List[dict]] = {}
+_REPLAY_CACHE: Dict[str, List[List[dict]]] = {}
 
 
 def _sample_path_metrics(

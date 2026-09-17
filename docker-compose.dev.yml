@@ -25,7 +25,7 @@ services:
     container_name: fl-server
     networks: [antijam-net]
     ports:
-      - "8090:8090"
+      - "${FL_SERVER_PORT:-8090}:8090"
     volumes:
       - ${MODEL_DIR:-./models}:/app/models
       - fl-results:/app/results
@@ -68,7 +68,7 @@ services:
     container_name: mock-sdn
     networks: [antijam-net]
     ports:
-      - "8080:8080"
+      - "${SDN_PORT:-8080}:8080"
     volumes:
       - logs:/app/logs
       - ./config:/app/config:ro
@@ -89,7 +89,7 @@ services:
     container_name: flare-api
     networks: [antijam-net]
     ports:
-      - "8000:8000"
+      - "${API_PORT:-8000}:8000"
     volumes:
       - ${MODEL_DIR:-./models}:/app/models:ro
       - experiments:/app/experiments
@@ -107,7 +107,7 @@ services:
       - AJ_SECRET_KEY=${AJ_SECRET_KEY:-antijam-development-secret-do-not-use-in-production}
       - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
       - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:-antijam2026}
-      - AJ_CORS_ORIGINS=${AJ_CORS_ORIGINS:-http://localhost:5173}
+      - AJ_CORS_ORIGINS=${AJ_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
       - FLARE_BYZANTINE_STATE_PATH=/app/runtime/byzantine_state.json
       - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
     healthcheck:
@@ -147,11 +147,11 @@ services:
       context: .
       dockerfile: docker/Dockerfile.frontend
       args:
-        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://127.0.0.1:8000}
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     container_name: flare-frontend
     networks: [antijam-net]
     ports:
-      - "5173:80"
+      - "${FRONTEND_PORT:-5173}:80"
     depends_on:
       api:
         condition: service_healthy

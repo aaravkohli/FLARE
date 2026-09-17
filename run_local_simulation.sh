@@ -72,7 +72,13 @@ show_port_owner() {
 printf '%b\n' "${BLUE}[INFO] Removing stale FLARE-owned processes from previous runs...${NC}"
 "$SCRIPT_DIR/stop_local_simulation.sh" --quiet
 
-for port in 8000 8080 8090; do
+API_HOST="${API_HOST:-${HOST:-0.0.0.0}}"
+API_PORT="${API_PORT:-${PORT:-8000}}"
+SDN_PORT="${SDN_PORT:-8080}"
+FL_SERVER_PORT="${FL_SERVER_PORT:-8090}"
+FRONTEND_PORT="${FRONTEND_PORT:-5173}"
+
+for port in "$API_PORT" "$SDN_PORT" "$FL_SERVER_PORT"; do
     if [ -n "$(listener_pids "$port")" ]; then
         printf '%b\n' "${RED}[ERROR] Port ${port} is owned by a process outside this FLARE run:${NC}"
         show_port_owner "$port"
@@ -135,22 +141,22 @@ launch_service() {
     return 1
 }
 
-launch_service "FL-Server" "logs/fl_server.log" "fl/server.py" 8090 \
+launch_service "FL-Server" "logs/fl_server.log" "fl/server.py" "$FL_SERVER_PORT" \
     venv/bin/python fl/server.py --rounds 20 || exit 1
 
 while IFS= read -r drone_id; do
     [ -n "$drone_id" ] || continue
-    client_args=(venv/bin/python fl/client.py --client_id "$drone_id" --server_address localhost:8090)
+    client_args=(venv/bin/python fl/client.py --client_id "$drone_id" --server_address "127.0.0.1:${FL_SERVER_PORT}")
     # Preserve the original heterogeneous local-data demonstration for drone_3.
     [ "$drone_id" = "drone_3" ] && client_args+=(--jammed)
     launch_service "FL-Client-${drone_id}" "logs/fl_client_${drone_id}.log" "fl/client.py --client_id ${drone_id}" - \
         "${client_args[@]}" || exit 1
 done < <(venv/bin/python -m fleet.cli list-ids)
 
-launch_service "Mock-SDN" "logs/mock_sdn.log" "sdn/mock_sdn.py" 8080 \
+launch_service "Mock-SDN" "logs/mock_sdn.log" "sdn/mock_sdn.py" "$SDN_PORT" \
     venv/bin/python sdn/mock_sdn.py || exit 1
-launch_service "API-Server" "logs/api_server.log" "uvicorn api.server:app" 8000 \
-    venv/bin/python -m uvicorn api.server:app --host 127.0.0.1 --port 8000 || exit 1
+launch_service "API-Server" "logs/api_server.log" "uvicorn api.server:app" "$API_PORT" \
+    venv/bin/python -m uvicorn api.server:app --host "$API_HOST" --port "$API_PORT" || exit 1
 launch_service "Orchestrator-Loop" "logs/orchestrator.log" "orchestrator.loop" - \
     venv/bin/python -m orchestrator.loop || exit 1
 
@@ -160,5 +166,5 @@ trap - EXIT HUP INT TERM
 printf '\n%b\n' "${GREEN}==========================================================${NC}"
 printf '%b\n' "${GREEN}       FLARE LOCAL SERVICES ARE READY${NC}"
 printf '%b\n' "${GREEN}==========================================================${NC}"
-printf 'Dashboard: %bhttp://localhost:5173/%b (start it with: cd frontend-react && npm run dev)\n' "$CYAN" "$NC"
+printf 'Dashboard: %bhttp://localhost:%s/%b (start it with: cd frontend-react && npm run dev)\n' "$CYAN" "$FRONTEND_PORT" "$NC"
 printf 'Stop or restart safely with: %b./stop_local_simulation.sh%b / %b./run_local_simulation.sh%b\n\n' "$MAGENTA" "$NC" "$MAGENTA" "$NC"
