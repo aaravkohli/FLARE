@@ -34,6 +34,13 @@ import type {
   CommunicationRoute,
   MissionTelemetryPayload,
 } from './mission-simulation/types';
+import {
+  initialMissionRouteTransitionState,
+  missionPayloadFromCompletion,
+  parseMissionRouteTransition,
+  reduceMissionRouteTransition,
+} from './mission-simulation/routeTransition';
+import type { MissionRouteTransitionState } from './mission-simulation/routeTransition';
 
 function resolveApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
@@ -355,6 +362,11 @@ interface TelemetryPayload extends MissionTelemetryPayload {
   fl_metrics?: any;
 }
 
+interface TelemetrySafetyState {
+  status: 'hold_applied' | 'hold_failed' | null;
+  applied: boolean | null;
+}
+
 export interface ChartDataPoint {
   time: string;
   rssi_direct: number;
@@ -385,12 +397,13 @@ function App() {
   // Connection & Active states
   const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const [activeDrone, setActiveDrone] = useState<DroneId>('drone_1');
-  const [activePath, setActivePath] = useState<string>('direct');
+  const [activePath, setActivePath] = useState<string>('unknown');
   const [threatLevel, setThreatLevel] = useState<string>('LOW');
   const [reward, setReward] = useState<number>(0.0);
   const [step, setStep] = useState<number>(0);
   const [noSafeRoute, setNoSafeRoute] = useState<boolean>(false);
   const [telemetryUnavailable, setTelemetryUnavailable] = useState<string | null>(null);
+  const [telemetrySafetyState, setTelemetrySafetyState] = useState<TelemetrySafetyState | null>(null);
   const [systemMode, setSystemMode] = useState<string>('UNKNOWN');
   const [sdnController, setSdnController] = useState<string>('UNKNOWN');
   const [sdnReadiness, setSdnReadiness] = useState<SdnReadinessState | null>(null);
@@ -422,7 +435,10 @@ function App() {
   // Telemetry details
   const [telemetry, setTelemetry] = useState<Record<string, MetricDetail> | null>(null);
   const [missionPayload, setMissionPayload] = useState<TelemetryPayload | null>(null);
+  const [missionReceiptAtMs, setMissionReceiptAtMs] = useState<number | null>(null);
   const [missionPayloads, setMissionPayloads] = useState<Record<DroneId, TelemetryPayload>>({});
+  const [routeTransitions, setRouteTransitions] = useState<MissionRouteTransitionState>(initialMissionRouteTransitionState);
+  const [routeRequestReceiptByDrone, setRouteRequestReceiptByDrone] = useState<Record<DroneId, number>>({});
   const [history, setHistory] = useState<ChartDataPoint[]>([]);
 
   // Control action states
@@ -475,6 +491,7 @@ function App() {
   const reconnectAttemptsRef = useRef(0);
   const shouldReconnectRef = useRef(false);
   const activeDroneRef = useRef(activeDrone);
+  const routeTransitionsRef = useRef<MissionRouteTransitionState>(initialMissionRouteTransitionState);
   const scenarioMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -632,20 +649,61 @@ function App() {
 
     ws.onopen = () => {
       reconnectAttemptsRef.current = 0;
-      ws.send(JSON.stringify({ type: 'auth', token }));
+      const lastMissionCursor = routeTransitionsRef.current.cursor;
+      ws.send(JSON.stringify({ type: 'auth', token,
+        ...(lastMissionCursor > 0 ? { cursor: lastMissionCursor } : {}),
+      }));
       setWsStatus('connected');
       addLog('WebSocket link established. Receiving real-time RF payload.');
     };
 
     ws.onmessage = (event) => {
       try {
-        const payload: TelemetryPayload = JSON.parse(event.data);
+        const received: unknown = JSON.parse(event.data);
+        const transition = parseMissionRouteTransition(received);
+        if (transition) {
+          const prior = routeTransitionsRef.current;
+          const next = reduceMissionRouteTransition(prior, transition);
+          if (next === prior) return;
+          routeTransitionsRef.current = next;
+          setRouteTransitions(next);
+          if (transition.phase === 'requested') {
+            setRouteRequestReceiptByDrone(previous => ({
+              ...previous,
+              [transition.drone_id]: performance.now(),
+            }));
+          } else {
+            const completed = missionPayloadFromCompletion(transition) as TelemetryPayload;
+            setMissionPayloads(previous => ({ ...previous, [transition.drone_id]: completed }));
+            if (transition.drone_id === activeDroneRef.current) {
+              setMissionPayload(completed);
+              setMissionReceiptAtMs(performance.now());
+              setTelemetryUnavailable(null);
+              setTelemetrySafetyState(null);
+              const installed = transition.event.sdn.applied
+                ? transition.event.decision.installed_path : null;
+              setActivePath(installed ?? 'unknown');
+              setThreatLevel(completed.decision.threat_level);
+              setReward(completed.decision.reward);
+              setStep(completed.decision.step);
+              setNoSafeRoute(Boolean(completed.decision.no_safe_route));
+              setTelemetry(Object.fromEntries(completed.metrics.paths.map(path => [path.path_id, path])));
+            }
+          }
+          return;
+        }
+        const payload = received as TelemetryPayload;
 
         if ((payload as any).type === 'telemetry_unavailable') {
           const droneId = String((payload as any).drone_id || 'unknown');
           if (droneId === activeDroneRef.current) {
             setTelemetryUnavailable(String((payload as any).reason || 'Live telemetry unavailable'));
-            setActivePath('hold');
+            const control = (payload as any).control_state;
+            const status = control?.status;
+            setTelemetrySafetyState({
+              status: status === 'hold_applied' || status === 'hold_failed' ? status : null,
+              applied: typeof control?.sdn?.applied === 'boolean' ? control.sdn.applied : null,
+            });
           }
           return;
         }
@@ -664,8 +722,14 @@ function App() {
           // Check if payload matches active drone
           if (met.drone_id === activeDroneRef.current) {
             setTelemetryUnavailable(null);
+            setTelemetrySafetyState(null);
+            setMissionReceiptAtMs(performance.now());
             setMissionPayload(payload);
-            setActivePath(dec.path_name);
+            const installedPath = payload.event?.decision && 'installed_path' in payload.event.decision
+              ? payload.event.decision.installed_path
+              : dec.sdn_applied === true ? dec.path_name : null;
+            setActivePath(installedPath && ['direct', 'satellite', 'mesh', 'hold'].includes(installedPath)
+              ? installedPath : 'unknown');
             setThreatLevel(dec.threat_level);
             setReward(dec.reward);
             setStep(dec.step);
@@ -1309,6 +1373,8 @@ function App() {
     activeDroneRef.current = drone;
     setActiveDrone(drone);
     setMissionPayload(null);
+    setMissionReceiptAtMs(null);
+    setTelemetrySafetyState(null);
     setHistory([]);
     setInsiderAnalysis(null);
     setContainmentAnalysis(null);
@@ -1551,7 +1617,6 @@ function App() {
         fleetDrones={fleetDrones}
         inactiveDrones={managedFleetDrones.filter(drone => !drone.enabled)}
         activeDrone={activeDrone}
-        activePath={activePath}
         threatLevel={threatLevel}
         noSafeRoute={noSafeRoute}
         swarmPayloads={missionPayloads}
@@ -1744,11 +1809,15 @@ function App() {
         >
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
           <div>
-            <p className="text-sm font-bold uppercase">No safe route available</p>
+            <p className="text-sm font-bold uppercase">Last reported: no safe route available</p>
             <p className="mt-1 text-xs text-rose-200/80">
               {activePath === 'hold'
-                ? 'Every route exceeds the configured threat threshold. FLARE has installed an explicit fail-closed HOLD rule, so data traffic is blocked until a safe route returns.'
-                : `Every route exceeds the configured threat threshold. The legacy v2 policy is preserving connectivity over the least-risk route (${activePath.toUpperCase()}) in degraded mode.`}
+                ? missionPayload?.event?.decision?.installed_path === 'hold' && missionPayload.event.sdn?.applied === true
+                  ? 'The last controller response reported HOLD applied. This does not verify packet-level dropping.'
+                  : 'HOLD was requested; the current event does not confirm installation.'
+                : ['direct', 'satellite', 'mesh'].includes(activePath)
+                  ? `The legacy v2 policy reported the least-risk route (${activePath.toUpperCase()}) in degraded mode; forwarding is not verified here.`
+                  : 'The requested route has no confirmed installation in the current event.'}
             </p>
           </div>
         </div>
@@ -1767,7 +1836,9 @@ function App() {
           <div role="status" className="flex items-start gap-3 bg-amber-500/[0.06] p-5 text-amber-200">
             <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <p className="text-xs font-semibold">Live telemetry unavailable — HOLD requested</p>
+              <p className="text-xs font-semibold">Live telemetry unavailable — {telemetrySafetyState?.status === 'hold_applied' && telemetrySafetyState.applied === true
+                ? 'controller reported HOLD applied'
+                : telemetrySafetyState?.status === 'hold_failed' ? 'HOLD update failed' : 'HOLD state unconfirmed'}</p>
               <p className="mt-1 text-[11px] text-amber-200/70">{telemetryUnavailable}. Sensor failure is an operational safety condition, not a malicious classification.</p>
             </div>
           </div>
@@ -1777,7 +1848,7 @@ function App() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500">Telemetry</p>
               <dl className="mt-3 space-y-2 text-xs">
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">Source</dt><dd className="font-mono text-gray-200">{canonicalEvent?.telemetry?.source || 'unavailable'}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="text-gray-500">Snapshot age</dt><dd className="font-mono text-gray-200">{canonicalEvent?.telemetry?.source_age_s != null ? `${canonicalEvent.telemetry.source_age_s.toFixed(2)} s` : 'live event clock'}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="text-gray-500">Snapshot age</dt><dd className="font-mono text-gray-200">{canonicalEvent?.telemetry?.source_age_s != null ? `${canonicalEvent.telemetry.source_age_s.toFixed(2)} s` : 'unreported'}</dd></div>
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">Injected scenario</dt><dd className="font-mono text-amber-300">{canonicalEvent?.telemetry?.ew_status?.active_attack || 'none'}</dd></div>
               </dl>
             </div>
@@ -2600,6 +2671,10 @@ function App() {
       </section>
 
       {/* LIVE MISSION NETWORK — reuses the parent WebSocket and selected-drone state */}
+      <div className="mission-demo-access">
+        <span>Recorded controlled simulation · single UAV · mock SDN</span>
+        <a href={`${import.meta.env.BASE_URL}mission-demo.html`}>Replay Direct → Satellite response</a>
+      </div>
       <LiveMissionSimulation
         payload={missionPayload}
         swarmPayloads={missionPayloads}
@@ -2613,6 +2688,15 @@ function App() {
         availablePaths={activeAvailablePaths}
         sdnReady={sdnReadiness?.ready}
         sdnController={sdnController}
+        runtimeMode={systemMode}
+        transportStatus={wsStatus}
+        telemetryUnavailable={telemetryUnavailable}
+        telemetrySafetyState={telemetrySafetyState}
+        telemetryReceivedAtMs={missionReceiptAtMs}
+        routeRequest={routeTransitions.pendingByDrone[activeDrone] ?? null}
+        routeCompletion={routeTransitions.completedByDrone[activeDrone] ?? null}
+        routeTransitionHistory={routeTransitions.history}
+        routeRequestReceivedAtMs={routeRequestReceiptByDrone[activeDrone] ?? null}
         trust={containmentAnalysis?.trust_score ?? activeFlSecurity?.trust_score}
         insiderRisk={containmentAnalysis?.insider_risk ?? insiderAnalysis?.risk_score ?? undefined}
         containmentMode={containmentAnalysis?.mode}

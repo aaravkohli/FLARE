@@ -48,7 +48,6 @@ interface CommandOverviewProps {
   fleetDrones: FleetDrone[];
   inactiveDrones?: FleetDrone[];
   activeDrone: string;
-  activePath: string;
   threatLevel: string;
   noSafeRoute: boolean;
   swarmPayloads: Record<string, MissionTelemetryPayload>;
@@ -68,6 +67,14 @@ const titleCase = (value: string) => value
   .replace(/\b\w/g, character => character.toUpperCase());
 
 const isKnownRoute = (value?: string) => value === 'direct' || value === 'satellite' || value === 'mesh' || value === 'hold';
+
+function reportedInstalledRoute(payload?: MissionTelemetryPayload): string | null {
+  const decision = payload?.event?.decision;
+  const value = decision && 'installed_path' in decision
+    ? decision.installed_path
+    : payload?.decision.sdn_applied === true ? payload.decision.path_name : null;
+  return isKnownRoute(value ?? undefined) ? value! : null;
+}
 
 function formatPdr(value?: number) {
   return typeof value === 'number' ? `${(value * 100).toFixed(1)}% PDR` : 'PDR unavailable';
@@ -92,7 +99,6 @@ export default function CommandOverview({
   fleetDrones,
   inactiveDrones = [],
   activeDrone,
-  activePath,
   threatLevel,
   noSafeRoute,
   swarmPayloads,
@@ -107,6 +113,7 @@ export default function CommandOverview({
   onLock,
 }: CommandOverviewProps) {
   const activeName = fleetDrones.find(drone => drone.drone_id === activeDrone)?.display_name || titleCase(activeDrone);
+  const activeInstalledRoute = reportedInstalledRoute(swarmPayloads[activeDrone]);
   const latestEvent = readinessHistory[0];
   const readinessNotice = !sdnReadiness?.ready
     ? sdnReadiness?.alert?.message || (sdnReadiness
@@ -141,7 +148,7 @@ export default function CommandOverview({
           <strong>{linkLabel(wsStatus)}</strong>
         </div>
         <div><span>SDN</span><strong>{sdnController} {sdnReadiness?.ready ? 'ready' : sdnReadiness ? 'not ready' : 'checking'}</strong></div>
-        <div><span>Route</span><strong>{noSafeRoute || activePath === 'hold' ? 'Network hold' : titleCase(activePath)}</strong></div>
+        <div><span>Last reported route</span><strong>{activeInstalledRoute ? titleCase(activeInstalledRoute) : 'Unconfirmed'}</strong></div>
         <div className="command-overview__focus"><span>Asset</span><strong>{activeName}</strong></div>
       </div>
 
@@ -178,8 +185,7 @@ export default function CommandOverview({
         {fleetDrones.map(drone => {
           const selected = drone.drone_id === activeDrone;
           const payload = swarmPayloads[drone.drone_id];
-          const installed = payload?.event?.decision?.installed_path || payload?.decision.path_name;
-          const route = isKnownRoute(installed) ? installed : selected && isKnownRoute(activePath) ? activePath : undefined;
+          const route = reportedInstalledRoute(payload);
           const metric = payload?.metrics.paths.find(path => path.path_id === route);
           const hasAttention = selected && (threatLevel === 'HIGH' || threatLevel === 'MEDIUM' || noSafeRoute);
 
@@ -194,10 +200,10 @@ export default function CommandOverview({
                   <h3>{drone.display_name}</h3>
                   <p>{drone.drone_id}<span aria-hidden="true">/</span>SDN port {drone.access_port}</p>
                 </div>
-                {hasAttention && <span className="cvo-drone__alert">{noSafeRoute ? 'Hold' : `${titleCase(threatLevel)} threat`}</span>}
+                {hasAttention && <span className="cvo-drone__alert">{noSafeRoute ? route === 'hold' ? 'HOLD reported' : 'No safe route reported' : `${titleCase(threatLevel)} threat reported`}</span>}
                 {!drone.enabled && <span className="cvo-drone__alert">Disabled</span>}
               </div>
-              <div className="cvo-drone__route">{route ? titleCase(route) : 'Route unavailable'}</div>
+              <div className="cvo-drone__route">{route ? `Last reported: ${titleCase(route)}` : 'Installed route unconfirmed'}</div>
               <div className="cvo-drone__metrics">
                 <span>{formatPdr(metric?.pdr)}</span>
                 <span>{formatLatency(metric?.latency)}</span>

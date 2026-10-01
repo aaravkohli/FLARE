@@ -1,7 +1,10 @@
 /// <reference types="node" />
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { adaptMissionSimulationState } from '../adapter.ts';
+import { missionPayloadFromCompletion } from '../routeTransition.ts';
+import type { MissionRouteCompletion, MissionRouteTransition } from '../routeTransition.ts';
 import type { MissionSimulationState } from '../types.ts';
 import { decisionPhase, emptyDecisionHistory, reduceDecisionHistory } from './decisionPresentation.ts';
 const fallback={droneId:'drone_1',route:'direct',threatLevel:'LOW',reward:0,step:0,noSafeRoute:false,availablePaths:['direct','satellite','mesh']};
@@ -17,18 +20,28 @@ test('missing evidence cannot become nominal or imply model provenance',()=>{
  assert.equal(s.inferenceSource,undefined);assert.equal(s.decisionSource,undefined);
  assert.equal(s.reportedSafetyOverride,undefined);
 });
+test('recorded Direct completion is nominal on its displayed frame before history effects run',()=>{
+ const recording=JSON.parse(readFileSync(new URL('../../../public/mission-demo/recorded-route-transitions.json',import.meta.url),'utf8')) as {events:MissionRouteTransition[]};
+ const completed=recording.events.find((event):event is MissionRouteCompletion=>event.cursor===2&&event.phase==='completed');
+ assert.ok(completed);
+ const snapshot=adaptMissionSimulationState(missionPayloadFromCompletion(completed),fallback);
+ assert.equal(snapshot.installedRoute,'direct');
+ assert.equal(snapshot.sdnApplied,true);
+ assert.equal(decisionPhase(snapshot,null,'drone_1'),'nominal');
+ assert.equal(step(emptyDecisionHistory('drone_1'),snapshot).phase,'nominal');
+});
 test('injected scenario and detector findings are distinct',()=>{
  assert.equal(decisionPhase(state({activeAttack:'spot'}),null,'drone_1'),'scenario-active');
  assert.equal(decisionPhase(state({reportedThreatLevel:'HIGH'}),null,'drone_1'),'threat-reported');
  assert.equal(decisionPhase(state({networkDetection:{status:'MALICIOUS',detected_classes:['dos'],evidence_source:'synthetic'}}),null,'drone_1'),'threat-reported');
 });
 test('request, failed apply and installation follow evidence without timers',()=>{
- const a=state(), pending=state({eventId:'2',timestamp:2,requestedRoute:'satellite',sdnApplied:false});
- assert.equal(decisionPhase(pending,a,'drone_1'),'rerouting');
- assert.equal(decisionPhase({...pending,sdnError:'unavailable'},a,'drone_1'),'apply-failed');
- const h=step(step(emptyDecisionHistory(),a),pending);
+ const a=state(), unconfirmed=state({eventId:'2',timestamp:2,requestedRoute:'satellite',sdnApplied:false});
+ assert.equal(decisionPhase(unconfirmed,a,'drone_1'),'request-not-installed');
+ assert.equal(decisionPhase({...unconfirmed,sdnError:'unavailable'},a,'drone_1'),'apply-failed');
+ const h=step(step(emptyDecisionHistory(),a),unconfirmed);
  assert.ok(!h.events.some(e=>e.label==='SDN installed satellite'));
- const installed=step(h,{...pending,eventId:'3',timestamp:3,installedRoute:'satellite',sdnApplied:true,routeChanged:true});
+ const installed=step(h,{...unconfirmed,eventId:'3',timestamp:3,installedRoute:'satellite',sdnApplied:true,routeChanged:true});
  assert.ok(installed.events.some(e=>e.label==='SDN installed satellite'));
  assert.ok(installed.events.some(e=>e.label==='Route changed: direct → satellite'));
 });
@@ -56,7 +69,7 @@ test('selected drone changes discard prior history and reject stale payload',()=
  assert.ok(!next.events.some(e=>e.label.includes('cleared')));
 });
 test('HOLD request differs from applied HOLD and containment keeps its reason',()=>{
- assert.equal(decisionPhase(state({requestedRoute:'hold',networkAction:'hold'}),null,'drone_1'),'rerouting');
+ assert.equal(decisionPhase(state({requestedRoute:'hold',networkAction:'hold'}),null,'drone_1'),'request-not-installed');
  const held=state({requestedRoute:'hold',installedRoute:'hold',networkAction:'hold',constraintReason:'containment_required',containmentMode:'quarantined'});
  assert.equal(decisionPhase(held,null,'drone_1'),'hold');
  assert.ok(step(emptyDecisionHistory(),held).events.some(e=>e.label==='SDN applied HOLD · containment'));

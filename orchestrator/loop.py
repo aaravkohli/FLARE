@@ -46,7 +46,7 @@ import torch
 import yaml
 
 from fleet.registry import active_drone_ids
-from schemas.decision_event import DecisionEvent, TelemetrySnapshot
+from schemas.decision_event import DecisionEvent, RouteRequestStartedV1, TelemetrySnapshot
 from sdn.route_contract import (
     HOLD_PATH,
     action_id_for_path,
@@ -240,6 +240,39 @@ def _init_experiment_store():
                 "CREATE INDEX IF NOT EXISTS idx_operational_drone_id_id "
                 "ON operational_events (drone_id, id DESC)"
             )
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS mission_event_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    run_id TEXT NOT NULL,
+                    step INTEGER NOT NULL,
+                    drone_id TEXT NOT NULL,
+                    kind TEXT NOT NULL CHECK (
+                        kind IN ('route_request_started', 'decision_completed')
+                    ),
+                    occurred_at REAL NOT NULL,
+                    event_json TEXT,
+                    run_row_id INTEGER,
+                    CHECK (
+                        (kind = 'route_request_started' AND event_json IS NOT NULL
+                            AND run_row_id IS NULL)
+                        OR (kind = 'decision_completed' AND event_json IS NULL
+                            AND run_row_id IS NOT NULL)
+                    )
+                )
+            """)
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mission_event_log_run_id_id "
+                "ON mission_event_log (run_id, id)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mission_event_log_kind_id "
+                "ON mission_event_log (kind, id DESC)"
+            )
+            conn.execute(
+                "CREATE INDEX IF NOT EXISTS idx_mission_event_log_cycle "
+                "ON mission_event_log (run_id, step, drone_id, kind)"
+            )
+    return True
 
 
 def _log_experiment(row: dict):
@@ -265,9 +298,36 @@ def _log_experiments(rows: list[dict]) -> None:
     values = [[row.get(column) for column in _DB_COLUMNS] for row in rows]
     with closing(_connect_db()) as conn:
         with conn:
-            conn.executemany(
-                f"INSERT INTO runs ({columns}) VALUES ({placeholders})",
-                values,
+            for row, row_values in zip(rows, values):
+                cursor = conn.execute(
+                    f"INSERT INTO runs ({columns}) VALUES ({placeholders})",
+                    row_values,
+                )
+                if row.get("event_json"):
+                    conn.execute(
+                        "INSERT INTO mission_event_log "
+                        "(run_id, step, drone_id, kind, occurred_at, run_row_id) "
+                        "VALUES (?, ?, ?, 'decision_completed', ?, ?)",
+                        (
+                            row["run_id"], row["step"], row["drone_id"],
+                            row.get("_controller_resolved_at") or time.time(),
+                            cursor.lastrowid,
+                        ),
+                    )
+
+
+def _log_route_request_started(event: RouteRequestStartedV1) -> None:
+    """Commit a route-change intent before contacting the SDN service."""
+    with closing(_connect_db()) as conn:
+        with conn:
+            conn.execute(
+                "INSERT INTO mission_event_log "
+                "(run_id, step, drone_id, kind, occurred_at, event_json) "
+                "VALUES (?, ?, ?, 'route_request_started', ?, ?)",
+                (
+                    event.run_id, event.step, event.drone_id,
+                    event.occurred_at, event.model_dump_json(),
+                ),
             )
 
 
@@ -446,6 +506,10 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str)
             )
             resp.raise_for_status()
             result = resp.json()
+            if result.get("status") != "ok":
+                raise RuntimeError(
+                    f"SDN route apply not acknowledged: {result.get('status', 'missing')}"
+                )
             reported_path = result.get("installed_path")
             if reported_path is None:
                 raise RuntimeError("SDN response omitted installed_path")
@@ -569,7 +633,7 @@ class Orchestrator:
         )
         self._containment_modes = {drone_id: "normal" for drone_id in self.DRONES}
 
-        _init_experiment_store()
+        self._mission_journal_enabled = _init_experiment_store() is True
         logger.info("Orchestrator started | run_id=%s | mode=%s | interval=%.1fs",
                     RUN_ID, MODE, LOOP_INTERVAL)
 
@@ -1125,6 +1189,46 @@ class Orchestrator:
             sdn_resp = None
             sdn_error = None
             installed_path = self._prev_path[drone_id]
+            if requested_path != installed_path and getattr(self, "_mission_journal_enabled", False):
+                transition_id = f"{RUN_ID}:{self._step}:{drone_id}"
+                request_event = RouteRequestStartedV1.model_validate({
+                    "schema_version": "route_request_started_v1",
+                    "event_id": f"{transition_id}:route_request",
+                    "transition_id": transition_id,
+                    "run_id": RUN_ID,
+                    "step": self._step,
+                    "drone_id": drone_id,
+                    "mode": MODE,
+                    "occurred_at": time.time(),
+                    "telemetry": metrics,
+                    "inference": {
+                        "path_scores": path_scores,
+                        "confidence": threat["confidence"],
+                        "attack_type": threat["attack_type"],
+                        "source": threat.get("source", "fl_model"),
+                        "model_id": self._fl_model_id if threat.get("source") == "fl_model" else None,
+                    },
+                    "decision": {
+                        "source": decision.get("decision_source", "rl_model"),
+                        "policy_path": policy_path,
+                        "requested_path": requested_path,
+                        "threat_level": threat_lvl,
+                        "safety_override": bool(decision.get("safety_override", False)),
+                        "safe_action_mask": decision.get("safe_action_mask", [True, True, True]),
+                        "no_safe_route": bool(decision.get("no_safe_route", False)),
+                        "constraint_reason": decision.get("constraint_reason"),
+                        "safety_threshold": float(decision.get("safety_threshold", 0.8)),
+                        "network_action": "hold" if requested_path == HOLD_PATH else "forward",
+                        "routing_contract": decision.get("routing_contract", "routing_state_v2"),
+                    },
+                    "last_confirmed_path": installed_path,
+                    "configured_backend": _MODE_CFG[MODE]["sdn_backend"],
+                })
+                try:
+                    await asyncio.to_thread(_log_route_request_started, request_event)
+                except Exception as exc:
+                    fallback_reasons.append("route_request_audit_unavailable")
+                    logger.error("Route request audit unavailable for %s: %s", drone_id, exc)
             try:
                 sdn_resp = await _push_to_sdn(client, requested_path, drone_id)
                 sdn_ok = True
@@ -1143,6 +1247,7 @@ class Orchestrator:
                 logger.error("SDN push failed for %s: %s. Maintaining current path.", drone_id, e)
                 if installed_path in _ACTION_NAMES_V3:
                     action_id = _ACTION_NAMES_V3.index(installed_path)
+            controller_resolved_at = time.time()
 
             # Legacy summary rows require a path even before the first successful
             # controller write. The canonical event keeps that state explicit by
@@ -1296,6 +1401,7 @@ class Orchestrator:
                 "fl_confidence": round(threat["confidence"], 4),
                 "attack_type":  threat["attack_type"],
                 "event_json": event.model_dump_json(),
+                "_controller_resolved_at": controller_resolved_at,
             }
             rows.append(row)
 

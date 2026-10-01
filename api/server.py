@@ -32,12 +32,16 @@ from typing import Any, Literal
 
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+
 import aiosqlite
 import httpx
 import numpy as np
+
 import torch
+
 import uvicorn
 import yaml
+
 from fastapi import (
     BackgroundTasks,
     Depends,
@@ -69,7 +73,7 @@ from fleet.registry import (
 )
 from rl.safety import constrain_route_action, resolve_safety_config
 from runtime.model_deployment import DeploymentWatcher
-from schemas.decision_event import DecisionEvent
+from schemas.decision_event import DecisionEvent, RouteRequestStartedV1
 
 _BASE = Path(__file__).parent.parent
 _RL_CFG = yaml.safe_load((_BASE / "config" / "rl_config.yaml").read_text())
@@ -428,6 +432,7 @@ _start_time = time.time()
 # drone_id -> timestamp of last jam request
 _last_jam_time: dict[str, float] = {}
 _ws_clients: list[WebSocket] = []  # Connected WebSocket clients
+_mission_ws_cursors: dict[WebSocket, int] = {}
 # Set of compromised drones (Byzantine test)
 _compromised_drones: set[str] = set()
 _FL_SEQUENCE_LEN = int(
@@ -535,6 +540,143 @@ async def _latest_decision_events() -> dict[str, dict]:
         if len(events) == len(_active_drone_set()):
             break
     return events
+
+
+def _mission_transition_envelope(row: aiosqlite.Row) -> dict:
+    """Hydrate one journal entry from validated, persisted evidence."""
+    cursor = int(row["id"])
+    if row["kind"] == "route_request_started":
+        request = RouteRequestStartedV1.model_validate_json(row["request_json"])
+        if (
+            request.run_id != row["run_id"]
+            or request.step != row["step"]
+            or request.drone_id != row["drone_id"]
+            or request.occurred_at != row["occurred_at"]
+        ):
+            raise ValueError("Route request journal metadata mismatch")
+        return {
+            "type": "route_transition",
+            "cursor": cursor,
+            "phase": "requested",
+            "transition_id": request.transition_id,
+            "occurred_at": request.occurred_at,
+            "run_id": request.run_id,
+            "step": request.step,
+            "drone_id": request.drone_id,
+            "mode": request.mode,
+            "telemetry": request.telemetry.model_dump(mode="json"),
+            "inference": request.inference.model_dump(mode="json"),
+            "decision": request.decision.model_dump(mode="json"),
+            "last_confirmed_path": request.last_confirmed_path,
+            "controller": {
+                "configured_backend": request.configured_backend,
+                "status": "awaiting_response",
+                "applied": None,
+            },
+        }
+
+    if row["kind"] != "decision_completed" or not row["completed_json"]:
+        raise ValueError("Journal completion lacks a canonical decision")
+    event = DecisionEvent.model_validate_json(row["completed_json"])
+    if (
+        event.run_id != row["run_id"]
+        or event.step != row["step"]
+        or event.drone_id != row["drone_id"]
+    ):
+        raise ValueError("Decision completion journal metadata mismatch")
+    if event.sdn.applied and event.decision.installed_path is None:
+        raise ValueError("Acknowledged decision lacks a confirmed installed path")
+    controller = {
+        "status": "acknowledged" if event.sdn.applied else "not_confirmed",
+        "applied": event.sdn.applied,
+    }
+    if event.sdn.error:
+        controller["error"] = event.sdn.error
+    envelope = {
+        "type": "route_transition",
+        "cursor": cursor,
+        "phase": "completed",
+        "transition_id": event.event_id,
+        "occurred_at": float(row["occurred_at"]),
+        "run_id": event.run_id,
+        "step": event.step,
+        "drone_id": event.drone_id,
+        "mode": event.mode,
+        "event": event.model_dump(mode="json"),
+        "controller": controller,
+    }
+    if event.sdn.applied:
+        envelope["confirmed_installed_path"] = event.decision.installed_path
+    else:
+        envelope["last_confirmed_path"] = event.decision.installed_path
+    return envelope
+
+
+async def _mission_events_after(
+    after_id: int, limit: int, run_id: str | None = None,
+) -> tuple[list[dict], bool]:
+    """Read a bounded, ordered cursor page without scanning canonical history."""
+    db_path = _get_db_path()
+    if not db_path.exists():
+        return [], False
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            db.row_factory = aiosqlite.Row
+            if "id" not in await _table_columns(db, "mission_event_log"):
+                raise RuntimeError("Mission journal schema is unavailable")
+            where = "m.id > ?"
+            params: list[Any] = [after_id]
+            if run_id is not None:
+                where += " AND m.run_id = ?"
+                params.append(run_id)
+            params.append(limit + 1)
+            cursor = await db.execute(
+                "SELECT m.id, m.run_id, m.step, m.drone_id, m.kind, "
+                "m.occurred_at, m.event_json AS request_json, "
+                "r.event_json AS completed_json "
+                "FROM mission_event_log AS m "
+                "LEFT JOIN runs AS r ON r.id = m.run_row_id "
+                f"WHERE {where} ORDER BY m.id ASC LIMIT ?",
+                params,
+            )
+            rows = await cursor.fetchall()
+    except Exception as exc:
+        logger.warning("Mission journal read failed: %s", exc)
+        raise
+    page = rows[:limit]
+    return [_mission_transition_envelope(row) for row in page], len(rows) > limit
+
+
+async def _latest_completed_mission_cursor() -> int:
+    """Resume after the last completion, or before the latest unresolved request."""
+    db_path = _get_db_path()
+    if not db_path.exists():
+        return 0
+    try:
+        async with aiosqlite.connect(db_path) as db:
+            if "id" not in await _table_columns(db, "mission_event_log"):
+                return 0
+            cursor = await db.execute(
+                "SELECT s.id FROM mission_event_log AS s "
+                "WHERE s.kind = 'route_request_started' "
+                "AND NOT EXISTS ("
+                "SELECT 1 FROM mission_event_log AS c "
+                "WHERE c.run_id = s.run_id AND c.step = s.step "
+                "AND c.drone_id = s.drone_id AND c.kind = 'decision_completed'"
+                ") ORDER BY s.id DESC LIMIT 1"
+            )
+            pending = await cursor.fetchone()
+            if pending:
+                return max(0, int(pending[0]) - 1)
+            cursor = await db.execute(
+                "SELECT id FROM mission_event_log "
+                "WHERE kind = 'decision_completed' ORDER BY id DESC LIMIT 1"
+            )
+            row = await cursor.fetchone()
+            return int(row[0]) if row else 0
+    except Exception as exc:
+        logger.warning("Mission journal cursor read failed: %s", exc)
+        return 0
 
 
 async def _latest_run_summaries() -> dict[str, dict]:
@@ -1479,6 +1621,28 @@ async def metrics_history(
     return {"rows": result, "count": len(result)}
 
 
+@app.get("/mission/events", tags=["Stream"])
+async def mission_events(
+    after_id: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=100),
+    run_id: str | None = Query(default=None, min_length=1, max_length=64),
+    _: dict = Depends(get_current_user),
+) -> dict:
+    """Replay validated route requests and controller resolutions in journal order."""
+    try:
+        events, has_more = await _mission_events_after(after_id, limit, run_id)
+    except Exception as exc:
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Mission journal temporarily unavailable",
+        ) from exc
+    return {
+        "events": events,
+        "next_cursor": events[-1]["cursor"] if events else after_id,
+        "has_more": has_more,
+    }
+
+
 # ---------------------------------------------------------------------------
 # Jamming Control (protected)
 # ---------------------------------------------------------------------------
@@ -2357,6 +2521,25 @@ async def _broadcast_to_ws(data: dict):
     for ws in dead:
         if ws in _ws_clients:
             _ws_clients.remove(ws)
+        _mission_ws_cursors.pop(ws, None)
+
+
+async def _broadcast_mission_events() -> None:
+    """Advance each authenticated socket independently through the journal."""
+    for ws in list(_ws_clients):
+        after_id = _mission_ws_cursors.get(ws)
+        if after_id is None:
+            continue
+        try:
+            events, _ = await _mission_events_after(after_id, 100)
+            for event in events:
+                await ws.send_json(event)
+                _mission_ws_cursors[ws] = event["cursor"]
+        except Exception as exc:
+            logger.debug("Mission journal WebSocket delivery failed: %s", exc)
+            if ws in _ws_clients:
+                _ws_clients.remove(ws)
+            _mission_ws_cursors.pop(ws, None)
 
 
 async def telemetry_broadcaster():
@@ -2366,6 +2549,7 @@ async def telemetry_broadcaster():
         try:
             _refresh_api_deployment()
             if _ws_clients:
+                await _broadcast_mission_events()
                 events = await _latest_decision_events()
                 legacy_summaries = await _latest_run_summaries()
                 missing = _sync_api_fleet() - events.keys()
@@ -2560,6 +2744,7 @@ async def websocket_endpoint(websocket: WebSocket):
     """
     WebSocket endpoint for real-time orchestrator decisions.
     The first client message must be JSON: {"type": "auth", "token": "..."}.
+    Optional cursor resumes the ordered route-transition journal.
     """
     await websocket.accept()
     try:
@@ -2569,11 +2754,27 @@ async def websocket_endpoint(websocket: WebSocket):
         if auth_message.get("type") != "auth" or not isinstance(auth_message.get("token"), str):
             raise ValueError("Missing WebSocket auth message")
         _authenticate_token(auth_message["token"])
+        mission_after_id = auth_message.get("cursor", auth_message.get("mission_after_id"))
+        if (
+            "cursor" in auth_message
+            and "mission_after_id" in auth_message
+            and auth_message["cursor"] != auth_message["mission_after_id"]
+        ):
+            raise ValueError("Conflicting mission journal cursors")
+        if mission_after_id is not None and (
+            isinstance(mission_after_id, bool)
+            or not isinstance(mission_after_id, int)
+            or mission_after_id < 0
+        ):
+            raise ValueError("Invalid mission journal cursor")
     except (asyncio.TimeoutError, ValueError, HTTPException, json.JSONDecodeError):
         await websocket.close(code=4401, reason="Authentication required")
         return
 
+    if mission_after_id is None:
+        mission_after_id = await _latest_completed_mission_cursor()
     await websocket.send_json({"type": "auth", "status": "ok"})
+    _mission_ws_cursors[websocket] = mission_after_id
     _ws_clients.append(websocket)
     logger.info("WebSocket client connected. Total: %d", len(_ws_clients))
     try:
@@ -2583,6 +2784,7 @@ async def websocket_endpoint(websocket: WebSocket):
     except WebSocketDisconnect:
         if websocket in _ws_clients:
             _ws_clients.remove(websocket)
+        _mission_ws_cursors.pop(websocket, None)
         logger.info("WebSocket client disconnected. Total: %d", len(_ws_clients))
 
 

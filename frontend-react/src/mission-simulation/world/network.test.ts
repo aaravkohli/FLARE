@@ -5,30 +5,34 @@ import { adaptMissionSimulationState } from '../adapter.ts';
 import type { MissionTelemetryPayload } from '../types.ts';
 import { routeCurve, curvePoint } from './networkGeometry.ts';
 import { networkRouteState } from './networkState.ts';
-import { advancePacketPhase, PACKET_CAPACITY, packetSample } from './PacketStream.ts';
+import { advancePacketPhase, packetFlowEnabled, PACKET_CAPACITY, packetSample } from './PacketStream.ts';
 const fallback = {droneId:'drone_1',route:'direct',threatLevel:'LOW',reward:0,step:1,noSafeRoute:false,availablePaths:['direct','satellite','mesh']};
 function payload(installed: string | null, requested='direct', applied=true): MissionTelemetryPayload {
   return {type:'telemetry',timestamp:1,decision:{path_name:installed||requested,requested_path:requested,threat_level:'LOW',reward:0,step:1,sdn_applied:applied},
-    metrics:{drone_id:'drone_1',timestamp:1,source:'synthetic',paths:[{path_id:'direct',rssi:-60,sinr:20,pdr:.9,latency:30,packet_loss:.1}]},
+    metrics:{drone_id:'drone_1',timestamp:1,source:'synthetic',paths:['direct','satellite','mesh'].map(path_id=>({path_id,rssi:-60,sinr:20,pdr:.9,latency:30,packet_loss:.1}))},
     event:{decision:{installed_path:installed,requested_path:requested},sdn:{applied}}};
 }
 test('explicit null installation is never replaced by legacy/requested route',()=>{
   const state=adaptMissionSimulationState(payload(null),fallback);
   assert.equal(state.installedRoute,null);
   assert.equal(networkRouteState(state,'direct','drone_1').forwarding,false);
+  assert.equal(packetFlowEnabled(networkRouteState(state,'direct','drone_1').forwarding),false);
   assert.equal(networkRouteState(state,'direct','drone_1').candidate,true);
   assert.equal(adaptMissionSimulationState(null,fallback).installedRoute,null);
 });
-test('pending, installed, failed update, HOLD and recovery map without a visual enforcement delay',()=>{
-  const pending=adaptMissionSimulationState(payload('direct','satellite',false),fallback);
-  assert.equal(networkRouteState(pending,'direct','drone_1').forwarding,true);
-  assert.equal(networkRouteState(pending,'satellite','drone_1').candidate,true);
+test('completed unconfirmed update, installed route, HOLD request and applied HOLD keep their distinct visual states',()=>{
+  const unconfirmed=adaptMissionSimulationState(payload('direct','satellite',false),fallback);
+  assert.equal(networkRouteState(unconfirmed,'direct','drone_1').forwarding,false);
+  assert.equal(networkRouteState(unconfirmed,'satellite','drone_1').candidate,true);
+  assert.equal(unconfirmed.routes.find(route => route.id === 'satellite')?.active,false);
   const installed=adaptMissionSimulationState(payload('satellite','satellite'),fallback);
   assert.equal(networkRouteState(installed,'direct','drone_1').forwarding,false);
   assert.equal(networkRouteState(installed,'satellite','drone_1').forwarding,true);
   const hold={...installed,installedRoute:'hold' as const};
   assert.equal(networkRouteState(hold,'satellite','drone_1').forwarding,false);
-  assert.equal(networkRouteState({...installed,networkAction:'hold'},'satellite','drone_1').forwarding,false);
+  assert.equal(packetFlowEnabled(networkRouteState(hold,'satellite','drone_1').forwarding),false);
+  assert.equal(packetFlowEnabled(networkRouteState(installed,'satellite','drone_1').forwarding,false),false);
+  assert.equal(networkRouteState({...installed,requestedRoute:'hold',networkAction:'hold',sdnApplied:undefined},'satellite','drone_1').forwarding,true);
   assert.equal(networkRouteState(installed,'satellite','drone_2').forwarding,false);
   assert.equal(networkRouteState(installed,'satellite','drone_1').forwarding,true);
 });
@@ -37,6 +41,17 @@ test('mesh never invents an animated forwarding hop and warnings use runtime fla
   state.routes[2].safe=false; state.routes[2].jammed=true;
   const view=networkRouteState(state,'mesh','drone_1');
   assert.equal(view.installed,true);assert.equal(view.forwarding,false);assert.equal(view.unsafe,true);assert.equal(view.degraded,true);
+});
+test('visual packet flow needs valid reported latency and loss on the installed path',()=>{
+  const state=adaptMissionSimulationState(payload('direct'),fallback);
+  const route=state.routes.find(item=>item.id==='direct')!;
+  assert.equal(networkRouteState(state,'direct','drone_1').forwarding,true);
+  route.metric=undefined;
+  assert.equal(networkRouteState(state,'direct','drone_1').forwarding,false);
+  route.metric={path_id:'direct',rssi:-60,sinr:20,pdr:.9,latency:NaN,packet_loss:.1};
+  assert.equal(networkRouteState(state,'direct','drone_1').forwarding,false);
+  route.metric.latency=30; route.metric.packet_loss=1.5;
+  assert.equal(networkRouteState(state,'direct','drone_1').forwarding,false);
 });
 test('dynamic Direct and Satellite curves meet current endpoints exactly',()=>{
   const ground={x:-280,y:5,z:170}, a={x:10,y:70,z:20}, satellite={x:200,y:280,z:-200};
@@ -62,8 +77,23 @@ test('packet timing uses valid latency, changes speed without phase jumps, and p
 test('bounded packet slots have deterministic metric-driven loss, with no invented loss on missing data',()=>{
   assert.equal(PACKET_CAPACITY,8);
   assert.deepEqual(packetSample(.7,0,30,.5),packetSample(.7,0,30,.5));
-  assert.equal(packetSample(.7,0,30,1)?.visible,false);
-  assert.equal(packetSample(.7,0,30,0)?.visible,true);
-  assert.equal(packetSample(.7,0,30,undefined)?.failed,false);
-  assert.equal(packetSample(.7,0,30,NaN)?.failed,false);
+  for(const phase of [0,.1,.5,.7,.99,1.2]){
+    assert.equal(packetSample(phase,0,30,1)?.visible,false);
+    assert.equal(packetSample(phase,0,30,0)?.visible,true);
+  }
+  assert.equal(packetSample(.7,0,30,undefined),null);
+  assert.equal(packetSample(.7,0,30,NaN),null);
+  assert.equal(packetSample(.7,0,30,1.5),null);
+  assert.equal(packetSample(.7,PACKET_CAPACITY,30,0),null);
+  assert.equal(packetFlowEnabled(true,false),false);
+  assert.equal(packetFlowEnabled(false,true),false);
+  assert.equal(packetFlowEnabled(true,true),true);
+});
+test('illustrative pulse spacing varies deterministically without overtaking adjacent slots',()=>{
+  const progress=Array.from({length:PACKET_CAPACITY},(_,slot)=>packetSample(0,slot,30,0)!.progress);
+  assert.deepEqual(progress,Array.from({length:PACKET_CAPACITY},(_,slot)=>packetSample(0,slot,30,0)!.progress));
+  const gaps=progress.slice(1).map((value,index)=>value-progress[index]);
+  assert.ok(gaps.every(gap=>gap>.1&&gap<.15));
+  assert.ok(new Set(gaps.map(gap=>gap.toFixed(4))).size>1);
+  assert.ok(progress.every(value=>value>=0&&value<1));
 });

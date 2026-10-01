@@ -356,3 +356,71 @@ class DecisionEvent(_StrictModel):
                 "decision.no_safe_route must match the derived safe-action mask"
             )
         return self
+
+
+class RouteRequestDecisionTrace(_StrictModel):
+    """Decision facts known before a route command reaches the controller."""
+
+    source: Literal["rl_model", "greedy_fallback"]
+    policy_path: Literal["direct", "satellite", "mesh", "hold"]
+    requested_path: Literal["direct", "satellite", "mesh", "hold"]
+    threat_level: Literal["LOW", "MEDIUM", "HIGH", "UNKNOWN"]
+    safety_override: bool
+    safe_action_mask: list[bool] = Field(min_length=3, max_length=3)
+    no_safe_route: bool
+    constraint_reason: Optional[
+        Literal[
+            "policy_route_above_threshold",
+            "all_routes_above_threshold",
+            "containment_required",
+        ]
+    ] = None
+    safety_threshold: float = Field(ge=0.0, le=1.0)
+    network_action: Literal["forward", "hold"]
+    routing_contract: Literal["routing_state_v2", "routing_state_v3"]
+
+    @model_validator(mode="after")
+    def validate_hold_request(self):
+        if (self.network_action == "hold") != (self.requested_path == "hold"):
+            raise ValueError("HOLD network action must match the requested path")
+        return self
+
+
+class RouteRequestStartedV1(_StrictModel):
+    """A durable pre-apply fact; it never asserts a controller result."""
+
+    schema_version: Literal["route_request_started_v1"]
+    event_id: str = Field(min_length=1)
+    transition_id: str = Field(min_length=1)
+    run_id: str = Field(min_length=1)
+    step: int = Field(ge=1)
+    drone_id: str = Field(
+        min_length=3,
+        max_length=64,
+        pattern=r"^[a-z][a-z0-9_-]{2,63}$",
+    )
+    mode: Literal["simulation", "real"]
+    occurred_at: float = Field(gt=0.0)
+    telemetry: TelemetrySnapshot
+    inference: InferenceTrace
+    decision: RouteRequestDecisionTrace
+    last_confirmed_path: Optional[Literal["direct", "satellite", "mesh", "hold"]]
+    configured_backend: Literal["mock", "ryu"]
+
+    @model_validator(mode="after")
+    def validate_request_evidence(self):
+        if self.transition_id != f"{self.run_id}:{self.step}:{self.drone_id}":
+            raise ValueError("transition_id must identify this control cycle")
+        if self.event_id != f"{self.transition_id}:route_request":
+            raise ValueError("event_id must identify the route request")
+        if self.telemetry.drone_id != self.drone_id:
+            raise ValueError("telemetry.drone_id must match drone_id")
+        expected_mask = [
+            score <= self.decision.safety_threshold
+            for score in self.inference.path_scores
+        ]
+        if self.decision.safe_action_mask != expected_mask:
+            raise ValueError("safe_action_mask must match the inference path scores")
+        if self.decision.no_safe_route != (not any(expected_mask)):
+            raise ValueError("no_safe_route must match the safe-action mask")
+        return self

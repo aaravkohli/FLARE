@@ -1,0 +1,19 @@
+.recorded-mission-page { min-height: 100vh; padding: 16px 24px 40px; color: #e8edf2; background: #10151d; }
+.recorded-mission-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 20px; max-width: 1600px; margin: 0 auto 12px; }
+.recorded-mission-toolbar__identity { display: flex; flex-direction: column; gap: 3px; }
+.recorded-mission-toolbar__identity strong { font-size: 15px; letter-spacing: .04em; }
+.recorded-mission-toolbar__identity span { color: #9eabb9; font-size: 12px; }
+.recorded-mission-toolbar__controls { display: flex; flex-wrap: wrap; gap: 6px; }
+.recorded-mission-toolbar button, .recorded-mission-toolbar a { border: 1px solid #435366; border-radius: 6px; background: #202d3b; color: #e8edf2; padding: 8px 12px; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; text-decoration: none; white-space: nowrap; }
+.recorded-mission-toolbar button:hover:not(:disabled), .recorded-mission-toolbar a:hover { border-color: #86afbe; }
+.recorded-mission-toolbar button:disabled { opacity: .45; cursor: default; }
+.recorded-mission-frame { display: flex; align-items: baseline; gap: 16px; max-width: 1600px; margin: 0 auto 12px; border-left: 3px solid #67b9ca; background: #1a2632; padding: 10px 14px; }
+.recorded-mission-frame span { color: #9baebd; font-size: 12px; white-space: nowrap; }
+.recorded-mission-frame strong { flex: 1; font-size: 14px; }
+.recorded-mission-page > .mission-simulation { max-width: 1600px; margin-inline: auto; }
+.recorded-mission-provenance { max-width: 1600px; margin: 20px auto 0; color: #a6b5c4; font-size: 12px; }
+.recorded-mission-provenance summary { cursor: pointer; }
+.recorded-mission-provenance pre { overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+.recorded-mission-error { max-width: 700px; padding: 80px 24px; margin: auto; color: #e8edf2; }
+.recorded-mission-error a { color: #8accda; }
+@media (max-width: 1100px) { .recorded-mission-toolbar { flex-wrap: wrap; } .recorded-mission-toolbar__controls { order: 3; width: 100%; } .recorded-mission-frame { flex-wrap: wrap; gap: 4px 12px; } .recorded-mission-frame strong { flex-basis: 100%; order: 2; } }
