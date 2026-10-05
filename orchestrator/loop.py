@@ -483,7 +483,7 @@ def _heuristic_threat_scores(metrics: dict) -> dict:
 # SDN Push (with retry)
 # ---------------------------------------------------------------------------
 
-async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str) -> dict:
+async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str, decision_context: dict | None = None) -> dict:
     """
     POST routing decision to SDN controller.
     Retries up to 3 times with exponential backoff using native async.
@@ -493,6 +493,8 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str)
         "drone_id": drone_id,
         "action_id": action_id_for_path(path_name),
     }
+    if decision_context is not None:
+        payload["decision_context"] = decision_context
     last_err: Optional[Exception] = None
     for attempt, delay in enumerate([0.0, 0.1, 0.4]):
         try:
@@ -715,6 +717,10 @@ class Orchestrator:
     def _sync_fleet(self) -> None:
         """Discover newly enrolled drones and initialize isolated runtime state."""
         current = list(active_drone_ids())
+        retired=set(self.DRONES)-set(current)
+        for cache_name in ("_prev_path","_prev_path_time","_last_good_decision","_last_good_ts","_metric_history","_prev_rewards","_containment_modes","_rl_agents","_live_telemetry_cache"):
+            cache=getattr(self,cache_name,{})
+            for identity in retired: cache.pop(identity,None)
         added = [drone_id for drone_id in current if drone_id not in self.DRONES]
         if not added:
             self.DRONES = current
@@ -798,15 +804,16 @@ class Orchestrator:
         )
 
     @staticmethod
-    def _fl_trust_context() -> dict[str, dict]:
+    def _fl_trust_context(session_id=None) -> dict[str, dict]:
         """Read the latest server-authenticated reputation snapshot."""
-        path = _BASE / _FL_CFG.get("paths", {}).get(
+        path = Path(os.getenv("FLARE_FL_METRICS_JSON",str(_BASE / _FL_CFG.get("paths", {}).get(
             "metrics_json", "results/fl_metrics_snapshot.json"
-        )
+        ))))
         if not path.exists():
             return {}
         try:
             latest = json.loads(path.read_text(encoding="utf-8")).get("latest", {})
+            if session_id and latest.get('mission_session')!=session_id: return {}
             rows = latest.get("client_security", [])
             return {
                 str(row["client_id"]): row
@@ -830,6 +837,28 @@ class Orchestrator:
             self._live_telemetry_cache = {}
         if not hasattr(self, "_telemetry_collection_status"):
             self._telemetry_collection_status = {}
+        if MODE == "simulation" and os.getenv("FLARE_SWARM_ENABLED") == "1":
+            from api.mission import service_request
+            try:
+                snapshot = await service_request("GET", "/metrics")
+                self._mission_paused = not snapshot["playing"]
+                self._mission_time=snapshot['simulation_time']
+                await service_request('POST','/runtime',{'session_id':snapshot['session_id'],'component':'orchestrator',
+                    'status':'waiting_for_play' if self._mission_paused else 'running',
+                    'fl_model_loaded':self._fl_model is not None,'routing_contract':getattr(self,'_routing_contract_name',None)})
+                if getattr(self, "_mission_session", None) != snapshot["session_id"]:
+                    self._mission_session = snapshot["session_id"]
+                    if hasattr(self,"_network_analyzer"): self._network_analyzer._risk.clear()
+                    if hasattr(self,"_insider_analyzer"): self._insider_analyzer._risk.clear(); self._insider_analyzer._history.clear()
+                    for history in self._metric_history.values(): history.clear()
+                    for agent in self._rl_agents.values(): agent._prev_action=None; agent._prev_reward=0.; agent._step=0
+                metrics={identity:TelemetrySnapshot.model_validate(row).model_dump() for identity,row in snapshot["metrics"].items()}
+                self._telemetry_collection_status={n:{"status":"fresh","source":"synthetic","age_s":0.,"error":None} for n in metrics}
+                return metrics
+            except Exception as exc:
+                logger.error("Authoritative mission telemetry unavailable: %s",exc)
+                self._mission_paused=False
+                return {}
         if MODE == "simulation":
             from simulation.generator import generate_swarm_metrics
             metrics = generate_swarm_metrics()
@@ -971,6 +1000,7 @@ class Orchestrator:
         self._step += 1
         t_start = time.time()
         metrics_by_drone = await self._collect_metrics(client)
+        if getattr(self,"_mission_paused",False): return
         unavailable = [
             drone_id for drone_id in self.DRONES if drone_id not in metrics_by_drone
         ]
@@ -1019,7 +1049,7 @@ class Orchestrator:
             }
 
         rows = []
-        trust_context = self._fl_trust_context()
+        trust_context = self._fl_trust_context(getattr(self,'_mission_session',None)) if os.getenv('FLARE_SWARM_ENABLED')=='1' else self._fl_trust_context()
         if not hasattr(self, "_insider_analyzer"):
             from fl.insider import InsiderTelemetryAnalyzer
             self._insider_analyzer = InsiderTelemetryAnalyzer(
@@ -1027,31 +1057,7 @@ class Orchestrator:
             )
         if not hasattr(self, "_containment_modes"):
             self._containment_modes = {drone: "normal" for drone in self.DRONES}
-        for drone_id in processing_drones:
-            metrics = metrics_by_drone[drone_id]
-            threat = threats_by_drone[drone_id]
-            fallback_reasons = []
-            if metrics.get("source") == "synthetic_fallback":
-                fallback_reasons.append("live_sensor_unavailable")
-            if threat.get("source") == "heuristic_fallback":
-                fallback_reasons.append(fl_fallback_reason or "fl_inference_unavailable")
-
-            path_scores = threat["path_scores"]
-            path_latencies = [
-                min(
-                    1.0,
-                    max(
-                        0.0,
-                        metrics["paths"][idx]["latency"] / MAX_LATENCY_MS[idx],
-                    ),
-                )
-                for idx in range(3)
-            ]
-            path_losses = [
-                min(1.0, max(0.0, metrics["paths"][idx]["packet_loss"]))
-                for idx in range(3)
-            ]
-
+        def prepare_security(drone_id,metrics):
             evidence = metrics.get("security_evidence")
             if not hasattr(self, "_network_analyzer"):
                 from security.network_detector import NetworkThreatAnalyzer
@@ -1062,7 +1068,7 @@ class Orchestrator:
                 drone_id,
                 evidence,
                 max_path_latency_ms=max(
-                    float(path["latency"]) for path in metrics["paths"]
+                    (float(path["latency"]) for path in metrics["paths"] if os.getenv("FLARE_SWARM_ENABLED")!="1" or path["pdr"]>0),default=0.
                 ),
                 max_evidence_age_s=float(
                     _SECURITY_CFG.get("evidence", {}).get("max_age_s", 3.0)
@@ -1104,13 +1110,63 @@ class Orchestrator:
                 1.0 - client_trust,
             )
 
+            return network_analysis, insider_analysis, client_trust, insider_risk, evidence_freshness, containment, containment_score
+
+        prepared_security={}
+        batched_decisions={}
+        if os.getenv("FLARE_SWARM_ENABLED")=="1":
+            from rl.agent import RLAgent
+            batch_ids=[]; batch_agents=[]; batch_inputs=[]
+            for identity in processing_drones:
+                row=metrics_by_drone[identity]; prepared_security[identity]=prepare_security(identity,row)
+                _,_,trust,risk,freshness,_,containment_risk=prepared_security[identity]
+                agent=self._rl_agents.get(identity)
+                if agent is not None:
+                    batch_ids.append(identity); batch_agents.append(agent)
+                    batch_inputs.append(dict(path_scores=threats_by_drone[identity]["path_scores"],reward=self._prev_rewards[identity],
+                        path_latencies=[min(1.,max(0.,row["paths"][i]["latency"]/MAX_LATENCY_MS[i])) for i in range(3)],
+                        path_losses=[row["paths"][i]["packet_loss"] for i in range(3)],client_trust=trust,insider_risk=risk,
+                        containment_score=containment_risk,evidence_freshness=freshness))
+            if batch_agents:
+                try: batched_decisions=dict(zip(batch_ids,await asyncio.to_thread(RLAgent.predict_batch,batch_agents,batch_inputs)))
+                except Exception as exc: logger.warning("Batched routing inference unavailable: %s",exc)
+
+        async def process_drone(drone_id):
+            metrics = metrics_by_drone[drone_id]
+            threat = threats_by_drone[drone_id]
+            fallback_reasons = []
+            if metrics.get("source") == "synthetic_fallback":
+                fallback_reasons.append("live_sensor_unavailable")
+            if threat.get("source") == "heuristic_fallback":
+                fallback_reasons.append(fl_fallback_reason or "fl_inference_unavailable")
+
+            path_scores = threat["path_scores"]
+            path_latencies = [
+                min(
+                    1.0,
+                    max(
+                        0.0,
+                        metrics["paths"][idx]["latency"] / MAX_LATENCY_MS[idx],
+                    ),
+                )
+                for idx in range(3)
+            ]
+            path_losses = [
+                min(1.0, max(0.0, metrics["paths"][idx]["packet_loss"]))
+                for idx in range(3)
+            ]
+
+            network_analysis, insider_analysis, client_trust, insider_risk, evidence_freshness, containment, containment_score = prepared_security.get(drone_id) or prepare_security(drone_id,metrics)
+
             # Step 3: RL decision
             rl_fallback_reason = "rl_model_unavailable"
             try:
                 async with asyncio.timeout(0.1):
                     loop = asyncio.get_running_loop()
                     rl_agent = self._rl_agents.get(drone_id)
-                    if rl_agent:
+                    if drone_id in batched_decisions:
+                        decision=batched_decisions[drone_id]
+                    elif rl_agent:
                         predict = partial(
                             rl_agent.predict,
                             path_scores,
@@ -1156,7 +1212,7 @@ class Orchestrator:
 
             # Graceful degradation: use last known good if stale
             current_ts = time.time()
-            if self._last_good_decision[drone_id] and (current_ts - self._last_good_ts[drone_id] > 5.0):
+            if os.getenv("FLARE_SWARM_ENABLED")!="1" and self._last_good_decision[drone_id] and (current_ts - self._last_good_ts[drone_id] > 5.0):
                 logger.warning("Decision cache stale (>5s) for %s. Using fallback.", drone_id)
                 requested_path = "mesh"
                 action_id = _PATH_NAMES.index(requested_path)
@@ -1230,7 +1286,17 @@ class Orchestrator:
                     fallback_reasons.append("route_request_audit_unavailable")
                     logger.error("Route request audit unavailable for %s: %s", drone_id, exc)
             try:
-                sdn_resp = await _push_to_sdn(client, requested_path, drone_id)
+                context = None
+                if os.getenv("FLARE_SWARM_ENABLED") == "1":
+                    context={"decision_id":f"{RUN_ID}:{self._step}:{drone_id}","trust":client_trust,
+                        "routing_source":decision.get('decision_source','rl_model'),
+                        "threat":min(path_scores),"scores":path_scores,"source":threat.get("source"),
+                        "attack_type":threat.get("attack_type"),"confidence":threat.get("confidence"),
+                        "policy_path":policy_path,"requested_path":requested_path,"observation":decision.get("observation"),
+                        "routing_contract":decision.get("routing_contract"),"safety_override":decision.get("safety_override"),
+                        "network_detection":__import__("dataclasses").asdict(network_analysis),
+                        "insider_risk":insider_risk,"evidence":"packet_simulation"}
+                sdn_resp = await _push_to_sdn(client, requested_path, drone_id, context) if context else await _push_to_sdn(client, requested_path, drone_id)
                 sdn_ok = True
                 reported_path = sdn_resp.get("installed_path", requested_path)
                 installed_path = reported_path if reported_path in _ACTION_NAMES_V3 else requested_path
@@ -1294,6 +1360,8 @@ class Orchestrator:
                 "drone_id": drone_id,
                 "mode": MODE,
                 "telemetry": metrics,
+                "mission_context": ({'session_id':self._mission_session,'simulation_time':self._mission_time}
+                    if os.getenv('FLARE_SWARM_ENABLED')=='1' else None),
                 "inference": {
                     "path_scores": path_scores,
                     "confidence": threat["confidence"],
@@ -1409,6 +1477,14 @@ class Orchestrator:
             if route_changed:
                 self._prev_path[drone_id] = installed_path
                 self._prev_path_time[drone_id] = current_ts
+
+        if os.getenv("FLARE_SWARM_ENABLED")=="1":
+            semaphore=asyncio.Semaphore(32)
+            async def limited(identity):
+                async with semaphore: await process_drone(identity)
+            await asyncio.gather(*(limited(identity) for identity in processing_drones))
+        else:
+            for identity in processing_drones: await process_drone(identity)
 
         await asyncio.to_thread(_log_experiments, rows)
         self._deployment_just_activated = False

@@ -1,0 +1,67 @@
+{
+  "evidence": "controlled_browser_simulation",
+  "duration_s": 30.325,
+  "warmup_s": 5,
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "browser": "154.0.8037.92",
+  "headless": true,
+  "quality": "balanced",
+  "configuration": {
+    "seed": 42,
+    "count": 100,
+    "topology": "manet",
+    "formation": "distributed",
+    "speed": 1,
+    "session_id": "5214e8a918814072911eeafe24a21743",
+    "simulation_time": 20.70000000000016
+  },
+  "gpu": {
+    "vendor": "Google Inc. (Apple)",
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+  },
+  "hardware": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "logical_cpus": 8,
+    "total_memory": 17179869184
+  },
+  "average_fps": 28.434393080744435,
+  "fifth_percentile_fps": 8.568980291345277,
+  "frame_samples": 862,
+  "command_response_ms": 2193,
+  "errors": [],
+  "samples": [
+    {
+      "elapsed_s": 10.413,
+      "heap_bytes": 97364928,
+      "average": 30.3,
+      "low": 8.6
+    },
+    {
+      "elapsed_s": 20.43,
+      "heap_bytes": 145151860,
+      "average": 34.8,
+      "low": 20
+    },
+    {
+      "elapsed_s": 30.315,
+      "heap_bytes": 102311864,
+      "average": 28.7,
+      "low": 5
+    }
+  ],
+  "acceptance": {
+    "fps": false,
+    "memory_growth_bytes": 4946936
+  },
+  "timestamp": "2026-10-01T18:36:33.367Z",
+  "command": [
+    "npm",
+    "run",
+    "profile:swarm"
+  ]
+}

@@ -4,6 +4,11 @@ import tailwindcss from '@tailwindcss/vite'
 
 // https://vite.dev/config/
 export default defineConfig({
+  server: {
+    watch: {
+      ignored: ['**/artifacts/**', '**/test-results/**', '**/playwright-report/**'],
+    },
+  },
   plugins: [
     react(),
     tailwindcss(),

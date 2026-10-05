@@ -1,0 +1,25 @@
+# Controlled simulation parameters, not field-calibrated UAV/RF specifications.
+default_count: 30
+max_count: 100
+seed: 42
+topology: manet
+formation: distributed
+fixed_step_s: 0.05
+network_interval_s: 0.2
+radio:
+  range_m: 350.0
+  reference_rssi_dbm: -36.0
+  path_loss_exponent: 2.2
+  noise_dbm: -100.0
+  bandwidth_mbps: 12.0
+  minimum_sinr_db: 4.0
+  max_loss: 0.35
+  propagation_ms: 8.0
+packets:
+  queue_limit: 64
+  capacity: 10000
+  ttl_s: 20.0
+  retries: 3
+fl:
+  client_pool_size: 5
+  transfer_timeout_s: 90.0

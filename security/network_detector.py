@@ -257,7 +257,7 @@ class NetworkThreatAnalyzer:
             else:
                 received, dropped = 0.0, 0.0
         else:
-            received = max(float(raw["controller_rx_packets"]), 1.0)
+            received = max(float(raw["controller_rx_packets"]), 0.0)
             dropped = max(
                 float(raw.get("controller_dropped_packets") or 0.0),
                 received - float(raw["controller_forwarded_packets"]),

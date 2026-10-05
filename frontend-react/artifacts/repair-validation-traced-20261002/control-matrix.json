@@ -1,0 +1,5688 @@
+[
+  {
+    "control": "10 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "full_mesh",
+      "links": 48,
+      "revision": 5
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.165Z"
+  },
+  {
+    "control": "10 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "partial_mesh",
+      "links": 28,
+      "revision": 6
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.244Z"
+  },
+  {
+    "control": "10 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "star",
+      "links": 12,
+      "revision": 7
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.319Z"
+  },
+  {
+    "control": "10 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "ring",
+      "links": 13,
+      "revision": 8
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.393Z"
+  },
+  {
+    "control": "10 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "tree",
+      "links": 12,
+      "revision": 9
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.470Z"
+  },
+  {
+    "control": "10 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "cluster_mesh",
+      "links": 12,
+      "revision": 10
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.550Z"
+  },
+  {
+    "control": "10 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "hybrid_mesh",
+      "links": 33,
+      "revision": 11
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.633Z"
+  },
+  {
+    "control": "10 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "chain",
+      "links": 12,
+      "revision": 12
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:56.875Z"
+  },
+  {
+    "control": "10 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "grid",
+      "links": 16,
+      "revision": 13
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.070Z"
+  },
+  {
+    "control": "10 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "manet",
+      "links": 46,
+      "revision": 14
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.163Z"
+  },
+  {
+    "control": "20 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "full_mesh",
+      "links": 200,
+      "revision": 16
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.376Z"
+  },
+  {
+    "control": "20 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "partial_mesh",
+      "links": 60,
+      "revision": 17
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.598Z"
+  },
+  {
+    "control": "20 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "star",
+      "links": 29,
+      "revision": 18
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.688Z"
+  },
+  {
+    "control": "20 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "ring",
+      "links": 30,
+      "revision": 19
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.775Z"
+  },
+  {
+    "control": "20 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "tree",
+      "links": 29,
+      "revision": 20
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.860Z"
+  },
+  {
+    "control": "20 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "cluster_mesh",
+      "links": 29,
+      "revision": 21
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:57.957Z"
+  },
+  {
+    "control": "20 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "hybrid_mesh",
+      "links": 74,
+      "revision": 22
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:58.051Z"
+  },
+  {
+    "control": "20 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "chain",
+      "links": 29,
+      "revision": 23
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:58.135Z"
+  },
+  {
+    "control": "20 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "grid",
+      "links": 41,
+      "revision": 24
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:58.214Z"
+  },
+  {
+    "control": "20 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "manet",
+      "links": 105,
+      "revision": 25
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:58.324Z"
+  },
+  {
+    "control": "30 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "full_mesh",
+      "links": 451,
+      "revision": 27
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:58.631Z"
+  },
+  {
+    "control": "30 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "partial_mesh",
+      "links": 89,
+      "revision": 28
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:58.900Z"
+  },
+  {
+    "control": "30 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "star",
+      "links": 45,
+      "revision": 29
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.003Z"
+  },
+  {
+    "control": "30 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "ring",
+      "links": 46,
+      "revision": 30
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.110Z"
+  },
+  {
+    "control": "30 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "tree",
+      "links": 45,
+      "revision": 31
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.199Z"
+  },
+  {
+    "control": "30 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "cluster_mesh",
+      "links": 46,
+      "revision": 32
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.295Z"
+  },
+  {
+    "control": "30 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "hybrid_mesh",
+      "links": 111,
+      "revision": 33
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.405Z"
+  },
+  {
+    "control": "30 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "chain",
+      "links": 45,
+      "revision": 34
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.512Z"
+  },
+  {
+    "control": "30 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "grid",
+      "links": 65,
+      "revision": 35
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.609Z"
+  },
+  {
+    "control": "30 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "manet",
+      "links": 163,
+      "revision": 36
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:14:59.729Z"
+  },
+  {
+    "control": "50 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "full_mesh",
+      "links": 1253,
+      "revision": 38
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:00.400Z"
+  },
+  {
+    "control": "50 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "partial_mesh",
+      "links": 151,
+      "revision": 39
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:00.592Z"
+  },
+  {
+    "control": "50 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "star",
+      "links": 77,
+      "revision": 40
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:00.727Z"
+  },
+  {
+    "control": "50 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "ring",
+      "links": 78,
+      "revision": 41
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:00.867Z"
+  },
+  {
+    "control": "50 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "tree",
+      "links": 77,
+      "revision": 42
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:01.018Z"
+  },
+  {
+    "control": "50 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "cluster_mesh",
+      "links": 83,
+      "revision": 43
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:01.164Z"
+  },
+  {
+    "control": "50 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "hybrid_mesh",
+      "links": 189,
+      "revision": 44
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:01.311Z"
+  },
+  {
+    "control": "50 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "chain",
+      "links": 77,
+      "revision": 45
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:01.562Z"
+  },
+  {
+    "control": "50 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "grid",
+      "links": 113,
+      "revision": 46
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:01.805Z"
+  },
+  {
+    "control": "50 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "manet",
+      "links": 269,
+      "revision": 47
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:01.985Z"
+  },
+  {
+    "control": "75 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "full_mesh",
+      "links": 2809,
+      "revision": 49
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:03.706Z"
+  },
+  {
+    "control": "75 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "partial_mesh",
+      "links": 231,
+      "revision": 50
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:04.057Z"
+  },
+  {
+    "control": "75 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "star",
+      "links": 116,
+      "revision": 51
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:04.253Z"
+  },
+  {
+    "control": "75 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "ring",
+      "links": 117,
+      "revision": 52
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:04.455Z"
+  },
+  {
+    "control": "75 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "tree",
+      "links": 117,
+      "revision": 53
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:04.644Z"
+  },
+  {
+    "control": "75 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "cluster_mesh",
+      "links": 138,
+      "revision": 54
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:04.856Z"
+  },
+  {
+    "control": "75 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "hybrid_mesh",
+      "links": 306,
+      "revision": 55
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:05.087Z"
+  },
+  {
+    "control": "75 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "chain",
+      "links": 116,
+      "revision": 56
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:05.293Z"
+  },
+  {
+    "control": "75 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "grid",
+      "links": 175,
+      "revision": 57
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:05.542Z"
+  },
+  {
+    "control": "75 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "manet",
+      "links": 411,
+      "revision": 58
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:05.830Z"
+  },
+  {
+    "control": "100 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "full_mesh",
+      "links": 4945,
+      "revision": 60
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:09.104Z"
+  },
+  {
+    "control": "100 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "partial_mesh",
+      "links": 301,
+      "revision": 61
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:09.819Z"
+  },
+  {
+    "control": "100 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "star",
+      "links": 151,
+      "revision": 62
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:10.086Z"
+  },
+  {
+    "control": "100 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "ring",
+      "links": 154,
+      "revision": 63
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:10.359Z"
+  },
+  {
+    "control": "100 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "tree",
+      "links": 156,
+      "revision": 64
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:10.639Z"
+  },
+  {
+    "control": "100 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "cluster_mesh",
+      "links": 193,
+      "revision": 65
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:11.040Z"
+  },
+  {
+    "control": "100 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "hybrid_mesh",
+      "links": 410,
+      "revision": 66
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:11.365Z"
+  },
+  {
+    "control": "100 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "chain",
+      "links": 154,
+      "revision": 67
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:11.779Z"
+  },
+  {
+    "control": "100 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "grid",
+      "links": 236,
+      "revision": 68
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:12.121Z"
+  },
+  {
+    "control": "100 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "manet",
+      "links": 521,
+      "revision": 69
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:12.472Z"
+  },
+  {
+    "control": "grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "grid",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:12.886Z"
+  },
+  {
+    "control": "v",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "v",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:13.270Z"
+  },
+  {
+    "control": "line",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "line",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:13.677Z"
+  },
+  {
+    "control": "circle",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "circle",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:14.117Z"
+  },
+  {
+    "control": "diamond",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "diamond",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:14.512Z"
+  },
+  {
+    "control": "wedge",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "wedge",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:14.909Z"
+  },
+  {
+    "control": "column",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "column",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:15.371Z"
+  },
+  {
+    "control": "distributed",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "distributed",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:15.803Z"
+  },
+  {
+    "control": "cluster",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "cluster",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:16.189Z"
+  },
+  {
+    "control": "0.25×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 0.25
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:16.423Z"
+  },
+  {
+    "control": "0.5×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 0.5
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:16.761Z"
+  },
+  {
+    "control": "1×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 1
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:17.017Z"
+  },
+  {
+    "control": "2×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 2
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:17.255Z"
+  },
+  {
+    "control": "4×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 4
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:17.497Z"
+  },
+  {
+    "control": "normal",
+    "backend_path": "POST /scenarios/normal",
+    "effect": {
+      "scenario": "normal",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:17.693Z"
+  },
+  {
+    "control": "large_manet",
+    "backend_path": "POST /scenarios/large_manet",
+    "effect": {
+      "scenario": "large_manet",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:17.959Z"
+  },
+  {
+    "control": "jamming",
+    "backend_path": "POST /scenarios/jamming",
+    "effect": {
+      "scenario": "jamming",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:18.202Z"
+  },
+  {
+    "control": "poisoning",
+    "backend_path": "POST /scenarios/poisoning",
+    "effect": {
+      "scenario": "poisoning",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:18.353Z"
+  },
+  {
+    "control": "failures",
+    "backend_path": "POST /scenarios/failures",
+    "effect": {
+      "scenario": "failures",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:18.490Z"
+  },
+  {
+    "control": "controller_loss",
+    "backend_path": "POST /scenarios/controller_loss",
+    "effect": {
+      "scenario": "controller_loss",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:18.696Z"
+  },
+  {
+    "control": "rerouting",
+    "backend_path": "POST /scenarios/rerouting",
+    "effect": {
+      "scenario": "rerouting",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:18.903Z"
+  },
+  {
+    "control": "hold",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -146.88088498714913,
+          80,
+          -146.98933686595134
+        ],
+        "target": [
+          -146.9160363406546,
+          80,
+          -146.99321918617443
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0.11000000000000003,
+        "battery": 0.9999942803642183,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "hold",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "hold",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "sim_uav_009",
+          "sim_uav_010"
+        ],
+        "sent": 7,
+        "received": 11,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -146.88088498714913,
+          80,
+          -146.98933686595134
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "sim_uav_009",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.2,
+          "delivered_at": 0.2,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.5499999999999999
+        }
+      },
+      "session_id": "e575dfca7fd0443289198e97d7518d8b"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:25.030Z"
+  },
+  {
+    "control": "resume",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "target": [
+          -62.45001369331336,
+          80,
+          -18.003361069270326
+        ],
+        "velocity": [
+          0.8222349128160392,
+          0,
+          0.25660109625845695
+        ],
+        "heading": 0.30249999999999994,
+        "battery": 0.9999953039266267,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "resume",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "78e952a6b9cd4feb9133838000e792dd"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:25.628Z"
+  },
+  {
+    "control": "return",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.893191166120054,
+          79.98643879103963,
+          -62.98278197886884
+        ],
+        "target": [
+          -280,
+          70,
+          170
+        ],
+        "velocity": [
+          0.1953449775415897,
+          -0.05338535827102377,
+          0.060962791295351294
+        ],
+        "heading": 0.30249999999999994,
+        "battery": 0.9999954900440683,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "return",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "return",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 8,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 3,
+        "formation_slot": null,
+        "reported_position": [
+          -62.893191166120054,
+          79.98643879103963,
+          -62.98278197886884
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p63",
+          "acknowledged_at": 0.2
+        }
+      },
+      "session_id": "714ec9fd99fe48b687c3738d35ad7f53"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:26.276Z"
+  },
+  {
+    "control": "altitude",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.91430671717264,
+          80.4450051155377,
+          -62.99555749303014
+        ],
+        "target": [
+          -62.975763504102225,
+          120,
+          -62.99894102873134
+        ],
+        "velocity": [
+          0.0116642185488815,
+          1.7790485693176092,
+          0.0006421796819891543
+        ],
+        "heading": 0.05499999999998744,
+        "battery": 0.9999951179828789,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "move",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "altitude",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.91430671717264,
+          80.4450051155377,
+          -62.99555749303014
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "a8b5c8a73c694ac68d5e80b63a6a11ef"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:26.914Z"
+  },
+  {
+    "control": "move",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.51225323160873,
+          80.05624959426271,
+          -62.89561875039583
+        ],
+        "target": [
+          30,
+          100,
+          50
+        ],
+        "velocity": [
+          1.6063298732797666,
+          0.2236391301804117,
+          0.5012995678140414
+        ],
+        "heading": 0.30250000000000005,
+        "battery": 0.9999950964251304,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "move",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "move",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.51225323160873,
+          80.05624959426271,
+          -62.89561875039583
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "c834f7a9e5464916b274b9aaedf7265b"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:27.598Z"
+  },
+  {
+    "control": "waypoints",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.39847190776723,
+          80.07000513631053,
+          -62.85898386890813
+        ],
+        "target": [
+          0,
+          100,
+          0
+        ],
+        "velocity": [
+          1.841150532375251,
+          0.25328313152239956,
+          0.6306398422046936
+        ],
+        "heading": 0.33,
+        "battery": 0.9999945759722823,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "waypoints",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "waypoints",
+        "waypoints": [
+          [
+            0,
+            100,
+            0
+          ],
+          [
+            100,
+            100,
+            100
+          ]
+        ],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.39847190776723,
+          80.07000513631053,
+          -62.85898386890813
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "bb4585f4f65c43ad9796d31b186ba9c5"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:28.306Z"
+  },
+  {
+    "control": "formation",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.29553287129271,
+          80,
+          -62.80894851399733
+        ],
+        "target": [
+          0.6999717698888768,
+          80,
+          44.99455566533976
+        ],
+        "velocity": [
+          1.8198738766971665,
+          0,
+          0.7374529757785289
+        ],
+        "heading": 0.3850000000000001,
+        "battery": 0.9999936667886786,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "formation",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 3,
+        "dropped": 1,
+        "formation_slot": [
+          0,
+          80,
+          0
+        ],
+        "reported_position": [
+          -62.29553287129271,
+          80,
+          -62.80894851399733
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "result": {
+            "formation": "v",
+            "slot": [
+              0,
+              80,
+              0
+            ]
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p71",
+          "acknowledged_at": 0.2
+        },
+        "drone_2": {
+          "status": "executed_ack_pending",
+          "accepted_at": 0,
+          "reason": "Executed; awaiting acknowledgment",
+          "dispatched_at": 0,
+          "packet_id": "p2",
+          "result": {
+            "formation": "v",
+            "slot": [
+              42,
+              92,
+              42
+            ]
+          },
+          "executed_at": 0.49999999999999994,
+          "delivered_at": 0.49999999999999994,
+          "ack_packet": "p80"
+        },
+        "drone_3": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p3",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -42,
+              104,
+              42
+            ]
+          },
+          "executed_at": 0.3,
+          "delivered_at": 0.3,
+          "ack_packet": "p77",
+          "acknowledged_at": 0.49999999999999994
+        },
+        "drone_4": {
+          "status": "executed_ack_pending",
+          "accepted_at": 0,
+          "reason": "Executed; awaiting acknowledgment",
+          "dispatched_at": 0,
+          "packet_id": "p4",
+          "result": {
+            "formation": "v",
+            "slot": [
+              84,
+              80,
+              84
+            ]
+          },
+          "executed_at": 0.39999999999999997,
+          "delivered_at": 0.39999999999999997,
+          "ack_packet": "p78"
+        },
+        "drone_5": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p5",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -84,
+              92,
+              84
+            ]
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p72",
+          "acknowledged_at": 0.2
+        },
+        "sim_uav_006": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p6",
+          "result": {
+            "formation": "v",
+            "slot": [
+              126,
+              104,
+              126
+            ]
+          },
+          "executed_at": 0.2,
+          "delivered_at": 0.2,
+          "ack_packet": "p74",
+          "acknowledged_at": 0.39999999999999997
+        },
+        "sim_uav_007": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p7",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -126,
+              80,
+              126
+            ]
+          },
+          "executed_at": 0.2,
+          "delivered_at": 0.2,
+          "ack_packet": "p75",
+          "acknowledged_at": 0.39999999999999997
+        },
+        "sim_uav_008": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p8",
+          "result": {
+            "formation": "v",
+            "slot": [
+              168,
+              92,
+              168
+            ]
+          },
+          "executed_at": 0.39999999999999997,
+          "delivered_at": 0.39999999999999997,
+          "ack_packet": "p79",
+          "acknowledged_at": 0.7000000000000001
+        },
+        "sim_uav_009": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p9",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -168,
+              104,
+              168
+            ]
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p73",
+          "acknowledged_at": 0.2
+        },
+        "sim_uav_010": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p10",
+          "result": {
+            "formation": "v",
+            "slot": [
+              210,
+              80,
+              210
+            ]
+          },
+          "executed_at": 0.2,
+          "delivered_at": 0.2,
+          "ack_packet": "p76",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "df93370b33d6468394fb2a5f308d4560"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:29.134Z"
+  },
+  {
+    "control": "route",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "target": [
+          -62.45001369331336,
+          80,
+          -18.003361069270326
+        ],
+        "velocity": [
+          0.8222349128160392,
+          0,
+          0.25660109625845695
+        ],
+        "heading": 0.30249999999999994,
+        "battery": 0.9999953039266267,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "hold",
+        "current_command": "route",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 11,
+        "forwarded": 1,
+        "dropped": 4,
+        "formation_slot": null,
+        "reported_position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": []
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.2
+        }
+      },
+      "session_id": "b6fd1aa24a23449aabb6f2d926c16e8d"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:29.953Z"
+  },
+  {
+    "control": "reroute",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.66652657152749,
+          80,
+          -62.92688561931333
+        ],
+        "target": [
+          -62.40001777761975,
+          80,
+          -18.003999940741096
+        ],
+        "velocity": [
+          0.8822056858310474,
+          0,
+          0.30217738567352664
+        ],
+        "heading": 0.32999999999999996,
+        "battery": 0.9999948573005062,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "reroute",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.66652657152749,
+          80,
+          -62.92688561931333
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "result": {
+            "previous_hops": [
+              "drone_1",
+              "base"
+            ],
+            "installed_hops": [
+              "drone_1",
+              "base"
+            ],
+            "changed": false,
+            "reason": "Current route remains best"
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "9031c6b44e584c308989f7ee29565a51"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:30.520Z"
+  },
+  {
+    "control": "role",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "target": [
+          -62.45001369331336,
+          80,
+          -18.003361069270326
+        ],
+        "velocity": [
+          0.8222349128160392,
+          0,
+          0.25660109625845695
+        ],
+        "heading": 0.30249999999999994,
+        "battery": 0.9999953039266267,
+        "health": 1,
+        "role": "gateway",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "role",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "d886c43efa5741ef87e1a813344868a4"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:31.214Z"
+  },
+  {
+    "control": "disconnect",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": false,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "disconnect",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": []
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "61ad214211dd4932b972338592c2167c"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:31.606Z"
+  },
+  {
+    "control": "reconnect",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "reconnect",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "fdc8d87dc9d24da897d871d5de3ca644"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:31.959Z"
+  },
+  {
+    "control": "isolate",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "quarantined",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "isolate",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": []
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "6d3df2f1f733489f8a7ed4fb2683ea72"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:32.312Z"
+  },
+  {
+    "control": "restore",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "restore",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "902489ab948b4402824a5efa36ad5f00"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:32.654Z"
+  },
+  {
+    "control": "emergency",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.838958963566945,
+          79.96898452915845,
+          -62.960643794863714
+        ],
+        "target": [
+          -280,
+          70,
+          170
+        ],
+        "velocity": [
+          0.23275773261480737,
+          -0.08053979855678813,
+          0.1095778080883427
+        ],
+        "heading": 0.44,
+        "battery": 0.9999934288753844,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "return",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "emergency",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 8,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 3,
+        "formation_slot": null,
+        "reported_position": [
+          -62.838958963566945,
+          79.96898452915845,
+          -62.960643794863714
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p63",
+          "acknowledged_at": 0.2
+        }
+      },
+      "session_id": "42fd5e8e56904426956f717b3f3d1041"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:33.251Z"
+  },
+  {
+    "control": "ew/none",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "cleared": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:36.603Z"
+  },
+  {
+    "control": "ew/spot",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "533fa13ca3f4492bad926dbbece94091",
+        "expected_revision": 153,
+        "attack_id": "4f1cb915-6db3-46b0-970e-614584918cff",
+        "group": "ew",
+        "profile": "spot",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "533fa13ca3f4492bad926dbbece94091",
+          "expected_revision": 153,
+          "attack_id": "4f1cb915-6db3-46b0-970e-614584918cff",
+          "group": "ew",
+          "profile": "spot",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "satellite"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 1,
+        "generated": 160,
+        "delivered": 140,
+        "dropped": 20,
+        "pdr": 0.875,
+        "average_latency_ms": 106.42857142857143,
+        "throughput_mbps": 0.08569263157894749,
+        "active_routes": 58,
+        "average_hops": 1.4482758620689655,
+        "reroutes": 0,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885738.10807,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.912252289946,
+            "pdr": 0.6974320235741971,
+            "sinr": 9.087747710054003,
+            "latency": 49.99999999999982,
+            "packet_loss": 0.3025679764258029
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.012128434984274183,
+            "sinr": -4,
+            "latency": 85,
+            "packet_loss": 0.9878715650157258
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -90.912252289946,
+            "pdr": 0.6974320235741971,
+            "sinr": 9.087747710054003,
+            "latency": 49.99999999999982,
+            "packet_loss": 0.3025679764258029
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 7,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1,
+          "timestamp": 1790885738.10807,
+          "controller_timestamp": 1790885738.10807,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 3.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885736.10807,
+          "flow_window_start": 1790885736.10807,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885738.10807,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "spot",
+          "jammed_paths": [
+            "satellite"
+          ]
+        },
+        "gps": {
+          "latitude": 39.999544563373654,
+          "longitude": -105.00058129317347,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": null
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:38.113Z"
+  },
+  {
+    "control": "ew/sweep",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "9f3e247e05ee4b759eb35d3ba8e32a6c",
+        "expected_revision": 159,
+        "attack_id": "fa0f12ec-3cd2-41b3-bc03-df17a16deb3c",
+        "group": "ew",
+        "profile": "sweep",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "9f3e247e05ee4b759eb35d3ba8e32a6c",
+          "expected_revision": 159,
+          "attack_id": "fa0f12ec-3cd2-41b3-bc03-df17a16deb3c",
+          "group": "ew",
+          "profile": "sweep",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "satellite"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 25,
+        "average_degree": 5,
+        "density": 0.5555555555555556,
+        "availability": 1,
+        "generated": 310,
+        "delivered": 268,
+        "dropped": 42,
+        "pdr": 0.864516129032258,
+        "average_latency_ms": 100.74626865671642,
+        "throughput_mbps": 0.07091200000000017,
+        "active_routes": 60,
+        "average_hops": 1.3333333333333333,
+        "reroutes": 6,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885740.7867498,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.39104275610812,
+            "pdr": 0.5,
+            "sinr": 9.60895724389188,
+            "latency": 45.55377035347274,
+            "packet_loss": 0.5
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 85,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -125,
+            "pdr": 0,
+            "sinr": -10,
+            "latency": 1000,
+            "packet_loss": 1
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 8,
+          "reported_forwarded_packets": 1,
+          "controller_rx_packets": 4,
+          "controller_forwarded_packets": 1,
+          "control_messages_per_s": 2,
+          "timestamp": 1790885740.7867498,
+          "controller_timestamp": 1790885740.7867498,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 3,
+          "packet_rate_per_s": 4,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885738.7867498,
+          "flow_window_start": 1790885738.7867498,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885740.7867498,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "sweep",
+          "jammed_paths": [
+            "mesh"
+          ]
+        },
+        "gps": {
+          "latitude": 39.99980005647261,
+          "longitude": -105.0005658078361,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": null
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:40.791Z"
+  },
+  {
+    "control": "ew/barrage",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "351962bad7c0419fa39b3cf02b42d385",
+        "expected_revision": 165,
+        "attack_id": "f837906e-b799-4cac-be3f-a466303089b0",
+        "group": "ew",
+        "profile": "barrage",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "351962bad7c0419fa39b3cf02b42d385",
+          "expected_revision": 165,
+          "attack_id": "f837906e-b799-4cac-be3f-a466303089b0",
+          "group": "ew",
+          "profile": "barrage",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "direct",
+          "satellite",
+          "mesh"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 0.9,
+        "generated": 160,
+        "delivered": 112,
+        "dropped": 48,
+        "pdr": 0.7,
+        "average_latency_ms": 116.96428571428568,
+        "throughput_mbps": 0.06616615384615394,
+        "active_routes": 42,
+        "average_hops": 1.5476190476190477,
+        "reroutes": 0,
+        "failed_routes": 0,
+        "jammed_links": 5,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885742.32831,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.912252289946,
+            "pdr": 0.0003473254567891715,
+            "sinr": -12.912252289945997,
+            "latency": 8.001045179215652,
+            "packet_loss": 0.9996526745432108
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.012128434984274183,
+            "sinr": -4,
+            "latency": 85,
+            "packet_loss": 0.9878715650157258
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -125,
+            "pdr": 0,
+            "sinr": -10,
+            "latency": 1000,
+            "packet_loss": 1
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 0,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 0,
+          "timestamp": 1790885742.32831,
+          "controller_timestamp": 1790885742.32831,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 0,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885740.32831,
+          "flow_window_start": 1790885740.32831,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": null,
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885742.32831,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "barrage",
+          "jammed_paths": [
+            "direct",
+            "satellite",
+            "mesh"
+          ]
+        },
+        "gps": {
+          "latitude": 39.99955036034951,
+          "longitude": -105.00058111179165,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": null
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:42.333Z"
+  },
+  {
+    "control": "ew/smart",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "e7896eadf4be45fbb68d23dfc9aeb34e",
+        "expected_revision": 171,
+        "attack_id": "fea01069-5c87-497a-b73b-94c4f5fcda56",
+        "group": "ew",
+        "profile": "smart",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "e7896eadf4be45fbb68d23dfc9aeb34e",
+          "expected_revision": 171,
+          "attack_id": "fea01069-5c87-497a-b73b-94c4f5fcda56",
+          "group": "ew",
+          "profile": "smart",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "satellite"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 1,
+        "generated": 160,
+        "delivered": 140,
+        "dropped": 20,
+        "pdr": 0.875,
+        "average_latency_ms": 106.42857142857143,
+        "throughput_mbps": 0.08569263157894749,
+        "active_routes": 58,
+        "average_hops": 1.4482758620689655,
+        "reroutes": 0,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885743.821447,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.912252289946,
+            "pdr": 0.6974320235741971,
+            "sinr": 9.087747710054003,
+            "latency": 49.99999999999982,
+            "packet_loss": 0.3025679764258029
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.19999999999999996,
+            "sinr": 8,
+            "latency": 85,
+            "packet_loss": 0.8
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -90.912252289946,
+            "pdr": 0.6974320235741971,
+            "sinr": 9.087747710054003,
+            "latency": 49.99999999999982,
+            "packet_loss": 0.3025679764258029
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 7,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1,
+          "timestamp": 1790885743.821447,
+          "controller_timestamp": 1790885743.821447,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 3.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885741.821447,
+          "flow_window_start": 1790885741.821447,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885743.821447,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "smart",
+          "jammed_paths": [
+            "satellite"
+          ]
+        },
+        "gps": {
+          "latitude": 39.99953886354155,
+          "longitude": -105.00058149828482,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": null
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:43.825Z"
+  },
+  {
+    "control": "ew/reactive",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "3210a9ca9b8e4b23a70095dd45b98c56",
+        "expected_revision": 177,
+        "attack_id": "3597373b-9822-4da6-93de-7ef33522edf1",
+        "group": "ew",
+        "profile": "reactive",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "3210a9ca9b8e4b23a70095dd45b98c56",
+          "expected_revision": 177,
+          "attack_id": "3597373b-9822-4da6-93de-7ef33522edf1",
+          "group": "ew",
+          "profile": "reactive",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "mesh"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {
+          "drone_1": {
+            "jammed_family": "mesh",
+            "observed_family": "mesh"
+          }
+        }
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 0.9,
+        "generated": 162,
+        "delivered": 112,
+        "dropped": 48,
+        "pdr": 0.7,
+        "average_latency_ms": 116.96428571428568,
+        "throughput_mbps": 0.06790736842105273,
+        "active_routes": 45,
+        "average_hops": 1.3333333333333333,
+        "reroutes": 9,
+        "failed_routes": 0,
+        "jammed_links": 5,
+        "threats": 2
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885745.359432,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.912252289946,
+            "pdr": 0.6974320235741971,
+            "sinr": 9.087747710054003,
+            "latency": 8.001045179215652,
+            "packet_loss": 0.3025679764258029
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 85,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -125,
+            "pdr": 0,
+            "sinr": -10,
+            "latency": 1000,
+            "packet_loss": 1
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 0,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 0,
+          "timestamp": 1790885745.359432,
+          "controller_timestamp": 1790885745.359432,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 0,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885743.359432,
+          "flow_window_start": 1790885743.359432,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": null,
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885745.359432,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "reactive",
+          "jammed_paths": [
+            "mesh"
+          ]
+        },
+        "gps": {
+          "latitude": 39.99953886354155,
+          "longitude": -105.00058149828482,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:45:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007039015326881781,
+        "scores": [
+          0.058095913380384445,
+          0.00007039015326881781,
+          0.9999988675117493
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9903632005055746,
+        "policy_path": "direct",
+        "requested_path": "direct",
+        "observation": [
+          0.058095913380384445,
+          0.00007039015326881781,
+          0.9999988675117493,
+          0.08001049607992172,
+          0.28333333134651184,
+          1,
+          0.30619388818740845,
+          0.019999999552965164,
+          1,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0.007910107262432575,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.007910107538435195,
+          "dos_score": 0.02266666666666667,
+          "spoofing_score": 0,
+          "drop_score": 0,
+          "rate_score": 0,
+          "latency_score": 0.11333333333333333,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9941447575887045,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:45.363Z"
+  },
+  {
+    "control": "ew/adaptive",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "2c3b218bed914818bcc6402a72679929",
+        "expected_revision": 183,
+        "attack_id": "504a22fc-0933-4f79-a212-bab5e1887f22",
+        "group": "ew",
+        "profile": "adaptive",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "2c3b218bed914818bcc6402a72679929",
+          "expected_revision": 183,
+          "attack_id": "504a22fc-0933-4f79-a212-bab5e1887f22",
+          "group": "ew",
+          "profile": "adaptive",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "mesh"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {
+          "drone_1": {
+            "jammed_family": "mesh",
+            "observed_family": "mesh"
+          }
+        }
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 0.9,
+        "generated": 160,
+        "delivered": 132,
+        "dropped": 28,
+        "pdr": 0.825,
+        "average_latency_ms": 97.34848484848484,
+        "throughput_mbps": 0.07633454545454557,
+        "active_routes": 42,
+        "average_hops": 1.3333333333333333,
+        "reroutes": 9,
+        "failed_routes": 0,
+        "jammed_links": 5,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885746.907058,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.912252289946,
+            "pdr": 0.6974320235741971,
+            "sinr": 9.087747710054003,
+            "latency": 8.001045179215652,
+            "packet_loss": 0.3025679764258029
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 85,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -125,
+            "pdr": 0,
+            "sinr": -10,
+            "latency": 1000,
+            "packet_loss": 1
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 0,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 0,
+          "timestamp": 1790885746.907058,
+          "controller_timestamp": 1790885746.907058,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 0,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885744.907058,
+          "flow_window_start": 1790885744.907058,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": null,
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885746.907058,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "adaptive",
+          "jammed_paths": [
+            "mesh"
+          ]
+        },
+        "gps": {
+          "latitude": 39.999544563373654,
+          "longitude": -105.00058129317347,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:47:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.12010765075683594,
+        "scores": [
+          0.12010765075683594,
+          0.999999463558197,
+          0.12010765075683594
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9396288196245829,
+        "policy_path": "mesh",
+        "requested_path": "mesh",
+        "observation": [
+          0.12010765075683594,
+          0.999999463558197,
+          0.12010765075683594,
+          0.47758403420448303,
+          0.28333333134651184,
+          0.0795973390340805,
+          0.3242729902267456,
+          0.9878715872764587,
+          0.3242729902267456,
+          0,
+          0,
+          0,
+          0.5889427065849304,
+          0,
+          1,
+          0.0066315787844359875,
+          0.010750320740044117,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.010750320276321723,
+          "dos_score": 0.030771929824561402,
+          "spoofing_score": 0,
+          "drop_score": 0,
+          "rate_score": 0.023157894736842093,
+          "latency_score": 0.11333333333333333,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9963129361470541,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.006631578947368416,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:46.910Z"
+  },
+  {
+    "control": "ew/fhss",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "769c5bf332044b19a1872b454044e2cb",
+        "expected_revision": 189,
+        "attack_id": "0f6f914a-89d0-429c-8cde-860e66916094",
+        "group": "ew",
+        "profile": "fhss",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "769c5bf332044b19a1872b454044e2cb",
+          "expected_revision": 189,
+          "attack_id": "0f6f914a-89d0-429c-8cde-860e66916094",
+          "group": "ew",
+          "profile": "fhss",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "satellite"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 1,
+        "generated": 160,
+        "delivered": 149,
+        "dropped": 11,
+        "pdr": 0.93125,
+        "average_latency_ms": 96.97986577181209,
+        "throughput_mbps": 0.09136207792207805,
+        "active_routes": 58,
+        "average_hops": 1.3103448275862069,
+        "reroutes": 13,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885748.445977,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.86546091452203,
+            "pdr": 0.7013669457710278,
+            "sinr": 9.134539085477968,
+            "latency": 8.001040073147847,
+            "packet_loss": 0.29863305422897224
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 87,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -89.36384873036701,
+            "pdr": 0.9061083916345083,
+            "sinr": 10.63615126963299,
+            "latency": 96.68708912781318,
+            "packet_loss": 0.09389160836549171
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 10,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1.5,
+          "timestamp": 1790885748.445977,
+          "controller_timestamp": 1790885748.445977,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885746.445977,
+          "flow_window_start": 1790885746.445977,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885748.445977,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "fhss",
+          "jammed_paths": [
+            "satellite"
+          ]
+        },
+        "gps": {
+          "latitude": 39.99955625401882,
+          "longitude": -105.00058095591228,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:50:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007039015326881781,
+        "scores": [
+          0.11657536029815674,
+          0.00007039015326881781,
+          0.1196528971195221
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.998785674571991,
+        "policy_path": "satellite",
+        "requested_path": "satellite",
+        "observation": [
+          0.11657536029815674,
+          0.00007039015326881781,
+          0.1196528971195221,
+          0.08001066744327545,
+          0.28333333134651184,
+          0.1613033264875412,
+          0.31953972578048706,
+          0.019999999552965164,
+          0.33552050590515137,
+          0,
+          1,
+          0,
+          0.4839296042919159,
+          0.0020000000949949026,
+          1,
+          0.017079999670386314,
+          0.021277135238051414,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.021277134880262644,
+          "dos_score": 0.030008533272110408,
+          "spoofing_score": 0,
+          "drop_score": 0,
+          "rate_score": 0.012,
+          "latency_score": 0.12904266636055203,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9957466125488281,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.017079999999999998,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:48.451Z"
+  },
+  {
+    "control": "ew/spoofing",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "2d93c7b000574b279db9687ee57c92d0",
+        "expected_revision": 195,
+        "attack_id": "bdee9d53-c5b5-406c-87e4-d58a3439c19e",
+        "group": "ew",
+        "profile": "spoofing",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "2d93c7b000574b279db9687ee57c92d0",
+          "expected_revision": 195,
+          "attack_id": "bdee9d53-c5b5-406c-87e4-d58a3439c19e",
+          "group": "ew",
+          "profile": "spoofing",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "satellite"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 1,
+        "generated": 162,
+        "delivered": 141,
+        "dropped": 21,
+        "pdr": 0.8703703703703703,
+        "average_latency_ms": 97.87234042553192,
+        "throughput_mbps": 0.08431376623376637,
+        "active_routes": 43,
+        "average_hops": 1.3255813953488371,
+        "reroutes": 15,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 1
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885749.997486,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -30,
+            "pdr": 0.99,
+            "sinr": 32,
+            "latency": 5,
+            "packet_loss": 0.01
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -30,
+            "pdr": 0.99,
+            "sinr": 32,
+            "latency": 5,
+            "packet_loss": 0.01
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -30,
+            "pdr": 0.99,
+            "sinr": 32,
+            "latency": 5,
+            "packet_loss": 0.01
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 1,
+          "reported_forwarded_packets": 20,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 0.5,
+          "timestamp": 1790885749.997486,
+          "controller_timestamp": 1790885749.997486,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 0.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885747.997486,
+          "flow_window_start": 1790885747.997486,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "02:ff:00:00:00:01",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885749.997486,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "spoofing",
+          "jammed_paths": [
+            "satellite"
+          ]
+        },
+        "gps": {
+          "latitude": 39.999544563373654,
+          "longitude": -105.00058129317347,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": {
+        "id": "p162",
+        "source": "drone_1",
+        "destination": "base",
+        "category": "threat",
+        "size_bytes": 256,
+        "route": [
+          "drone_1",
+          "base"
+        ],
+        "created_at": 3.4499999999999957,
+        "expires_at": 23.449999999999996,
+        "revision": 22,
+        "family": "mesh",
+        "hop": 1,
+        "start_at": 3.4999999999999956,
+        "end_at": 3.5084748093660445,
+        "retries": 0,
+        "status": "delivered",
+        "reason": null,
+        "correlation_id": "efe2c6a6:53:drone_1",
+        "sequence": 162,
+        "claimed_source_mac": "02:ff:00:00:00:01",
+        "protocol": "udp_simulated",
+        "completed_at": 3.5499999999999954
+      },
+      "detector_findings": {
+        "decision_id": "efe2c6a6:53:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00001943467759701889,
+        "scores": [
+          0.00001943467759701889,
+          0.00001943467759701889,
+          0.000019434686691965908
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9999809265136719,
+        "policy_path": "direct",
+        "requested_path": "direct",
+        "observation": [
+          0.00001943467759701889,
+          0.00001943467759701889,
+          0.000019434686691965908,
+          0.05000000074505806,
+          0.01666666753590107,
+          0.008333333767950535,
+          0.009999999776482582,
+          0.009999999776482582,
+          0.009999999776482582,
+          0,
+          0,
+          0,
+          -0.5,
+          0.0020000000949949026,
+          1,
+          0.17980200052261353,
+          0.6723211407661438,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "SUSPICIOUS",
+          "detected_classes": [],
+          "risk_score": 0.6723211637139321,
+          "dos_score": 0.0013333333333333335,
+          "spoofing_score": 0.25,
+          "drop_score": 0,
+          "rate_score": 0,
+          "latency_score": 0.006666666666666667,
+          "identity_mismatch": false,
+          "claim_gap_score": 1,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9959123134613037,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "restricted",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.179802,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:50.047Z"
+  },
+  {
+    "control": "ew/gps_spoofing",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "73d6e24664b3446fa92c7d76f64bbe2f",
+        "expected_revision": 201,
+        "attack_id": "57594396-cf6f-4557-99cd-b4ce58ecc9a7",
+        "group": "ew",
+        "profile": "gps_spoofing",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "73d6e24664b3446fa92c7d76f64bbe2f",
+          "expected_revision": 201,
+          "attack_id": "57594396-cf6f-4557-99cd-b4ce58ecc9a7",
+          "group": "ew",
+          "profile": "gps_spoofing",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 1,
+        "generated": 160,
+        "delivered": 146,
+        "dropped": 14,
+        "pdr": 0.9125,
+        "average_latency_ms": 95.89041095890411,
+        "throughput_mbps": 0.08887794871794885,
+        "active_routes": 58,
+        "average_hops": 1.3103448275862069,
+        "reroutes": 14,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885751.5840771,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.912252289946,
+            "pdr": 0.6974320235741971,
+            "sinr": 9.087747710054003,
+            "latency": 8.001045179215652,
+            "packet_loss": 0.3025679764258029
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 85,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -89.40209239244345,
+            "pdr": 0.5814195512988096,
+            "sinr": 10.59790760755655,
+            "latency": 95.26791710995505,
+            "packet_loss": 0.4185804487011904
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 7,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1,
+          "timestamp": 1790885751.5840771,
+          "controller_timestamp": 1790885751.5840771,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 3.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885749.5840771,
+          "flow_window_start": 1790885749.5840771,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885751.5840771,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "gps_spoofing",
+          "jammed_paths": []
+        },
+        "gps": {
+          "latitude": 40.00075036034951,
+          "longitude": -104.99938111179165,
+          "drift_m": 169.7056274847714
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:56:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007039015326881781,
+        "scores": [
+          0.11671874672174454,
+          0.00007039015326881781,
+          0.1321362853050232
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9987487395604452,
+        "policy_path": "satellite",
+        "requested_path": "satellite",
+        "observation": [
+          0.11671874672174454,
+          0.00007039015326881781,
+          0.1321362853050232,
+          0.08001049607992172,
+          0.28333333134651184,
+          0.15877985954284668,
+          0.30619388818740845,
+          0.019999999552965164,
+          0.41858044266700745,
+          0,
+          1,
+          0,
+          0.6339296102523804,
+          0.0020000000949949026,
+          1,
+          0.008369999937713146,
+          0.018230348825454712,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.01823034861465459,
+          "dos_score": 0.03030477789598801,
+          "spoofing_score": 0,
+          "drop_score": 0,
+          "rate_score": 0.014,
+          "latency_score": 0.12702388947994006,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9959703286488851,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.008369999999999997,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:51.588Z"
+  },
+  {
+    "control": "ew/replay",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "1205c66fe16349ffb439ac431bf38fd3",
+        "expected_revision": 207,
+        "attack_id": "fd9a1860-8213-49fc-96ce-f9f8ea71bdff",
+        "group": "ew",
+        "profile": "replay",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "1205c66fe16349ffb439ac431bf38fd3",
+          "expected_revision": 207,
+          "attack_id": "fd9a1860-8213-49fc-96ce-f9f8ea71bdff",
+          "group": "ew",
+          "profile": "replay",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "satellite"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {
+          "drone_1": {
+            "generated_packets": 118,
+            "rate_capped": true
+          }
+        }
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 1,
+        "generated": 278,
+        "delivered": 187,
+        "dropped": 27,
+        "pdr": 0.8738317757009346,
+        "average_latency_ms": 381.5508021390372,
+        "throughput_mbps": 0.09125265822784824,
+        "active_routes": 58,
+        "average_hops": 1.3103448275862069,
+        "reroutes": 15,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885753.337348,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.86546091452203,
+            "pdr": 0.7013669457710278,
+            "sinr": 9.134539085477968,
+            "latency": 8.001040073147847,
+            "packet_loss": 0.29863305422897224
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 1,
+            "sinr": 18,
+            "latency": 213,
+            "packet_loss": 0
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -89.36384873036701,
+            "pdr": 0.7475394230984694,
+            "sinr": 10.63615126963299,
+            "latency": 96.31949108552053,
+            "packet_loss": 0.25246057690153056
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 56,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1.5,
+          "timestamp": 1790885753.337348,
+          "controller_timestamp": 1790885753.337348,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 28,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885751.337348,
+          "flow_window_start": 1790885751.337348,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0.9655172413793104,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885753.337348,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "replay",
+          "jammed_paths": [
+            "satellite"
+          ]
+        },
+        "gps": {
+          "latitude": 39.99955625401882,
+          "longitude": -105.00058095591228,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:59:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007243092841235921,
+        "scores": [
+          0.11698073148727417,
+          0.00007243092841235921,
+          0.11115080118179321
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9988113443056742,
+        "policy_path": "direct",
+        "requested_path": "direct",
+        "observation": [
+          0.11698073148727417,
+          0.00007243092841235921,
+          0.11115080118179321,
+          0.0800105407834053,
+          0.7099999785423279,
+          0.16053248941898346,
+          0.30950745940208435,
+          0,
+          0.2524605691432953,
+          0,
+          1,
+          0,
+          0.5619286894798279,
+          0.0020000000949949026,
+          1,
+          0.07926545292139053,
+          0.08643145114183426,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.08643145063519476,
+          "dos_score": 0.1023,
+          "spoofing_score": 0.15,
+          "drop_score": 0,
+          "rate_score": 0.13,
+          "latency_score": 0.284,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 1,
+          "evidence_freshness": 0.9959026972452799,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.07926545454545454,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:53.341Z"
+  },
+  {
+    "control": "ew/dos",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "8215e5be31ac4d4ea22f5e6e20829114",
+        "expected_revision": 213,
+        "attack_id": "cad02a34-8d15-480c-94dd-39c4e5cd1b1a",
+        "group": "ew",
+        "profile": "dos",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [
+          "satellite"
+        ],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "8215e5be31ac4d4ea22f5e6e20829114",
+          "expected_revision": 213,
+          "attack_id": "cad02a34-8d15-480c-94dd-39c4e5cd1b1a",
+          "group": "ew",
+          "profile": "dos",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [
+            "satellite"
+          ],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [
+          "satellite"
+        ],
+        "evidence_source": "packet_simulation",
+        "outcomes": {
+          "drone_1": {
+            "generated_packets": 1975
+          }
+        }
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 24,
+        "average_degree": 4.8,
+        "density": 0.5333333333333333,
+        "availability": 1,
+        "generated": 2135,
+        "delivered": 165,
+        "dropped": 1906,
+        "pdr": 0.07967165620473202,
+        "average_latency_ms": 384.2424242424241,
+        "throughput_mbps": 0.9100637974683559,
+        "active_routes": 59,
+        "average_hops": 1.305084745762712,
+        "reroutes": 12,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885755.118473,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.86546091452203,
+            "pdr": 0.7013669457710278,
+            "sinr": 9.134539085477968,
+            "latency": 49.99999999999982,
+            "packet_loss": 0.29863305422897224
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 1,
+            "sinr": 18,
+            "latency": 213,
+            "packet_loss": 0
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -89.36384873036701,
+            "pdr": 0.9255250000266765,
+            "sinr": 10.63615126963299,
+            "latency": 96.15169059043777,
+            "packet_loss": 0.07447499997332352
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 21,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1,
+          "timestamp": 1790885755.118473,
+          "controller_timestamp": 1790885755.118473,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 10.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885753.118473,
+          "flow_window_start": 1790885753.118473,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885755.118473,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "dos",
+          "jammed_paths": [
+            "satellite"
+          ]
+        },
+        "gps": {
+          "latitude": 39.99957450678521,
+          "longitude": -105.00058066930086,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:62:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.000098447322670836,
+        "scores": [
+          0.11814906448125839,
+          0.000098447322670836,
+          0.0987388864159584
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9988444447517395,
+        "policy_path": "direct",
+        "requested_path": "direct",
+        "observation": [
+          0.11814906448125839,
+          0.000098447322670836,
+          0.0987388864159584,
+          0.45516276359558105,
+          0.7099999785423279,
+          0.16020265221595764,
+          0.3151760995388031,
+          0,
+          0.15662218630313873,
+          1,
+          0,
+          0,
+          0.278865784406662,
+          0.0020000000949949026,
+          1,
+          0.010710000060498714,
+          0.06804560124874115,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.06804559888037046,
+          "dos_score": 0.0715,
+          "spoofing_score": 0,
+          "drop_score": 0,
+          "rate_score": 0.042,
+          "latency_score": 0.284,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9959162871042887,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.010709999999999997,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:55.123Z"
+  },
+  {
+    "control": "traffic/normal",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "cleared": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:55.592Z"
+  },
+  {
+    "control": "traffic/selective_forwarding",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "b200a23920d14e1e97ba4745e15c8d3e",
+        "expected_revision": 226,
+        "attack_id": "fd94619d-2fa7-4625-b2e0-397a487264b1",
+        "group": "traffic",
+        "profile": "selective_forwarding",
+        "targets": [
+          "sim_uav_045"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "b200a23920d14e1e97ba4745e15c8d3e",
+          "expected_revision": 226,
+          "attack_id": "fd94619d-2fa7-4625-b2e0-397a487264b1",
+          "group": "traffic",
+          "profile": "selective_forwarding",
+          "targets": [
+            "sim_uav_045"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "sim_uav_045"
+        ],
+        "effective_paths": [],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 50,
+        "active": 50,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 117,
+        "average_degree": 4.68,
+        "density": 0.09551020408163265,
+        "availability": 1,
+        "generated": 950,
+        "delivered": 648,
+        "dropped": 152,
+        "pdr": 0.81,
+        "average_latency_ms": 186.80555555555554,
+        "throughput_mbps": 0.3281856790123462,
+        "active_routes": 298,
+        "average_hops": 2.140939597315436,
+        "reroutes": 162,
+        "failed_routes": 4,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "sim_uav_045",
+        "timestamp": 1790885758.152534,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.96216368247491,
+            "pdr": 0.6932025603014913,
+            "sinr": 9.037836317525091,
+            "latency": 8.00105065338594,
+            "packet_loss": 0.3067974396985087
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 85,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -85.98028916541057,
+            "pdr": 0.9473684210526315,
+            "sinr": 14.019710834589432,
+            "latency": 169.86954129807435,
+            "packet_loss": 0.052631578947368474
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 21,
+          "reported_forwarded_packets": 16,
+          "controller_rx_packets": 25,
+          "controller_forwarded_packets": 16,
+          "control_messages_per_s": 7.5,
+          "timestamp": 1790885758.152534,
+          "controller_timestamp": 1790885758.152534,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 9,
+          "packet_rate_per_s": 10.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885756.152534,
+          "flow_window_start": 1790885756.152534,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "02:fa:00:00:00:2d",
+          "expected_source_mac": "02:fa:00:00:00:2d",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885758.152534,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "none",
+          "jammed_paths": []
+        },
+        "gps": {
+          "latitude": 40.001023246833874,
+          "longitude": -104.99980538205149,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": {
+        "id": "p586",
+        "source": "sim_uav_046",
+        "destination": "base",
+        "category": "telemetry",
+        "size_bytes": 512,
+        "route": [
+          "sim_uav_046",
+          "sim_uav_045",
+          "base"
+        ],
+        "created_at": 2.0500000000000007,
+        "expires_at": 22.05,
+        "revision": 13,
+        "family": "mesh",
+        "hop": 1,
+        "start_at": 2.0580866021373816,
+        "end_at": 2.0664323982926573,
+        "retries": 0,
+        "status": "dropped",
+        "reason": "relay_discard",
+        "correlation_id": null,
+        "sequence": 586,
+        "claimed_source_mac": "02:fa:00:00:00:2e",
+        "protocol": "udp_simulated",
+        "completed_at": 2.1500000000000004
+      },
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:66:sim_uav_045",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.0000703902987879701,
+        "scores": [
+          0.0706382691860199,
+          0.0000703902987879701,
+          0.0706382691860199
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9990770022074381,
+        "policy_path": "satellite",
+        "requested_path": "satellite",
+        "observation": [
+          0.0706382691860199,
+          0.0000703902987879701,
+          0.0706382691860199,
+          0.43752405047416687,
+          0.28333333134651184,
+          0.07292067259550095,
+          0.29629629850387573,
+          0.019999999552965164,
+          0.29629629850387573,
+          0,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0.12240437418222427,
+          0.14583933353424072,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [
+            "dos"
+          ],
+          "risk_score": 0.1458393395740382,
+          "dos_score": 0.4195467546754676,
+          "spoofing_score": 0,
+          "drop_score": 0.7920792079207921,
+          "rate_score": 0.11555555555555551,
+          "latency_score": 0.11333333333333333,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.986352284749349,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.12240437158469943,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:15:58.168Z"
+  },
+  {
+    "control": "traffic/telemetry_falsification",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "c6beca988926445ab4dd2bedbd10c65c",
+        "expected_revision": 232,
+        "attack_id": "f9d3cef4-e57a-49b4-a0a3-981eedd3404e",
+        "group": "traffic",
+        "profile": "telemetry_falsification",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "c6beca988926445ab4dd2bedbd10c65c",
+          "expected_revision": 232,
+          "attack_id": "f9d3cef4-e57a-49b4-a0a3-981eedd3404e",
+          "group": "traffic",
+          "profile": "telemetry_falsification",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 23,
+        "average_degree": 4.6,
+        "density": 0.5111111111111111,
+        "availability": 1,
+        "generated": 190,
+        "delivered": 131,
+        "dropped": 32,
+        "pdr": 0.803680981595092,
+        "average_latency_ms": 120.99236641221368,
+        "throughput_mbps": 0.07344987654320999,
+        "active_routes": 55,
+        "average_hops": 1.4545454545454546,
+        "reroutes": 10,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885760.294168,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -91.3277257827658,
+            "pdr": 0.661258976884348,
+            "sinr": 8.672274217234204,
+            "latency": 8.00109163115923,
+            "packet_loss": 0.338741023115652
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 85,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -91.3277257827658,
+            "pdr": 0.661258976884348,
+            "sinr": 8.672274217234204,
+            "latency": 8.00109163115923,
+            "packet_loss": 0.338741023115652
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 2,
+          "reported_forwarded_packets": 20,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1,
+          "timestamp": 1790885760.294168,
+          "controller_timestamp": 1790885760.294168,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 1,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885758.294168,
+          "flow_window_start": 1790885758.294168,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885760.294168,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "none",
+          "jammed_paths": []
+        },
+        "gps": {
+          "latitude": 39.99885157636952,
+          "longitude": -105.00127585029952,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:69:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007039015326881781,
+        "scores": [
+          0.1977701187133789,
+          0.00007039015326881781,
+          0.09099555015563965
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9986507892608643,
+        "policy_path": "satellite",
+        "requested_path": "satellite",
+        "observation": [
+          0.1977701187133789,
+          0.00007039015326881781,
+          0.09099555015563965,
+          0.08001124113798141,
+          0.28333333134651184,
+          0.15275156497955322,
+          0.36420968174934387,
+          0.019999999552965164,
+          0.26941999793052673,
+          0,
+          0,
+          0,
+          -0.5,
+          0.0020000000949949026,
+          1,
+          0.5755199790000916,
+          0.5755199790000916,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.14409612926344076,
+          "dos_score": 0.025840249999825968,
+          "spoofing_score": 0.25,
+          "drop_score": 0,
+          "rate_score": 0.004,
+          "latency_score": 0.12220124999912983,
+          "identity_mismatch": false,
+          "claim_gap_score": 1,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.99612029393514,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.5755199999999999,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:16:00.298Z"
+  },
+  {
+    "control": "traffic/control_flood",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "e25ec5cacbc043439958651b6b2bf363",
+        "expected_revision": 238,
+        "attack_id": "408a1769-6b4d-4e34-8d87-c19fa1ec7023",
+        "group": "traffic",
+        "profile": "control_flood",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "e25ec5cacbc043439958651b6b2bf363",
+          "expected_revision": 238,
+          "attack_id": "408a1769-6b4d-4e34-8d87-c19fa1ec7023",
+          "group": "traffic",
+          "profile": "control_flood",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [],
+        "evidence_source": "packet_simulation",
+        "outcomes": {
+          "drone_1": {
+            "generated_packets": 385
+          }
+        }
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 25,
+        "average_degree": 5,
+        "density": 0.5555555555555556,
+        "availability": 1,
+        "generated": 545,
+        "delivered": 318,
+        "dropped": 163,
+        "pdr": 0.6611226611226612,
+        "average_latency_ms": 113.6792452830187,
+        "throughput_mbps": 0.12061922077922095,
+        "active_routes": 59,
+        "average_hops": 1.3898305084745763,
+        "reroutes": 19,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885762.01843,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.74374246667458,
+            "pdr": 0.7804878048780488,
+            "sinr": 9.256257533325424,
+            "latency": 33.26947024643418,
+            "packet_loss": 0.2195121951219512
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.9473684210526315,
+            "sinr": 18,
+            "latency": 213,
+            "packet_loss": 0.052631578947368474
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -89.41253190631937,
+            "pdr": 0.9972184709167267,
+            "sinr": 10.587468093680627,
+            "latency": 92.90138828420694,
+            "packet_loss": 0.0027815290832733375
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 123,
+          "reported_forwarded_packets": 3,
+          "controller_rx_packets": 4,
+          "controller_forwarded_packets": 3,
+          "control_messages_per_s": 58.5,
+          "timestamp": 1790885762.01843,
+          "controller_timestamp": 1790885762.01843,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 1,
+          "packet_rate_per_s": 61.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885760.01843,
+          "flow_window_start": 1790885760.01843,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885762.01843,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "none",
+          "jammed_paths": []
+        },
+        "gps": {
+          "latitude": 39.99963036034951,
+          "longitude": -105.00058111179165,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:72:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007039015326881781,
+        "scores": [
+          0.08704370260238647,
+          0.00007039015326881781,
+          0.08704370260238647
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9989679654439291,
+        "policy_path": "satellite",
+        "requested_path": "satellite",
+        "observation": [
+          0.08704370260238647,
+          0.00007039015326881781,
+          0.08704370260238647,
+          0.32024091482162476,
+          0.28333333134651184,
+          0.053373489528894424,
+          0.31603774428367615,
+          0.019999999552965164,
+          0.31603774428367615,
+          0,
+          0,
+          0,
+          -0.3499999940395355,
+          0,
+          1,
+          0.06300000101327896,
+          0.09516902267932892,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.09516902056190701,
+          "dos_score": 0.27246666666666663,
+          "spoofing_score": 0,
+          "drop_score": 0.2222222222222222,
+          "rate_score": 0.428,
+          "latency_score": 0.11333333333333333,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9959247907002767,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.063,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:16:02.022Z"
+  },
+  {
+    "control": "traffic/replay",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "ac9e314fbddc430191b25a2be88e2045",
+        "expected_revision": 244,
+        "attack_id": "bc80b4cf-5be6-4be8-afea-98e6dfd2aa07",
+        "group": "traffic",
+        "profile": "replay",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "ac9e314fbddc430191b25a2be88e2045",
+          "expected_revision": 244,
+          "attack_id": "bc80b4cf-5be6-4be8-afea-98e6dfd2aa07",
+          "group": "traffic",
+          "profile": "replay",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "active",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [],
+        "evidence_source": "packet_simulation",
+        "outcomes": {
+          "drone_1": {
+            "generated_packets": 120,
+            "rate_capped": true
+          }
+        }
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 25,
+        "average_degree": 5,
+        "density": 0.5555555555555556,
+        "availability": 1,
+        "generated": 280,
+        "delivered": 219,
+        "dropped": 24,
+        "pdr": 0.9012345679012346,
+        "average_latency_ms": 263.01369863013656,
+        "throughput_mbps": 0.09715200000000014,
+        "active_routes": 58,
+        "average_hops": 1.396551724137931,
+        "reroutes": 22,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885763.5548391,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.69713545992661,
+            "pdr": 0.8064516129032258,
+            "sinr": 9.302864540073386,
+            "latency": 47.35425422975965,
+            "packet_loss": 0.19354838709677424
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 1,
+            "sinr": 18,
+            "latency": 153,
+            "packet_loss": 0
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -89.37566411527081,
+            "pdr": 0.7705779093447434,
+            "sinr": 10.624335884729192,
+            "latency": 91.77168494840977,
+            "packet_loss": 0.22942209065525665
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 69,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1,
+          "timestamp": 1790885763.5548391,
+          "controller_timestamp": 1790885763.5548391,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 34.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885761.5548391,
+          "flow_window_start": 1790885761.5548391,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0.9821428571428571,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885763.5548391,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "none",
+          "jammed_paths": []
+        },
+        "gps": {
+          "latitude": 39.999642243744276,
+          "longitude": -105.00058082783973,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:75:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007080558134475723,
+        "scores": [
+          0.029436921700835228,
+          0.00007080558134475723,
+          0.025314271450042725
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9994309345881144,
+        "policy_path": "direct",
+        "requested_path": "direct",
+        "observation": [
+          0.029436921700835228,
+          0.00007080558134475723,
+          0.025314271450042725,
+          0.08001045882701874,
+          0.5699999928474426,
+          0.1538558155298233,
+          0.3030186891555786,
+          0,
+          0.2022252231836319,
+          0,
+          1,
+          0,
+          0.6339296102523804,
+          0.0020000000949949026,
+          1,
+          0.08442000299692154,
+          0.11260542273521423,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.11260542172922028,
+          "dos_score": 0.0925,
+          "spoofing_score": 0.15,
+          "drop_score": 0,
+          "rate_score": 0.134,
+          "latency_score": 0.228,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 1,
+          "evidence_freshness": 0.9961183865865072,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.08442,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:16:03.559Z"
+  },
+  {
+    "control": "fl/poisoned",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "condition": {
+        "schema_version": "mission_attack_v1",
+        "session_id": "0dbb30bf4cd14dfeb8bc098cfff48647",
+        "expected_revision": 250,
+        "attack_id": "5adccb14-611d-4c02-9b1d-8cd5c1340424",
+        "group": "fl",
+        "profile": "poisoned",
+        "targets": [
+          "drone_1"
+        ],
+        "paths": [],
+        "duration_s": 30,
+        "request": {
+          "schema_version": "mission_attack_v1",
+          "session_id": "0dbb30bf4cd14dfeb8bc098cfff48647",
+          "expected_revision": 250,
+          "attack_id": "5adccb14-611d-4c02-9b1d-8cd5c1340424",
+          "group": "fl",
+          "profile": "poisoned",
+          "targets": [
+            "drone_1"
+          ],
+          "paths": [],
+          "duration_s": 30
+        },
+        "created_at": 0,
+        "expires_at": 30,
+        "status": "awaiting_participating_round",
+        "affected_targets": [
+          "drone_1"
+        ],
+        "effective_paths": [],
+        "evidence_source": "packet_simulation",
+        "outcomes": {}
+      },
+      "statistics": {
+        "total": 10,
+        "active": 10,
+        "offline": 0,
+        "quarantined": 0,
+        "active_links": 25,
+        "average_degree": 5,
+        "density": 0.5555555555555556,
+        "availability": 1,
+        "generated": 160,
+        "delivered": 153,
+        "dropped": 7,
+        "pdr": 0.95625,
+        "average_latency_ms": 105.22875816993462,
+        "throughput_mbps": 0.09096311688311702,
+        "active_routes": 58,
+        "average_hops": 1.396551724137931,
+        "reroutes": 20,
+        "failed_routes": 0,
+        "jammed_links": 0,
+        "threats": 0
+      },
+      "observations": {
+        "drone_id": "drone_1",
+        "timestamp": 1790885765.283178,
+        "source": "synthetic",
+        "paths": [
+          {
+            "path_id": "direct",
+            "rssi": -90.74374246667458,
+            "pdr": 0.7114636009164911,
+            "sinr": 9.256257533325424,
+            "latency": 8.001026907267434,
+            "packet_loss": 0.2885363990835089
+          },
+          {
+            "path_id": "satellite",
+            "rssi": -65,
+            "pdr": 0.98,
+            "sinr": 18,
+            "latency": 85,
+            "packet_loss": 0.020000000000000018
+          },
+          {
+            "path_id": "mesh",
+            "rssi": -89.41253190631937,
+            "pdr": 0.9473575473708903,
+            "sinr": 10.587468093680627,
+            "latency": 91.82172507407725,
+            "packet_loss": 0.052642452629109715
+          }
+        ],
+        "security_evidence": {
+          "reported_tx_packets": 7,
+          "reported_forwarded_packets": 0,
+          "controller_rx_packets": 0,
+          "controller_forwarded_packets": 0,
+          "control_messages_per_s": 1,
+          "timestamp": 1790885765.283178,
+          "controller_timestamp": 1790885765.283178,
+          "controller_policy_dropped_packets": 0,
+          "controller_dropped_packets": 0,
+          "packet_rate_per_s": 3.5,
+          "counter_scope": "aligned_sample_window_v1",
+          "report_window_seconds": 2,
+          "flow_window_seconds": 2,
+          "report_window_start": 1790885763.283178,
+          "flow_window_start": 1790885763.283178,
+          "window_alignment_s": 0,
+          "duplicate_sequence_ratio": 0,
+          "observed_source_mac": "00:00:00:00:00:02",
+          "expected_source_mac": "00:00:00:00:00:02",
+          "provenance": {
+            "category": "synthetic_simulation",
+            "observer_id": "packet_scheduler",
+            "independent": false,
+            "collected_at": 1790885765.283178,
+            "age_s": 0
+          }
+        },
+        "ew_status": {
+          "active_attack": "none",
+          "jammed_paths": []
+        },
+        "gps": {
+          "latitude": 39.99963036034951,
+          "longitude": -105.00058111179165,
+          "drift_m": 0
+        }
+      },
+      "relay_drop": null,
+      "spoofed_packet_claim": null,
+      "detector_findings": {
+        "decision_id": "efe2c6a6:78:drone_1",
+        "trust": 1,
+        "routing_source": "rl_model",
+        "threat": 0.00007039015326881781,
+        "scores": [
+          0.08139153569936752,
+          0.00007039015326881781,
+          0.0681159719824791
+        ],
+        "source": "fl_model",
+        "attack_type": "none",
+        "confidence": 0.9990535577138265,
+        "policy_path": "satellite",
+        "requested_path": "satellite",
+        "observation": [
+          0.08139153569936752,
+          0.00007039015326881781,
+          0.0681159719824791,
+          0.08001048117876053,
+          0.28333333134651184,
+          0.1522260457277298,
+          0.3049665689468384,
+          0.019999999552965164,
+          0.15236429870128632,
+          0,
+          1,
+          0,
+          0.4839296042919159,
+          0.0020000000949949026,
+          1,
+          0.01741090975701809,
+          0.020902572199702263,
+          1
+        ],
+        "routing_contract": "routing_state_v3",
+        "safety_override": false,
+        "network_detection": {
+          "status": "NORMAL",
+          "detected_classes": [],
+          "risk_score": 0.020902571694452726,
+          "dos_score": 0.02855616729297377,
+          "spoofing_score": 0,
+          "drop_score": 0,
+          "rate_score": 0.012,
+          "latency_score": 0.12178083646486886,
+          "identity_mismatch": false,
+          "claim_gap_score": 0,
+          "duplicate_score": 0,
+          "evidence_freshness": 0.9960783322652181,
+          "evidence_source": "synthetic_simulation",
+          "evidence_independent": false,
+          "response_hint": "normal",
+          "reason": "evidence_scored",
+          "available_signals": [
+            "control_rate",
+            "latency",
+            "claim_gap",
+            "drop",
+            "policy_drop_not_scored",
+            "packet_rate",
+            "source_identity",
+            "duplicate_replay"
+          ],
+          "evidence_contract": "network_security_evidence_v2"
+        },
+        "insider_risk": 0.01741090909090909,
+        "evidence": "packet_simulation"
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:16:05.287Z"
+  },
+  {
+    "control": "fl/normal",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "cleared": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:16:05.744Z"
+  },
+  {
+    "control": "partial formation",
+    "backend_path": "POST /commands",
+    "effect": {
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p65",
+          "result": {
+            "formation": "v",
+            "slot": [
+              0,
+              80,
+              0
+            ]
+          },
+          "executed_at": 1.1500000000000004,
+          "delivered_at": 1.1500000000000004,
+          "ack_packet": "p104",
+          "acknowledged_at": 1.3500000000000005
+        },
+        "drone_2": {
+          "status": "delivery_failed",
+          "accepted_at": 0.9500000000000003,
+          "reason": "no_route",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p66"
+        },
+        "drone_3": {
+          "status": "executed_ack_pending",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Executed; awaiting acknowledgment",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p67",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -42,
+              104,
+              42
+            ]
+          },
+          "executed_at": 1.2500000000000004,
+          "delivered_at": 1.2500000000000004,
+          "ack_packet": "p106"
+        },
+        "drone_4": {
+          "status": "executed_ack_pending",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Executed; awaiting acknowledgment",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p68",
+          "result": {
+            "formation": "v",
+            "slot": [
+              84,
+              80,
+              84
+            ]
+          },
+          "executed_at": 1.3500000000000005,
+          "delivered_at": 1.3500000000000005,
+          "ack_packet": "p109"
+        },
+        "drone_5": {
+          "status": "acknowledged",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p69",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -84,
+              92,
+              84
+            ]
+          },
+          "executed_at": 1.0500000000000003,
+          "delivered_at": 1.0500000000000003,
+          "ack_packet": "p102",
+          "acknowledged_at": 1.1500000000000004
+        },
+        "sim_uav_006": {
+          "status": "acknowledged",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p70",
+          "result": {
+            "formation": "v",
+            "slot": [
+              126,
+              104,
+              126
+            ]
+          },
+          "executed_at": 1.1500000000000004,
+          "delivered_at": 1.1500000000000004,
+          "ack_packet": "p105",
+          "acknowledged_at": 1.3500000000000005
+        },
+        "sim_uav_007": {
+          "status": "executed_ack_pending",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Executed; awaiting acknowledgment",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p71",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -126,
+              80,
+              126
+            ]
+          },
+          "executed_at": 1.2500000000000004,
+          "delivered_at": 1.2500000000000004,
+          "ack_packet": "p107"
+        },
+        "sim_uav_008": {
+          "status": "executed_ack_pending",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Executed; awaiting acknowledgment",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p72",
+          "result": {
+            "formation": "v",
+            "slot": [
+              168,
+              92,
+              168
+            ]
+          },
+          "executed_at": 1.2500000000000004,
+          "delivered_at": 1.2500000000000004,
+          "ack_packet": "p108"
+        },
+        "sim_uav_009": {
+          "status": "acknowledged",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p73",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -168,
+              104,
+              168
+            ]
+          },
+          "executed_at": 1.1000000000000003,
+          "delivered_at": 1.1000000000000003,
+          "ack_packet": "p103",
+          "acknowledged_at": 1.2000000000000004
+        },
+        "sim_uav_010": {
+          "status": "pending",
+          "accepted_at": 0.9500000000000003,
+          "reason": "Awaiting radio delivery",
+          "dispatched_at": 0.9500000000000003,
+          "packet_id": "p74"
+        }
+      }
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:16:14.137Z"
+  },
+  {
+    "control": "browser reconnect",
+    "backend_path": "GET /state + authenticated /ws",
+    "effect": {
+      "before": 0,
+      "during": 8.09999999999998,
+      "after": 9.149999999999995,
+      "command_link_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T20:16:20.678Z"
+  },
+  {
+    "control": "unavailable FL metrics",
+    "backend_path": "GET /fl/metrics",
+    "effect": {
+      "missing": "Unavailable",
+      "measured_zero": "0.0000",
+      "fixture": true
+    },
+    "evidence": "mock_frontend_contract",
+    "timestamp": "2026-10-01T20:16:24.294Z"
+  }
+]

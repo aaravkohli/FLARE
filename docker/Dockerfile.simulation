@@ -1,0 +1,12 @@
+# Python 3.11 packet simulation, independent of the Ryu compatibility image.
+FROM python:3.11-slim
+WORKDIR /app
+RUN pip install --no-cache-dir fastapi uvicorn pyyaml numpy requests && apt-get update && apt-get install -y --no-install-recommends curl && apt-get clean
+COPY simulation/ simulation/
+COPY sdn/ sdn/
+COPY fleet/ fleet/
+COPY schemas/ schemas/
+COPY config/ config/
+COPY frontend-react/src/mission-simulation/assets/terrain/heightmap.ts frontend-react/src/mission-simulation/assets/terrain/heightmap.ts
+ENV PYTHONPATH=/app PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+CMD ["python", "sdn/mock_sdn.py"]

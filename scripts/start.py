@@ -160,6 +160,20 @@ def main() -> int:
     logs_dir = REPO_ROOT / "logs"
     logs_dir.mkdir(parents=True, exist_ok=True)
 
+    # Bootstrap one isolated registry before any dependent process imports fleet.registry.
+    mission=REPO_ROOT/"runtime"/"swarm_session"
+    os.environ.setdefault("OMP_NUM_THREADS","1"); os.environ.setdefault("MKL_NUM_THREADS","1")
+    os.environ.update({"MODE":"simulation","FLARE_SWARM_ENABLED":"1",
+        "FLARE_FLEET_REGISTRY":str(mission/"fleet_registry.yaml"),"FLARE_SIMULATION_URL":f"http://127.0.0.1:{sdn_port}",
+        "FLARE_FL_POOL_PLAN":str(mission/"pool.json"),"FLARE_CLIENT_MANAGER_STATUS":str(mission/"fl_clients.json"),
+        "FLARE_CLIENT_STATE_DIR":str(mission/"client_state"),"FLARE_PERSONALIZED_DIR":str(mission/"personalized"),
+        "FLARE_FL_CANDIDATE":str(mission/"fl_candidate.pth"),"FLARE_FL_METRICS_JSON":str(mission/"fl_metrics.json"),
+        "FLARE_FL_METRICS_CSV":str(mission/"fl_metrics.csv"),"FLARE_FL_TRUST_STATE":str(mission/"trust.json"),
+        "FLARE_BYZANTINE_STATE_PATH":str(mission/"byzantine.json"),"DATABASE_PATH":str(mission/"decisions.db"),
+        "FL_SERVER_ADDRESS":f"127.0.0.1:{fl_port}","SDN_HOST":"127.0.0.1","SDN_PORT":str(sdn_port),
+        "VITE_API_BASE_URL":f"http://127.0.0.1:{api_port}","AJ_CORS_ORIGINS":f"http://127.0.0.1:{frontend_port},http://localhost:{frontend_port}"})
+    subprocess.run([python_bin,"-m","simulation.swarm.session","--destination",str(mission/"fleet_registry.yaml")],cwd=REPO_ROOT,check=True)
+
     # Reset Byzantine state for demo run
     if os.getenv("FLARE_PRESERVE_BYZANTINE_STATE", "0") != "1":
         print(f"{CYAN}[INFO] Restoring federated clients to normal mode...{RESET}")
@@ -184,29 +198,13 @@ def main() -> int:
 
     print(f"{YELLOW}[STARTING] Launching backend services...{RESET}")
 
-    # 1. FL Server
-    manager.launch(
-        "FL-Server",
-        [python_bin, "fl/server.py", "--rounds", "20"],
-        logs_dir / "fl_server.log",
-    )
-    time.sleep(1.0)
-
-    # 2. FL Clients (drone_1 .. drone_5)
-    drones = ["drone_1", "drone_2", "drone_3", "drone_4", "drone_5"]
-    for d_id in drones:
-        c_args = [python_bin, "fl/client.py", "--client_id", d_id, "--server_address", f"127.0.0.1:{fl_port}"]
-        if d_id == "drone_3":
-            c_args.append("--jammed")
-        manager.launch(f"FL-Client-{d_id}", c_args, logs_dir / f"fl_client_{d_id}.log")
-
-    # 3. Mock SDN
-    manager.launch(
-        "Mock-SDN",
-        [python_bin, "sdn/mock_sdn.py"],
-        logs_dir / "mock_sdn.log",
-    )
-    time.sleep(1.0)
+    manager.launch("Mock-SDN",[python_bin,"sdn/mock_sdn.py"],logs_dir/"mock_sdn.log")
+    deadline=time.monotonic()+20
+    while not is_port_in_use(sdn_port):
+        if time.monotonic()>deadline: manager.stop_all(); raise RuntimeError("Simulation service did not start")
+        time.sleep(.2)
+    manager.launch("FL-Server",[python_bin,"fl/server.py","--rounds","20"],logs_dir/"fl_server.log")
+    manager.launch("FL-Client-Manager",[python_bin,"-m","fl.client_manager","--server-address",f"127.0.0.1:{fl_port}"],logs_dir/"fl_client_manager.log")
 
     # 4. API Server
     manager.launch(
@@ -230,7 +228,7 @@ def main() -> int:
             try:
                 manager.launch(
                     "Frontend",
-                    [npm_cmd, "run", "dev", "--", "--host", "0.0.0.0", "--port", str(frontend_port)],
+                    [npm_cmd, "--prefix", "frontend-react", "run", "dev", "--", "--host", "0.0.0.0", "--port", str(frontend_port)],
                     logs_dir / "frontend.log",
                 )
                 print(f"{GREEN}[READY] Frontend started on http://localhost:{frontend_port}/{RESET}")

@@ -1,0 +1,185 @@
+{
+  "actual_flower": true,
+  "evidence": "controlled_simulation",
+  "frontend_condition": true,
+  "armed": {
+    "attack_id": "3caca4bc-2682-4ef3-91d5-a5ee9a78e5b5",
+    "client_id": "drone_1",
+    "round": 1,
+    "verdict": "awaiting_actual_update_analysis"
+  },
+  "aggregation": {
+    "session_id": "89841f5764d3437fbb011aed9228fd12",
+    "round": 1,
+    "outcomes": {
+      "drone_4": "ACCEPTED",
+      "drone_5": "ACCEPTED",
+      "drone_3": "DOWN_WEIGHTED",
+      "drone_1": "REJECTED",
+      "drone_2": "ACCEPTED"
+    },
+    "security_audits": [
+      {
+        "client_id": "drone_4",
+        "update_norm": 5.969076,
+        "distance_from_median": 0.17064,
+        "cosine_similarity": 0.985545,
+        "norm_robust_z": 0,
+        "distance_robust_z": 0,
+        "cosine_robust_z": 0,
+        "history_norm_robust_z": 0,
+        "deviation_score": 0,
+        "evidence_count": 0,
+        "status": "NORMAL",
+        "population_dispersion": 0.235365,
+        "adaptive_z_threshold": 4.117834,
+        "self_consistency": 0,
+        "norm_ratio": 1,
+        "extreme_evidence": false,
+        "action": "ACCEPTED",
+        "trust_score": 0.86,
+        "aggregation_weight": 0.315959,
+        "reported_num_examples": 500,
+        "effective_num_examples": 500,
+        "rejection_reason": null
+      },
+      {
+        "client_id": "drone_5",
+        "update_norm": 5.963659,
+        "distance_from_median": 0.192164,
+        "cosine_similarity": 0.98145,
+        "norm_robust_z": 0,
+        "distance_robust_z": 0,
+        "cosine_robust_z": 0,
+        "history_norm_robust_z": 0,
+        "deviation_score": 0,
+        "evidence_count": 0,
+        "status": "NORMAL",
+        "population_dispersion": 0.235365,
+        "adaptive_z_threshold": 4.117834,
+        "self_consistency": 0,
+        "norm_ratio": 0.999093,
+        "extreme_evidence": false,
+        "action": "ACCEPTED",
+        "trust_score": 0.86,
+        "aggregation_weight": 0.315959,
+        "reported_num_examples": 500,
+        "effective_num_examples": 500,
+        "rejection_reason": null
+      },
+      {
+        "client_id": "drone_3",
+        "update_norm": 6.510339,
+        "distance_from_median": 1.256057,
+        "cosine_similarity": 0.258089,
+        "norm_robust_z": 20,
+        "distance_robust_z": 20,
+        "cosine_robust_z": 20,
+        "history_norm_robust_z": 0,
+        "deviation_score": 0.9,
+        "evidence_count": 3,
+        "status": "SUSPICIOUS",
+        "population_dispersion": 0.235365,
+        "adaptive_z_threshold": 4.117834,
+        "self_consistency": 0,
+        "norm_ratio": 1.090678,
+        "extreme_evidence": false,
+        "action": "DOWN_WEIGHTED",
+        "trust_score": 0.5675,
+        "aggregation_weight": 0.052124,
+        "reported_num_examples": 500,
+        "effective_num_examples": 500,
+        "rejection_reason": null
+      },
+      {
+        "client_id": "drone_1",
+        "update_norm": 118.292697,
+        "distance_from_median": 20.751821,
+        "cosine_similarity": -0.966466,
+        "norm_robust_z": 20,
+        "distance_robust_z": 20,
+        "cosine_robust_z": 20,
+        "history_norm_robust_z": 0,
+        "deviation_score": 0.9,
+        "evidence_count": 3,
+        "status": "MALICIOUS",
+        "population_dispersion": 0.235365,
+        "adaptive_z_threshold": 4.117834,
+        "self_consistency": 0,
+        "norm_ratio": 19.817591,
+        "extreme_evidence": true,
+        "action": "REJECTED",
+        "trust_score": 0.56,
+        "aggregation_weight": 0,
+        "reported_num_examples": 500,
+        "effective_num_examples": 500,
+        "rejection_reason": "multiple robust outlier signals"
+      },
+      {
+        "client_id": "drone_2",
+        "update_norm": 5.956883,
+        "distance_from_median": 0.163026,
+        "cosine_similarity": 0.986763,
+        "norm_robust_z": 0,
+        "distance_robust_z": 0,
+        "cosine_robust_z": 0,
+        "history_norm_robust_z": 0,
+        "deviation_score": 0,
+        "evidence_count": 0,
+        "status": "NORMAL",
+        "population_dispersion": 0.235365,
+        "adaptive_z_threshold": 4.117834,
+        "self_consistency": 0,
+        "norm_ratio": 0.997957,
+        "extreme_evidence": false,
+        "action": "ACCEPTED",
+        "trust_score": 0.86,
+        "aggregation_weight": 0.315959,
+        "reported_num_examples": 500,
+        "effective_num_examples": 500,
+        "rejection_reason": null
+      }
+    ],
+    "failed_deliveries": [],
+    "datasets": {
+      "drone_4": "8456283d31a2edbf57c3b4ee0cdf1547bc515097b8265da75c41e4c8dcce005c",
+      "drone_5": "97b1b3a994f6d52eee263aa0757562568000d4d600537531b081ca345184ee6d",
+      "drone_3": "eae9b6920342c4cef757fa7a0f73b97698ea384cca011a7ce92abe0e91f93f2c",
+      "drone_1": "541dcd4bce82407d3a9341cceb987c6f83966e6165b360d673b0dd915cabe7e6",
+      "drone_2": "01fdc83ae6e38f6e17dc5f7c42f1ffde820d635ce3ce26160096c0ab7baf1c93"
+    },
+    "verified_updates": [
+      {
+        "client_id": "drone_4",
+        "digest": "5eaa93767226d8c3f025af6e19569c050ed624994d85c3a00b00a5c0474933b8",
+        "size_bytes": 582028
+      },
+      {
+        "client_id": "drone_5",
+        "digest": "7401934c956ac75a322c555efd00813c0ca327bae53a09a8e35e52af502aceaf",
+        "size_bytes": 582028
+      },
+      {
+        "client_id": "drone_3",
+        "digest": "d75b1d90a948831a86de23a59661874be3a219289366e1635df0fac1e232fc79",
+        "size_bytes": 582028
+      },
+      {
+        "client_id": "drone_1",
+        "digest": "3f8bcb84d86c3002a2dc06bdf3cd83f418e17adb17802e3c862af4ecd6df182d",
+        "size_bytes": 582028
+      },
+      {
+        "client_id": "drone_2",
+        "digest": "a93b37a4034d3c81c03981438e42bcc485f013b5982112778fe83acb5bf83ea5",
+        "size_bytes": 582028
+      }
+    ]
+  },
+  "errors": [],
+  "command": [
+    "node",
+    "e2e/flower-ui.mjs"
+  ],
+  "timestamp": "2026-10-01T16:35:53.520Z"
+}

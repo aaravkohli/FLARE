@@ -529,6 +529,21 @@ class SDNRestController(ControllerBase):
             body=json.dumps(result).encode(),
         )
 
+    @route("sdn", "/simulation/capabilities", methods=["GET"])
+    def policy_capabilities(self, req, **kwargs):
+        if not self._authorized(req): return self._unauthorized_response()
+        from sdn.enforcement import RyuOpenFlowAdapter
+        return Response(status=200,content_type="application/json",body=json.dumps(RyuOpenFlowAdapter.capabilities).encode())
+
+    @route("sdn", "/simulation/policies", methods=["POST"])
+    def install_policy(self, req, **kwargs):
+        if not self._authorized(req): return self._unauthorized_response()
+        from sdn.enforcement import RyuOpenFlowAdapter, SDNPolicyEngine
+        try: result=SDNPolicyEngine(RyuOpenFlowAdapter(self.controller)).apply(json.loads(req.body))
+        except (ValueError,TypeError) as exc:
+            return Response(status=422,content_type="application/json",body=json.dumps({"error":str(exc)}).encode())
+        return Response(status=200 if result.get("status")=="ok" else 409,content_type="application/json",body=json.dumps(result).encode())
+
     @route("sdn", "/sdn/containment", methods=["POST"])
     def containment(self, req, **kwargs):
         if not self._authorized(req):

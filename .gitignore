@@ -191,3 +191,8 @@ benchmarks/
 tmp/
 temp/
 .cache/
+
+# Isolated live mission registry, client state, training outputs
+/runtime/swarm_session/
+/frontend-react/test-results/
+/frontend-react/playwright-report/

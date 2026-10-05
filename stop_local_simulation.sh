@@ -42,6 +42,7 @@ process_has_flare_log() {
     local marker="$2"
     local expected_log
     case "$marker" in
+        "fl.client_manager") expected_log="${SCRIPT_DIR}/logs/fl_client_manager.log" ;;
         "fl/server.py") expected_log="${SCRIPT_DIR}/logs/fl_server.log" ;;
         "fl/client.py"*) expected_log="${SCRIPT_DIR}/logs/fl_client_" ;;
         "sdn/mock_sdn.py") expected_log="${SCRIPT_DIR}/logs/mock_sdn.log" ;;
@@ -55,6 +56,7 @@ process_has_flare_log() {
 expected_marker() {
     case "$1" in
         FL-Server) echo "fl/server.py" ;;
+        FL-Client-Manager) echo "fl.client_manager" ;;
         FL-Client-*) echo "fl/client.py" ;;
         Mock-SDN) echo "sdn/mock_sdn.py" ;;
         API-Server) echo "uvicorn api.server:app" ;;
@@ -155,6 +157,7 @@ discover_project_processes() {
         "Orchestrator-Loop|orchestrator.loop" \
         "API-Server|uvicorn api.server:app" \
         "Mock-SDN|sdn/mock_sdn.py" \
+        "FL-Client-Manager|fl.client_manager" \
         "FL-Client|fl/client.py" \
         "FL-Server|fl/server.py"; do
         name="${entry%%|*}"

@@ -38,6 +38,7 @@ _SAFETY_CFG = _RL_CFG.get("safety", {})
 _SAFETY_THRESHOLD, _ALL_UNSAFE_BEHAVIOR = resolve_safety_config(_SAFETY_CFG)
 
 logger = logging.getLogger(__name__)
+_DQN_MODELS: dict[tuple, Any] = {}
 
 PATH_NAMES = list(SHARED_PATH_NAMES)
 _MAX_LATENCY = np.array(MAX_LATENCY_MS, dtype=np.float32)
@@ -137,7 +138,13 @@ class RLAgent:
 
             # Load model with a dummy env for SB3 compatibility
             env = TrustAwareDronePathEnv() if self.routing_contract == ROUTING_STATE_V3 else DronePathEnv()
-            self.model = DQN.load(model_path, env=env)
+            import hashlib
+            digest=hashlib.sha256(Path(model_path).read_bytes()).hexdigest()
+            key=(str(Path(model_path).resolve()),digest,self.routing_contract)
+            if key not in _DQN_MODELS:
+                if len(_DQN_MODELS)>=4: _DQN_MODELS.pop(next(iter(_DQN_MODELS)))
+                _DQN_MODELS[key]=DQN.load(model_path, env=env)
+            self.model = _DQN_MODELS[key]
             logger.info(
                 "Loaded DQN model from %s (reward=%s)",
                 model_path,
@@ -242,6 +249,9 @@ class RLAgent:
         else:
             # DQN predict
             action, _ = self.model.predict(obs, deterministic=True)
+        return self._finish_prediction(action, obs, path_scores, client_trust, insider_risk, containment_score, evidence_freshness)
+
+    def _finish_prediction(self, action, obs, path_scores, client_trust, insider_risk, containment_score, evidence_freshness):
         action = int(action)
         original_action = action
 
@@ -309,6 +319,21 @@ class RLAgent:
                 "evidence_freshness": float(np.clip(evidence_freshness, 0.0, 1.0)),
             },
         }
+
+    @staticmethod
+    def predict_batch(agents: list["RLAgent"], inputs: list[dict]) -> list[dict]:
+        if len(agents)!=len(inputs): raise ValueError("batch length mismatch")
+        if not agents: return []
+        if any(a.model is not agents[0].model or a.routing_contract!=agents[0].routing_contract for a in agents):
+            raise ValueError("batch requires shared model and contract")
+        observations=[]
+        for agent,values in zip(agents,inputs):
+            if values.get("reward") is not None: agent._prev_reward=float(values["reward"])
+            observations.append(agent._build_obs(values["path_scores"], values.get("path_latencies"),values.get("path_losses"),
+                values.get("client_trust",1.),values.get("insider_risk",0.),values.get("containment_score",0.),values.get("evidence_freshness",1.)))
+        actions,_=agents[0].model.predict(np.stack(observations),deterministic=True)
+        return [agent._finish_prediction(action,obs,values["path_scores"],values.get("client_trust",1.),values.get("insider_risk",0.),
+                values.get("containment_score",0.),values.get("evidence_freshness",1.)) for agent,action,obs,values in zip(agents,actions,observations,inputs)]
 
     def reset(self) -> None:
         """Reset stateful trackers at episode boundaries."""

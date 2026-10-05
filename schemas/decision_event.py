@@ -304,6 +304,7 @@ class DecisionEvent(_StrictModel):
         pattern=r"^[a-z][a-z0-9_-]{2,63}$",
     )
     mode: Literal["simulation", "real"]
+    mission_context: Optional[dict[str, Any]] = None
     telemetry: TelemetrySnapshot
     inference: InferenceTrace
     insider_analysis: Optional[InsiderTrace] = None

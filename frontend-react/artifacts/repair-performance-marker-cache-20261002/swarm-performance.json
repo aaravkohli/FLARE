@@ -1,0 +1,460 @@
+{
+  "evidence": "controlled_browser_simulation",
+  "duration_s": 600.26,
+  "warmup_s": 120,
+  "viewport": {
+    "width": 1440,
+    "height": 1000
+  },
+  "browser": "154.0.8037.92",
+  "headless": true,
+  "quality": "balanced",
+  "configuration": {
+    "seed": 42,
+    "count": 100,
+    "topology": "manet",
+    "formation": "distributed",
+    "speed": 1,
+    "session_id": "3b0c676e67484cbe894da54f42cbd766",
+    "simulation_time": 615.9999999999875
+  },
+  "gpu": {
+    "vendor": "Google Inc. (Apple)",
+    "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+  },
+  "hardware": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2",
+    "logical_cpus": 8,
+    "total_memory": 17179869184
+  },
+  "average_fps": 42.202987621567935,
+  "fifth_percentile_fps": 20,
+  "frame_samples": 25325,
+  "command_response_ms": 1034,
+  "errors": [],
+  "samples": [
+    {
+      "elapsed_s": 10.033,
+      "heap_bytes": 116160508,
+      "average": 42.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 20.048,
+      "heap_bytes": 68670160,
+      "average": 39.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 30.063,
+      "heap_bytes": 89947880,
+      "average": 43.7,
+      "low": 20
+    },
+    {
+      "elapsed_s": 40.143,
+      "heap_bytes": 88202200,
+      "average": 40.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 50.158,
+      "heap_bytes": 80629212,
+      "average": 37.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 60.174,
+      "heap_bytes": 75744916,
+      "average": 38.9,
+      "low": 15
+    },
+    {
+      "elapsed_s": 70.25,
+      "heap_bytes": 76256592,
+      "average": 42.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 80.267,
+      "heap_bytes": 137958204,
+      "average": 44.7,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 90.383,
+      "heap_bytes": 71900932,
+      "average": 40.5,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 100.396,
+      "heap_bytes": 80517604,
+      "average": 43.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 110.406,
+      "heap_bytes": 106850028,
+      "average": 41.3,
+      "low": 20
+    },
+    {
+      "elapsed_s": 120.462,
+      "heap_bytes": 68278944,
+      "average": 43.9,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 130.535,
+      "heap_bytes": 127468748,
+      "average": 41.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 140.568,
+      "heap_bytes": 91437936,
+      "average": 39.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 150.698,
+      "heap_bytes": 79235968,
+      "average": 41.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 160.709,
+      "heap_bytes": 88869620,
+      "average": 42.7,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 170.724,
+      "heap_bytes": 91755832,
+      "average": 39.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 180.735,
+      "heap_bytes": 123692724,
+      "average": 43.5,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 190.83,
+      "heap_bytes": 136391084,
+      "average": 42.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 200.843,
+      "heap_bytes": 93981808,
+      "average": 41.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 210.854,
+      "heap_bytes": 95259388,
+      "average": 43.1,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 220.866,
+      "heap_bytes": 88554128,
+      "average": 39.2,
+      "low": 20
+    },
+    {
+      "elapsed_s": 230.901,
+      "heap_bytes": 79741364,
+      "average": 42.7,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 240.919,
+      "heap_bytes": 60927316,
+      "average": 42.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 250.995,
+      "heap_bytes": 60981888,
+      "average": 42.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 261.148,
+      "heap_bytes": 75547900,
+      "average": 40.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 271.162,
+      "heap_bytes": 104464644,
+      "average": 43.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 281.177,
+      "heap_bytes": 90504672,
+      "average": 43.3,
+      "low": 20
+    },
+    {
+      "elapsed_s": 291.189,
+      "heap_bytes": 70103060,
+      "average": 41.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 301.202,
+      "heap_bytes": 85689312,
+      "average": 42.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 311.268,
+      "heap_bytes": 58313216,
+      "average": 42.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 321.277,
+      "heap_bytes": 63254732,
+      "average": 44.3,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 331.363,
+      "heap_bytes": 107136468,
+      "average": 42.7,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 341.444,
+      "heap_bytes": 72651776,
+      "average": 44.3,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 351.492,
+      "heap_bytes": 77590804,
+      "average": 46.3,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 361.538,
+      "heap_bytes": 96143264,
+      "average": 44.7,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 371.605,
+      "heap_bytes": 72072412,
+      "average": 43.1,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 381.664,
+      "heap_bytes": 77925188,
+      "average": 42.1,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 391.675,
+      "heap_bytes": 78096724,
+      "average": 41.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 401.691,
+      "heap_bytes": 88071724,
+      "average": 41.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 411.716,
+      "heap_bytes": 89779628,
+      "average": 40.7,
+      "low": 20
+    },
+    {
+      "elapsed_s": 421.727,
+      "heap_bytes": 67912112,
+      "average": 43.5,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 431.808,
+      "heap_bytes": 73226192,
+      "average": 41.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 441.82,
+      "heap_bytes": 83543332,
+      "average": 40.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 451.836,
+      "heap_bytes": 69045980,
+      "average": 41.3,
+      "low": 20
+    },
+    {
+      "elapsed_s": 461.849,
+      "heap_bytes": 87210392,
+      "average": 41.3,
+      "low": 20
+    },
+    {
+      "elapsed_s": 471.859,
+      "heap_bytes": 74618288,
+      "average": 41.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 481.881,
+      "heap_bytes": 94428468,
+      "average": 41.3,
+      "low": 20
+    },
+    {
+      "elapsed_s": 491.969,
+      "heap_bytes": 79744764,
+      "average": 40.7,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 502.067,
+      "heap_bytes": 108151656,
+      "average": 41.6,
+      "low": 20
+    },
+    {
+      "elapsed_s": 512.08,
+      "heap_bytes": 82690536,
+      "average": 39.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 522.092,
+      "heap_bytes": 89671204,
+      "average": 42.5,
+      "low": 20
+    },
+    {
+      "elapsed_s": 532.275,
+      "heap_bytes": 76595196,
+      "average": 44.9,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 542.288,
+      "heap_bytes": 95711876,
+      "average": 40.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 552.379,
+      "heap_bytes": 59347344,
+      "average": 43.5,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 562.391,
+      "heap_bytes": 69592700,
+      "average": 41.1,
+      "low": 29.9
+    },
+    {
+      "elapsed_s": 572.414,
+      "heap_bytes": 72635668,
+      "average": 41.1,
+      "low": 20
+    },
+    {
+      "elapsed_s": 582.545,
+      "heap_bytes": 74272096,
+      "average": 42.9,
+      "low": 20
+    },
+    {
+      "elapsed_s": 592.704,
+      "heap_bytes": 91622144,
+      "average": 42.7,
+      "low": 20
+    },
+    {
+      "elapsed_s": 600.063,
+      "heap_bytes": 70512236,
+      "average": 40.1,
+      "low": 20
+    }
+  ],
+  "retained_heap_samples": [
+    {
+      "elapsed_s": 0,
+      "heap_bytes": 52792788
+    },
+    {
+      "elapsed_s": 60.174,
+      "heap_bytes": 54442220
+    },
+    {
+      "elapsed_s": 120.462,
+      "heap_bytes": 58097444
+    },
+    {
+      "elapsed_s": 180.735,
+      "heap_bytes": 60402404
+    },
+    {
+      "elapsed_s": 240.919,
+      "heap_bytes": 58279548
+    },
+    {
+      "elapsed_s": 301.202,
+      "heap_bytes": 52038324
+    },
+    {
+      "elapsed_s": 361.538,
+      "heap_bytes": 54905680
+    },
+    {
+      "elapsed_s": 421.727,
+      "heap_bytes": 57148028
+    },
+    {
+      "elapsed_s": 481.881,
+      "heap_bytes": 58973512
+    },
+    {
+      "elapsed_s": 542.288,
+      "heap_bytes": 58903500
+    },
+    {
+      "elapsed_s": 600.063,
+      "heap_bytes": 54193092
+    },
+    {
+      "elapsed_s": 600.26,
+      "heap_bytes": 52973236
+    }
+  ],
+  "memory_measurement": "CDP garbage collection before timing, every minute and after timing; timed pauses remain in FPS samples",
+  "acceptance": {
+    "fps": true,
+    "memory_growth_bytes": -45648272
+  },
+  "timestamp": "2026-10-01T19:32:03.896Z",
+  "command": [
+    "npm",
+    "run",
+    "profile:swarm"
+  ]
+}

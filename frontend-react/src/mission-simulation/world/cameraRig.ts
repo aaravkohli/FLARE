@@ -49,21 +49,21 @@ export function cameraPreset(mode: CameraMode, selected?: CameraSubject, network
   return { yaw: 0, elevation: radians(38), span: 1350, target: { x: 50, y: 190, z: 30 } };
 }
 
-export function clampCamera(rig: CameraRig): CameraRig {
+export function clampCamera(rig: CameraRig, maxSpan=1350): CameraRig {
   return {
     yaw: Math.atan2(Math.sin(rig.yaw), Math.cos(rig.yaw)),
     elevation: clamp(rig.elevation, radians(25), Math.PI * .44),
-    span: clamp(rig.span, 160, 1350),
+    span: clamp(rig.span, 160, maxSpan),
     target: {
-      x: clamp(rig.target.x, -420, 420),
+      x: clamp(rig.target.x, maxSpan>1350?-3000:-420, maxSpan>1350?3000:420),
       y: clamp(rig.target.y, -20, 250),
-      z: clamp(rig.target.z, -300, 300),
+      z: clamp(rig.target.z, maxSpan>1350?-3000:-300, maxSpan>1350?3000:300),
     },
   };
 }
 
-export function dampCamera(current: CameraRig, desired: CameraRig, dt: number, reduced = false): CameraRig {
-  const goal = clampCamera(desired);
+export function dampCamera(current: CameraRig, desired: CameraRig, dt: number, reduced = false, maxSpan=1350): CameraRig {
+  const goal = clampCamera(desired,maxSpan);
   if (reduced) return goal;
   const delta = Math.max(0, Math.min(.1, dt));
   const alpha = 1 - Math.exp(-5 * delta);

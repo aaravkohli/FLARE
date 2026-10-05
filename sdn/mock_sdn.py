@@ -92,6 +92,7 @@ class RouteRequest(BaseModel):
     action_id: int = Field(ge=0, le=3)
     drone_id: str = "drone_1"
     priority: int = Field(default=100, ge=1, le=65535)
+    decision_context: dict | None = None
 
     @field_validator("path_name")
     @classmethod
@@ -120,6 +121,10 @@ class RouteResponse(BaseModel):
     flow_priority: int
     timestamp: float
     note: str
+    hops: list[str] | None = None
+    session_id: str | None = None
+    network_revision: int | None = None
+    reason: str | None = None
 
 
 class ContainmentRequest(BaseModel):
@@ -182,6 +187,8 @@ async def install_route(
     Simulate installing a flow rule on the virtual switch.
     Implements deterministic failover if the requested path is unavailable.
     """
+    if app.state.swarm is not None:
+        return RouteResponse(**app.state.swarm.select_family(req.drone_id, req.path_name, req.decision_context))
     if req.path_name == HOLD_PATH:
         _flow_table[req.drone_id] = {
             "path": HOLD_PATH,
@@ -237,6 +244,8 @@ async def apply_containment(
     _: None = Depends(require_sdn_token),
 ) -> dict:
     """Apply an auditable simulation of the real controller containment rule."""
+    if app.state.swarm is not None:
+        return app.state.swarm.contain(req.drone_id, req.mode, req.reason)
     record = {
         "drone_id": req.drone_id,
         "mode": req.mode,
@@ -305,6 +314,8 @@ async def simulate_path_failure(
     """Mark a path as unavailable (for testing failover)."""
     if path not in VALID_PATHS:
         raise HTTPException(status_code=400, detail=f"Unknown path: {path}")
+    if app.state.swarm is not None:
+        app.state.swarm.failed_families.add(path); app.state.swarm.rebuild()
     _available_paths.discard(path)
     logger.warning("Path '%s' marked as UNAVAILABLE (simulated failure).", path)
     return {"status": "ok", "unavailable_paths": list(VALID_PATHS - _available_paths)}
@@ -316,6 +327,8 @@ async def simulate_path_restore(
     _: None = Depends(require_sdn_token),
 ) -> dict:
     """Restore a previously failed path."""
+    if app.state.swarm is not None:
+        app.state.swarm.failed_families.discard(path); app.state.swarm.rebuild()
     _available_paths.add(path)
     logger.info("Path '%s' RESTORED.", path)
     return {"status": "ok", "available_paths": list(_available_paths)}
@@ -349,6 +362,9 @@ async def readiness() -> dict:
         },
     }
 
+
+from simulation.swarm.service import attach_simulation
+attach_simulation(app, require_sdn_token)
 
 if __name__ == "__main__":
     host = os.getenv("SDN_HOST_BIND", "0.0.0.0")

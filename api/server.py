@@ -24,6 +24,7 @@ import sys
 import tempfile
 import threading
 import time
+import uuid
 from collections import deque
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta, timezone
@@ -431,6 +432,7 @@ _routing_contract_name = "routing_state_v2"
 _start_time = time.time()
 # drone_id -> timestamp of last jam request
 _last_jam_time: dict[str, float] = {}
+_ws_inspected: dict[WebSocket, set[str]] = {}
 _ws_clients: list[WebSocket] = []  # Connected WebSocket clients
 _mission_ws_cursors: dict[WebSocket, int] = {}
 # Set of compromised drones (Byzantine test)
@@ -448,6 +450,7 @@ _xai_metric_history: dict[str, dict[str, deque]] = {
     for drone_id in _active_drone_set()
 }
 _xai_last_event_ids: dict[str, str] = {}
+_xai_mission_sessions: dict[str, str] = {}
 _xai_explanation_cache: dict[str, tuple[str, dict | None]] = {}
 _routing_xai_cache: dict[str, tuple[str, dict]] = {}
 _model_lock = threading.RLock()
@@ -511,6 +514,10 @@ def _get_db_path() -> Path:
 
 async def _latest_decision_events() -> dict[str, dict]:
     """Return the latest valid canonical event for each drone, if available."""
+    session_id = None
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        from api.mission import service_request
+        session_id=(await service_request('GET','/session'))['session_id']
     db_path = _get_db_path()
     if not db_path.exists():
         return {}
@@ -534,6 +541,8 @@ async def _latest_decision_events() -> dict[str, dict]:
             event = DecisionEvent.model_validate_json(raw_event)
         except Exception as exc:
             logger.warning("Ignoring invalid persisted decision event: %s", exc)
+            continue
+        if session_id and (event.mission_context or {}).get('session_id')!=session_id:
             continue
         if event.drone_id not in events:
             events[event.drone_id] = event.model_dump(mode="json")
@@ -680,6 +689,7 @@ async def _latest_completed_mission_cursor() -> int:
 
 
 async def _latest_run_summaries() -> dict[str, dict]:
+    if os.getenv('FLARE_SWARM_ENABLED')=='1': return {}
     """Read legacy summary columns without leaking the large event_json field."""
     db_path = _get_db_path()
     if not db_path.exists():
@@ -699,6 +709,7 @@ async def _latest_run_summaries() -> dict[str, dict]:
 
 
 async def _latest_operational_events() -> dict[str, dict]:
+    if os.getenv('FLARE_SWARM_ENABLED')=='1': return {}
     """Return the latest fail-closed operational state for each drone."""
     db_path = _get_db_path()
     if not db_path.exists():
@@ -988,11 +999,16 @@ async def lifespan(app: FastAPI):
     _refresh_api_deployment()
 
     # Start background telemetry broadcaster
+    from api.mission import mission_broadcaster
+    swarm_task = asyncio.create_task(mission_broadcaster(_ws_clients))
     broadcaster_task = asyncio.create_task(telemetry_broadcaster())
     logger.info("Background telemetry broadcaster task started.")
 
     yield
 
+    swarm_task.cancel()
+    try: await swarm_task
+    except asyncio.CancelledError: pass
     broadcaster_task.cancel()
     try:
         await broadcaster_task
@@ -1267,6 +1283,13 @@ def _runtime_mode_and_sdn_controller() -> tuple[str, str]:
 async def _fetch_sdn_readiness() -> SDNReadiness:
     """Fetch and normalize the active controller's readiness contract."""
     _, sdn_controller = _runtime_mode_and_sdn_controller()
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        from api.mission import service_request
+        try:
+            state=await service_request('GET','/runtime')
+            return SDNReadiness(mode='simulation_logical_sdn',ready=True,status='ready',available_paths=state.get('available_paths',{}))
+        except HTTPException:
+            return SDNReadiness(mode='simulation_logical_sdn',ready=False,status='unreachable',error='Authoritative simulator unavailable')
     controller_cfg = _SDN_CFG.get("controller", {})
     host = os.getenv("SDN_HOST", str(controller_cfg.get("host", "127.0.0.1")))
     port = int(os.getenv("SDN_PORT", str(controller_cfg.get("port", 8080))))
@@ -1333,7 +1356,7 @@ async def health():
     )
     return HealthResponse(
         status="ok",
-        rl_loaded=set(_rl_agents) >= _active_drone_set(),
+        rl_loaded=bool(_rl_agents) if os.getenv('FLARE_SWARM_ENABLED')=='1' else set(_rl_agents) >= _active_drone_set(),
         fl_loaded=_fl_model is not None,
         uptime_s=round(time.time() - _start_time, 2),
         mode=runtime_mode,
@@ -1459,6 +1482,12 @@ async def live_metrics(
     """Latest telemetry that actually drove a routing decision. Requires JWT auth."""
     if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Unknown or disabled drone_id: {drone_id}")
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        from api.mission import service_request
+        measurements=await service_request('GET','/metrics')
+        row=measurements['metrics'].get(drone_id)
+        if row is None: raise HTTPException(503,'UAV unavailable in current mission')
+        return row
 
     events = await _latest_decision_events()
     operational = await _latest_operational_events()
@@ -1515,6 +1544,19 @@ async def swarm_status(
 ) -> dict:
     """Return the last known decision for every drone in the swarm."""
     events = await _latest_decision_events()
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        from api.mission import service_request
+        snapshot=await service_request('GET','/state')
+        flows={f['source']:f for f in snapshot['flows'] if f['destination']=='base' and f['traffic_class']=='telemetry'}
+        result={}
+        for node in snapshot['nodes']:
+            flow=flows.get(node['id']); event=events.get(node['id'])
+            result[node['id']]={**(_decision_summary_from_event(event) if event else {}),
+                'path_name':flow['family'] if flow else 'hold','installed_path':flow['family'] if flow else None,
+                'installed_hops':flow['hops'] if flow else [],'sdn_applied':flow is not None,
+                'source':'packet_simulation','session_id':snapshot['session_id'],'threat_level':(event or {}).get('decision',{}).get('threat_level','UNKNOWN'),
+                'step':(event or {}).get('step',0),'reward':(event or {}).get('outcome',{}).get('reward')}
+        return {'drones':result}
     summaries = await _latest_run_summaries()
     result = {
         drone_id: {
@@ -1554,6 +1596,9 @@ async def swarm_all_metrics(
     _: dict = Depends(get_current_user),
 ) -> dict:
     """Latest decision-driving RF telemetry for all drones in the swarm."""
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        from api.mission import service_request
+        return (await service_request('GET','/metrics'))['metrics']
     events = await _latest_decision_events()
     result = {
         drone_id: event["telemetry"]
@@ -1586,6 +1631,7 @@ async def swarm_all_metrics(
 @app.get("/metrics/history", tags=["Metrics"])
 async def metrics_history(
     limit: int = Query(default=60, ge=1, le=1000),
+    historical: bool = Query(default=False),
     _: dict = Depends(get_current_user),
 ) -> dict:
     """Return last `limit` orchestrator decisions for charting. Requires JWT auth."""
@@ -1605,6 +1651,10 @@ async def metrics_history(
         )
         rows = await cursor.fetchall()
 
+    session_id=None
+    if os.getenv('FLARE_SWARM_ENABLED')=='1' and not historical:
+        from api.mission import service_request
+        session_id=(await service_request('GET','/session'))['session_id']
     # Reverse so oldest-first for charting
     result = []
     for row in reversed(list(rows)):
@@ -1617,6 +1667,7 @@ async def metrics_history(
                 )
             except Exception as exc:
                 logger.warning("Ignoring invalid history decision event: %s", exc)
+        if session_id and (summary.get('event',{}).get('mission_context') or {}).get('session_id')!=session_id: continue
         result.append(summary)
     return {"rows": result, "count": len(result)}
 
@@ -1708,6 +1759,15 @@ async def trigger_jamming(
     _: dict = Depends(require_admin),
 ):
     """Trigger or clear jamming. Requires JWT auth."""
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        _require_byzantine_simulation_mode()
+        from api.mission import service_request
+        mission=await service_request('GET','/state')
+        targets=[n['id'] for n in mission['nodes']] if req.drone_id=='all' else [req.drone_id]
+        record=await service_request('POST','/attacks',{'session_id':mission['session_id'],'expected_revision':mission['revision'],
+            'attack_id':uuid.uuid4().hex,'group':'ew','profile':req.profile,'targets':targets,'paths':req.paths,'duration_s':req.duration})
+        return {'status':'cleared' if req.profile=='none' else 'jamming','drone_id':req.drone_id,'profile':req.profile,
+                'paths':req.paths,'duration':req.duration,'mission_attack':record,'evidence':'packet_simulation'}
     from simulation.jammer import clear_jamming, set_jamming_state
 
     targets = list(active_drone_ids()) if req.drone_id == "all" else [req.drone_id]
@@ -1758,12 +1818,22 @@ def _require_byzantine_simulation_mode() -> None:
         )
 
 
+async def _mission_legacy_attack(group,profile,drone_id):
+    from api.mission import service_request
+    mission=await service_request('GET','/state')
+    record=await service_request('POST','/attacks',{'session_id':mission['session_id'],'expected_revision':mission['revision'],
+        'attack_id':uuid.uuid4().hex,'group':group,'profile':profile,'targets':[drone_id],'paths':['mesh'],'duration_s':300})
+    return {'status':'ok','drone_id':drone_id,'profile':profile,'mission_attack':record,'evidence':'packet_simulation'}
+
+
 @app.post("/swarm/compromise/{drone_id}", tags=["Control"])
 async def compromise_drone(drone_id: str, _: dict = Depends(require_admin)):
     """Mark a drone as compromised (triggers simulated Byzantine model poisoning)."""
     _require_byzantine_simulation_mode()
     if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        return await _mission_legacy_attack('fl','poisoned',drone_id)
     from simulation.byzantine_state import set_attack_mode
     set_attack_mode(drone_id, "poisoned")
     _compromised_drones.add(drone_id)
@@ -1777,6 +1847,8 @@ async def restore_drone(drone_id: str, _: dict = Depends(require_admin)):
     _require_byzantine_simulation_mode()
     if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        return await _mission_legacy_attack('fl','normal',drone_id)
     _compromised_drones.discard(drone_id)
     from simulation.byzantine_state import set_attack_mode
     set_attack_mode(drone_id, "normal")
@@ -1790,6 +1862,10 @@ async def get_insider_profiles(_: dict = Depends(get_current_user)):
     from simulation.insider_state import load_insider_state
 
     configured = load_insider_state()
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        from api.mission import service_request
+        state=await service_request('GET','/attacks')
+        configured={n:a['profile'] for a in state['active'] if a['group']=='traffic' for n in a['affected_targets']}
     return {
         "simulation_enabled": (
             not IS_PRODUCTION
@@ -1814,6 +1890,12 @@ async def get_insider_evidence(
     from simulation.insider_state import load_insider_state
 
     current_profile = load_insider_state().get(drone_id, "normal")
+    condition=None
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        from api.mission import service_request
+        state=await service_request('GET','/attacks')
+        condition=next((a for a in state['active'] if a['group']=='traffic' and drone_id in a['affected_targets']),None)
+        current_profile=condition['profile'] if condition else 'normal'
     event = (await _latest_decision_events()).get(drone_id)
     if event is None:
         return {
@@ -1825,6 +1907,10 @@ async def get_insider_evidence(
 
     security_evidence = event.get("telemetry", {}).get("security_evidence") or {}
     observed_profile = security_evidence.get("simulation_profile")
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        # Control metadata only; it is never inserted into detector evidence.
+        context=event.get('mission_context') or {}
+        observed_profile=current_profile if not condition or context.get('simulation_time',-1)>=condition['created_at'] else None
     event_age_s = max(0.0, time.time() - float(event["timestamp"]))
     decision = event.get("decision") or {}
     return {
@@ -1858,6 +1944,8 @@ async def simulate_insider_behavior(
     _require_byzantine_simulation_mode()
     if not is_active_drone(drone_id):
         raise HTTPException(status_code=400, detail=f"Invalid drone_id: {drone_id}")
+    if os.getenv('FLARE_SWARM_ENABLED')=='1':
+        return await _mission_legacy_attack('traffic',req.profile,drone_id)
     from simulation.insider_state import set_insider_profile
 
     set_insider_profile(drone_id, req.profile)
@@ -1973,11 +2061,24 @@ async def update_fl_config(new_config: dict, _: dict = Depends(require_admin)):
         raise HTTPException(status_code=500, detail="Failed to update FL config") from e
 
 
+async def _current_mission_fl_metrics(data):
+    if os.getenv('FLARE_SWARM_ENABLED')!='1': return data
+    from api.mission import service_request
+    state=await service_request('GET','/session'); session=state['session_id']
+    if data.get('latest',{}).get('mission_session')!=session:
+        return dict(last_round=0,n_rounds_completed=0,latest={'round':0,'aggregation_method':'awaiting_mission_round','client_security':[]},history=[],
+                    session_id=session,available=False,status='waiting_for_play' if not state['playing'] else 'awaiting_mission_round')
+    data=dict(data);data['history']=[row for row in data.get('history',[]) if row.get('mission_session')==session]
+    data['n_rounds_completed']=len(data['history']);data['session_id']=session;data['available']=True
+    return data
+
+
 @app.get("/api/fl/metrics", tags=["Federated Learning"])
 async def get_fl_metrics(_: dict = Depends(get_current_user)):
     """Retrieve the latest Federated Learning metrics from results/fl_metrics_snapshot.json."""
-    metrics_path = _BASE / "results" / "fl_metrics_snapshot.json"
+    metrics_path = Path(os.getenv("FLARE_FL_METRICS_JSON",str(_BASE / "results" / "fl_metrics_snapshot.json")))
     if not metrics_path.exists():
+        if os.getenv('FLARE_SWARM_ENABLED')=='1': return await _current_mission_fl_metrics({})
         return {
             "last_round": 0,
             "convergence_round": None,
@@ -2011,7 +2112,7 @@ async def get_fl_metrics(_: dict = Depends(get_current_user)):
         }
     try:
         with open(metrics_path) as f:
-            return json.load(f)
+            return await _current_mission_fl_metrics(json.load(f))
     except Exception as e:
         logger.exception("Failed to read FL metrics")
         raise HTTPException(status_code=500, detail="Failed to read FL metrics") from e
@@ -2526,6 +2627,7 @@ async def _broadcast_to_ws(data: dict):
 
 async def _broadcast_mission_events() -> None:
     """Advance each authenticated socket independently through the journal."""
+    if os.getenv('FLARE_SWARM_ENABLED')=='1': return
     for ws in list(_ws_clients):
         after_id = _mission_ws_cursors.get(ws)
         if after_id is None:
@@ -2555,18 +2657,18 @@ async def telemetry_broadcaster():
                 missing = _sync_api_fleet() - events.keys()
                 fallback_metrics: dict[str, dict] = {}
                 if missing:
-                    if _runtime_mode_and_sdn_controller()[0] == "simulation":
+                    if _runtime_mode_and_sdn_controller()[0] == "simulation" and os.getenv("FLARE_SWARM_ENABLED") != "1":
                         from simulation.generator import generate_swarm_metrics
                         fallback_metrics = generate_swarm_metrics()
                         for drone_id in missing:
                             fallback_metrics[drone_id]["source"] = "legacy_api_fallback"
 
                 fl_metrics = None
-                fl_metrics_path = _BASE / "results" / "fl_metrics_snapshot.json"
+                fl_metrics_path = Path(os.getenv("FLARE_FL_METRICS_JSON",str(_BASE / "results" / "fl_metrics_snapshot.json")))
                 if fl_metrics_path.exists():
                     try:
                         with open(fl_metrics_path) as f:
-                            fl_metrics = json.load(f)
+                            fl_metrics = await _current_mission_fl_metrics(json.load(f))
                     except Exception:
                         pass
 
@@ -2583,7 +2685,11 @@ async def telemetry_broadcaster():
                     if isinstance(row, dict) and row.get("client_id")
                 }
                 byzantine_status = []
-                for drone in active_drone_ids():
+                status_identities = active_drone_ids()
+                if os.getenv('FLARE_SWARM_ENABLED') == '1':
+                    observed_clients = set(security_by_client) | set(_fl_client_manager_status().get('clients', {}))
+                    status_identities = [identity for identity in status_identities if identity in observed_clients]
+                for drone in status_identities:
                     row = dict(security_by_client.get(drone, {}))
                     row.setdefault("client_id", drone)
                     row.setdefault(
@@ -2594,7 +2700,9 @@ async def telemetry_broadcaster():
                     row["simulation_mode"] = attack_state.get(drone, "normal")
                     byzantine_status.append(row)
 
+                inspected=set().union(*_ws_inspected.values()) if _ws_inspected else {"drone_1"}
                 for drone_id in active_drone_ids():
+                    if os.getenv("FLARE_SWARM_ENABLED")=="1" and drone_id not in inspected: continue
                     event = events.get(drone_id)
                     if event is not None:
                         decision = _decision_summary_from_event(event)
@@ -2628,6 +2736,11 @@ async def telemetry_broadcaster():
                         active_path if active_path in ("direct", "satellite", "mesh") else "direct"
                     )
                     paths = metrics.get("paths", [])
+                    mission_session=(event.get('mission_context') or {}).get('session_id') if event else None
+                    if mission_session and _xai_mission_sessions.get(drone_id)!=mission_session:
+                        for history in _xai_metric_history[drone_id].values(): history.clear()
+                        _xai_explanation_cache.pop(drone_id,None);_routing_xai_cache.pop(drone_id,None)
+                        _xai_mission_sessions[drone_id]=mission_session
                     history_token = (
                         event["event_id"]
                         if event is not None
@@ -2774,16 +2887,25 @@ async def websocket_endpoint(websocket: WebSocket):
     if mission_after_id is None:
         mission_after_id = await _latest_completed_mission_cursor()
     await websocket.send_json({"type": "auth", "status": "ok"})
+    _ws_inspected[websocket] = {"drone_1"}
     _mission_ws_cursors[websocket] = mission_after_id
     _ws_clients.append(websocket)
     logger.info("WebSocket client connected. Total: %d", len(_ws_clients))
     try:
         while True:
             # Keep-alive: wait for any client message (ping)
-            await websocket.receive_text()
+            message=await websocket.receive_text()
+            try:
+                subscription=json.loads(message)
+                if subscription.get("type")=="inspect":
+                    identities=subscription.get("drone_ids",[])
+                    if isinstance(identities,list) and len(identities)<=10 and all(isinstance(n,str) and n in active_drone_ids() for n in identities):
+                        _ws_inspected[websocket]=set(identities)
+            except (ValueError,AttributeError): pass
     except WebSocketDisconnect:
         if websocket in _ws_clients:
             _ws_clients.remove(websocket)
+        _ws_inspected.pop(websocket,None)
         _mission_ws_cursors.pop(websocket, None)
         logger.info("WebSocket client disconnected. Total: %d", len(_ws_clients))
 
@@ -2791,6 +2913,9 @@ async def websocket_endpoint(websocket: WebSocket):
 # ---------------------------------------------------------------------------
 # Static Files — mounted LAST so API routes take priority
 # ---------------------------------------------------------------------------
+
+from api.mission import mission_router
+app.include_router(mission_router(get_current_user, require_admin, _runtime_mode_and_sdn_controller))
 
 configured_static_dir = os.getenv("AJ_STATIC_DIR")
 frontend_dir = (

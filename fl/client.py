@@ -417,7 +417,7 @@ class DroneFlClient(fl.client.NumPyClient):
         # Personalization manager
         if self._persona_enabled:
             from fl.personalization import PersonalizationManager
-            persona_save_dir = str(_BASE / _FL_CFG.get("paths", {}).get(
+            persona_save_dir = os.getenv("FLARE_PERSONALIZED_DIR") or str(_BASE / _FL_CFG.get("paths", {}).get(
                 "personalized_models", "models/personalized"
             ))
             self._persona_manager = PersonalizationManager(
@@ -512,6 +512,30 @@ class DroneFlClient(fl.client.NumPyClient):
             self._optimizer = optimizer
             self._train_loader = loader
 
+        state_dir=os.getenv("FLARE_CLIENT_STATE_DIR")
+        if state_dir:
+            state_path=Path(state_dir)/f"{self.client_id}.pth"
+            if state_path.exists():
+                saved=torch.load(state_path,map_location="cpu",weights_only=False)
+                self._prev_grad_flat=saved.get("previous_gradient"); self._prev_loss=saved.get("previous_loss")
+                if self._privacy_engine is not None and saved.get("accountant"):
+                    self._privacy_engine.accountant.load_state_dict(saved["accountant"])
+                if self._compressor is not None and saved.get("compressor"):
+                    self._compressor.__dict__.update(saved["compressor"])
+
+    def _save_mission_training_state(self):
+        state_dir=os.getenv("FLARE_CLIENT_STATE_DIR")
+        if not state_dir: return
+        path=Path(state_dir)/f"{self.client_id}.pth"; path.parent.mkdir(parents=True,exist_ok=True)
+        temporary=path.with_suffix(".tmp")
+        torch.save({"previous_gradient":self._prev_grad_flat,"previous_loss":self._prev_loss,
+            "accountant":self._privacy_engine.accountant.state_dict() if self._privacy_engine else None,
+            "compressor":self._compressor.__dict__ if self._compressor else None},temporary)
+        os.replace(temporary,path)
+
+    def get_properties(self, config: dict):
+        return {"client_id":self.client_id,"evidence":"synthetic_training"}
+
     def get_parameters(self, config: dict) -> List[np.ndarray]:
         return get_model_weights(self.model)
 
@@ -528,6 +552,10 @@ class DroneFlClient(fl.client.NumPyClient):
           6. (If compression enabled) simulate lossy weight-delta compression
           7. Report multi-signal drift + privacy metrics
         """
+        if os.getenv("FLARE_SWARM_ENABLED")=="1":
+            torch.manual_seed(int.from_bytes(hashlib.sha256(f"{self.client_id}:{config['server_round']}:{config.get('mission_seed',42)}".encode()).digest()[:4],'big'))
+            from fl.mission_transport import request
+            request("POST","/fl/events",{"session_id":config["mission_session"],"round":int(config["server_round"]),"outcomes":{self.client_id:"TRAINING"}})
         set_model_weights(self.model, parameters)
         self._setup_training(config)
 
@@ -584,6 +612,8 @@ class DroneFlClient(fl.client.NumPyClient):
                 loss.backward()
 
                 optimizer.step()
+                if self._privacy_engine is not None and os.getenv("FLARE_SWARM_ENABLED")=="1":
+                    self._save_mission_training_state()
                 epoch_loss += loss.item()
                 n_batches += 1
 
@@ -706,6 +736,14 @@ class DroneFlClient(fl.client.NumPyClient):
             metrics["cosine_similarity"], drift,
         )
 
+        if os.getenv("FLARE_SWARM_ENABLED") == "1":
+            dataset_hash=hashlib.sha256()
+            for tensor in (self.X,self.y_threat,self.y_attack):
+                dataset_hash.update(str((tuple(tensor.shape),str(tensor.dtype))).encode());dataset_hash.update(tensor.detach().cpu().numpy().tobytes())
+            metrics['dataset_fingerprint']=dataset_hash.hexdigest()
+            self._save_mission_training_state()
+            from fl.mission_transport import upload
+            metrics.update(upload(weights_to_send,self.client_id,round_number,str(config["mission_session"])))
         return weights_to_send, len(self.X), metrics
 
     def evaluate(

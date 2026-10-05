@@ -50,6 +50,7 @@ export interface MissionModelExplanation {
 }
 
 export interface MissionCanonicalEvent {
+  mission_context?: { session_id?: string; simulation_time?: number } | null;
   event_id?: string;
   timestamp?: number;
   step?: number;

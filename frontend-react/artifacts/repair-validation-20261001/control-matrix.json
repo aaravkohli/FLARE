@@ -1,0 +1,2381 @@
+[
+  {
+    "control": "10 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "full_mesh",
+      "links": 48,
+      "revision": 5
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:56.692Z"
+  },
+  {
+    "control": "10 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "partial_mesh",
+      "links": 28,
+      "revision": 6
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:56.776Z"
+  },
+  {
+    "control": "10 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "star",
+      "links": 12,
+      "revision": 7
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:56.861Z"
+  },
+  {
+    "control": "10 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "ring",
+      "links": 13,
+      "revision": 8
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:56.948Z"
+  },
+  {
+    "control": "10 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "tree",
+      "links": 12,
+      "revision": 9
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.024Z"
+  },
+  {
+    "control": "10 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "cluster_mesh",
+      "links": 12,
+      "revision": 10
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.109Z"
+  },
+  {
+    "control": "10 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "hybrid_mesh",
+      "links": 33,
+      "revision": 11
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.194Z"
+  },
+  {
+    "control": "10 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "chain",
+      "links": 12,
+      "revision": 12
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.295Z"
+  },
+  {
+    "control": "10 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "grid",
+      "links": 16,
+      "revision": 13
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.424Z"
+  },
+  {
+    "control": "10 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 10,
+      "topology": "manet",
+      "links": 46,
+      "revision": 14
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.575Z"
+  },
+  {
+    "control": "20 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "full_mesh",
+      "links": 200,
+      "revision": 16
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.813Z"
+  },
+  {
+    "control": "20 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "partial_mesh",
+      "links": 60,
+      "revision": 17
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:57.915Z"
+  },
+  {
+    "control": "20 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "star",
+      "links": 29,
+      "revision": 18
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:58.008Z"
+  },
+  {
+    "control": "20 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "ring",
+      "links": 30,
+      "revision": 19
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:58.096Z"
+  },
+  {
+    "control": "20 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "tree",
+      "links": 29,
+      "revision": 20
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:58.193Z"
+  },
+  {
+    "control": "20 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "cluster_mesh",
+      "links": 29,
+      "revision": 21
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:58.322Z"
+  },
+  {
+    "control": "20 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "hybrid_mesh",
+      "links": 74,
+      "revision": 22
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:58.691Z"
+  },
+  {
+    "control": "20 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "chain",
+      "links": 29,
+      "revision": 23
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:58.890Z"
+  },
+  {
+    "control": "20 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "grid",
+      "links": 41,
+      "revision": 24
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:58.980Z"
+  },
+  {
+    "control": "20 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 20,
+      "topology": "manet",
+      "links": 105,
+      "revision": 25
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:59.087Z"
+  },
+  {
+    "control": "30 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "full_mesh",
+      "links": 451,
+      "revision": 27
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:59.436Z"
+  },
+  {
+    "control": "30 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "partial_mesh",
+      "links": 89,
+      "revision": 28
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:59.770Z"
+  },
+  {
+    "control": "30 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "star",
+      "links": 45,
+      "revision": 29
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:30:59.989Z"
+  },
+  {
+    "control": "30 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "ring",
+      "links": 46,
+      "revision": 30
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:00.087Z"
+  },
+  {
+    "control": "30 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "tree",
+      "links": 45,
+      "revision": 31
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:00.196Z"
+  },
+  {
+    "control": "30 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "cluster_mesh",
+      "links": 46,
+      "revision": 32
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:00.292Z"
+  },
+  {
+    "control": "30 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "hybrid_mesh",
+      "links": 111,
+      "revision": 33
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:00.492Z"
+  },
+  {
+    "control": "30 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "chain",
+      "links": 45,
+      "revision": 34
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:00.813Z"
+  },
+  {
+    "control": "30 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "grid",
+      "links": 65,
+      "revision": 35
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:00.940Z"
+  },
+  {
+    "control": "30 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 30,
+      "topology": "manet",
+      "links": 163,
+      "revision": 36
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:01.065Z"
+  },
+  {
+    "control": "50 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "full_mesh",
+      "links": 1253,
+      "revision": 38
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:01.783Z"
+  },
+  {
+    "control": "50 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "partial_mesh",
+      "links": 151,
+      "revision": 39
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:02.345Z"
+  },
+  {
+    "control": "50 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "star",
+      "links": 77,
+      "revision": 40
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:02.494Z"
+  },
+  {
+    "control": "50 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "ring",
+      "links": 78,
+      "revision": 41
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:02.656Z"
+  },
+  {
+    "control": "50 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "tree",
+      "links": 77,
+      "revision": 42
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:02.841Z"
+  },
+  {
+    "control": "50 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "cluster_mesh",
+      "links": 83,
+      "revision": 43
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:03.136Z"
+  },
+  {
+    "control": "50 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "hybrid_mesh",
+      "links": 189,
+      "revision": 44
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:03.313Z"
+  },
+  {
+    "control": "50 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "chain",
+      "links": 77,
+      "revision": 45
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:03.463Z"
+  },
+  {
+    "control": "50 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "grid",
+      "links": 113,
+      "revision": 46
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:03.603Z"
+  },
+  {
+    "control": "50 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 50,
+      "topology": "manet",
+      "links": 269,
+      "revision": 47
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:04.006Z"
+  },
+  {
+    "control": "75 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "full_mesh",
+      "links": 2809,
+      "revision": 49
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:05.867Z"
+  },
+  {
+    "control": "75 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "partial_mesh",
+      "links": 231,
+      "revision": 50
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:06.257Z"
+  },
+  {
+    "control": "75 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "star",
+      "links": 116,
+      "revision": 51
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:06.753Z"
+  },
+  {
+    "control": "75 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "ring",
+      "links": 117,
+      "revision": 52
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:07.012Z"
+  },
+  {
+    "control": "75 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "tree",
+      "links": 117,
+      "revision": 53
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:07.272Z"
+  },
+  {
+    "control": "75 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "cluster_mesh",
+      "links": 138,
+      "revision": 54
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:07.601Z"
+  },
+  {
+    "control": "75 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "hybrid_mesh",
+      "links": 306,
+      "revision": 55
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:07.861Z"
+  },
+  {
+    "control": "75 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "chain",
+      "links": 116,
+      "revision": 56
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:08.068Z"
+  },
+  {
+    "control": "75 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "grid",
+      "links": 175,
+      "revision": 57
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:08.307Z"
+  },
+  {
+    "control": "75 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 75,
+      "topology": "manet",
+      "links": 411,
+      "revision": 58
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:08.737Z"
+  },
+  {
+    "control": "100 UAV / full_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "full_mesh",
+      "links": 4945,
+      "revision": 60
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:12.179Z"
+  },
+  {
+    "control": "100 UAV / partial_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "partial_mesh",
+      "links": 301,
+      "revision": 61
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:13.209Z"
+  },
+  {
+    "control": "100 UAV / star",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "star",
+      "links": 151,
+      "revision": 62
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:13.510Z"
+  },
+  {
+    "control": "100 UAV / ring",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "ring",
+      "links": 154,
+      "revision": 63
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:13.831Z"
+  },
+  {
+    "control": "100 UAV / tree",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "tree",
+      "links": 156,
+      "revision": 64
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:14.132Z"
+  },
+  {
+    "control": "100 UAV / cluster_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "cluster_mesh",
+      "links": 193,
+      "revision": 65
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:14.468Z"
+  },
+  {
+    "control": "100 UAV / hybrid_mesh",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "hybrid_mesh",
+      "links": 410,
+      "revision": 66
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:15.346Z"
+  },
+  {
+    "control": "100 UAV / chain",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "chain",
+      "links": 154,
+      "revision": 67
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:16.251Z"
+  },
+  {
+    "control": "100 UAV / grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "grid",
+      "links": 236,
+      "revision": 68
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:17.262Z"
+  },
+  {
+    "control": "100 UAV / manet",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "count": 100,
+      "topology": "manet",
+      "links": 521,
+      "revision": 69
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:18.096Z"
+  },
+  {
+    "control": "grid",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "grid",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:18.551Z"
+  },
+  {
+    "control": "v",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "v",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:19.103Z"
+  },
+  {
+    "control": "line",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "line",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:19.581Z"
+  },
+  {
+    "control": "circle",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "circle",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:20.632Z"
+  },
+  {
+    "control": "diamond",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "diamond",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:21.232Z"
+  },
+  {
+    "control": "wedge",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "wedge",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:21.629Z"
+  },
+  {
+    "control": "column",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "column",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:22.634Z"
+  },
+  {
+    "control": "distributed",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "distributed",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:23.219Z"
+  },
+  {
+    "control": "cluster",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "formation": "cluster",
+      "positions_preserved": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:23.651Z"
+  },
+  {
+    "control": "0.25×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 0.25
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:24.601Z"
+  },
+  {
+    "control": "0.5×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 0.5
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:25.064Z"
+  },
+  {
+    "control": "1×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 1
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:25.692Z"
+  },
+  {
+    "control": "2×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 2
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:26.805Z"
+  },
+  {
+    "control": "4×",
+    "backend_path": "PATCH /config",
+    "effect": {
+      "speed": 4
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:27.752Z"
+  },
+  {
+    "control": "normal",
+    "backend_path": "POST /scenarios/normal",
+    "effect": {
+      "scenario": "normal",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:28.259Z"
+  },
+  {
+    "control": "large_manet",
+    "backend_path": "POST /scenarios/large_manet",
+    "effect": {
+      "scenario": "large_manet",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:28.566Z"
+  },
+  {
+    "control": "jamming",
+    "backend_path": "POST /scenarios/jamming",
+    "effect": {
+      "scenario": "jamming",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:28.818Z"
+  },
+  {
+    "control": "poisoning",
+    "backend_path": "POST /scenarios/poisoning",
+    "effect": {
+      "scenario": "poisoning",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:29.427Z"
+  },
+  {
+    "control": "failures",
+    "backend_path": "POST /scenarios/failures",
+    "effect": {
+      "scenario": "failures",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:29.584Z"
+  },
+  {
+    "control": "controller_loss",
+    "backend_path": "POST /scenarios/controller_loss",
+    "effect": {
+      "scenario": "controller_loss",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:29.763Z"
+  },
+  {
+    "control": "rerouting",
+    "backend_path": "POST /scenarios/rerouting",
+    "effect": {
+      "scenario": "rerouting",
+      "playing": false
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:29.998Z"
+  },
+  {
+    "control": "hold",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -146.88088498714913,
+          80,
+          -146.98933686595134
+        ],
+        "target": [
+          -146.9160363406546,
+          80,
+          -146.99321918617443
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0.11000000000000003,
+        "battery": 0.9999946803642183,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "hold",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "hold",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "sim_uav_009",
+          "sim_uav_010"
+        ],
+        "sent": 7,
+        "received": 11,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -146.88088498714913,
+          80,
+          -146.98933686595134
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "sim_uav_009",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.2,
+          "delivered_at": 0.2,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.5499999999999999
+        }
+      },
+      "session_id": "988f38247c734a1e836575907816b420"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:34.348Z"
+  },
+  {
+    "control": "resume",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.66652657152749,
+          80,
+          -62.92688561931333
+        ],
+        "target": [
+          -62.40001777761975,
+          80,
+          -18.003999940741096
+        ],
+        "velocity": [
+          0.8822056858310474,
+          0,
+          0.30217738567352664
+        ],
+        "heading": 0.32999999999999996,
+        "battery": 0.9999948573005062,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "resume",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.66652657152749,
+          80,
+          -62.92688561931333
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "9c1e1d9e55464f039e07d2dcfd5c4e49"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:35.276Z"
+  },
+  {
+    "control": "return",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.861816273031245,
+          79.97677387755434,
+          -62.971032379922086
+        ],
+        "target": [
+          -280,
+          70,
+          170
+        ],
+        "velocity": [
+          0.21648545473097128,
+          -0.06988617784033124,
+          0.08772467413723346
+        ],
+        "heading": 0.385,
+        "battery": 0.9999942551656352,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "return",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "return",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 8,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 3,
+        "formation_slot": null,
+        "reported_position": [
+          -62.861816273031245,
+          79.97677387755434,
+          -62.971032379922086
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p63",
+          "acknowledged_at": 0.2
+        }
+      },
+      "session_id": "a20e9e12481f456281b9cb4dfb711c20"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:36.377Z"
+  },
+  {
+    "control": "altitude",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.91657915274531,
+          80.64382326198505,
+          -62.99568260316481
+        ],
+        "target": [
+          -62.975763504102225,
+          120,
+          -62.99894102873134
+        ],
+        "velocity": [
+          -0.02449669277579555,
+          2,
+          -0.0013486782942793102
+        ],
+        "heading": 0.05499999999998744,
+        "battery": 0.9999941191516392,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "move",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "altitude",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.91657915274531,
+          80.64382326198505,
+          -62.99568260316481
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "482265fbdd7746108916f92a3d58eb00"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:37.476Z"
+  },
+  {
+    "control": "move",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.33083916747397,
+          80.0822640312521,
+          -62.83055925830097
+        ],
+        "target": [
+          30,
+          100,
+          50
+        ],
+        "velocity": [
+          1.8826920378271859,
+          0.27229081440361513,
+          0.703282117036968
+        ],
+        "heading": 0.35750000000000015,
+        "battery": 0.9999941019320141,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "move",
+        "available": true,
+        "containment": "normal",
+        "trust": 1,
+        "threat": 0.00007039015326881781,
+        "range_m": 350,
+        "selected_route": "satellite",
+        "current_command": "move",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.33083916747397,
+          80.0822640312521,
+          -62.83055925830097
+        ],
+        "active_attacks": [],
+        "security": {
+          "decision_id": "ed5e3062:72:drone_1",
+          "trust": 1,
+          "threat": 0.00007039015326881781,
+          "scores": [
+            0.1184859648346901,
+            0.00007039015326881781,
+            0.1184859648346901
+          ],
+          "source": "fl_model",
+          "attack_type": "none",
+          "confidence": 0.998782237370809,
+          "policy_path": "satellite",
+          "requested_path": "satellite",
+          "observation": [
+            0.1184859648346901,
+            0.00007039015326881781,
+            0.1184859648346901,
+            0.47011202573776245,
+            0.28333333134651184,
+            0.07835200428962708,
+            0.32388463616371155,
+            0.019999999552965164,
+            0.32388463616371155,
+            0,
+            0,
+            0,
+            0,
+            0,
+            1,
+            0.06300000101327896,
+            0.06300000101327896,
+            1
+          ],
+          "routing_contract": "routing_state_v3",
+          "safety_override": false,
+          "network_detection": {
+            "status": "NORMAL",
+            "detected_classes": [],
+            "risk_score": 0.029903291832738453,
+            "dos_score": 0.08566666666666667,
+            "spoofing_score": 0,
+            "drop_score": 0,
+            "rate_score": 0.18,
+            "latency_score": 0.11333333333333333,
+            "identity_mismatch": false,
+            "claim_gap_score": 0,
+            "duplicate_score": 0,
+            "evidence_freshness": 0.9946609338124593,
+            "evidence_source": "synthetic_simulation",
+            "evidence_independent": false,
+            "response_hint": "normal",
+            "reason": "evidence_scored",
+            "available_signals": [
+              "control_rate",
+              "latency",
+              "claim_gap",
+              "drop",
+              "policy_drop_not_scored",
+              "packet_rate",
+              "source_identity",
+              "duplicate_replay"
+            ],
+            "evidence_contract": "network_security_evidence_v2"
+          },
+          "insider_risk": 0.063,
+          "evidence": "packet_simulation"
+        },
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "b797653c036546068732b0c53bc47f81"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:38.473Z"
+  },
+  {
+    "control": "waypoints",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.29914784996585,
+          80.08391683962289,
+          -62.82188123489271
+        ],
+        "target": [
+          0,
+          100,
+          0
+        ],
+        "velocity": [
+          1.9864811560276858,
+          0.2782340662473123,
+          0.7420526803085312
+        ],
+        "heading": 0.35750000000000004,
+        "battery": 0.9999940690358086,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "waypoints",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "waypoints",
+        "waypoints": [
+          [
+            0,
+            100,
+            0
+          ],
+          [
+            100,
+            100,
+            100
+          ]
+        ],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.29914784996585,
+          80.08391683962289,
+          -62.82188123489271
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "300303a84cef4e72b183d3a3c24ffeb6"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:39.341Z"
+  },
+  {
+    "control": "formation",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.38652656512757,
+          80,
+          -62.84582116278626
+        ],
+        "target": [
+          0.6499773973551359,
+          80,
+          44.9953056371765
+        ],
+        "velocity": [
+          1.6994106882913145,
+          0,
+          0.63481712492719
+        ],
+        "heading": 0.35750000000000015,
+        "battery": 0.9999941649693516,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "hold",
+        "current_command": "formation",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 11,
+        "forwarded": 3,
+        "dropped": 4,
+        "formation_slot": [
+          0,
+          80,
+          0
+        ],
+        "reported_position": [
+          -62.38652656512757,
+          80,
+          -62.84582116278626
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": []
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "result": {
+            "formation": "v",
+            "slot": [
+              0,
+              80,
+              0
+            ]
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p71",
+          "acknowledged_at": 0.2
+        },
+        "drone_2": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p2",
+          "result": {
+            "formation": "v",
+            "slot": [
+              42,
+              92,
+              42
+            ]
+          },
+          "executed_at": 0.3,
+          "delivered_at": 0.3,
+          "ack_packet": "p76",
+          "acknowledged_at": 0.49999999999999994
+        },
+        "drone_3": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p3",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -42,
+              104,
+              42
+            ]
+          },
+          "executed_at": 0.39999999999999997,
+          "delivered_at": 0.39999999999999997,
+          "ack_packet": "p78",
+          "acknowledged_at": 0.6
+        },
+        "drone_4": {
+          "status": "delivery_failed",
+          "accepted_at": 0,
+          "reason": "radio_loss",
+          "dispatched_at": 0,
+          "packet_id": "p4"
+        },
+        "drone_5": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p5",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -84,
+              92,
+              84
+            ]
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p72",
+          "acknowledged_at": 0.2
+        },
+        "sim_uav_006": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p6",
+          "result": {
+            "formation": "v",
+            "slot": [
+              126,
+              104,
+              126
+            ]
+          },
+          "executed_at": 0.2,
+          "delivered_at": 0.2,
+          "ack_packet": "p74",
+          "acknowledged_at": 0.39999999999999997
+        },
+        "sim_uav_007": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p7",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -126,
+              80,
+              126
+            ]
+          },
+          "executed_at": 0.2,
+          "delivered_at": 0.2,
+          "ack_packet": "p75",
+          "acknowledged_at": 0.49999999999999994
+        },
+        "sim_uav_008": {
+          "status": "executed_ack_pending",
+          "accepted_at": 0,
+          "reason": "Executed; awaiting acknowledgment",
+          "dispatched_at": 0,
+          "packet_id": "p8",
+          "result": {
+            "formation": "v",
+            "slot": [
+              168,
+              92,
+              168
+            ]
+          },
+          "executed_at": 0.39999999999999997,
+          "delivered_at": 0.39999999999999997,
+          "ack_packet": "p79"
+        },
+        "sim_uav_009": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p9",
+          "result": {
+            "formation": "v",
+            "slot": [
+              -168,
+              104,
+              168
+            ]
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p73",
+          "acknowledged_at": 0.2
+        },
+        "sim_uav_010": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p10",
+          "result": {
+            "formation": "v",
+            "slot": [
+              210,
+              80,
+              210
+            ]
+          },
+          "executed_at": 0.3,
+          "delivered_at": 0.3,
+          "ack_packet": "p77",
+          "acknowledged_at": 0.39999999999999997
+        }
+      },
+      "session_id": "c8ece3edc32048d0b6a0f57941877e70"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:40.266Z"
+  },
+  {
+    "control": "route",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "target": [
+          -62.45001369331336,
+          80,
+          -18.003361069270326
+        ],
+        "velocity": [
+          0.8222349128160392,
+          0,
+          0.25660109625845695
+        ],
+        "heading": 0.30249999999999994,
+        "battery": 0.9999953039266267,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "hold",
+        "current_command": "route",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 11,
+        "forwarded": 1,
+        "dropped": 4,
+        "formation_slot": null,
+        "reported_position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": []
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.2
+        }
+      },
+      "session_id": "cd2ab54888b14d9a95d426d960598d55"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:41.135Z"
+  },
+  {
+    "control": "reroute",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "target": [
+          -62.45001369331336,
+          80,
+          -18.003361069270326
+        ],
+        "velocity": [
+          0.8222349128160392,
+          0,
+          0.25660109625845695
+        ],
+        "heading": 0.30249999999999994,
+        "battery": 0.9999953039266267,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "reroute",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.71063685581905,
+          80,
+          -62.94199448859701
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "result": {
+            "previous_hops": [
+              "drone_1",
+              "base"
+            ],
+            "installed_hops": [
+              "drone_1",
+              "base"
+            ],
+            "changed": false,
+            "reason": "Current route remains best"
+          },
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "a6e0fddb2582454b9953558694ab86ea"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:42.221Z"
+  },
+  {
+    "control": "role",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.61938328711955,
+          80,
+          -62.909275182663926
+        ],
+        "target": [
+          -62.35002260264486,
+          80,
+          -18.0046943628235
+        ],
+        "velocity": [
+          0.9428656881588773,
+          0,
+          0.3522087329880976
+        ],
+        "heading": 0.3575,
+        "battery": 0.9999944069753958,
+        "health": 1,
+        "role": "gateway",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "role",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 7,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 2,
+        "formation_slot": null,
+        "reported_position": [
+          -62.61938328711955,
+          80,
+          -62.909275182663926
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p62",
+          "acknowledged_at": 0.3
+        }
+      },
+      "session_id": "e0ed5332305342b49ad53d1272facb67"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:43.184Z"
+  },
+  {
+    "control": "disconnect",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": false,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "disconnect",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": []
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "f6c3ea3fe36f4d2aae95fabfda21a4cd"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:43.535Z"
+  },
+  {
+    "control": "reconnect",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "reconnect",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "43b86e8a72154278887139e789e9002d"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:44.078Z"
+  },
+  {
+    "control": "isolate",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "quarantined",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "isolate",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": []
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "a6bf808febca4742b6a54bd4334e6e06"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:44.456Z"
+  },
+  {
+    "control": "restore",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -63,
+          80,
+          -63
+        ],
+        "target": [
+          -63,
+          80,
+          -63
+        ],
+        "velocity": [
+          0,
+          0,
+          0
+        ],
+        "heading": 0,
+        "battery": 1,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "patrol",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "restore",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_3",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 0,
+        "received": 0,
+        "forwarded": 0,
+        "dropped": 0,
+        "formation_slot": null,
+        "reported_position": [
+          -63,
+          80,
+          -63
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "management_applied",
+          "accepted_at": 0,
+          "reason": "Simulator management action applied",
+          "executed_at": 0
+        }
+      },
+      "session_id": "3cb115027e6e46ac8ba942292674d1f9"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:45.129Z"
+  },
+  {
+    "control": "emergency",
+    "backend_path": "POST /commands",
+    "effect": {
+      "node": {
+        "id": "drone_1",
+        "alias": "UAV-001",
+        "index": 1,
+        "position": [
+          -62.861816273031245,
+          79.97677387755434,
+          -62.971032379922086
+        ],
+        "target": [
+          -280,
+          70,
+          170
+        ],
+        "velocity": [
+          0.21648545473097128,
+          -0.06988617784033124,
+          0.08772467413723346
+        ],
+        "heading": 0.385,
+        "battery": 0.9999942551656352,
+        "health": 1,
+        "role": "standard",
+        "cluster": 0,
+        "mode": "return",
+        "available": true,
+        "containment": "normal",
+        "trust": null,
+        "threat": null,
+        "range_m": 350,
+        "selected_route": "mesh",
+        "current_command": "emergency",
+        "waypoints": [],
+        "waypoint_index": 0,
+        "waypoint_loop": false,
+        "fl_status": "NOT_PARTICIPATING",
+        "neighbors": [
+          "drone_2",
+          "drone_5",
+          "sim_uav_006",
+          "sim_uav_009"
+        ],
+        "sent": 8,
+        "received": 13,
+        "forwarded": 2,
+        "dropped": 3,
+        "formation_slot": null,
+        "reported_position": [
+          -62.861816273031245,
+          79.97677387755434,
+          -62.971032379922086
+        ],
+        "active_attacks": [],
+        "security": null,
+        "current_path": [
+          "drone_1",
+          "base"
+        ]
+      },
+      "outcomes": {
+        "drone_1": {
+          "status": "acknowledged",
+          "accepted_at": 0,
+          "reason": "Radio delivery, execution and acknowledgment confirmed",
+          "dispatched_at": 0,
+          "packet_id": "p1",
+          "executed_at": 0.1,
+          "delivered_at": 0.1,
+          "ack_packet": "p63",
+          "acknowledged_at": 0.2
+        }
+      },
+      "session_id": "2b00e52bb880468e8f74ad4620c74d98"
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:45.847Z"
+  },
+  {
+    "control": "ew/none",
+    "backend_path": "POST /attacks",
+    "effect": {
+      "cleared": true
+    },
+    "evidence": "authenticated_frontend_packet_simulation",
+    "timestamp": "2026-10-01T14:31:48.898Z"
+  }
+]
