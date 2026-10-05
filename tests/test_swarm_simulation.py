@@ -138,15 +138,42 @@ def test_simulator_service_token_and_lifecycle(monkeypatch,tmp_path):
         assert response.status_code==200 and response.json()['playing']
         assert client.patch('/simulation/config',headers=headers,json={'count':50,'expected_revision':s['revision']}).status_code==409
 
-def test_shared_dqn_batch_scalar_equivalence():
+def test_shared_dqn_batch_scalar_equivalence(tmp_path):
+    from pathlib import Path
     from rl.agent import RLAgent
-    agents=[RLAgent('models/rl_model_v3.zip',routing_contract_name='routing_state_v3') for _ in range(3)]
-    scalar=[RLAgent('models/rl_model_v3.zip',routing_contract_name='routing_state_v3') for _ in range(3)]
+
+    checkpoint_path = Path('models/rl_model_v3.zip')
+    if not (
+        checkpoint_path.is_file()
+        and checkpoint_path.with_name('rl_model_v3.zip.metadata.json').is_file()
+    ):
+        from rl.checkpoint import ROUTING_STATE_V3, write_checkpoint_metadata
+        from rl.env import TrustAwareDronePathEnv
+        from stable_baselines3 import DQN
+
+        checkpoint_path = tmp_path / 'rl_model_v3.zip'
+        env = TrustAwareDronePathEnv()
+        DQN('MlpPolicy', env).save(checkpoint_path)
+        write_checkpoint_metadata(
+            checkpoint_path,
+            algorithm='dqn',
+            observation_dim=18,
+            action_count=4,
+            max_episode_steps=500,
+            training_timesteps=1,
+            training_mode='synthetic',
+            training_seed=42,
+            observation_definition=ROUTING_STATE_V3,
+        )
+
+    model_target = str(checkpoint_path)
+    agents = [RLAgent(model_target, routing_contract_name='routing_state_v3') for _ in range(3)]
+    scalar = [RLAgent(model_target, routing_contract_name='routing_state_v3') for _ in range(3)]
     assert agents[0].model is agents[1].model
-    inputs=[dict(path_scores=[.1,.2,.3],reward=i*.1,client_trust=1-i*.2) for i in range(3)]
+    inputs = [dict(path_scores=[.1, .2, .3], reward=i * .1, client_trust=1 - i * .2) for i in range(3)]
     for _ in range(3):
-        batch=RLAgent.predict_batch(agents,inputs)
-        assert batch==[a.predict(**row) for a,row in zip(scalar,inputs)]
+        batch = RLAgent.predict_batch(agents, inputs)
+        assert batch == [a.predict(**row) for a, row in zip(scalar, inputs)]
 
 def test_failed_install_keeps_only_valid_confirmed_route(monkeypatch):
     e=engine(10);source=next(iter(e.nodes));e.select_family(source,'satellite')
