@@ -252,33 +252,6 @@
   contain-intrinsic-size: 500px;
 }
 
-.mission-demo-access {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin: 0 0 10px;
-  padding: 8px 12px;
-  border: 1px solid var(--flare-border);
-  border-radius: 8px;
-  background: var(--flare-surface-2);
-  color: var(--flare-text-muted);
-  font-size: 12px;
-}
-
-.mission-demo-access a {
-  color: #9ed9ea;
-  font-weight: 650;
-  text-decoration: none;
-}
-
-.mission-demo-access a:hover { text-decoration: underline; }
-.mission-demo-access a:focus-visible { outline: 2px solid var(--flare-accent); outline-offset: 3px; }
-
-@media (max-width: 720px) {
-  .mission-demo-access { align-items: flex-start; flex-direction: column; }
-}
-
 /* Defense validation workspace: restrained system UI with clear test states. */
 .defense-lab {
   --lab-blue: #0a84ff;

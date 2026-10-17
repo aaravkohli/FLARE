@@ -3,8 +3,6 @@
 from __future__ import annotations
 
 from pathlib import Path
-import errno
-import json
 
 from fl.client_manager import FleetClientManager
 from fleet.registry import register_drone, update_drone
@@ -98,26 +96,4 @@ def test_disabled_identity_stops_its_client_and_reenable_starts_a_new_one(tmp_pa
     restored = manager.reconcile_once()
     assert restored["clients"]["drone_3"]["pid"] != old_pid
     assert restored["clients"]["drone_3"]["status"] == "active"
-    manager.stop()
-
-
-def test_status_write_failure_retries_without_retiring_healthy_clients(tmp_path, monkeypatch, caplog):
-    import fl.client_manager as module
-    manager = _manager(tmp_path)
-    write = module._atomic_json
-    attempts = []
-    def fail_once(path, status):
-        attempts.append({identity: row['pid'] for identity, row in status['clients'].items()})
-        if len(attempts) == 1:
-            raise OSError(errno.ENOSPC, 'No space left on device')
-        write(path, status)
-    def next_cycle(_seconds):
-        assert all(process.poll() is None for process in manager._processes.values())
-        manager._stopping = len(attempts) == 2
-    monkeypatch.setattr(module, '_atomic_json', fail_once)
-    monkeypatch.setattr(module.time, 'sleep', next_cycle)
-    manager.run()
-    assert attempts[0] == attempts[1]
-    assert len(json.loads(manager.status_path.read_text())['clients']) == 3
-    assert 'retrying' in caplog.text
     manager.stop()

@@ -18,7 +18,6 @@ RUN pip install --no-cache-dir \
     pyyaml
 
 COPY sdn/ sdn/
-COPY schemas/ schemas/
 COPY config/ config/
 COPY fleet/ fleet/
 ENV PYTHONPATH=/app
@@ -26,5 +25,5 @@ ENV PYTHONPATH=/app
 HEALTHCHECK --interval=10s --timeout=5s --retries=3 \
   CMD curl -f http://localhost:8080/health || exit 1
 
-# Real controller toolchain. Packet simulation uses Dockerfile.simulation.
-CMD ["ryu-manager", "sdn/controller.py"]
+# Default: run mock SDN (change CMD for real Ryu: ryu-manager sdn/controller.py)
+CMD ["python", "sdn/mock_sdn.py"]

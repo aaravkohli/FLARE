@@ -50,7 +50,6 @@ export interface MissionModelExplanation {
 }
 
 export interface MissionCanonicalEvent {
-  mission_context?: { session_id?: string; simulation_time?: number } | null;
   event_id?: string;
   timestamp?: number;
   step?: number;
@@ -127,11 +126,10 @@ export interface MissionTelemetryPayload {
   metrics: {
     drone_id: string;
     timestamp: number;
-    source: 'synthetic' | 'live' | 'cached_live' | 'synthetic_fallback' | 'legacy_api_fallback';
+    source: 'synthetic' | 'live' | 'synthetic_fallback' | 'legacy_api_fallback';
     paths: MissionPathMetric[];
     gps?: MissionGpsInfo;
     ew_status?: MissionEwStatus;
-    security_evidence?: { simulation_profile?: string | null } | null;
   };
   event?: MissionCanonicalEvent;
   telemetry_age_s?: number;
@@ -176,7 +174,6 @@ export interface MissionSimulationState {
   activeAttack: AttackProfile;
   jammedPaths: CommunicationRoute[];
   reward: number;
-  outcomeCurrent?: boolean;
   rlStep: number;
   sdnApplied?: boolean;
   sdnError?: string | null;

@@ -191,33 +191,3 @@ benchmarks/
 tmp/
 temp/
 .cache/
-
-# Isolated live mission registry, client state, training outputs
-/runtime/swarm_session/
-/frontend-react/test-results/
-/frontend-react/playwright-report/
-
-# =============================================================================
-# Documentation & Working Notes
-# =============================================================================
-docs/
-*.md
-!README.md
-!**/README.md
-
-# =============================================================================
-# Images, Screenshots & UI Validation Artifacts
-# =============================================================================
-*.png
-*.jpg
-*.jpeg
-*.webp
-*.gif
-!frontend-react/src/**
-!frontend-react/public/**
-
-# UI Validation / Repair run directories
-frontend-react/artifacts/live-mission-upgrade/
-frontend-react/artifacts/swarm-repair-*/
-**/screenshots/
-

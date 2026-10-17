@@ -1,231 +1,147 @@
-# Controlled packet simulation. Ryu remains in docker-compose.prod.yml.
+# =============================================================================
+# docker-compose.dev.yml — SIMULATION MODE
+# All services use mock SDN and synthetic data.
+# No Open vSwitch or real RF hardware required.
+# =============================================================================
+
 networks:
   antijam-net:
     driver: bridge
+
 volumes:
-  experiments: null
-  logs: null
-  fl-results: null
-  byzantine-state: null
-  fl-runtime: null
-  swarm-session: null
+  experiments:
+  logs:
+  fl-results:
+  byzantine-state:
+  fl-runtime:
+
 services:
+
+  # ── FL Server ─────────────────────────────────────────────────────────────
   fl-server:
     build:
       context: .
       dockerfile: docker/Dockerfile.fl
     container_name: fl-server
-    networks:
-    - antijam-net
+    networks: [antijam-net]
     ports:
-    - ${FL_SERVER_PORT:-8090}:8090
+      - "${FL_SERVER_PORT:-8090}:8090"
     volumes:
-    - ${MODEL_DIR:-./models}:/app/models
-    - fl-results:/app/results
-    - ./config:/app/config:ro
-    - swarm-session:/app/mission
+      - ${MODEL_DIR:-./models}:/app/models
+      - fl-results:/app/results
+      - ./config:/app/config:ro
     environment:
-    - PYTHONPATH=/app
-    - FLARE_SWARM_ENABLED=1
-    - FLARE_FLEET_REGISTRY=/app/mission/fleet_registry.yaml
-    - FLARE_SIMULATION_URL=http://mock-sdn:8080
-    - FLARE_FL_POOL_PLAN=/app/mission/pool.json
-    - FLARE_CLIENT_STATE_DIR=/app/mission/client_state
-    - FLARE_PERSONALIZED_DIR=/app/mission/personalized
-    - FLARE_FL_CANDIDATE=/app/mission/fl_candidate.pth
-    - FLARE_FL_METRICS_JSON=/app/mission/fl_metrics.json
-    - FLARE_FL_METRICS_CSV=/app/mission/fl_metrics.csv
-    - FLARE_FL_TRUST_STATE=/app/mission/trust.json
-    - FLARE_CLIENT_MANAGER_STATUS=/app/mission/fl_clients.json
-    - FLARE_BYZANTINE_STATE_PATH=/app/mission/byzantine.json
-    - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
+      - PYTHONPATH=/app
     healthcheck:
-      test:
-      - CMD-SHELL
-      - python -c "import socket; s=socket.socket(); s.connect(('localhost',8090))"
-        2>/dev/null && echo ok || exit 1
+      test: ["CMD-SHELL", "python -c \"import socket; s=socket.socket(); s.connect(('localhost',8090))\" 2>/dev/null && echo ok || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 15s
-    depends_on:
-      swarm-init:
-        condition: service_completed_successfully
-      mock-sdn:
-        condition: service_healthy
+
+  # ── Fleet-aware FL client manager ─────────────────────────────────────────
   fl-client-manager:
     build:
       context: .
       dockerfile: docker/Dockerfile.fl
     container_name: fl-client-manager
-    networks:
-    - antijam-net
+    networks: [antijam-net]
     volumes:
-    - ${MODEL_DIR:-./models}:/app/models
-    - byzantine-state:/app/runtime
-    - fl-runtime:/app/client-runtime
-    - ./config:/app/config:ro
-    - swarm-session:/app/mission
+      - ${MODEL_DIR:-./models}:/app/models
+      - byzantine-state:/app/runtime
+      - fl-runtime:/app/client-runtime
+      - ./config:/app/config:ro
     environment:
-    - PYTHONPATH=/app
-    - FLARE_SWARM_ENABLED=1
-    - FLARE_FLEET_REGISTRY=/app/mission/fleet_registry.yaml
-    - FLARE_SIMULATION_URL=http://mock-sdn:8080
-    - FLARE_FL_POOL_PLAN=/app/mission/pool.json
-    - FLARE_CLIENT_STATE_DIR=/app/mission/client_state
-    - FLARE_PERSONALIZED_DIR=/app/mission/personalized
-    - FLARE_FL_CANDIDATE=/app/mission/fl_candidate.pth
-    - FLARE_FL_METRICS_JSON=/app/mission/fl_metrics.json
-    - FLARE_FL_METRICS_CSV=/app/mission/fl_metrics.csv
-    - FLARE_FL_TRUST_STATE=/app/mission/trust.json
-    - FLARE_CLIENT_MANAGER_STATUS=/app/mission/fl_clients.json
-    - FLARE_BYZANTINE_STATE_PATH=/app/mission/byzantine.json
-    - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
-    command: python -m fl.client_manager --server-address fl-server:8090 --status-path
-      /app/mission/fl_clients.json
+      - PYTHONPATH=/app
+      - FLARE_BYZANTINE_STATE_PATH=/app/runtime/byzantine_state.json
+      - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
+    command: python -m fl.client_manager --server-address fl-server:8090 --status-path /app/client-runtime/fl_clients.json
     depends_on:
       fl-server:
         condition: service_healthy
-      swarm-init:
-        condition: service_completed_successfully
-      mock-sdn:
-        condition: service_healthy
+
+  # ── Mock SDN Controller ────────────────────────────────────────────────────
   mock-sdn:
     build:
       context: .
-      dockerfile: docker/Dockerfile.simulation
+      dockerfile: docker/Dockerfile.sdn
     container_name: mock-sdn
-    networks:
-    - antijam-net
+    networks: [antijam-net]
     ports:
-    - ${SDN_PORT:-8080}:8080
+      - "${SDN_PORT:-8080}:8080"
     volumes:
-    - logs:/app/logs
-    - ./config:/app/config:ro
-    - swarm-session:/app/mission
+      - logs:/app/logs
+      - ./config:/app/config:ro
     environment:
-    - PYTHONPATH=/app
-    - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
-    - FLARE_SWARM_ENABLED=1
-    - FLARE_FLEET_REGISTRY=/app/mission/fleet_registry.yaml
-    - FLARE_SIMULATION_URL=http://mock-sdn:8080
-    - FLARE_FL_POOL_PLAN=/app/mission/pool.json
-    - FLARE_CLIENT_STATE_DIR=/app/mission/client_state
-    - FLARE_PERSONALIZED_DIR=/app/mission/personalized
-    - FLARE_FL_CANDIDATE=/app/mission/fl_candidate.pth
-    - FLARE_FL_METRICS_JSON=/app/mission/fl_metrics.json
-    - FLARE_FL_METRICS_CSV=/app/mission/fl_metrics.csv
-    - FLARE_FL_TRUST_STATE=/app/mission/trust.json
-    - FLARE_CLIENT_MANAGER_STATUS=/app/mission/fl_clients.json
-    - FLARE_BYZANTINE_STATE_PATH=/app/mission/byzantine.json
+      - PYTHONPATH=/app
+      - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
     healthcheck:
-      test:
-      - CMD
-      - curl
-      - -f
-      - http://localhost:8080/health
+      test: ["CMD", "curl", "-f", "http://localhost:8080/health"]
       interval: 10s
       timeout: 5s
       retries: 3
-    depends_on:
-      swarm-init:
-        condition: service_completed_successfully
+
+  # ── API ───────────────────────────────────────────────────────────────────
   api:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
     container_name: flare-api
-    networks:
-    - antijam-net
+    networks: [antijam-net]
     ports:
-    - ${API_PORT:-8000}:8000
+      - "${API_PORT:-8000}:8000"
     volumes:
-    - ${MODEL_DIR:-./models}:/app/models:ro
-    - experiments:/app/experiments
-    - logs:/app/logs
-    - fl-results:/app/results:ro
-    - byzantine-state:/app/runtime
-    - fl-runtime:/app/client-runtime:ro
-    - ./config:/app/config
-    - swarm-session:/app/mission
+      - ${MODEL_DIR:-./models}:/app/models:ro
+      - experiments:/app/experiments
+      - logs:/app/logs
+      - fl-results:/app/results:ro
+      - byzantine-state:/app/runtime
+      - fl-runtime:/app/client-runtime:ro
+      - ./config:/app/config
     environment:
-    - PYTHONPATH=/app
-    - MODE=simulation
-    - AJ_SDN_MODE=mock
-    - DATABASE_PATH=/app/mission/decisions.db
-    - SDN_HOST=mock-sdn
-    - AJ_READINESS_HISTORY_LIMIT=${AJ_READINESS_HISTORY_LIMIT:-100}
-    - AJ_SECRET_KEY=${AJ_SECRET_KEY:-antijam-development-secret-do-not-use-in-production}
-    - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
-    - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:-antijam2026}
-    - AJ_CORS_ORIGINS=${AJ_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
-    - FLARE_SWARM_ENABLED=1
-    - FLARE_FLEET_REGISTRY=/app/mission/fleet_registry.yaml
-    - FLARE_SIMULATION_URL=http://mock-sdn:8080
-    - FLARE_FL_POOL_PLAN=/app/mission/pool.json
-    - FLARE_CLIENT_STATE_DIR=/app/mission/client_state
-    - FLARE_PERSONALIZED_DIR=/app/mission/personalized
-    - FLARE_FL_CANDIDATE=/app/mission/fl_candidate.pth
-    - FLARE_FL_METRICS_JSON=/app/mission/fl_metrics.json
-    - FLARE_FL_METRICS_CSV=/app/mission/fl_metrics.csv
-    - FLARE_FL_TRUST_STATE=/app/mission/trust.json
-    - FLARE_CLIENT_MANAGER_STATUS=/app/mission/fl_clients.json
-    - FLARE_BYZANTINE_STATE_PATH=/app/mission/byzantine.json
-    - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
+      - PYTHONPATH=/app
+      - MODE=simulation
+      - AJ_SDN_MODE=mock
+      - SDN_HOST=mock-sdn
+      - AJ_READINESS_HISTORY_LIMIT=${AJ_READINESS_HISTORY_LIMIT:-100}
+      - AJ_SECRET_KEY=${AJ_SECRET_KEY:-antijam-development-secret-do-not-use-in-production}
+      - AJ_ADMIN_USERNAME=${AJ_ADMIN_USERNAME:-admin}
+      - AJ_ADMIN_PASSWORD=${AJ_ADMIN_PASSWORD:-antijam2026}
+      - AJ_CORS_ORIGINS=${AJ_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+      - FLARE_BYZANTINE_STATE_PATH=/app/runtime/byzantine_state.json
+      - FLARE_CLIENT_MANAGER_STATUS=/app/client-runtime/fl_clients.json
     healthcheck:
-      test:
-      - CMD
-      - curl
-      - -f
-      - http://localhost:8000/health
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 10s
       timeout: 5s
       retries: 3
       start_period: 20s
     command: uvicorn api.server:app --host 0.0.0.0 --port 8000
-    depends_on:
-      swarm-init:
-        condition: service_completed_successfully
-      mock-sdn:
-        condition: service_healthy
+
+  # ── Orchestrator ──────────────────────────────────────────────────────────
   orchestrator:
     build:
       context: .
       dockerfile: docker/Dockerfile.api
     container_name: flare-orchestrator
-    networks:
-    - antijam-net
+    networks: [antijam-net]
     volumes:
-    - ${MODEL_DIR:-./models}:/app/models:ro
-    - experiments:/app/experiments
-    - logs:/app/logs
-    - ./config:/app/config:ro
-    - swarm-session:/app/mission
+      - ${MODEL_DIR:-./models}:/app/models:ro
+      - experiments:/app/experiments
+      - logs:/app/logs
+      - ./config:/app/config:ro
     environment:
-    - PYTHONPATH=/app
-    - MODE=simulation
-    - AJ_SDN_MODE=mock
-    - DATABASE_PATH=/app/mission/decisions.db
-    - SDN_HOST=mock-sdn
-    - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
-    - FLARE_SWARM_ENABLED=1
-    - FLARE_FLEET_REGISTRY=/app/mission/fleet_registry.yaml
-    - FLARE_SIMULATION_URL=http://mock-sdn:8080
-    - FLARE_FL_POOL_PLAN=/app/mission/pool.json
-    - FLARE_CLIENT_STATE_DIR=/app/mission/client_state
-    - FLARE_PERSONALIZED_DIR=/app/mission/personalized
-    - FLARE_FL_CANDIDATE=/app/mission/fl_candidate.pth
-    - FLARE_FL_METRICS_JSON=/app/mission/fl_metrics.json
-    - FLARE_FL_METRICS_CSV=/app/mission/fl_metrics.csv
-    - FLARE_FL_TRUST_STATE=/app/mission/trust.json
-    - FLARE_CLIENT_MANAGER_STATUS=/app/mission/fl_clients.json
-    - FLARE_BYZANTINE_STATE_PATH=/app/mission/byzantine.json
+      - PYTHONPATH=/app
+      - MODE=simulation
+      - AJ_SDN_MODE=mock
+      - SDN_HOST=mock-sdn
+      - AJ_SDN_TOKEN=${AJ_SDN_TOKEN:-antijam-development-sdn-token}
     depends_on:
       mock-sdn:
         condition: service_healthy
-      swarm-init:
-        condition: service_completed_successfully
     command: python -m orchestrator.loop
+
+  # ── Frontend ──────────────────────────────────────────────────────────────
   frontend:
     build:
       context: .
@@ -233,27 +149,18 @@ services:
       args:
         VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     container_name: flare-frontend
-    networks:
-    - antijam-net
+    networks: [antijam-net]
     ports:
-    - ${FRONTEND_PORT:-5173}:80
+      - "${FRONTEND_PORT:-5173}:80"
     depends_on:
       api:
         condition: service_healthy
+
+  # ── Redis (optional pub/sub) ───────────────────────────────────────────────
   redis:
     image: redis:7-alpine
     container_name: redis
-    networks:
-    - antijam-net
+    networks: [antijam-net]
     ports:
-    - 6379:6379
-    profiles:
-    - redis
-  swarm-init:
-    build:
-      context: .
-      dockerfile: docker/Dockerfile.simulation
-    volumes:
-    - swarm-session:/app/mission
-    - ./config:/app/config:ro
-    command: python -m simulation.swarm.session --destination /app/mission/fleet_registry.yaml
+      - "6379:6379"
+    profiles: ["redis"]   # only starts if --profile redis is passed

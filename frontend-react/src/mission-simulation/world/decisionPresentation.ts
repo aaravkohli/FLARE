@@ -1,8 +1,8 @@
 import type { MissionSimulationState } from '../types.ts';
-export type DecisionPhase = 'awaiting-evidence' | 'nominal' | 'scenario-active' | 'threat-reported' | 'rerouting' | 'request-not-installed' | 'apply-failed' | 'hold' | 'containment' | 'recovery' | 'degraded';
+export type DecisionPhase = 'awaiting-evidence' | 'nominal' | 'scenario-active' | 'threat-reported' | 'rerouting' | 'apply-failed' | 'hold' | 'containment' | 'recovery' | 'degraded';
 export const PHASE_LABELS: Record<DecisionPhase,string> = {
   'awaiting-evidence':'Awaiting evidence', degraded:'Link degraded', nominal:'Nominal', 'scenario-active':'Scenario active',
-  'threat-reported':'Threat reported', rerouting:'Route change requested', 'request-not-installed':'Requested route not installed', 'apply-failed':'SDN update failed',
+  'threat-reported':'Threat reported', rerouting:'Route change requested', 'apply-failed':'SDN update failed',
   hold:'Forwarding suspended', containment:'Containment active', recovery:'Forwarding recovered',
 };
 export interface DecisionEventItem { id:string;at:number;label:string;tone:'quiet'|'info'|'warning'|'success' }
@@ -24,8 +24,8 @@ export function decisionPhase(s:MissionSimulationState, prior:MissionSimulationS
   if(s.droneId!==selectedId||!decisionEventKey(s))return 'awaiting-evidence';
   if(s.installedRoute==='hold')return 'hold';
   if(s.sdnError)return 'apply-failed';
-  if(s.requestedRoute && s.requestedRoute!==s.installedRoute)return 'request-not-installed';
-  if(s.networkAction==='hold')return 'request-not-installed';
+  if(s.requestedRoute && s.requestedRoute!==s.installedRoute)return 'rerouting';
+  if(s.networkAction==='hold')return 'rerouting';
   if(s.containmentMode&&s.containmentMode!=='normal')return 'containment';
   if(hasReportedThreat(s))return 'threat-reported';
   if(s.activeAttack!=='none')return 'scenario-active';

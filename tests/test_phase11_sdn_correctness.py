@@ -137,27 +137,6 @@ def test_orchestrator_rejects_an_inconsistent_controller_response():
         asyncio.run(orchestrator._push_to_sdn(FakeClient(), "mesh", "drone_1"))
 
 
-@pytest.mark.parametrize("status", ["uncertain", None])
-def test_orchestrator_does_not_treat_unacknowledged_route_as_installed(status):
-    class FakeResponse:
-        def raise_for_status(self):
-            return None
-
-        def json(self):
-            return {
-                "status": status,
-                "installed_path": "satellite",
-                "installed_action_id": 1,
-            }
-
-    class FakeClient:
-        async def post(self, _url, *, json, headers, timeout):
-            return FakeResponse()
-
-    with pytest.raises(RuntimeError, match="not acknowledged"):
-        asyncio.run(orchestrator._push_to_sdn(FakeClient(), "satellite", "drone_1"))
-
-
 def test_mock_controller_rejects_a_mismatched_path_and_action():
     client = TestClient(mock_sdn.app)
     response = client.post(

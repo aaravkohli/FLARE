@@ -9,10 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test": "node --experimental-strip-types --test src/mission-simulation/world/*.test.ts",
-    "test:browser": "playwright test",
-    "profile:swarm": "node e2e/profile-swarm.mjs",
-    "validate:swarm": "npm run test:browser && npm run profile:swarm"
+    "test": "node --experimental-strip-types --test src/mission-simulation/world/*.test.ts"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
@@ -23,7 +20,6 @@
     "three": "^0.186.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
     "@types/node": "^24.13.2",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",

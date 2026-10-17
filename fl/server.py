@@ -29,7 +29,6 @@ References:
 
 import argparse
 import csv
-from copy import deepcopy
 import json
 import logging
 import os
@@ -116,8 +115,8 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
         **kwargs,
     ):
         super().__init__(initial_parameters=initial_parameters, **kwargs)
-        configured_output = checkpoint_output_path or Path(os.getenv("FLARE_FL_CANDIDATE",
-            _PATHS_CFG.get("training_candidate_save", "models/fl_candidate.pth"))
+        configured_output = checkpoint_output_path or Path(
+            _PATHS_CFG.get("training_candidate_save", "models/fl_candidate.pth")
         )
         self._checkpoint_output_path = (
             configured_output
@@ -310,57 +309,6 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
     # Flower: aggregate_fit — main round aggregation
     # -----------------------------------------------------------------------
 
-    def configure_fit(self, server_round, parameters, client_manager):
-        if os.getenv("FLARE_SWARM_ENABLED") != "1": return super().configure_fit(server_round,parameters,client_manager)
-        from fl.mission_transport import request
-        from fleet.registry import active_drone_ids
-        from fl.client_manager import _atomic_json
-        import time
-        heartbeat_at=0
-        while True:
-            state=request("GET","/session")
-            if time.monotonic()-heartbeat_at>2:
-                request('POST','/runtime',{'session_id':state['session_id'],'component':'flower','status':'waiting_for_play' if not state['playing'] else 'selecting_clients','round':server_round})
-                heartbeat_at=time.monotonic()
-            if state["playing"]: break
-            time.sleep(.2)
-        self._mission_session=state["session_id"]
-        quarantined={row['client_id'] for row in self._trust.snapshot() if row['is_quarantined']} if self._trust else set()
-        ids=sorted((set(active_drone_ids())&set(state["eligible_clients"]))-quarantined); size=min(int(os.getenv("FLARE_FL_POOL_SIZE","5")),len(ids))
-        if not ids: raise RuntimeError("No eligible mission Flower clients")
-        offset=((server_round-1)*size)%len(ids)
-        selected=[ids[(offset+i)%len(ids)] for i in range(size)]
-        _atomic_json(Path(os.environ["FLARE_FL_POOL_PLAN"]),{"session_id":self._mission_session,"round":server_round,"clients":selected})
-        from flwr.common import GetPropertiesIns, FitIns
-        deadline=time.monotonic()+60; proxies={}
-        while time.monotonic()<deadline:
-            proxies={}
-            for proxy in list(client_manager.all().values()):
-                try:
-                    properties=proxy.get_properties(GetPropertiesIns({}),timeout=2,group_id=server_round).properties
-                    identity=properties.get("client_id")
-                    if identity in selected and identity not in proxies: proxies[identity]=proxy
-                except Exception: pass
-            if len(proxies)==size: break
-            time.sleep(.2)
-        if len(proxies)!=size: raise RuntimeError("Actual mission client pool did not become ready")
-        current=request("GET","/session")
-        if current["session_id"]!=self._mission_session: return self.configure_fit(server_round,parameters,client_manager)
-        while not current["playing"]:
-            time.sleep(.2); current=request("GET","/session")
-            if current["session_id"]!=self._mission_session: return self.configure_fit(server_round,parameters,client_manager)
-        config=self.on_fit_config_fn(server_round) if self.on_fit_config_fn else {}
-        config["mission_session"]=self._mission_session
-        config["mission_seed"]=state.get('seed',42)
-        self._checkpoint_output_path=Path(os.environ["FLARE_FL_CANDIDATE"]).parent/"training"/self._mission_session/"candidate.pth"
-        from requests import HTTPError
-        try: request('POST','/fl/events',{'kind':'round_dispatched','session_id':self._mission_session,'round':server_round,'participants':selected})
-        except HTTPError as exc:
-            if exc.response is not None and exc.response.status_code in (409,422):
-                return self.configure_fit(server_round,parameters,client_manager)
-            raise
-        return [(proxies[identity],FitIns(parameters,dict(config))) for identity in selected]
-
     def aggregate_fit(
         self,
         server_round: int,
@@ -385,34 +333,6 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
         if not results:
             logger.warning("Round %d: no client results received.", server_round)
             return None, {}
-
-        delivery_failures=[]
-        mission_backup=None
-        if os.getenv("FLARE_SWARM_ENABLED") == "1":
-            from fl.mission_transport import verify, request
-            eligible=[]
-            for proxy,result in results:
-                valid,reason=verify(result,server_round,self._mission_session)
-                if valid: eligible.append((proxy,result))
-                else: delivery_failures.append({"client_id":result.metrics.get("client_id"),"reason":reason})
-            results=eligible
-            current=request("GET","/session")
-            if current["session_id"]!=self._mission_session: return None,{"invalidated_session":1,"failed_deliveries":len(delivery_failures)}
-            request("POST","/fl/events",{"session_id":self._mission_session,"round":server_round,"delivery_failures":delivery_failures,"outcomes":{r["client_id"]:"delivery_failed" for r in delivery_failures}})
-            if not results: return None,{"failed_deliveries":len(delivery_failures)}
-            mission_backup=(deepcopy(self._global_weights),deepcopy(self._trust.__dict__) if self._trust else None,
-                deepcopy(self._drift.__dict__) if self._drift else None,deepcopy(self._metrics.__dict__))
-        def mission_current():
-            if mission_backup is None: return True
-            from fl.mission_transport import request
-            if request('GET','/session')['session_id']==self._mission_session: return True
-            self._global_weights=mission_backup[0]
-            if self._trust:
-                self._trust.__dict__.clear();self._trust.__dict__.update(mission_backup[1]);self._trust._save_state()
-            if self._drift: self._drift.__dict__.clear();self._drift.__dict__.update(mission_backup[2])
-            self._metrics.__dict__.clear();self._metrics.__dict__.update(mission_backup[3])
-            logger.warning('Aggregation invalidated by mission reset; previous weights and trust restored')
-            return False
 
         # Step 1: Extract client data
         client_weights: List[List[np.ndarray]] = []
@@ -594,7 +514,6 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             self._metrics.update_selection(self._selector.summary())
 
         # Step 8: Save model + evaluate
-        if not mission_current(): return None,{'invalidated_session':1}
         model = self._save_model(aggregated, server_round)
         eval_metrics: dict = {}
         if model is not None:
@@ -623,8 +542,6 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             "suspected_malicious_clients": audit.get("suspected_malicious_clients", 0),
             "rejected_updates": audit.get("rejected_updates", len(audit["excluded"])),
         })
-        if not mission_current(): return None,{'invalidated_session':1}
-        if mission_backup is not None: self._metrics.update('mission_session',self._mission_session)
         self._metrics.commit(server_round)
 
         if self._convergence_tracker is not None and eval_metrics.get("threat_f1"):
@@ -639,15 +556,6 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             server_dp_scale,
         )
 
-        if os.getenv("FLARE_SWARM_ENABLED") == "1":
-            from fl.mission_transport import request
-            if not mission_current(): return None,{"invalidated_session":1}
-            trust_by_id={row['client_id']:row for row in self._trust.snapshot()} if self._trust else {}
-            request("POST","/fl/events",{"session_id":self._mission_session,"round":server_round,
-                "outcomes":{row["client_id"]:"QUARANTINED" if trust_by_id.get(row["client_id"],{}).get("is_quarantined") else row.get("action","analyzed") for row in client_security_audits or []},
-                "security_audits":client_security_audits,"failed_deliveries":delivery_failures,
-                "datasets":{r.metrics['client_id']:r.metrics.get('dataset_fingerprint') for _,r in results},
-                "verified_updates":[{'client_id':r.metrics['client_id'],'digest':r.metrics['update_digest'],'size_bytes':r.metrics['wire_size_bytes']} for _,r in results]})
         return ndarrays_to_parameters(aggregated), flower_metrics
 
     def _distillation_validation_loss(self, model) -> float:
@@ -808,7 +716,6 @@ def run_server(
     output_path: Path | None = None,
     server_address: str | None = None,
 ):
-    if os.getenv('FLARE_SWARM_ENABLED')=='1': torch.manual_seed(int(os.getenv('FLARE_TRAINING_SEED','42')))
     model = build_model(_MODEL_CFG)
     initial_weights = [val.cpu().numpy() for val in model.state_dict().values()]
     initial_params = ndarrays_to_parameters(initial_weights)

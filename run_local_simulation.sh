@@ -93,26 +93,6 @@ if [ -f "config/mode.yaml" ]; then
         || sed -i 's/mode: real/mode: simulation/g' config/mode.yaml
 fi
 
-# Every process shares this disposable mission fleet; saved enrollment is unchanged.
-export OMP_NUM_THREADS="${OMP_NUM_THREADS:-1}" MKL_NUM_THREADS="${MKL_NUM_THREADS:-1}"
-export MODE=simulation FLARE_SWARM_ENABLED=1
-export FLARE_FLEET_REGISTRY="${SCRIPT_DIR}/runtime/swarm_session/fleet_registry.yaml"
-export FLARE_SIMULATION_URL="http://127.0.0.1:${SDN_PORT}"
-export FLARE_CLIENT_MANAGER_STATUS="${SCRIPT_DIR}/runtime/swarm_session/fl_clients.json"
-export FLARE_FL_POOL_PLAN="${SCRIPT_DIR}/runtime/swarm_session/pool.json"
-export FLARE_CLIENT_STATE_DIR="${SCRIPT_DIR}/runtime/swarm_session/client_state"
-export FLARE_PERSONALIZED_DIR="${SCRIPT_DIR}/runtime/swarm_session/personalized"
-export FLARE_FL_CANDIDATE="${SCRIPT_DIR}/runtime/swarm_session/fl_candidate.pth"
-export FLARE_FL_METRICS_JSON="${SCRIPT_DIR}/runtime/swarm_session/fl_metrics.json"
-export FLARE_FL_METRICS_CSV="${SCRIPT_DIR}/runtime/swarm_session/fl_metrics.csv"
-export FLARE_FL_TRUST_STATE="${SCRIPT_DIR}/runtime/swarm_session/trust.json"
-export FLARE_BYZANTINE_STATE_PATH="${SCRIPT_DIR}/runtime/swarm_session/byzantine.json"
-export DATABASE_PATH="${SCRIPT_DIR}/runtime/swarm_session/decisions.db"
-export FL_SERVER_ADDRESS="127.0.0.1:${FL_SERVER_PORT}" SDN_HOST=127.0.0.1 SDN_PORT
-export VITE_API_BASE_URL="http://127.0.0.1:${API_PORT}"
-export AJ_CORS_ORIGINS="http://127.0.0.1:${FRONTEND_PORT},http://localhost:${FRONTEND_PORT}"
-venv/bin/python -m simulation.swarm.session --destination "$FLARE_FLEET_REGISTRY" || exit 1
-
 # A prior research attack must never silently carry into a normal demo run.
 # Experiments that deliberately need persisted attack state can opt in with
 # FLARE_PRESERVE_BYZANTINE_STATE=1.
@@ -161,13 +141,20 @@ launch_service() {
     return 1
 }
 
-launch_service "Mock-SDN" "logs/mock_sdn.log" "sdn/mock_sdn.py" "$SDN_PORT" \
-    venv/bin/python sdn/mock_sdn.py || exit 1
 launch_service "FL-Server" "logs/fl_server.log" "fl/server.py" "$FL_SERVER_PORT" \
     venv/bin/python fl/server.py --rounds 20 || exit 1
-launch_service "FL-Client-Manager" "logs/fl_client_manager.log" "fl.client_manager" - \
-    venv/bin/python -m fl.client_manager --server-address "127.0.0.1:${FL_SERVER_PORT}" || exit 1
 
+while IFS= read -r drone_id; do
+    [ -n "$drone_id" ] || continue
+    client_args=(venv/bin/python fl/client.py --client_id "$drone_id" --server_address "127.0.0.1:${FL_SERVER_PORT}")
+    # Preserve the original heterogeneous local-data demonstration for drone_3.
+    [ "$drone_id" = "drone_3" ] && client_args+=(--jammed)
+    launch_service "FL-Client-${drone_id}" "logs/fl_client_${drone_id}.log" "fl/client.py --client_id ${drone_id}" - \
+        "${client_args[@]}" || exit 1
+done < <(venv/bin/python -m fleet.cli list-ids)
+
+launch_service "Mock-SDN" "logs/mock_sdn.log" "sdn/mock_sdn.py" "$SDN_PORT" \
+    venv/bin/python sdn/mock_sdn.py || exit 1
 launch_service "API-Server" "logs/api_server.log" "uvicorn api.server:app" "$API_PORT" \
     venv/bin/python -m uvicorn api.server:app --host "$API_HOST" --port "$API_PORT" || exit 1
 launch_service "Orchestrator-Loop" "logs/orchestrator.log" "orchestrator.loop" - \

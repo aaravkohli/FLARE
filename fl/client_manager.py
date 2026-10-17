@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import logging
 import os
 from pathlib import Path
 import signal
@@ -21,7 +20,6 @@ from fleet.registry import active_drone_ids
 
 BASE = Path(__file__).resolve().parent.parent
 FL_CONFIG = yaml.safe_load((BASE / "config" / "fl_config.yaml").read_text())
-logger = logging.getLogger(__name__)
 
 
 def _atomic_json(path: Path, value: dict) -> None:
@@ -87,28 +85,13 @@ class FleetClientManager:
 
     def reconcile_once(self) -> dict:
         active = set(active_drone_ids())
-        if not self.real and os.getenv("FLARE_SWARM_ENABLED") == "1":
-            selected=sorted(active)[:int(os.getenv("FLARE_FL_POOL_SIZE","5"))]
-            try:
-                plan=json.loads(Path(os.environ["FLARE_FL_POOL_PLAN"]).read_text()); selected=plan["clients"]
-            except (OSError,KeyError,ValueError): pass
-            active.intersection_update(selected)
         for client_id in list(self._processes):
             process = self._processes[client_id]
             if client_id not in active or process.poll() is not None:
                 if process.poll() is None:
                     process.terminate()
-                    try: process.wait(timeout=5)
-                    except subprocess.TimeoutExpired: process.kill(); process.wait(timeout=5)
                 self._processes.pop(client_id, None)
 
-        server_ready=True
-        if os.getenv("FLARE_SWARM_ENABLED")=="1":
-            import socket
-            host,port=self.server_address.rsplit(':',1)
-            try:
-                with socket.create_connection((host,int(port)),timeout=.2): pass
-            except OSError: server_ready=False
         clients: dict[str, dict] = {}
         for client_id in sorted(active):
             dataset = self.dataset_path(client_id)
@@ -120,9 +103,6 @@ class FleetClientManager:
                 }
                 continue
             process = self._processes.get(client_id)
-            if process is None and not server_ready:
-                clients[client_id]={"status":"waiting_for_server","dataset":None,"pid":None}
-                continue
             if process is None:
                 command = self.command_for(client_id)
                 process = self._popen(command, cwd=BASE)
@@ -159,12 +139,7 @@ class FleetClientManager:
 
     def run(self) -> None:
         while not self._stopping:
-            try:
-                self.reconcile_once()
-            except OSError as exc:
-                # A failed status write must not tear down healthy training
-                # clients. Readiness remains stale until a later write succeeds.
-                logger.warning("Client pool reconciliation failed; retrying: %s", exc)
+            self.reconcile_once()
             time.sleep(self.reconcile_interval_s)
 
 

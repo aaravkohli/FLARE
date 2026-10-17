@@ -1,6 +1,3 @@
-import { publishMissionSnapshot, clearMissionSnapshot, getMissionSnapshot, selectMissionTarget, subscribeMission } from './mission-simulation/swarm';
-import SwarmCommandCenter from './mission-simulation/SwarmCommandCenter';
-import type { SwarmSnapshot } from './mission-simulation/swarm';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Activity,
@@ -37,13 +34,6 @@ import type {
   CommunicationRoute,
   MissionTelemetryPayload,
 } from './mission-simulation/types';
-import {
-  initialMissionRouteTransitionState,
-  missionPayloadFromCompletion,
-  parseMissionRouteTransition,
-  reduceMissionRouteTransition,
-} from './mission-simulation/routeTransition';
-import type { MissionRouteTransitionState } from './mission-simulation/routeTransition';
 
 function resolveApiBaseUrl(): string {
   const envUrl = import.meta.env.VITE_API_BASE_URL;
@@ -365,11 +355,6 @@ interface TelemetryPayload extends MissionTelemetryPayload {
   fl_metrics?: any;
 }
 
-interface TelemetrySafetyState {
-  status: 'hold_applied' | 'hold_failed' | null;
-  applied: boolean | null;
-}
-
 export interface ChartDataPoint {
   time: string;
   rssi_direct: number;
@@ -387,10 +372,6 @@ export interface ChartDataPoint {
   reward: number;
 }
 
-function observedMetric(value:unknown,digits=4,suffix=''):string {
-  return typeof value==='number'&&Number.isFinite(value)?`${value.toFixed(digits)}${suffix}`:'Unavailable';
-}
-
 function App() {
   const showLegacyFlControls = import.meta.env.VITE_SHOW_LEGACY_FL_CONTROLS === 'true';
   const showLegacyCommandOverview = import.meta.env.VITE_SHOW_LEGACY_COMMAND_OVERVIEW === 'true';
@@ -398,41 +379,18 @@ function App() {
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
   const [token, setToken] = useState<string | null>(null);
-  const [swarmSnapshot,setSwarmSnapshot]=useState<SwarmSnapshot|null>(null);
-  useEffect(()=>{
-    if(!token){clearMissionSnapshot();setSwarmSnapshot(null);return;}
-    const controller=new AbortController();
-    const poll=()=>{
-      if((getMissionSnapshot()?.timestamp??0)*1000>Date.now()-1500)return;
-      void fetch(`${API_BASE_URL}/mission/simulation`,{headers:{Authorization:`Bearer ${token}`},signal:controller.signal}).then(r=>r.ok?r.json():null).then(data=>{if(data?.schema_version==='mission_snapshot_v1'){publishMissionSnapshot(data);setSwarmSnapshot(previous=>previous??data);}}).catch(()=>{});
-    };
-    poll();const timer=setInterval(poll,1000);
-    return ()=>{controller.abort();clearInterval(timer);};
-  },[token]);
-  useEffect(() => {
-    let session = getMissionSnapshot()?.session_id;
-    return subscribeMission(() => {
-      const next = getMissionSnapshot()?.session_id;
-      if(!next || next === session)return;
-      session = next;
-      setMissionPayloads({});setMissionPayload(null);setHistory([]);setTelemetry({});
-      setActivePath('unknown');setThreatLevel('UNKNOWN');setNoSafeRoute(false);
-      setTelemetrySafetyState(null);setTelemetryUnavailable('Awaiting model inference for this mission session');
-    });
-  },[]);
   const [authError, setAuthError] = useState<string | null>(null);
   const [isAuthenticating, setIsAuthenticating] = useState(false);
 
   // Connection & Active states
   const [wsStatus, setWsStatus] = useState<'connecting' | 'connected' | 'disconnected'>('disconnected');
   const [activeDrone, setActiveDrone] = useState<DroneId>('drone_1');
-  const [activePath, setActivePath] = useState<string>('unknown');
+  const [activePath, setActivePath] = useState<string>('direct');
   const [threatLevel, setThreatLevel] = useState<string>('LOW');
   const [reward, setReward] = useState<number>(0.0);
   const [step, setStep] = useState<number>(0);
   const [noSafeRoute, setNoSafeRoute] = useState<boolean>(false);
   const [telemetryUnavailable, setTelemetryUnavailable] = useState<string | null>(null);
-  const [telemetrySafetyState, setTelemetrySafetyState] = useState<TelemetrySafetyState | null>(null);
   const [systemMode, setSystemMode] = useState<string>('UNKNOWN');
   const [sdnController, setSdnController] = useState<string>('UNKNOWN');
   const [sdnReadiness, setSdnReadiness] = useState<SdnReadinessState | null>(null);
@@ -464,10 +422,7 @@ function App() {
   // Telemetry details
   const [telemetry, setTelemetry] = useState<Record<string, MetricDetail> | null>(null);
   const [missionPayload, setMissionPayload] = useState<TelemetryPayload | null>(null);
-  const [missionReceiptAtMs, setMissionReceiptAtMs] = useState<number | null>(null);
   const [missionPayloads, setMissionPayloads] = useState<Record<DroneId, TelemetryPayload>>({});
-  const [routeTransitions, setRouteTransitions] = useState<MissionRouteTransitionState>(initialMissionRouteTransitionState);
-  const [routeRequestReceiptByDrone, setRouteRequestReceiptByDrone] = useState<Record<DroneId, number>>({});
   const [history, setHistory] = useState<ChartDataPoint[]>([]);
 
   // Control action states
@@ -520,7 +475,6 @@ function App() {
   const reconnectAttemptsRef = useRef(0);
   const shouldReconnectRef = useRef(false);
   const activeDroneRef = useRef(activeDrone);
-  const routeTransitionsRef = useRef<MissionRouteTransitionState>(initialMissionRouteTransitionState);
   const scenarioMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -678,70 +632,20 @@ function App() {
 
     ws.onopen = () => {
       reconnectAttemptsRef.current = 0;
-      const lastMissionCursor = routeTransitionsRef.current.cursor;
-      ws.send(JSON.stringify({ type: 'auth', token,
-        ...(lastMissionCursor > 0 ? { cursor: lastMissionCursor } : {}),
-      }));
+      ws.send(JSON.stringify({ type: 'auth', token }));
       setWsStatus('connected');
       addLog('WebSocket link established. Receiving real-time RF payload.');
     };
 
     ws.onmessage = (event) => {
       try {
-        const received: unknown = JSON.parse(event.data);
-        if(received && typeof received==='object' && 'type' in received && received.type==='mission_snapshot' && 'data' in received){
-          publishMissionSnapshot(received.data as SwarmSnapshot);setSwarmSnapshot(previous=>previous??received.data as SwarmSnapshot); return;
-        }
-        const transition = parseMissionRouteTransition(received);
-        if (transition) {
-          const prior = routeTransitionsRef.current;
-          // Swarm snapshots own the whole fleet. Advance the legacy journal
-          // cursor without rendering the dashboard for every uninspected UAV.
-          if(getMissionSnapshot() && transition.drone_id!==activeDroneRef.current){
-            routeTransitionsRef.current={...prior,cursor:Math.max(prior.cursor,transition.cursor)};
-            return;
-          }
-          const next = reduceMissionRouteTransition(prior, transition);
-          if (next === prior) return;
-          routeTransitionsRef.current = next;
-          setRouteTransitions(next);
-          if (transition.phase === 'requested') {
-            setRouteRequestReceiptByDrone(previous => ({
-              ...previous,
-              [transition.drone_id]: performance.now(),
-            }));
-          } else {
-            const completed = missionPayloadFromCompletion(transition) as TelemetryPayload;
-            setMissionPayloads(previous => ({ ...previous, [transition.drone_id]: completed }));
-            if (transition.drone_id === activeDroneRef.current) {
-              setMissionPayload(completed);
-              setMissionReceiptAtMs(performance.now());
-              setTelemetryUnavailable(null);
-              setTelemetrySafetyState(null);
-              const installed = transition.event.sdn.applied
-                ? transition.event.decision.installed_path : null;
-              setActivePath(installed ?? 'unknown');
-              setThreatLevel(completed.decision.threat_level);
-              setReward(completed.decision.reward);
-              setStep(completed.decision.step);
-              setNoSafeRoute(Boolean(completed.decision.no_safe_route));
-              setTelemetry(Object.fromEntries(completed.metrics.paths.map(path => [path.path_id, path])));
-            }
-          }
-          return;
-        }
-        const payload = received as TelemetryPayload;
+        const payload: TelemetryPayload = JSON.parse(event.data);
 
         if ((payload as any).type === 'telemetry_unavailable') {
           const droneId = String((payload as any).drone_id || 'unknown');
           if (droneId === activeDroneRef.current) {
             setTelemetryUnavailable(String((payload as any).reason || 'Live telemetry unavailable'));
-            const control = (payload as any).control_state;
-            const status = control?.status;
-            setTelemetrySafetyState({
-              status: status === 'hold_applied' || status === 'hold_failed' ? status : null,
-              applied: typeof control?.sdn?.applied === 'boolean' ? control.sdn.applied : null,
-            });
+            setActivePath('hold');
           }
           return;
         }
@@ -760,14 +664,8 @@ function App() {
           // Check if payload matches active drone
           if (met.drone_id === activeDroneRef.current) {
             setTelemetryUnavailable(null);
-            setTelemetrySafetyState(null);
-            setMissionReceiptAtMs(performance.now());
             setMissionPayload(payload);
-            const installedPath = payload.event?.decision && 'installed_path' in payload.event.decision
-              ? payload.event.decision.installed_path
-              : dec.sdn_applied === true ? dec.path_name : null;
-            setActivePath(installedPath && ['direct', 'satellite', 'mesh', 'hold'].includes(installedPath)
-              ? installedPath : 'unknown');
+            setActivePath(dec.path_name);
             setThreatLevel(dec.threat_level);
             setReward(dec.reward);
             setStep(dec.step);
@@ -788,7 +686,9 @@ function App() {
             if (canonicalEvent?.insider_analysis) {
               setInsiderAnalysis(canonicalEvent.insider_analysis);
               setContainmentAnalysis(canonicalEvent.containment ?? null);
-              if(!getMissionSnapshot())setObservedInsiderProfile(canonicalEvent.telemetry?.security_evidence?.simulation_profile ?? null);
+              setObservedInsiderProfile(
+                canonicalEvent.telemetry?.security_evidence?.simulation_profile ?? null
+              );
               setInsiderEventAge(
                 canonicalEvent.timestamp
                   ? Math.max(0, Date.now() / 1000 - canonicalEvent.timestamp)
@@ -1409,8 +1309,6 @@ function App() {
     activeDroneRef.current = drone;
     setActiveDrone(drone);
     setMissionPayload(null);
-    setMissionReceiptAtMs(null);
-    setTelemetrySafetyState(null);
     setHistory([]);
     setInsiderAnalysis(null);
     setContainmentAnalysis(null);
@@ -1475,10 +1373,9 @@ function App() {
   const flSnapshotHasZone = Boolean(flSnapshotTimestamp && /(?:Z|[+-]\d\d:\d\d)$/.test(flSnapshotTimestamp));
   const flSnapshotAge = flSnapshotHasZone && flSnapshotTimestamp
     ? Math.max(0, Math.round((Date.now() - Date.parse(flSnapshotTimestamp)) / 1000)) : null;
-  const participatingClientIds = new Set([...Object.keys(flClientManager?.clients ?? {}), ...latestFlRows.map(row => row.client_id)]);
-  const displayedByzantineStatus: ClientSecurityMetric[] = (flSnapshotMismatch
+  const displayedByzantineStatus: ClientSecurityMetric[] = flSnapshotMismatch
     ? fleetDrones.map(drone => ({ client_id: drone.drone_id, status: 'NO_UPDATE' as const, action: 'PENDING' as const }))
-    : byzantineStatus).filter(row => !getMissionSnapshot() || participatingClientIds.has(row.client_id));
+    : byzantineStatus;
   const activeFlSecurity = displayedByzantineStatus.find(client => client.client_id === activeDrone);
   const trafficDefenseActive = activeInsiderProfile !== 'normal';
   const activeTrafficBaseline = trafficDefenseBaseline?.droneId === activeDrone
@@ -1654,6 +1551,7 @@ function App() {
         fleetDrones={fleetDrones}
         inactiveDrones={managedFleetDrones.filter(drone => !drone.enabled)}
         activeDrone={activeDrone}
+        activePath={activePath}
         threatLevel={threatLevel}
         noSafeRoute={noSafeRoute}
         swarmPayloads={missionPayloads}
@@ -1846,15 +1744,11 @@ function App() {
         >
           <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
           <div>
-            <p className="text-sm font-bold uppercase">Last reported: no safe route available</p>
+            <p className="text-sm font-bold uppercase">No safe route available</p>
             <p className="mt-1 text-xs text-rose-200/80">
               {activePath === 'hold'
-                ? missionPayload?.event?.decision?.installed_path === 'hold' && missionPayload.event.sdn?.applied === true
-                  ? 'The last controller response reported HOLD applied. This does not verify packet-level dropping.'
-                  : 'HOLD was requested; the current event does not confirm installation.'
-                : ['direct', 'satellite', 'mesh'].includes(activePath)
-                  ? `The legacy v2 policy reported the least-risk route (${activePath.toUpperCase()}) in degraded mode; forwarding is not verified here.`
-                  : 'The requested route has no confirmed installation in the current event.'}
+                ? 'Every route exceeds the configured threat threshold. FLARE has installed an explicit fail-closed HOLD rule, so data traffic is blocked until a safe route returns.'
+                : `Every route exceeds the configured threat threshold. The legacy v2 policy is preserving connectivity over the least-risk route (${activePath.toUpperCase()}) in degraded mode.`}
             </p>
           </div>
         </div>
@@ -1873,10 +1767,8 @@ function App() {
           <div role="status" className="flex items-start gap-3 bg-amber-500/[0.06] p-5 text-amber-200">
             <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
-              <p className="text-xs font-semibold">{getMissionSnapshot() ? 'Current mission model evidence unavailable' : <>Live telemetry unavailable — {telemetrySafetyState?.status === 'hold_applied' && telemetrySafetyState.applied === true
-                ? 'controller reported HOLD applied'
-                : telemetrySafetyState?.status === 'hold_failed' ? 'HOLD update failed' : 'HOLD state unconfirmed'}</>}</p>
-              <p className="mt-1 text-[11px] text-amber-200/70">{getMissionSnapshot() ? `${getMissionSnapshot()?.playing ? 'Waiting for current-session inference.' : 'Play the mission to collect packet observations and run inference.'} The swarm panel shows current simulation state and installed rules.` : `${telemetryUnavailable}. Sensor failure is an operational safety condition, not a malicious classification.`}</p>
+              <p className="text-xs font-semibold">Live telemetry unavailable — HOLD requested</p>
+              <p className="mt-1 text-[11px] text-amber-200/70">{telemetryUnavailable}. Sensor failure is an operational safety condition, not a malicious classification.</p>
             </div>
           </div>
         ) : (
@@ -1885,7 +1777,7 @@ function App() {
               <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-gray-500">Telemetry</p>
               <dl className="mt-3 space-y-2 text-xs">
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">Source</dt><dd className="font-mono text-gray-200">{canonicalEvent?.telemetry?.source || 'unavailable'}</dd></div>
-                <div className="flex justify-between gap-3"><dt className="text-gray-500">Snapshot age</dt><dd className="font-mono text-gray-200">{canonicalEvent?.telemetry?.source_age_s != null ? `${canonicalEvent.telemetry.source_age_s.toFixed(2)} s` : 'unreported'}</dd></div>
+                <div className="flex justify-between gap-3"><dt className="text-gray-500">Snapshot age</dt><dd className="font-mono text-gray-200">{canonicalEvent?.telemetry?.source_age_s != null ? `${canonicalEvent.telemetry.source_age_s.toFixed(2)} s` : 'live event clock'}</dd></div>
                 <div className="flex justify-between gap-3"><dt className="text-gray-500">Injected scenario</dt><dd className="font-mono text-amber-300">{canonicalEvent?.telemetry?.ew_status?.active_attack || 'none'}</dd></div>
               </dl>
             </div>
@@ -2005,7 +1897,7 @@ function App() {
             <button
               type="button"
               key={id}
-              onClick={e => {if(getMissionSnapshot())selectMissionTarget(id,e.shiftKey||e.ctrlKey||e.metaKey);selectDrone(id);}}
+              onClick={() => selectDrone(id)}
               aria-pressed={isActive}
               className={`glass-panel relative w-full cursor-pointer overflow-hidden p-5 text-left transition-colors ${
                 isActive 
@@ -2708,11 +2600,7 @@ function App() {
       </section>
 
       {/* LIVE MISSION NETWORK — reuses the parent WebSocket and selected-drone state */}
-      <div className="mission-demo-access">
-        <span>Recorded controlled simulation · single UAV · mock SDN</span>
-        <a href={`${import.meta.env.BASE_URL}mission-demo.html`}>Replay Direct → Satellite response</a>
-      </div>
-      {swarmSnapshot && token ? <SwarmCommandCenter snapshot={swarmSnapshot} api={API_BASE_URL} token={token} onSnapshot={s=>{publishMissionSnapshot(s);setSwarmSnapshot(previous=>previous??s);}} onInspect={id=>{selectDrone(id);if(wsRef.current?.readyState===WebSocket.OPEN)wsRef.current.send(JSON.stringify({type:"inspect",drone_ids:[id]}));}}/> : <LiveMissionSimulation
+      <LiveMissionSimulation
         payload={missionPayload}
         swarmPayloads={missionPayloads}
         activeDrone={activeDrone}
@@ -2725,15 +2613,6 @@ function App() {
         availablePaths={activeAvailablePaths}
         sdnReady={sdnReadiness?.ready}
         sdnController={sdnController}
-        runtimeMode={systemMode}
-        transportStatus={wsStatus}
-        telemetryUnavailable={telemetryUnavailable}
-        telemetrySafetyState={telemetrySafetyState}
-        telemetryReceivedAtMs={missionReceiptAtMs}
-        routeRequest={routeTransitions.pendingByDrone[activeDrone] ?? null}
-        routeCompletion={routeTransitions.completedByDrone[activeDrone] ?? null}
-        routeTransitionHistory={routeTransitions.history}
-        routeRequestReceivedAtMs={routeRequestReceiptByDrone[activeDrone] ?? null}
         trust={containmentAnalysis?.trust_score ?? activeFlSecurity?.trust_score}
         insiderRisk={containmentAnalysis?.insider_risk ?? insiderAnalysis?.risk_score ?? undefined}
         containmentMode={containmentAnalysis?.mode}
@@ -2744,7 +2623,7 @@ function App() {
         onJamDurationChange={setJamDuration}
         onSelectDrone={selectDrone}
         onApplyAttack={injectJamming}
-      />}
+      />
 
       <React.Suspense fallback={<div className="glass-panel mb-6 h-[300px] animate-pulse" aria-label="Loading telemetry charts" />}>
         <TelemetryCharts history={history} />
@@ -3175,27 +3054,27 @@ function App() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Threat Classifier F1</span>
-                      <span className="font-mono text-emerald-400 font-bold">{observedMetric(flMetrics.latest.threat_f1)}</span>
+                      <span className="font-mono text-emerald-400 font-bold">{(flMetrics.latest.threat_f1 ?? 0).toFixed(4)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Cumulative Privacy (ε)</span>
-                      <span className="metric-number font-mono font-bold text-blue-300">{observedMetric(flMetrics.latest.privacy_epsilon)}</span>
+                      <span className="metric-number font-mono font-bold text-blue-300">{(flMetrics.latest.privacy_epsilon ?? 0).toFixed(4)}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-400">Reported compression ratio</span>
-                      <span className="metric-number font-mono font-bold text-slate-200">{observedMetric(flMetrics.latest.compression_ratio,1,'×')}</span>
+                      <span className="text-gray-400">Avg Compression Ratio</span>
+                      <span className="metric-number font-mono font-bold text-slate-200">{(flMetrics.latest.compression_ratio ?? 1.0).toFixed(1)}×</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Mean Client Trust</span>
-                      <span className="metric-number font-mono font-bold text-emerald-400">{observedMetric(flMetrics.latest.mean_trust)}</span>
+                      <span className="metric-number font-mono font-bold text-emerald-400">{(flMetrics.latest.mean_trust ?? 1.0).toFixed(4)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Jain's Selection Fairness</span>
-                      <span className="font-mono text-amber-400 font-bold">{observedMetric(flMetrics.latest.jains_fairness)}</span>
+                      <span className="font-mono text-amber-400 font-bold">{(flMetrics.latest.jains_fairness ?? 1.0).toFixed(4)}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Client Drift Rate</span>
-                      <span className="metric-number font-mono font-bold text-slate-200">{observedMetric(typeof flMetrics.latest.drift_rate==='number'?flMetrics.latest.drift_rate*100:null,1,'%')}</span>
+                      <span className="metric-number font-mono font-bold text-slate-200">{((flMetrics.latest.drift_rate ?? 0) * 100).toFixed(1)}%</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Aggregation Method</span>
@@ -3203,15 +3082,15 @@ function App() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Suspected This Round</span>
-                      <span className="font-mono font-bold text-amber-300">{flMetrics.latest.suspected_malicious_clients ?? 'Unavailable'}</span>
+                      <span className="font-mono font-bold text-amber-300">{flMetrics.latest.suspected_malicious_clients ?? 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Rejected This Round</span>
-                      <span className="font-mono font-bold text-rose-400">{flMetrics.latest.rejected_updates ?? 'Unavailable'}</span>
+                      <span className="font-mono font-bold text-rose-400">{flMetrics.latest.rejected_updates ?? 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Detected Attempts</span>
-                      <span className="font-mono font-bold text-slate-200">{flMetrics.latest.poisoning_attempts_detected ?? 'Unavailable'}</span>
+                      <span className="font-mono font-bold text-slate-200">{flMetrics.latest.poisoning_attempts_detected ?? 0}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Adaptive Clip Bound</span>
@@ -3219,7 +3098,7 @@ function App() {
                     </div>
                     <div className="flex justify-between">
                       <span className="text-gray-400">Sample Claims Capped</span>
-                      <span className="font-mono font-bold text-amber-300">{flMetrics.latest.sample_count_capped_clients ?? 'Unavailable'}</span>
+                      <span className="font-mono font-bold text-amber-300">{flMetrics.latest.sample_count_capped_clients ?? 0}</span>
                     </div>
                   </div>
                 ) : (
@@ -3258,7 +3137,6 @@ function App() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {displayedByzantineStatus.length === 0 && <p className="text-xs text-gray-500">No participating Flower client or current-round update observed. Start the client pool and play the mission. Fleet participation is shown in the inspected UAV details.</p>}
           {displayedByzantineStatus.map((drone) => {
             const isMalicious = drone.status === 'MALICIOUS' || drone.action === 'REJECTED';
             const isSuspicious = drone.status === 'SUSPICIOUS' || drone.action === 'DOWN_WEIGHTED';

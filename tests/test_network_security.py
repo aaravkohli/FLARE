@@ -75,13 +75,6 @@ def test_normal_controller_evidence_remains_normal():
     assert result.status == "NORMAL"
     assert result.detected_classes == ()
 
-def test_empty_simulation_window_does_not_invent_a_dropped_packet():
-    raw=_evidence(reported_tx_packets=0,reported_forwarded_packets=0,controller_rx_packets=0,controller_forwarded_packets=0,controller_dropped_packets=0,control_messages_per_s=0,packet_rate_per_s=0,
-        provenance={'category':'synthetic_simulation','observer_id':'packet_scheduler','independent':False,'collected_at':time.time(),'age_s':0.})
-    raw={k:v for k,v in raw.items() if not k.startswith(('controller_port_','port_')) and k!='drop_counter_semantics'}
-    result=NetworkThreatAnalyzer(_config()).analyze('drone_1',raw,max_path_latency_ms=0,require_independent=False)
-    assert result.drop_score==0 and result.status=='NORMAL'
-
 
 def test_dos_requires_corroborating_signals_and_requests_control_only():
     result = NetworkThreatAnalyzer(_config()).analyze(

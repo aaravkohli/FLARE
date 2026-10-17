@@ -1,4 +1,4 @@
-import { useSyncExternalStore, type ReactNode } from 'react';
+import type { ReactNode } from 'react';
 import {
   AlertTriangle,
   FileText,
@@ -11,7 +11,6 @@ import {
   X,
 } from 'lucide-react';
 import type { MissionTelemetryPayload } from '../mission-simulation/types';
-import { getMissionSnapshot, subscribeMission, getMissionSelection, subscribeSelection, selectMissionTarget } from '../mission-simulation/swarm';
 import './command-overview.css';
 
 type Severity = 'info' | 'warning' | 'critical';
@@ -49,6 +48,7 @@ interface CommandOverviewProps {
   fleetDrones: FleetDrone[];
   inactiveDrones?: FleetDrone[];
   activeDrone: string;
+  activePath: string;
   threatLevel: string;
   noSafeRoute: boolean;
   swarmPayloads: Record<string, MissionTelemetryPayload>;
@@ -68,14 +68,6 @@ const titleCase = (value: string) => value
   .replace(/\b\w/g, character => character.toUpperCase());
 
 const isKnownRoute = (value?: string) => value === 'direct' || value === 'satellite' || value === 'mesh' || value === 'hold';
-
-function reportedInstalledRoute(payload?: MissionTelemetryPayload): string | null {
-  const decision = payload?.event?.decision;
-  const value = decision && 'installed_path' in decision
-    ? decision.installed_path
-    : payload?.decision.sdn_applied === true ? payload.decision.path_name : null;
-  return isKnownRoute(value ?? undefined) ? value! : null;
-}
 
 function formatPdr(value?: number) {
   return typeof value === 'number' ? `${(value * 100).toFixed(1)}% PDR` : 'PDR unavailable';
@@ -100,6 +92,7 @@ export default function CommandOverview({
   fleetDrones,
   inactiveDrones = [],
   activeDrone,
+  activePath,
   threatLevel,
   noSafeRoute,
   swarmPayloads,
@@ -113,14 +106,7 @@ export default function CommandOverview({
   onExportReport,
   onLock,
 }: CommandOverviewProps) {
-  const mission = useSyncExternalStore(subscribeMission, getMissionSnapshot);
-  const selection = useSyncExternalStore(subscribeSelection, getMissionSelection);
-  const inspected = mission ? selection.inspected : activeDrone;
-  const installedRoute = (id: string) => mission
-    ? mission.flows.find(flow => flow.source === id && flow.destination === 'base' && flow.traffic_class === 'telemetry')?.family ?? null
-    : reportedInstalledRoute(swarmPayloads[id]);
-  const activeName = mission?.nodes.find(node => node.id === inspected)?.alias || fleetDrones.find(drone => drone.drone_id === inspected)?.display_name || titleCase(inspected);
-  const activeInstalledRoute = installedRoute(inspected);
+  const activeName = fleetDrones.find(drone => drone.drone_id === activeDrone)?.display_name || titleCase(activeDrone);
   const latestEvent = readinessHistory[0];
   const readinessNotice = !sdnReadiness?.ready
     ? sdnReadiness?.alert?.message || (sdnReadiness
@@ -154,8 +140,8 @@ export default function CommandOverview({
           {wsStatus === 'disconnected' ? <WifiOff aria-hidden="true" /> : <Wifi aria-hidden="true" />}
           <strong>{linkLabel(wsStatus)}</strong>
         </div>
-        <div><span>SDN</span><strong>{mission ? 'Logical simulation' : sdnController} {sdnReadiness?.ready ? 'ready' : sdnReadiness ? 'not ready' : 'checking'}</strong></div>
-        <div><span>{mission ? 'Installed mission route' : 'Last reported route'}</span><strong>{activeInstalledRoute ? titleCase(activeInstalledRoute) : 'Unconfirmed'}</strong></div>
+        <div><span>SDN</span><strong>{sdnController} {sdnReadiness?.ready ? 'ready' : sdnReadiness ? 'not ready' : 'checking'}</strong></div>
+        <div><span>Route</span><strong>{noSafeRoute || activePath === 'hold' ? 'Network hold' : titleCase(activePath)}</strong></div>
         <div className="command-overview__focus"><span>Asset</span><strong>{activeName}</strong></div>
       </div>
 
@@ -190,11 +176,10 @@ export default function CommandOverview({
 
       <div className="command-overview__fleet" aria-label="Swarm drone selection">
         {fleetDrones.map(drone => {
-          const node = mission?.nodes.find(node => node.id === drone.drone_id);
-          const selected = mission ? selection.targets.includes(drone.drone_id) : drone.drone_id === activeDrone;
-          const candidate = swarmPayloads[drone.drone_id];
-          const payload = !mission || candidate?.event?.mission_context?.session_id === mission.session_id ? candidate : undefined;
-          const route = installedRoute(drone.drone_id);
+          const selected = drone.drone_id === activeDrone;
+          const payload = swarmPayloads[drone.drone_id];
+          const installed = payload?.event?.decision?.installed_path || payload?.decision.path_name;
+          const route = isKnownRoute(installed) ? installed : selected && isKnownRoute(activePath) ? activePath : undefined;
           const metric = payload?.metrics.paths.find(path => path.path_id === route);
           const hasAttention = selected && (threatLevel === 'HIGH' || threatLevel === 'MEDIUM' || noSafeRoute);
 
@@ -203,16 +188,16 @@ export default function CommandOverview({
               key={drone.drone_id}
               className={`cvo-drone${selected ? ' cvo-drone--selected' : ''}${hasAttention ? ' cvo-drone--attention' : ''}${!drone.enabled ? ' cvo-drone--disabled' : ''}`}
             >
-              <button type="button" className="cvo-drone__select" onClick={event => { if(mission)selectMissionTarget(drone.drone_id,event.shiftKey || event.ctrlKey || event.metaKey);onSelectDrone(drone.drone_id); }} aria-pressed={selected} aria-label={`Select ${node?.alias || drone.display_name}`}>
+              <button type="button" className="cvo-drone__select" onClick={() => onSelectDrone(drone.drone_id)} aria-pressed={selected} aria-label={`Select ${drone.display_name}`}>
               <div className="cvo-drone__header">
                 <div>
-                  <h3>{node?.alias || drone.display_name}</h3>
-                  <p>{drone.drone_id}<span aria-hidden="true">/</span>{node ? `Radio range ${Math.round(node.range_m)} m` : `SDN port ${drone.access_port}`}</p>
+                  <h3>{drone.display_name}</h3>
+                  <p>{drone.drone_id}<span aria-hidden="true">/</span>SDN port {drone.access_port}</p>
                 </div>
-                {hasAttention && <span className="cvo-drone__alert">{noSafeRoute ? route === 'hold' ? 'HOLD reported' : 'No safe route reported' : `${titleCase(threatLevel)} threat reported`}</span>}
+                {hasAttention && <span className="cvo-drone__alert">{noSafeRoute ? 'Hold' : `${titleCase(threatLevel)} threat`}</span>}
                 {!drone.enabled && <span className="cvo-drone__alert">Disabled</span>}
               </div>
-              <div className="cvo-drone__route">{route ? `${mission ? 'Installed' : 'Last reported'}: ${titleCase(route)}` : 'Installed route unconfirmed'}</div>
+              <div className="cvo-drone__route">{route ? titleCase(route) : 'Route unavailable'}</div>
               <div className="cvo-drone__metrics">
                 <span>{formatPdr(metric?.pdr)}</span>
                 <span>{formatLatency(metric?.latency)}</span>

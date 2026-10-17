@@ -4,11 +4,9 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu && \
     pip install --no-cache-dir flwr numpy scipy pyyaml pandas jsonschema \
-    scikit-learn opacus requests
+    scikit-learn opacus
 
 COPY fl/ fl/
-COPY simulation/ simulation/
-COPY provenance/ provenance/
 COPY fleet/ fleet/
 COPY config/ config/
 COPY schemas/ schemas/
