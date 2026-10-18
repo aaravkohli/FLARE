@@ -8,7 +8,7 @@ function record(control:string,path:string,effect:unknown,evidence='authenticate
 async function setup(page:Page,request:APIRequestContext){
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
- const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible({timeout:30000});
+ const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible({timeout:30000});await center.locator('.network-timeline > summary').click();await center.locator('.mission-setup > summary').click();await center.getByRole('tab',{name:'Commands',exact:true}).click();
  const auth=await request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>{const r=await request.get(sim,{headers});expect(r.ok()).toBeTruthy();return r.json();};
  const metrics=async()=>{const r=await request.get(api+'/swarm/metrics',{headers});expect(r.ok()).toBeTruthy();return r.json();};
@@ -21,7 +21,7 @@ test('frontend topology / size / formation / speed / preset matrix',async({page,
  test.setTimeout(180000);const {center,state,reset,errors}=await setup(page,request);await reset();
  for(const count of [10,20,30,50,75,100]){
   await center.getByLabel('Fleet size').selectOption(String(count));await expect.poll(async()=>(await state()).nodes.length).toBe(count);
-  for(const topology of ['full_mesh','partial_mesh','star','ring','tree','cluster_mesh','hybrid_mesh','chain','grid','manet']){
+  for(const topology of ['full_mesh','partial_mesh','star','ring','tree','cluster_mesh','grid','random_geometric','hybrid_mesh','self_healing_mesh']){
    await center.getByLabel('Topology',{exact:true}).selectOption(topology);await expect.poll(async()=>(await state()).topology).toBe(topology);
    const s=await state();expect(s.nodes.length).toBe(count);expect(s.links.every((l:any)=>[l.a,l.b].every(n=>n==='base'||s.nodes.some((d:any)=>d.id===n)))).toBeTruthy();record(`${count} UAV / ${topology}`,'PATCH /config',{count,topology,links:s.links.length,revision:s.revision});
   }
@@ -29,7 +29,7 @@ test('frontend topology / size / formation / speed / preset matrix',async({page,
  for(const formation of ['grid','v','line','circle','diamond','wedge','column','distributed','cluster']){
   const before=await state();await center.getByLabel('Formation',{exact:true}).selectOption(formation);await expect.poll(async()=>(await state()).formation).toBe(formation);const after=await state();expect(after.nodes.map((n:any)=>n.position)).toEqual(before.nodes.map((n:any)=>n.position));record(formation,'PATCH /config',{formation,positions_preserved:true});
  }
- for(const speed of [.25,.5,1,2,4]){await center.getByLabel('Speed',{exact:true}).selectOption(String(speed));await expect.poll(async()=>(await state()).speed).toBe(speed);record(`${speed}×`,'PATCH /config',{speed});}
+ for(const speed of [.1,.25,.5,1,2,4]){await center.getByLabel('Speed',{exact:true}).selectOption(String(speed));await expect.poll(async()=>(await state()).speed).toBe(speed);record(`${speed}×`,'PATCH /config',{speed});}
  for(const scenario of ['normal','large_manet','jamming','poisoning','failures','controller_loss','rerouting']){await center.getByLabel('Scenario',{exact:true}).selectOption(scenario);await expect.poll(async()=>(await state()).scenario).toBe(scenario);record(scenario,'POST /scenarios/'+scenario,{scenario,playing:(await state()).playing});}
  expect(errors).toEqual([]);
 });
@@ -80,9 +80,9 @@ test('every restored attack is injectable, observed and clearable from presentat
    const id=relays.sort((a:string,b:string)=>relays.filter((n:string)=>n===b).length-relays.filter((n:string)=>n===a).length)[0],node=s.nodes.find((n:any)=>n.id===id);
    await fleetButton(center,node.alias.slice(-3)).click();
   }
-  await center.getByLabel('Condition group').selectOption(group);await center.getByLabel('Attack profile').selectOption(profile);await center.getByLabel('Attack duration').fill('30');
-  if(group==='ew'&&['spot','smart','reactive','adaptive','fhss','spoofing','replay','dos'].includes(profile)){await center.getByLabel('Attack mesh route').uncheck();await center.getByLabel('Attack satellite route').check();}
-  const before=await state();const response=page.waitForResponse(r=>r.url()===sim+'/attacks'&&r.request().method()==='POST');await center.getByRole('button',{name:'Apply condition to 1 UAV',exact:true}).click();const injected=await (await response).json();expect(injected.attack_id).toBeTruthy();
+  await center.getByLabel('Condition group').selectOption(group);await center.getByLabel('Attack profile').selectOption(profile);if(!['none','normal'].includes(profile))await center.getByLabel('Attack duration',{exact:true}).fill('30');
+  if(group==='ew'&&['spot','smart','reactive','adaptive','fhss','spoofing','replay','dos'].includes(profile)){await center.getByLabel('Communication target',{exact:true}).selectOption('satellite');}
+  const before=await state();const response=page.waitForResponse(r=>r.url()===sim+'/attacks'&&r.request().method()==='POST');await center.getByTestId('attack-apply').click();const injected=await (await response).json();expect(injected.attack_id).toBeTruthy();
   if(['none','normal'].includes(profile)){expect((await state()).attacks.active.length).toBe(0);record(`${group}/${profile}`,'POST /attacks',{cleared:true});continue;}
   const id=injected.affected_targets[0];
   await expect.poll(async()=>(await state()).attacks.active.map((a:any)=>a.profile)).toContain(profile);
@@ -111,7 +111,7 @@ test('every restored attack is injectable, observed and clearable from presentat
  }
  if((await state()).playing)await center.getByRole('button',{name:'Pause mission',exact:true}).click();
  await center.getByLabel('Condition group').selectOption('ew');await center.getByLabel('Attack profile').selectOption('spot');
- await center.getByRole('button',{name:'Apply condition to 1 UAV',exact:true}).click();await expect(center.getByRole('button',{name:'Clear spot condition',exact:true})).toBeVisible();
+ await center.getByTestId('attack-apply').click();await expect(center.getByRole('button',{name:'Clear spot condition',exact:true})).toBeVisible();
  await center.screenshot({path:`${dir}/attack-lab-presentation.png`});expect(errors).toEqual([]);
 });
 
@@ -119,10 +119,10 @@ test('selection, validation, paused queue, partial failure and conflict retain i
  const {center,state,headers,reset,errors}=await setup(page,request);await reset();
  const overview=page.getByTestId('command-overview');await overview.getByRole('button',{name:'Select UAV-001',exact:true}).click();await overview.getByRole('button',{name:'Select UAV-002',exact:true}).click({modifiers:['Shift']});
  await expect(center.getByText('2 selected',{exact:true})).toBeVisible();await expect(overview).toContainText('Logical simulation');await expect(overview).toContainText('Installed: Mesh');
- await center.getByLabel('Mission assets and network').getByRole('button',{name:'Ground control',exact:true}).click();await expect(center.getByText('2 selected',{exact:true})).toBeVisible();
- await center.getByRole('button',{name:'2D fallback',exact:true}).click();
+ await center.getByRole('button',{name:'Ground control',exact:true}).click();await expect(center.getByText('2 selected',{exact:true})).toBeVisible();
+ await expect(center.getByRole('img',{name:'Authoritative 2D mission network'})).toBeVisible();
  await center.getByRole('button',{name:'Clear',exact:true}).click();
- await center.getByRole('button',{name:'2D UAV-001',exact:true}).focus();await page.keyboard.press('Enter');await center.getByRole('button',{name:'2D UAV-002',exact:true}).focus();await page.keyboard.press('Shift+Enter');
+ await fleetButton(center,'001').focus();await page.keyboard.press('Enter');await fleetButton(center,'002').focus();await page.keyboard.press('Shift+Enter');
  await expect(center.getByRole('button',{name:'Send to 2 UAVs'})).toBeEnabled();await center.getByRole('button',{name:'Ground control',exact:true}).click();await expect(center.getByText('2 selected',{exact:true})).toBeVisible();
  await center.getByLabel('Command',{exact:true}).selectOption('altitude');await center.getByLabel('Command altitude').fill('301');await center.getByRole('button',{name:'Send to 2 UAVs'}).click();await expect(center.getByRole('alert')).toContainText('35–300');expect((await state()).commands.length).toBe(0);
  await center.getByLabel('Command altitude').fill('120');
@@ -156,11 +156,11 @@ test('absent FL measurements stay unavailable and measured zero stays zero (cont
  let measured=false;
  await page.route('**/fl/metrics',route=>route.fulfill({json:{session_id:session,last_round:1,latest:{round:1,...(measured?{threat_f1:0}:{})},history:[]}}));
  const reload=async()=>{await page.reload();await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();};
- await reload();const metrics=page.getByRole('heading',{name:'FL Live Metrics Console',exact:true}).locator('..');
- await expect(metrics.getByText('Threat Classifier F1', {exact:true}).locator('..')).toContainText('Unavailable');
- await expect(metrics.getByText('Reported compression ratio',{exact:true}).locator('..')).toContainText('Unavailable');
- measured=true;await reload();await expect(metrics.getByText('Threat Classifier F1',{exact:true}).locator('..')).toContainText('0.0000');
- await expect(metrics.getByText('Cumulative Privacy (ε)',{exact:true}).locator('..')).toContainText('Unavailable');
+ await reload();const metrics=page.getByRole('complementary',{name:'Live federated learning evidence',exact:true});
+ await expect(metrics.getByText('Threat classifier F1', {exact:true}).locator('..')).toContainText('—');
+ await expect(metrics.getByText('Compression ratio',{exact:true}).locator('..')).toContainText('—');
+ measured=true;await reload();await expect(metrics.getByText('Threat classifier F1',{exact:true}).locator('..')).toContainText('0.0000');
+ await expect(metrics.getByText('Adaptive clip bound',{exact:true}).locator('..')).toContainText('—');
  record('unavailable FL metrics','GET /fl/metrics',{missing:'Unavailable',measured_zero:'0.0000',fixture:true},'mock_frontend_contract');
  expect(errors).toEqual([]);
 });

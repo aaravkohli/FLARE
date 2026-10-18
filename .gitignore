@@ -204,6 +204,7 @@ docs/
 *.md
 !README.md
 !**/README.md
+!SWARM_NETWORK.md
 
 # =============================================================================
 # Images, Screenshots & UI Validation Artifacts
@@ -221,3 +222,7 @@ frontend-react/artifacts/live-mission-upgrade/
 frontend-react/artifacts/swarm-repair-*/
 **/screenshots/
 
+
+# Audited, reproducible mesh reference benchmark
+!results/mesh_topology_benchmark_v2.json
+!results/mesh_topology_benchmark_v2.csv

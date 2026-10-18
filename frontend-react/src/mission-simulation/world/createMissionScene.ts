@@ -1,4 +1,5 @@
-import type { SwarmSnapshot } from '../swarm';
+import type { NetworkDisplay, SwarmSnapshot } from '../swarm';
+import { samplePacketEvents } from './networkPlayback';
 import { createThreatLayer } from './ThreatLayer';
 import { threatVisual, threatPacketProgress } from './threatState';
 import { routeCurve, curvePoint } from './networkGeometry';
@@ -525,10 +526,16 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
   swarmGeometry.setAttribute('color',new THREE.BufferAttribute(swarmColors,3));
   const swarmLines=new THREE.LineSegments(swarmGeometry,mat(new THREE.LineBasicMaterial({vertexColors:true,transparent:true,opacity:.6})));
   swarmLines.frustumCulled=false; scene.add(swarmLines);
+  const inspectedRouteMaterial=mat(new LineMaterial({color:'#9ce1c1',linewidth:2.5,transparent:true,opacity:.95,depthTest:false}));
+  const inspectedRoute=new Line2(geo(new LineGeometry()),inspectedRouteMaterial);inspectedRoute.frustumCulled=false;inspectedRoute.renderOrder=4;scene.add(inspectedRoute);
   const swarmPackets=new THREE.InstancedMesh(packetGeometry,packetMaterial,200);
   const virtualStart={x:0,y:0,z:0},virtualEnd={x:0,y:0,z:0};
   swarmPackets.frustumCulled=false; scene.add(swarmPackets);
-  function draw(drones: readonly DroneMotion[], selectedId: string, orbit: Vector3, rig: CameraRig, state: MissionSimulationState, seconds: number, reduced = false, hoveredId?: string, showAlternatives = false, evidenceCurrent = true, mission?: SwarmSnapshot, selectedIds: string[] = []) {
+  const rangeSphere=new THREE.LineSegments(geo(new THREE.EdgesGeometry(new THREE.SphereGeometry(1,24,12))),mat(new THREE.LineBasicMaterial({color:'#91d4c4',transparent:true,opacity:.12})));
+  rangeSphere.visible=false;scene.add(rangeSphere);
+  const interferenceMaterial=mat(new THREE.LineBasicMaterial({color:'#ddb078',transparent:true,opacity:.18}));
+  const interferenceRegions=Array.from({length:8},()=>{const mesh=new THREE.LineSegments(rangeSphere.geometry,interferenceMaterial);mesh.visible=false;scene.add(mesh);return mesh;});
+  function draw(drones: readonly DroneMotion[], selectedId: string, orbit: Vector3, rig: CameraRig, state: MissionSimulationState, seconds: number, reduced = false, hoveredId?: string, showAlternatives = false, evidenceCurrent = true, mission?: SwarmSnapshot, selectedIds: string[] = [], display?: NetworkDisplay) {
     const ids = new Set(drones.map(d => d.id));
     for (const [id, entity] of fleet) if (!ids.has(id)) { scene.remove(entity.group, entity.stem, entity.shadow); entity.stem.geometry.dispose(); entity.blades.dispose(); entity.rotors.dispose(); fleet.delete(id); }
     for (const drone of drones) {
@@ -708,7 +715,12 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
     const aspect = width / height; camera.aspect=aspect; camera.updateProjectionMatrix();
     camera.position.copy(cameraEye(rig,aspect)); camera.lookAt(rig.target.x,rig.target.y,rig.target.z);
     sky.position.copy(camera.position);
-    swarmLines.visible=!!mission; swarmPackets.visible=!!mission;
+    const rangeNode=mission?.nodes.find(n=>n.id===selectedId);
+    rangeSphere.visible=!!display?.ranges&&!!rangeNode;
+    if(rangeNode){rangeSphere.position.set(...rangeNode.position as [number,number,number]);rangeSphere.scale.setScalar(rangeNode.range_m);}
+    for(const [index,mesh] of interferenceRegions.entries()){const region=mission?.interference_regions?.[index];mesh.visible=!!region;if(region){mesh.position.set(...region.position as [number,number,number]);mesh.scale.setScalar(region.radius_m);}}
+    canvas.dataset.interferenceRegionCount=String(mission?.interference_regions?.length??0);
+    swarmLines.visible=!!mission; swarmPackets.visible=!!mission;inspectedRoute.visible=false;
     for(const part of swarmParts){part.visible=!!mission;part.count=0;}
     if(mission){
       const nodes=new Map(mission.nodes.map(n=>[n.id,n]));
@@ -736,12 +748,15 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
       const positions=new Map(drones.map(d=>[d.id,d.position]));
       positions.set('base',{x:mission.base_position[0],y:mission.base_position[1],z:mission.base_position[2]});
       const installed=mission.flows.find(f=>f.source===selectedId&&f.destination==='base'&&f.traffic_class==='telemetry');
-      const chosen=installed?.family==='satellite'?[]:installed?.hops||[];
+      const chosen=display?.hops.length?display.hops:installed?.family==='satellite'?[]:installed?.hops||[];
       const routeEdges=new Set(chosen.slice(1).map((b,i)=>[chosen[i],b].sort().join(':')));
+      const routePoints=chosen.flatMap(id=>{const p=positions.get(id);return p?[p.x,p.y,p.z]:[];});
+      if(routePoints.length>=6&&routePoints.length===chosen.length*3){inspectedRoute.geometry.setPositions(routePoints);inspectedRouteMaterial.color.set(display?.candidate?'#b5a1ea':'#9ce1c1');inspectedRouteMaterial.resolution.set(canvas.clientWidth,canvas.clientHeight);inspectedRoute.visible=true;}
       let vertices=0;
       for(const link of mission.links){
+        if(display&&!display.inactive&&!routeEdges.has(link.id)&&link.a!==selectedId&&link.b!==selectedId)continue;
         const a=positions.get(link.a),b=positions.get(link.b); if(!a||!b||vertices>=20000)continue;
-        packetColor.set(link.status==='blocked'?'#c67869':routeEdges.has(link.id)?'#91e1c1':'#527380');
+        packetColor.set(link.status==='blocked'?'#c67869':routeEdges.has(link.id)?display?.candidate?'#b5a1ea':'#91e1c1':['jammed','degraded'].includes(link.status)?'#d8b780':mission.links.length>1000?'#243b46':'#527380');
         for(const p of [a,b]){swarmPositions.set([p.x,p.y,p.z],vertices*3);swarmColors.set([packetColor.r,packetColor.g,packetColor.b],vertices*3);vertices++;}
       }
       // Satellite is a distinct modeled transport; never highlight a radio
@@ -759,18 +774,21 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
       swarmGeometry.setDrawRange(0,vertices);
       swarmGeometry.getAttribute('position').needsUpdate=true;swarmGeometry.getAttribute('color').needsUpdate=true;
       swarmPackets.count=0;
-      for(const packet of mission.packets){
-        if(packet.status!=='in_flight'||swarmPackets.count>=200)continue;
-        const a=positions.get(packet.route[packet.hop]),b=positions.get(packet.route[packet.hop+1]);if(!a||!b)continue;
-        const t=Math.min(1,Math.max(0,(seconds-packet.start_at)/Math.max(.001,packet.end_at-packet.start_at)));
-        if(packet.family==='satellite'){
+      for(const visual of display?.packets===false?[]:samplePacketEvents(mission.packet_events??[],seconds,selectedId,200,display?.replay?.packetId)){
+        const packet=visual.packet;
+        const a=positions.get(visual.from),b=positions.get(visual.to);if(!a||!b)continue;
+        const t=reduced?.5:visual.progress;
+        if(packet.family==='satellite'&&visual.kind==='flight'){
           const from=t<.5?a:orbit,to=t<.5?orbit:b,f=t<.5?t*2:t*2-1;
           packetPose.position.set(from.x+(to.x-from.x)*f,from.y+(to.y-from.y)*f,from.z+(to.z-from.z)*f);
         }else packetPose.position.set(a.x+(b.x-a.x)*t,a.y+(b.y-a.y)*t,a.z+(b.z-a.z)*t);
-        packetPose.quaternion.identity();packetPose.updateMatrix();swarmPackets.setMatrixAt(swarmPackets.count,packetPose.matrix);
-        packetColor.set(packet.category==='fl_update'?'#b9a0d7':packet.category==='command'||packet.category==='ack'?'#eed49d':'#8fd8e3');
+        packetDirection.subVectors(b,a).normalize();
+        packetPose.quaternion.setFromUnitVectors(packetAxis,packetDirection.lengthSq()?packetDirection:packetAxis);
+        packetPose.updateMatrix();swarmPackets.setMatrixAt(swarmPackets.count,packetPose.matrix);
+        packetColor.set(visual.kind==='dropped'?'#e4988a':visual.kind==='retry'?'#e7be79':packet.category==='fl_update'?'#b9a0d7':packet.category==='command'||packet.category==='ack'?'#eed49d':'#8fd8e3');
         swarmPackets.setColorAt(swarmPackets.count++,packetColor);
       }
+      canvas.dataset.packetCount=String(swarmPackets.count);
       swarmPackets.instanceMatrix.needsUpdate=true;if(swarmPackets.instanceColor)swarmPackets.instanceColor.needsUpdate=true;
     }
     renderer.render(scene,camera);

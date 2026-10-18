@@ -34,3 +34,12 @@ test('uncertain command submission recovers by command ID and never repeats POST
  globalThis.fetch=async(url,options)=>{calls.push(`${options?.method??'GET'} ${url}`);if(options?.method)throw new TypeError('Connection interrupted');return new Response(JSON.stringify(String(url).endsWith('/commands/stable-id')?{command_id:'stable-id',outcomes:{one:{status:'queued'}}}:state('uncertain')));};
  try{const client=new MissionClient('http://test','token',publishMissionSnapshot);const result=await client.mutate('/commands',{session_id:'uncertain',command_id:'stable-id'});assert.equal(result.command_id,'stable-id');assert.equal(calls.filter(c=>c.startsWith('POST')).length,1);}finally{globalThis.fetch=original;}
 });
+
+test('an uncertain attack is never automatically retried or reported as confirmed',async()=>{
+ clearMissionSnapshot();publishMissionSnapshot(state('attack-uncertain'));const original=globalThis.fetch;let posts=0;
+ globalThis.fetch=async(_url,options)=>{if(options?.method==='POST')posts++;throw new TypeError('Connection interrupted');};
+ try{const client=new MissionClient('http://test','token',publishMissionSnapshot);
+  await assert.rejects(client.mutate('/attacks',{session_id:'attack-uncertain',attack_id:'once',profile:'spot',targets:['one'],paths:['direct'],duration_s:15}),/could not be confirmed/);
+  assert.equal(posts,1);
+ }finally{globalThis.fetch=original;}
+});

@@ -73,7 +73,7 @@ class AttackConditions:
             removed = set(a['affected_targets']) & set(targets or a['affected_targets'])
             if not removed: continue
             a['affected_targets'] = [n for n in a['affected_targets'] if n not in removed]
-            if a['group']=='fl':
+            if a['group']=='fl' and not e.isolated:
                 from simulation.byzantine_state import set_attack_mode
                 for n in removed: set_attack_mode(n, 'normal')
             e.event('SECURITY', 'attack_cleared', dict(attack_id=key, targets=sorted(removed), reason=reason))
@@ -136,7 +136,9 @@ class AttackConditions:
 
     def generate(self, dt):
         """Budgeted source traffic still consumes scheduler capacity and bandwidth."""
-        e=self.engine; budget=math.ceil(3000*dt)
+        e=self.engine
+        if e.seconds>=e.cfg.get('traffic_stop_s',float('inf')): return
+        budget=math.ceil(3000*dt)
         jobs=[(a,n) for a in self.active.values() if a['profile'] in ('dos','control_flood','replay')
               for n in a['affected_targets'] if n in e.nodes and e.nodes[n].available]
         # Rotate priority so a large target set cannot starve its final identities.
@@ -158,7 +160,7 @@ class AttackConditions:
         self.last_sequences[identity]=next_value; return next_value
 
     def relay_drop(self, packet, identity):
-        return packet.hop>0 and packet.category not in self.engine.control_traffic and self.has(identity,'selective_forwarding') and self.rng.random()<.8
+        return packet.hop>0 and packet.category not in self.engine.control_traffic and self.has(identity,'selective_forwarding') and self.engine.scheduler.draw(packet,('relay',identity),'malicious_drop')<.8
 
     def report(self, identity, evidence, paths):
         """Compromised source claims are separate from scheduler observations."""

@@ -5,14 +5,18 @@ import os
 from pathlib import Path
 import time
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.mission import MissionConfig, MissionControl, MissionCommand, FLTransfer, RoutePolicy, MissionAttack, ClearMissionAttacks
+from schemas.mission import MissionConfig, MissionControl, MissionCommand, FLTransfer, RoutePolicy, MissionAttack, ClearMissionAttacks, MissionProbe, ExperimentRequest, ExperimentControl
 from simulation.swarm.engine import SwarmEngine, RevisionConflict, SCENARIOS
 from sdn.enforcement import SimulationSDNAdapter
 from fleet.registry import list_drones
+from simulation.swarm.topology import topology_metadata
+from simulation.swarm.experiments import ExperimentManager
+from fastapi.responses import Response, FileResponse
 
 
 def attach_simulation(app, authenticate):
     app.state.swarm = None
+    app.state.experiments = None
     @asynccontextmanager
     async def lifespan(application):
         task = None
@@ -21,6 +25,7 @@ def attach_simulation(app, authenticate):
             if registry.resolve() == Path('config/fleet_registry.yaml').resolve():
                 raise RuntimeError('swarm requires a separate mission registry')
             application.state.swarm = SwarmEngine(list_drones(), registry_path=registry)
+            application.state.experiments = ExperimentManager(os.getenv('FLARE_EXPERIMENT_DIR',str(registry.parent/'experiments')))
             async def clock():
                 previous = time.monotonic()
                 while True:
@@ -36,7 +41,9 @@ def attach_simulation(app, authenticate):
                 task.cancel()
                 try: await task
                 except asyncio.CancelledError: pass
+            if application.state.experiments: application.state.experiments.close()
             application.state.swarm = None
+            application.state.experiments = None
     app.router.lifespan_context = lifespan
     router = APIRouter(prefix='/simulation', dependencies=[Depends(authenticate)])
     def engine():
@@ -53,6 +60,38 @@ def attach_simulation(app, authenticate):
             'eligible_clients':[n.id for n in e.nodes.values() if n.available and n.health>0 and n.containment=='normal']}
     @router.get('/state')
     async def state(after: int = 0): return engine().snapshot(after)
+    @router.get('/topologies')
+    async def topologies(): return topology_metadata()
+    @router.get('/routes')
+    async def route(source: str,destination: str,traffic_class: str='sensor'):
+        return mutate(lambda:engine().inspect_route(source,destination,traffic_class))
+    @router.post('/probes')
+    async def probe(request: MissionProbe): return mutate(lambda:engine().probe(request))
+    @router.get('/packet-events')
+    async def packet_events(after: int=0,limit: int=2000):
+        if after<0: raise HTTPException(422,'cursor must be nonnegative')
+        return engine().packet_trace(after,limit)
+    def experiments():
+        engine()
+        return app.state.experiments
+    @router.post('/experiments')
+    async def create_experiment(request: ExperimentRequest):
+        return mutate(lambda:experiments().create(request,engine()))
+    @router.get('/experiments/{identity}')
+    async def experiment(identity: str): return mutate(lambda:experiments().state(identity))
+    @router.post('/experiments/{identity}/control')
+    async def experiment_control(identity: str,request: ExperimentControl):
+        return mutate(lambda:experiments().control(identity,request.action))
+    @router.get('/experiments/{identity}/export')
+    async def experiment_export(identity: str,format: str='json'):
+        content=mutate(lambda:experiments().export(identity,format))
+        return Response(content,media_type='application/json' if format=='json' else 'text/csv',
+            headers={'Content-Disposition':f'attachment; filename="flare-{identity}.{format}"'})
+    @router.get('/experiments/{identity}/traces/{filename}')
+    async def experiment_trace(identity: str,filename: str):
+        state=mutate(lambda:experiments().state(identity))
+        if filename not in state.get('trace_files',[]): raise HTTPException(404,'Trace is unavailable')
+        return FileResponse(experiments().directory/identity/filename,media_type='application/gzip',filename=filename)
     @router.get('/metrics')
     async def metrics():
         e=engine()

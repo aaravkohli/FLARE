@@ -5,7 +5,8 @@ from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 TOPOLOGIES = ('full_mesh', 'partial_mesh', 'star', 'ring', 'tree', 'cluster_mesh',
-              'hybrid_mesh', 'chain', 'grid', 'manet')
+              'grid', 'random_geometric', 'hybrid_mesh', 'self_healing_mesh')
+LEGACY_TOPOLOGIES = ('chain', 'manet')
 FORMATIONS = ('grid', 'v', 'line', 'circle', 'diamond', 'wedge', 'column', 'distributed', 'cluster')
 ROLES = ('scout', 'relay', 'leader', 'sensor', 'gateway', 'surveillance',
          'communication_relay', 'edge_computing', 'cluster_head', 'standard')
@@ -21,15 +22,45 @@ class MissionConfig(Strict):
     count: Optional[int] = Field(default=None, ge=10, le=100)
     topology: Optional[str] = None
     formation: Optional[str] = None
-    speed: Optional[Literal[0.25, 0.5, 1.0, 2.0, 4.0]] = None
+    speed: Optional[Literal[0.1, 0.25, 0.5, 1.0, 2.0, 4.0]] = None
+    range_m: Optional[float] = Field(default=None, ge=50, le=1000)
     seed: Optional[int] = Field(default=None, ge=0, le=2**32-1)
     @model_validator(mode='after')
     def enums(self):
-        if self.topology is not None and self.topology not in TOPOLOGIES:
+        if self.topology is not None and self.topology not in TOPOLOGIES + LEGACY_TOPOLOGIES:
             raise ValueError('unknown topology')
         if self.formation is not None and self.formation not in FORMATIONS:
             raise ValueError('unknown formation')
         return self
+
+class MissionProbe(Strict):
+    session_id: str
+    expected_revision: int = Field(ge=0)
+    source: str
+    destination: str
+    size_bytes: int = Field(default=512, ge=1, le=65536)
+
+class ExperimentRequest(Strict):
+    mode: Literal['compare', 'benchmark'] = 'compare'
+    topologies: list[str] = Field(default_factory=lambda: ['partial_mesh', 'self_healing_mesh'], min_length=1, max_length=10)
+    count: int = Field(default=30, ge=10, le=100)
+    seeds: list[int] = Field(default_factory=lambda: [7, 42, 99], min_length=1, max_length=10)
+    scenario: str = 'normal'
+    range_m: float = Field(default=350, ge=50, le=1000)
+    duration_s: float = Field(default=60, ge=10, le=300)
+    warmup_s: float = Field(default=5, ge=0, le=30)
+    @model_validator(mode='after')
+    def valid_experiment(self):
+        if len(set(self.topologies)) != len(self.topologies) or any(t not in TOPOLOGIES for t in self.topologies):
+            raise ValueError('select unique primary topologies')
+        if self.mode == 'compare' and len(self.topologies) != 2:
+            raise ValueError('comparison requires two topologies')
+        if len(set(self.seeds))!=len(self.seeds) or any(seed < 0 or seed >= 2**32 for seed in self.seeds) or self.warmup_s >= self.duration_s:
+            raise ValueError('invalid seeds or warmup')
+        return self
+
+class ExperimentControl(Strict):
+    action: Literal['play', 'pause', 'reset', 'cancel']
 
 class MissionControl(Strict):
     action: Literal['play', 'pause', 'reset', 'disconnect_controller', 'reconnect_controller']

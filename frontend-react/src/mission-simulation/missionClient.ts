@@ -16,6 +16,15 @@ export class MissionClient {
   const response=await fetch(`${this.api}/mission/simulation${path}`,{headers:{Authorization:`Bearer ${this.token}`},signal:AbortSignal.timeout(7000)});
   const data=await response.json();if(!response.ok)throw new Error(requestError(data.detail));return data;
  }
+ async experiment(path:string,body?:Record<string,unknown>){
+  const response=await fetch(`${this.api}/mission/simulation/experiments${path}`,{method:body?'POST':'GET',headers:{Authorization:`Bearer ${this.token}`,'Content-Type':'application/json'},body:body?JSON.stringify(body):undefined,signal:AbortSignal.timeout(10000)});
+  const data=await response.json();if(!response.ok)throw new Error(requestError(data.detail));return data;
+ }
+ async download(path:string,filename:string){
+  const response=await fetch(`${this.api}/mission/simulation/experiments${path}`,{headers:{Authorization:`Bearer ${this.token}`},signal:AbortSignal.timeout(30000)});
+  if(!response.ok)throw new Error('Export failed. Refresh experiment status and retry.');
+  const url=URL.createObjectURL(await response.blob()),anchor=document.createElement('a');anchor.href=url;anchor.download=filename;anchor.click();setTimeout(()=>URL.revokeObjectURL(url),1000);
+ }
  mutate(path:string,body:Record<string,unknown>,method='POST'){
   const requestedSession=getMissionSnapshot()?.session_id;
   const operation=this.tail.then(async()=>{

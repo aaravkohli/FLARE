@@ -109,7 +109,7 @@ def test_expiring_inflight_releases_queue():
     p=scheduler.emit('a','b','telemetry',1000,['a','b'],0,1);scheduler.step(0,links,lambda *_:True)
     scheduler.step(.2,links,lambda *_:True)
     assert p.reason=='expired' and scheduler.queued[pair('a','b')]==0
-    assert scheduler.busy[pair('a','b')]==.2
+    assert scheduler.busy[pair('a','b')]==.1  # exact expiry, independent of observation ticks
 
 def test_bounded_queue_retries_and_packet_conservation():
     events=[]

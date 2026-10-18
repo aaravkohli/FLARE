@@ -25,7 +25,7 @@ class SimulationSDNAdapter(SDNEnforcementAdapter):
     capabilities={'multi_hop':True,'logical_enforcement':True,'openflow':False}
     def __init__(self, engine): self.engine=engine
     def install_flow(self, policy): return self.engine.install_policy(policy)
-    def remove_flow(self, policy_id): return self.engine.remove_policy(policy_id)
+    def remove_flow(self, policy_id): return self.engine.remove_policy(policy_id,forget=True)
     def block_link(self,a,b): return self.engine.block_link(a,b)
     def restore_link(self,a,b): return self.engine.restore_link(a,b)
     def isolate_node(self,identity): return self.engine.contain(identity,'quarantined','operator_request')

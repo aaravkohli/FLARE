@@ -69,3 +69,42 @@ def test_fl_reads_do_not_promote_results_from_another_session(monkeypatch):
     absent=asyncio.run(server.get_fl_metrics({}));assert absent['available'] is False and absent['latest'].get('threat_f1') is None
     current={'latest':{'round':4,'mission_session':'new'},'history':[{'mission_session':'old'},{'mission_session':'new'}]}
     result=asyncio.run(server._current_mission_fl_metrics(current));assert result['available'] and len(result['history'])==1
+
+
+def test_mesh_inspection_and_experiments_keep_authorization_boundaries(monkeypatch):
+    users=copy.deepcopy(server._USERS)
+    users['mesh-viewer']={'username':'mesh-viewer','role':'viewer'}
+    monkeypatch.setattr(server,'_USERS',users);monkeypatch.setenv('MODE','simulation')
+    calls=[]
+    async def upstream(method,path,body=None,params=None):
+        calls.append((method,path,body,params));return {'id':'a'*32,'status':'paused','results':[]}
+    monkeypatch.setattr(mission,'service_request',upstream)
+    client=TestClient(server.app)
+    viewer={'Authorization':'Bearer '+server._create_access_token({'sub':'mesh-viewer'})}
+    admin={'Authorization':'Bearer '+server._create_access_token({'sub':server.ADMIN_USERNAME})}
+    for route in ['/topologies','/routes?source=a&destination=b','/packet-events?after=1','/experiments/'+'a'*32]:
+        assert client.get('/mission/simulation'+route).status_code==401
+        assert client.get('/mission/simulation'+route,headers=viewer).status_code==200
+    probe=dict(session_id='s',expected_revision=1,source='a',destination='b')
+    assert client.post('/mission/simulation/probes',headers=viewer,json=probe).status_code==403
+    assert client.post('/mission/simulation/probes',headers=admin,json=probe).status_code==200
+    request=dict(mode='compare',topologies=['star','ring'])
+    assert client.post('/mission/simulation/experiments',headers=viewer,json=request).status_code==403
+    assert client.post('/mission/simulation/experiments',headers=admin,json=request).status_code==200
+    assert client.post('/mission/simulation/experiments/'+'a'*32+'/control',headers=viewer,json={'action':'play'}).status_code==403
+    monkeypatch.setenv('MODE','real')
+    assert client.post('/mission/simulation/experiments',headers=admin,json=request).status_code==409
+
+
+def test_packet_websocket_resume_cursor_validation():
+    from starlette.websockets import WebSocketDisconnect
+    import pytest
+    client=TestClient(server.app)
+    token=server._create_access_token({'sub':server.ADMIN_USERNAME})
+    with client.websocket_connect('/ws') as ws:
+        ws.send_json(dict(type='auth',token=token,packet_session_id='session',packet_cursor=42))
+        assert ws.receive_json()=={'type':'auth','status':'ok'}
+    for cursor in (-1,True,'42'):
+        with pytest.raises(WebSocketDisconnect):
+            with client.websocket_connect('/ws') as ws:
+                ws.send_json(dict(type='auth',token=token,packet_session_id='session',packet_cursor=cursor));ws.receive_json()

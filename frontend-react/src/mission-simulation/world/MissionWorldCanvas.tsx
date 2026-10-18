@@ -1,4 +1,5 @@
-import type { SwarmSnapshot } from '../swarm';
+import type { NetworkDisplay, SwarmSnapshot } from '../swarm';
+import { playbackTime } from './networkPlayback';
 import { createDrone } from './dynamics';
 import { RotateCcw, RotateCw, Plus, Minus } from 'lucide-react';
 import { placeLabel, compactDroneId, craftMarkerBox, worldDroneLabel } from './labels';
@@ -30,6 +31,7 @@ export interface MissionWorldProps {
   /** Phase 9 may supply a receipt-freshness decision; omitted means current for existing callers. */
   evidenceCurrent?: boolean;
   mission?: SwarmSnapshot;
+  visualization?: NetworkDisplay;
   selectedDroneIds?: string[];
   worldClock: RefObject<VisualClock>; onSelectDrone: (id: string, additive?: boolean) => void;
   onSelectAsset: (asset: 'satellite' | 'base' | 'jammer') => void; onFallback: () => void; onDismiss: () => void;
@@ -78,7 +80,7 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
   const [quality, setQuality] = useState<RenderQuality>(props.mission ? 'balanced' : 'high');
   const missionReceipt=useRef({previous:props.mission,current:props.mission,at:0});
   useLayoutEffect(() => {
-    if(props.mission!==missionReceipt.current.current) missionReceipt.current={previous:missionReceipt.current.current,current:props.mission,at:performance.now()};
+    if(props.mission?.session_id!==missionReceipt.current.current?.session_id||props.mission?.simulation_time!==missionReceipt.current.current?.simulation_time||props.mission?.playing!==missionReceipt.current.current?.playing) missionReceipt.current={previous:missionReceipt.current.current,current:props.mission,at:performance.now()};
     latest.current = props; wake.current();
   });
   function installedFrame(): NetworkFrame {
@@ -158,7 +160,7 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
         c.world={drones,tick:Math.floor(props.mission.simulation_time*20)};
         // Interpolate modeled packet/orbit timing between authoritative frames.
         // Counters, outcomes and the mission clock remain backend-owned.
-        c.simulationSeconds=props.mission.simulation_time+(props.mission.playing&&!reduced.matches?Math.min(.2,Math.max(0,(now-receipt.at)/1000))*props.mission.speed:0);
+        c.simulationSeconds=props.visualization?.replay?.time??playbackTime(props.mission.simulation_time,props.mission.speed,now-receipt.at,props.mission.playing,props.evidenceCurrent!==false);
         if(modeRef.current==='overview'){
           const extent=Math.max(360,...drones.map(d=>Math.hypot(d.position.x,d.position.z)));
           desired.current={...cameraPreset('overview'),span:Math.min(6000,extent*2.6)};
@@ -182,7 +184,7 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
       const dt = previous ? (now-previous)/1000 : 1/60; previous = now;
       rig = dampCamera(rig, desired.current, dt, reduced.matches, props.mission?6000:1350);
       const orbit = satelliteOrbitAt(MISSION_SATELLITE_ORBIT, MISSION_SATELLITE_ORBIT.config.epochSeconds+c.simulationSeconds);
-      const rendered = scene.draw(drones, props.selectedDroneId, satelliteWorldPosition(orbit.direction), rig, props.state, c.simulationSeconds, reduced.matches, hovered.current, alternatives.current, props.evidenceCurrent !== false, props.mission, props.selectedDroneIds);
+      const rendered = scene.draw(drones, props.selectedDroneId, satelliteWorldPosition(orbit.direction), rig, props.state, c.simulationSeconds, reduced.matches, hovered.current, alternatives.current, props.evidenceCurrent !== false, props.mission, props.selectedDroneIds, props.visualization);
       const eligibleFrame = rendered && !frozen();
       if(profile&&eligibleFrame){
         if(lastProfileFrame && profile.count<profile.values.length)profile.values[profile.count++]=now-lastProfileFrame;

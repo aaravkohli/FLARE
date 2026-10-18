@@ -1,6 +1,6 @@
-import { publishMissionSnapshot, clearMissionSnapshot, getMissionSnapshot, selectMissionTarget, subscribeMission } from './mission-simulation/swarm';
+import { publishPacketEvents, publishMissionSnapshot, clearMissionSnapshot, getMissionSnapshot, selectMissionTarget, subscribeMission } from './mission-simulation/swarm';
 import SwarmCommandCenter from './mission-simulation/SwarmCommandCenter';
-import type { SwarmSnapshot } from './mission-simulation/swarm';
+import type { PacketBatch, SwarmSnapshot } from './mission-simulation/swarm';
 import React, { useState, useEffect, useRef } from 'react';
 import {
   Activity,
@@ -679,7 +679,9 @@ function App() {
     ws.onopen = () => {
       reconnectAttemptsRef.current = 0;
       const lastMissionCursor = routeTransitionsRef.current.cursor;
+      const packetMission=getMissionSnapshot();
       ws.send(JSON.stringify({ type: 'auth', token,
+        ...(packetMission?{packet_session_id:packetMission.session_id,packet_cursor:packetMission.packet_received_cursor??packetMission.packet_cursor??0}:{}),
         ...(lastMissionCursor > 0 ? { cursor: lastMissionCursor } : {}),
       }));
       setWsStatus('connected');
@@ -692,6 +694,7 @@ function App() {
         if(received && typeof received==='object' && 'type' in received && received.type==='mission_snapshot' && 'data' in received){
           publishMissionSnapshot(received.data as SwarmSnapshot);setSwarmSnapshot(previous=>previous??received.data as SwarmSnapshot); return;
         }
+        if(received && typeof received==='object' && 'type' in received && received.type==='mission_packet_events' && 'data' in received){publishPacketEvents(received.data as PacketBatch);return;}
         const transition = parseMissionRouteTransition(received);
         if (transition) {
           const prior = routeTransitionsRef.current;
@@ -2712,7 +2715,9 @@ function App() {
         <span>Recorded controlled simulation · single UAV · mock SDN</span>
         <a href={`${import.meta.env.BASE_URL}mission-demo.html`}>Replay Direct → Satellite response</a>
       </div>
-      {swarmSnapshot && token ? <SwarmCommandCenter snapshot={swarmSnapshot} api={API_BASE_URL} token={token} onSnapshot={s=>{publishMissionSnapshot(s);setSwarmSnapshot(previous=>previous??s);}} onInspect={id=>{selectDrone(id);if(wsRef.current?.readyState===WebSocket.OPEN)wsRef.current.send(JSON.stringify({type:"inspect",drone_ids:[id]}));}}/> : <LiveMissionSimulation
+      {swarmSnapshot && token ? <SwarmCommandCenter snapshot={swarmSnapshot} api={API_BASE_URL} token={token} evidence={{payload:missionPayload,receivedAtMs:missionReceiptAtMs,transportStatus:wsStatus,unavailable:telemetryUnavailable,
+        request:routeTransitions.pendingByDrone[activeDrone]??null,completion:routeTransitions.completedByDrone[activeDrone]??null,
+        requestReceivedAtMs:routeRequestReceiptByDrone[activeDrone]??null,controller:sdnController}} onSnapshot={s=>{publishMissionSnapshot(s);setSwarmSnapshot(previous=>previous??s);}} onInspect={id=>{selectDrone(id);if(wsRef.current?.readyState===WebSocket.OPEN)wsRef.current.send(JSON.stringify({type:"inspect",drone_ids:[id]}));}}/> : <LiveMissionSimulation
         payload={missionPayload}
         swarmPayloads={missionPayloads}
         activeDrone={activeDrone}

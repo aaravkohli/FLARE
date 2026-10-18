@@ -6,6 +6,8 @@ FLARE is a research-oriented prototype with separate communication-threat, netwo
 
 > **Project status:** This repository is a capstone/research prototype, not a production-ready network controller. The principal host-native simulation workflow has been exercised end to end, including federated training, RL inference, orchestration, authenticated APIs, mock SDN routing, persistence, and the React dashboard. Development/production-like container layouts and CI checks are also defined. Several advanced FL features and real-network integrations remain experimental. These distinctions are called out throughout this README.
 
+> **Mesh network laboratory:** The authoritative swarm simulator now provides ten primary topologies, event-timed multi-hop packets, a default 2D network workspace, a retained 3D world, isolated A/B comparisons, and seeded all-topology benchmarks. See [SWARM_NETWORK.md](SWARM_NETWORK.md) for operation, API contracts, metric definitions, and modeling limits. These are packet-simulation results, separate from real-network enforcement evidence.
+
 ## Table of contents
 
 1. [Project overview](#project-overview)

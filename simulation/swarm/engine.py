@@ -17,6 +17,7 @@ from simulation.swarm.network import build_adjacency, Link, PacketScheduler, rad
 from simulation.swarm.terrain import Terrain
 from simulation.swarm.topology import pair, topology_edges
 from simulation.swarm.session import write_registry
+from simulation.swarm.scenarios import DEMO_PRESETS, step_scenario
 
 BASE_POSITION=[-280.,35.,170.]
 SCENARIOS={
@@ -29,38 +30,46 @@ SCENARIOS={
  'rerouting':dict(count=50,topology='partial_mesh',formation='grid',preferred_family='mesh'),
 }
 
+SCENARIOS.update(DEMO_PRESETS)
+
 class RevisionConflict(ValueError): pass
 
 class SwarmEngine:
     control_traffic = CONTROL_TRAFFIC
-    def __init__(self,records,config=None,registry_path=None):
+    def __init__(self,records,config=None,registry_path=None,isolated=False):
         path=Path(__file__).resolve().parents[2]/'config/swarm_config.yaml'
         self.cfg=deepcopy(config or yaml.safe_load(path.read_text()))
-        self.registry_path=registry_path
+        self.isolated=isolated
+        self.trace_sink=None
+        self.registry_path=None if isolated else registry_path
         self.records={r['drone_id']:deepcopy(r) for r in records}
         self.reserved=sorted((r['drone_id'] for r in records if r['enabled']),key=lambda n:self.records[n]['index'])
         self.terrain=Terrain(); self.seed=self.cfg['seed']; self.topology=self.cfg['topology']; self.formation=self.cfg['formation']
-        self.count=self.cfg['default_count']; self.speed=1.; self.revision=0; self.event_cursor=0
+        self.count=self.cfg['default_count']; self.pending_seed=None; self.speed=1.; self.revision=0; self.event_cursor=0
         self.events=deque(maxlen=3000); self.commands={}; self.transfers={}; self.security={}
         self.reset()
     def event(self,category,kind,data=None):
         self.event_cursor+=1
         self.events.append(dict(schema_version='mission_event_v1',cursor=self.event_cursor,session_id=self.session_id,
-                                simulation_time=self.seconds,revision=self.revision,evidence_source='packet_simulation',correlation_id=(data or {}).get('correlation_id',(data or {}).get('command_id')),timestamp=time.time(),category=category,kind=kind,data=data or {}))
+                                simulation_time=self.scheduler.event_time if hasattr(self,'scheduler') and self.scheduler.event_time is not None else self.seconds,revision=self.revision,evidence_source='packet_simulation',correlation_id=(data or {}).get('correlation_id',(data or {}).get('command_id')),timestamp=time.time(),category=category,kind=kind,data=data or {}))
     def reset(self):
+        if self.pending_seed is not None:
+            self.seed=self.pending_seed; self.cfg['seed']=self.seed; self.pending_seed=None
         import os
-        if os.getenv('FLARE_BYZANTINE_STATE_PATH'):
+        if not self.isolated and os.getenv('FLARE_BYZANTINE_STATE_PATH'):
             from simulation.byzantine_state import reset_attack_state
             reset_attack_state()
         self.session_id=uuid.uuid4().hex; self.seconds=0.; self.playing=False; self.accumulator=0.
         self.rng=random.Random(self.seed); self.nodes={}; self.links={}; self.radio_links={}; self.flows={}; self.forwarding={}; self.blocked=set(); self.auto_blocked=set(); self.jammers=[]
-        self._route_cache={}; self._adjacency_cache={}; self.route_preferences={}; self.families={}; self.controller_connected=True; self.commands={}; self.transfers={}; self.security={}
+        self._route_cache={}; self._adjacency_cache={}; self.route_preferences={}; self.families={}; self.flow_constraints={}; self.controller_connected=True; self.commands={}; self.transfers={}; self.security={}
         self.events.clear(); self.revision+=1; self.network_revision=0; self.reroutes=0; self.failed_routes=0
+        self.topology_state={}; self.packet_events=deque(maxlen=50000); self.packet_cursor=0
+        self.disconnected_links=deque(maxlen=5000); self.recovery={}; self.scenario_actions=set()
         self.last_network=-1.; self.last_traffic=-1.; self.scenario='normal'; self.scenario_fired=False; self.poisoning_client=None
         self.failed_families=set(); self.packet_results=deque(maxlen=100)
         self.attacks=AttackConditions(self)
         self.runtime={'orchestrator':{'status':'waiting_for_play'},'flower':{'status':'waiting_for_play','round':0,'participants':[]}}
-        self.scheduler=PacketScheduler(self.cfg['packets'],self.rng,self.packet_event)
+        self.scheduler=PacketScheduler(dict(self.cfg['packets'],seed=self.seed),self.rng,self.packet_event)
         self.resize(self.count,initial=True); self.rebuild(); self.event('COMMAND','mission_reset',{'seed':self.seed})
     def _clear_routes(self):
         self._route_cache.clear(); self._adjacency_cache.clear()
@@ -107,8 +116,11 @@ class SwarmEngine:
         if request.formation is not None:
             self.formation=request.formation
             for d in self.nodes.values(): d.formation_slot=None
-        if request.seed is not None: self.seed=request.seed # Takes effect on reset, without silently reseeding packet loss.
+        if request.seed is not None: self.pending_seed=request.seed if request.seed!=self.seed else None # Applied on reset; the active seed remains truthful.
         if request.speed is not None: self.speed=request.speed
+        if request.range_m is not None:
+            self.cfg['radio']['range_m']=request.range_m
+            for d in self.nodes.values(): d.range_m=request.range_m
         if request.count is not None: self.resize(request.count)
         else: self.revision+=1; self.slots=formation_positions(self.formation,self.count); self.rebuild()
         self.event('COMMAND','mission_configured',{'topology':self.topology,'formation':self.formation,'count':self.count,'speed':self.speed})
@@ -135,7 +147,9 @@ class SwarmEngine:
         self.accumulator+=max(0,min(.25,wall_delta))*self.speed
         step=self.cfg['fixed_step_s']
         while self.accumulator+1e-9>=step:
-            self.accumulator-=step; self.seconds+=step
+            self.accumulator-=step
+            self.scheduler.step(self.seconds+step,self.packet_link,self.packet_allowed,self.attacks.relay_drop,self.repair_packet)
+            self.seconds+=step
             advance(list(self.nodes.values()),step,self.seconds,self.slots,self.terrain)
             self.scenario_step()
             self.attacks.step(step)
@@ -145,9 +159,10 @@ class SwarmEngine:
             if self.seconds-self.last_traffic>=1-1e-9:
                 self.generate_traffic(); self.last_traffic=self.seconds
             self.attacks.generate(step)
-            self.scheduler.step(self.seconds,self.packet_link,self.packet_allowed,self.attacks.relay_drop)
+            self.scheduler.step(self.seconds,self.packet_link,self.packet_allowed,self.attacks.relay_drop,self.repair_packet)
             self.expire_commands(); self.refresh_transfers()
     def scenario_step(self):
+        if step_scenario(self): return
         if self.scenario_fired or self.seconds<8: return
         self.scenario_fired=True; nodes=list(self.nodes.values())
         if self.scenario in ('jamming','rerouting'):
@@ -175,14 +190,14 @@ class SwarmEngine:
             raise ValueError('Dispatch requires unique participating identities')
         if any(identity not in self.nodes or not self.nodes[identity].available or self.nodes[identity].containment!='normal' for identity in participants):
             raise ValueError('Dispatch includes unavailable mission identities')
-        if self.scenario=='poisoning' and self.scenario_fired and self.poisoning_client is None:
+        if not self.isolated and self.scenario=='poisoning' and self.scenario_fired and self.poisoning_client is None:
             from simulation.byzantine_state import set_attack_mode
             self.poisoning_client=participants[0]
             set_attack_mode(self.poisoning_client,'poisoned')
             self.event('FL','poisoning_armed',{'client_id':self.poisoning_client,'round':round_number,'verdict':'awaiting_actual_update_analysis'})
             self.inject_attack(MissionAttack(session_id=self.session_id,expected_revision=self.revision,
                 attack_id='scenario-poisoning',group='fl',profile='poisoned',targets=[self.poisoning_client],paths=[],duration_s=300))
-        self.attacks.dispatch_fl(round_number,participants)
+        if not self.isolated: self.attacks.dispatch_fl(round_number,participants)
         self.runtime['flower']=dict(status='training',round=round_number,participants=participants,timestamp=time.time())
     def inject_attack(self,request,spatial=False):
         if request.session_id!=self.session_id: raise RevisionConflict('stale attack session')
@@ -207,23 +222,40 @@ class SwarmEngine:
             if not a.available or a.health<=0: continue
             for b in list(self.nodes.values())[i+1:]:
                 if not b.available or b.health<=0: continue
-                link=radio_link(a.id,b.id,a.position,b.position,self.cfg['radio'],self.terrain,self.jammers,min(a.health,b.health))
+                link=radio_link(a.id,b.id,a.position,b.position,dict(self.cfg['radio'],range_m=min(a.range_m,b.range_m)),self.terrain,self.jammers,min(a.health,b.health))
                 if link and link.sinr>=self.cfg['radio']['minimum_sinr_db']-(2 if pair(a.id,b.id) in old else 0): eligible[pair(a.id,b.id)]=link
-        edges,heads=topology_edges(self.topology,list(self.nodes.values()),eligible,set(old))
+        physical_recovered={e for e in self.auto_blocked if e in eligible and self.attacks.impair(eligible[e],'mesh',e).loss<.15}
+        for edge in physical_recovered: self.event('SDN','RESTORE',{'link':list(edge),'reason':'modeled_link_recovery'})
+        self.auto_blocked.difference_update(physical_recovered)
+        topology_eligible={e:l for e,l in eligible.items() if e not in self.blocked|self.auto_blocked and self.attacks.impair(l,'mesh',e).loss<=self.cfg['radio']['max_loss']} if self.topology=='self_healing_mesh' else eligible
+        edges,heads=topology_edges(self.topology,list(self.nodes.values()),topology_eligible,set(old),self.topology_state,self.seconds,self.cfg.get('discovery_timeout_s',.6))
         self.heads=heads; self.radio_links={e:eligible[e] for e in edges}
         self.links={e:self.attacks.impair(eligible[e],'mesh',e) for e in edges}
         for d in self.nodes.values():
             d.neighbors=sorted(b if a==d.id else a for a,b in edges if d.id in (a,b))
-            if d.available and d.health>0:
-                link=radio_link(d.id,'base',d.position,base,self.cfg['radio'],self.terrain,self.jammers,d.health)
+            if d.available and d.health>0 and not self.cfg.get('mesh_only'):
+                link=radio_link(d.id,'base',d.position,base,dict(self.cfg['radio'],range_m=d.range_m),self.terrain,self.jammers,d.health)
                 if link:
                     edge=pair(d.id,'base'); self.radio_links[edge]=link
                     self.links[edge]=self.attacks.impair(link,'mesh',edge)
+        for edge in sorted(set(old)-set(self.links)):
+            record=dict(old[edge].snapshot(),disconnected_at=self.seconds,status='disconnected')
+            self.disconnected_links.append(record)
+            self.event('NETWORK','link_disconnected',{'link':list(edge)})
+        for edge in sorted(set(self.links)-set(old)):
+            self.event('NETWORK','neighbor_discovered',{'link':list(edge)})
         self.network_revision+=1
+        invalidated=[]
         for policy_id,flow in list(self.flows.items()):
-            if flow['family']!='hold' and not self.valid_route(flow['hops'],flow['family'],flow['traffic_class'] in CONTROL_TRAFFIC): self.remove_policy(policy_id)
+            if flow['family']!='hold' and not self.valid_route(flow['hops'],flow['family'],flow['traffic_class'] in CONTROL_TRAFFIC):
+                key=f"{flow['source']}:{flow['destination']}"
+                if key not in self.recovery or self.recovery[key].get('service_recovered_at') is not None:
+                    self.recovery[key]=dict(source=flow['source'],destination=flow['destination'],disrupted_at=self.seconds,route_recovered_at=None,service_recovered_at=None)
+                invalidated.append(flow)
+                self.remove_policy(policy_id); self.failed_routes+=1
         # Locally discovered routes continue even with command station disconnected.
         for d in self.nodes.values():
+            if self.cfg.get('mesh_only'): continue
             family=self.families.get(d.id,'mesh')
             self.ensure_route(d.id,'base','telemetry',family)
             self.ensure_route(d.id,'base','heartbeat','mesh')
@@ -233,9 +265,11 @@ class SwarmEngine:
         recovered={e for e in self.auto_blocked if e in self.links and self.links[e].loss<.15}
         for edge in recovered: self.event('SDN','RESTORE',{'link':list(edge),'reason':'modeled_link_recovery'})
         self.auto_blocked=(self.auto_blocked-recovered)|newly_unsafe
+        for flow in invalidated:
+            self.ensure_route(flow['source'],flow['destination'],flow['traffic_class'],flow['family'],flow.get('decision_id'))
     def valid_route(self,hops,family,control=False):
         if family=='hold': return False
-        if len(hops)<2: return False
+        if len(hops)<2 or len(set(hops))!=len(hops) or 'base' in hops[1:-1]: return False
         if family in self.failed_families: return False
         for identity in hops:
             d=self.nodes.get(identity)
@@ -246,7 +280,7 @@ class SwarmEngine:
         return all(pair(a,b) in self.links and pair(a,b) not in self.blocked|self.auto_blocked and self.links[pair(a,b)].loss<=self.cfg['radio']['max_loss'] for a,b in zip(hops,hops[1:]))
     def route(self,source,dest,family='mesh',control=False):
         if source not in self.nodes and source!='base': return []
-        if family=='hold' or family in self.failed_families: return []
+        if family=='hold' or family in self.failed_families or self.cfg.get('mesh_only') and (family!='mesh' or dest=='base'): return []
         if family=='satellite' and dest=='base':
             return [source,dest] if self.valid_route([source,dest],family,control) else []
         if family=='direct': return [source,dest] if self.valid_route([source,dest],family,control) else []
@@ -256,6 +290,18 @@ class SwarmEngine:
         if key not in self._route_cache or self._route_cache[key] and not self.valid_route(self._route_cache[key],family,control):
             self._route_cache[key]=shortest_path(self.links,source,dest,self.nodes,self.blocked|self.auto_blocked,control=control,adjacency=self._adjacency_cache[control])
         return self._route_cache[key][:]
+    def policy_route(self,source,dest,category,family='mesh'):
+        restrictions=self.flow_constraints.get(f'{source}:{dest}:{category}',{})
+        if category not in restrictions.get('allowed_traffic_classes',[category]): return []
+        omitted=set(restrictions.get('excluded_nodes',[]))
+        blocked={pair(*e) for e in restrictions.get('excluded_links',[])}
+        if source in omitted or dest in omitted: return []
+        route=self.route(source,dest,family,category in CONTROL_TRAFFIC)
+        if not omitted.intersection(route) and not any(pair(a,b) in blocked for a,b in zip(route,route[1:])): return route
+        if family!='mesh': return []
+        links={edge:link for edge,link in self.links.items() if not omitted.intersection(edge)}
+        return shortest_path(links,source,dest,self.nodes,self.blocked|self.auto_blocked|blocked,control=category in CONTROL_TRAFFIC)
+
     def ensure_route(self,source,dest,category,family='mesh',decision=None):
         key=f'{source}:{dest}:{category}'
         if family=='hold' and category not in CONTROL_TRAFFIC:
@@ -263,16 +309,19 @@ class SwarmEngine:
             self.install_policy(RoutePolicy(policy_id=key,session_id=self.session_id,revision=self.revision,source=source,
                 destination=dest,traffic_class=category,family='hold',hops=[],decision_id=decision))
             return []
-        hops=self.route(source,dest,family,category in CONTROL_TRAFFIC)
+        hops=self.policy_route(source,dest,category,family)
         old=self.installed_rule(source,dest,category)
         if not hops:
             if old: self.remove_policy(old['policy_id']); self.failed_routes+=1
             return []
         if not old or old['hops']!=hops or old['family']!=family:
+            constraints=self.flow_constraints.get(key,{})
+            backup_links={e:l for e,l in self.links.items() if not set(e).intersection(constraints.get('excluded_nodes',[]))}
+            backup_blocked=self.blocked|self.auto_blocked|{pair(*e) for e in constraints.get('excluded_links',[])}
             policy=RoutePolicy(policy_id=key,session_id=self.session_id,revision=self.revision,
                 source=source,destination=dest,traffic_class=category,family=family,hops=hops,decision_id=decision,
-                restrictions={'backup_hops':shortest_path(self.links,source,dest,self.nodes,self.blocked|self.auto_blocked,
-                    omit={pair(a,b) for a,b in zip(hops,hops[1:])},control=category in CONTROL_TRAFFIC) if family=='mesh' else []})
+                restrictions=dict(self.flow_constraints.get(key,{}),backup_hops=shortest_path(backup_links,source,dest,self.nodes,backup_blocked,
+                    omit={pair(a,b) for a,b in zip(hops,hops[1:])},control=category in CONTROL_TRAFFIC) if family=='mesh' else []))
             result=self.install_policy(policy)
             if not result.get('applied'):
                 self.failed_routes+=1; self.event('SDN','enforcement_failed',{'policy_id':key,'result':result})
@@ -282,6 +331,10 @@ class SwarmEngine:
             if old:
                 for a,b in zip(old['hops'],old['hops'][1:]): self.event('SDN','REMOVE',{'policy_id':key,'link':[a,b],'superseded':True})
                 self.reroutes+=1
+        recovery=self.recovery.get(f'{source}:{dest}')
+        if recovery and recovery['route_recovered_at'] is None:
+            recovery.update(route_recovered_at=self.seconds,route_convergence_ms=(self.seconds-recovery['disrupted_at'])*1000)
+            self.event('NETWORK','route_recovered',dict(recovery,hops=hops))
         return hops
     def installed_rule(self,source,destination,category):
         return self.flows.get(self.forwarding.get(f'{source}:{destination}:{category}',''))
@@ -308,15 +361,16 @@ class SwarmEngine:
             return {'status':'failed','applied':False,'reason':'unsafe_or_unavailable_hop'}
         previous=self.installed_rule(policy.source,policy.destination,policy.traffic_class)
         if previous and previous['policy_id']!=policy.policy_id: self.remove_policy(previous['policy_id'])
-        flow=policy.model_dump(); self.flows[policy.policy_id]=flow; self.forwarding[key]=policy.policy_id
+        flow=policy.model_dump(); self.flow_constraints[key]=deepcopy(policy.restrictions); self.flows[policy.policy_id]=flow; self.forwarding[key]=policy.policy_id
         if policy.traffic_class=='telemetry' and policy.source in self.nodes:
             self.families[policy.source]=policy.family; self.nodes[policy.source].selected_route=policy.family
         for a,b in zip(policy.hops,policy.hops[1:]): self.event('SDN','INSTALL',{'policy_id':policy.policy_id,'source':policy.source,'destination':policy.destination,'traffic_class':policy.traffic_class,'hops':policy.hops,'link':[a,b],'family':policy.family,'decision_id':policy.decision_id})
         return {'schema_version':'enforcement_result_v1','session_id':self.session_id,'revision':self.revision,'simulation_time':self.seconds,'status':'acknowledged','applied':True,'installed_path':policy.family,'hops':policy.hops,'policy_id':policy.policy_id,'evidence':'packet_simulation','openflow':False}
-    def remove_policy(self,policy_id):
+    def remove_policy(self,policy_id,forget=False):
         flow=self.flows.pop(policy_id,None)
         if flow:
             key=f"{flow['source']}:{flow['destination']}:{flow['traffic_class']}"
+            if forget: self.flow_constraints.pop(key,None)
             if self.forwarding.get(key)==policy_id: self.forwarding.pop(key,None)
             if flow['family']=='hold': self.event('SDN','REMOVE',{'policy_id':policy_id,'source':flow['source'],'network_action':'hold'})
             for a,b in zip(flow['hops'],flow['hops'][1:]): self.event('SDN','REMOVE',{'policy_id':policy_id,'link':[a,b]})
@@ -380,16 +434,61 @@ class SwarmEngine:
         return self.attacks.impair(Link(identity,'base',700000.,-65.,18.,2.,.02,85.,'modeled_satellite'),'satellite',(identity,))
     def packet_allowed(self,p,a,b):
         if p.category in ('command','ack') and not self.controller_connected: return False
-        if not self.valid_route(p.route,p.family,p.category in CONTROL_TRAFFIC): return False
-        flow=self.installed_rule(p.source,p.destination,p.category)
-        return bool(flow and flow['hops']==p.route)
+        if not self.valid_route(p.route[p.hop:],p.family,p.category in CONTROL_TRAFFIC): return False
+        flow=self.installed_rule(p.policy_source or p.source,p.destination,p.category)
+        expected=p.route
+        if p.policy_source!=p.source:
+            offset=p.route.index(p.policy_source)
+            expected=p.route[offset:]
+        return bool(flow and flow['hops']==expected)
+
+    def repair_packet(self,p):
+        if p.family!='mesh' or p.hop>=len(p.route)-1: return False
+        current=p.route[p.hop]
+        omitted=set(p.route[:p.hop])|set(p.restrictions.get('excluded_nodes',[]))
+        forbidden={pair(*edge) for edge in p.restrictions.get('excluded_links',[])}
+        links={edge:link for edge,link in self.links.items() if not omitted.intersection(edge)}
+        suffix=shortest_path(links,current,p.destination,self.nodes,self.blocked|self.auto_blocked|forbidden,control=p.category in CONTROL_TRAFFIC)
+        if not suffix: return False
+        policy=RoutePolicy(policy_id=f'repair:{p.id}:{p.repair_count}',session_id=self.session_id,revision=self.revision,
+            source=current,destination=p.destination,traffic_class=p.category,family='mesh',hops=suffix,restrictions=p.restrictions)
+        if not self.install_policy(policy).get('applied'): return False
+        p.route=p.route[:p.hop]+suffix; p.policy_source=current; p.revision=self.network_revision
+        return True
+
+    def inspect_route(self,source,destination,category='sensor'):
+        if source==destination or source not in self.nodes or destination not in self.nodes and destination!='base':
+            raise ValueError('choose distinct current source and destination identities')
+        if category not in CONTROL_TRAFFIC and category not in ('sensor','telemetry','position','fl_update'):
+            raise ValueError('unknown traffic class')
+        candidate=self.policy_route(source,destination,category)
+        installed=self.installed_rule(source,destination,category)
+        return dict(session_id=self.session_id,network_revision=self.network_revision,source=source,destination=destination,
+            candidate_hops=candidate,installed_hops=installed['hops'] if installed else [],
+            reachable=bool(candidate),routing_source='trust_aware_shortest_path',evidence='packet_simulation')
+
+    def probe(self,request):
+        if request.session_id!=self.session_id: raise RevisionConflict('stale probe session')
+        self.check_revision(request.expected_revision)
+        self.inspect_route(request.source,request.destination)
+        packet=self.send(request.source,request.destination,'sensor',request.size_bytes,correlation='probe',family_override='mesh')
+        self.revision+=1
+        return dict(packet=packet.snapshot(),session_id=self.session_id,revision=self.revision)
+
+    def packet_trace(self,after=0,limit=2000):
+        limit=max(1,min(5000,limit))
+        rows=[e for e in self.packet_events if e['cursor']>after][:limit]
+        oldest=self.packet_events[0]['cursor'] if self.packet_events else self.packet_cursor+1
+        return dict(session_id=self.session_id,events=rows,cursor=rows[-1]['cursor'] if rows else max(after,self.packet_cursor),
+            latest_cursor=self.packet_cursor,event_gap=after>0 and after<oldest-1,oldest_cursor=oldest)
     def send(self,source,dest,category,size=512,correlation=None,family_override=None):
         family=family_override or (self.families.get(source,'mesh') if dest=='base' and category not in CONTROL_TRAFFIC else 'mesh')
         hops=self.ensure_route(source,dest,category,family)
         sequence=self.attacks.sequence(source,self.scheduler.serial+1)
         mac=self.records.get(source,{}).get('mac')
         if self.attacks.has(source,'spoofing'): mac='02:ff:00:00:00:01'
-        p=self.scheduler.emit(source,dest,category,size,hops,self.seconds,self.network_revision,correlation,family,sequence,mac)
+        packet_time=self.scheduler.event_time if self.scheduler.event_time is not None else self.seconds
+        p=self.scheduler.emit(source,dest,category,size,hops,packet_time,self.network_revision,correlation,family,sequence,mac,deepcopy(self.flow_constraints.get(f'{source}:{dest}:{category}',{})))
         d=self.nodes.get(source)
         if d: d.sent+=1
         return p
@@ -403,6 +502,17 @@ class SwarmEngine:
             if int(self.seconds)%5==0 and d.neighbors: self.send(d.id,d.neighbors[0],'discovery',64)
             if int(self.seconds)%7==0 and d.neighbors: self.send(d.id,d.neighbors[0],'routing',96)
     def packet_event(self,kind,data):
+        self.packet_cursor+=1
+        record=dict(schema_version='mission_packet_event_v1',session_id=self.session_id,cursor=self.packet_cursor,
+            simulation_time=data.get('event_at',self.seconds),kind=kind,data=data,evidence_source='packet_simulation')
+        self.packet_events.append(record)
+        if self.trace_sink: self.trace_sink(record)
+        if kind=='packet_result':
+            key=f"{data['source']}:{data['destination']}"
+            recovery=self.recovery.get(key)
+            if recovery and recovery.get('service_recovered_at') is None and data['status']=='delivered':
+                recovery['service_recovered_at']=data['completed_at']
+                recovery['service_recovery_ms']=(data['completed_at']-recovery['disrupted_at'])*1000
         # Per-packet traffic is sampled in the operator event rail, never in accounting.
         if kind!='packet_result' or data['category'] in ('command','ack','fl_update','emergency','threat'):
             if data['category'] in ('command','ack','fl_update','emergency','threat') or int(data['id'][1:])%20==0:
@@ -411,7 +521,7 @@ class SwarmEngine:
             self.nodes[data['from_node']].forwarded+=1
         if kind=='packet_result':
             if data['status']=='dropped' and data['source'] in self.nodes: self.nodes[data['source']].dropped+=1
-            self.packet_results.append(dict(data,completed_at=self.seconds))
+            self.packet_results.append(data)
             if data['category']=='fl_update':
                 transfer=self.transfers.get(data.get('correlation_id'))
                 if transfer and transfer['status']=='pending':
@@ -422,16 +532,16 @@ class SwarmEngine:
             if command and data['category']=='command':
                 outcome=command['outcomes'][data['destination']]
                 if data['status']=='delivered':
-                    if outcome['status'] in ('expired','retired') or self.seconds>=command['expires_at']:
+                    if outcome['status'] in ('expired','retired') or data.get('completed_at',self.seconds)>=command['expires_at']:
                         outcome.update(status='expired',reason='Command expired before execution'); return
                     self.execute_command(data['destination'],command)
                     outcome['status']='executed_ack_pending'
-                    outcome.update(executed_at=self.seconds,delivered_at=self.seconds,reason='Executed; awaiting acknowledgment')
+                    outcome.update(executed_at=data['completed_at'],delivered_at=data['completed_at'],reason='Executed; awaiting acknowledgment')
                     ack=self.send(data['destination'],'base','ack',64,data['correlation_id']); outcome['ack_packet']=ack.id
                 else: outcome['status']='delivery_failed'; outcome['reason']=data['reason']
             elif command and data['category']=='ack':
                 command['outcomes'][data['source']]['status']='acknowledged' if data['status']=='delivered' else 'executed_ack_failed'
-                command['outcomes'][data['source']]['acknowledged_at']=self.seconds if data['status']=='delivered' else None
+                command['outcomes'][data['source']]['acknowledged_at']=data['completed_at'] if data['status']=='delivered' else None
                 command['outcomes'][data['source']]['reason']='Radio delivery, execution and acknowledgment confirmed' if data['status']=='delivered' else data['reason']
                 self.event('COMMAND','command_ack',{'command_id':command['command_id'],'node':data['source'],'status':command['outcomes'][data['source']]['status']})
     def command(self,request: MissionCommand):
@@ -480,7 +590,7 @@ class SwarmEngine:
                     outcome.update(status='pending',reason='Command link lost; expires without automatic replay'); continue
                 # Mark before send: no-route/capacity results are synchronous.
                 outcome.update(status='pending',reason='Awaiting radio delivery',dispatched_at=self.seconds)
-                packet=self.send('base',identity,'command',128,record['command_id']); packet.expires_at=record['expires_at']
+                packet=self.send('base',identity,'command',128,record['command_id']); packet.expires_at=record['expires_at']; self.scheduler.schedule(packet.expires_at,packet,'expire')
                 outcome['packet_id']=packet.id
     def execute_command(self,identity,record):
         d=self.nodes[identity]; action=record['action']; params=record['parameters']; d.current_command=action
@@ -604,23 +714,46 @@ class SwarmEngine:
         n=len(self.nodes); p=self.scheduler
         reachable=sum(bool(self.route(d.id,'base','mesh',True)) for d in active)
         return dict(schema_version='mission_snapshot_v1',session_id=self.session_id,revision=self.revision,network_revision=self.network_revision,
-            simulation_time=self.seconds,timestamp=time.time(),playing=self.playing,speed=self.speed,seed=self.seed,topology=self.topology,
-            formation=self.formation,scenario=self.scenario,controller_connected=self.controller_connected,evidence='packet_simulation',
-            enforcement='simulation_logical_sdn',terrain=self.terrain.provenance,base_position=BASE_POSITION,
+            simulation_time=self.seconds,timestamp=time.time(),playing=self.playing,speed=self.speed,seed=self.seed,pending_seed=self.pending_seed,topology=self.topology,
+            formation=self.formation,heads=self.heads,scenario=self.scenario,controller_connected=self.controller_connected,evidence='packet_simulation',
+            enforcement='simulation_logical_sdn',routing_mode='mesh_reference' if self.cfg.get('mesh_only') else 'flare',range_m=self.cfg['radio']['range_m'],terrain=self.terrain.provenance,base_position=BASE_POSITION,
             nodes=[dict(d.snapshot(),reported_position=self.attacks.position(d.id,d.position),active_attacks=[{k:a[k] for k in ('attack_id','group','profile','effective_paths','expires_at','status')} for a in self.attacks.for_node(d.id)],
                 security=self.security.get(d.id),current_path=(self.installed_rule(d.id,'base','telemetry') or {}).get('hops',[])) for d in self.nodes.values()],
             links=[dict(l.snapshot(),schema_version='mission_link_v1',session_id=self.session_id,revision=self.network_revision,simulation_time=self.seconds,evidence_source='packet_simulation',status='blocked' if edge in self.blocked|self.auto_blocked else l.status) for edge,l in self.links.items()],
             packets=[dict(p.snapshot(),schema_version='mission_packet_v1',session_id=self.session_id,simulation_time=self.seconds,evidence_source='packet_simulation') for p in sorted(self.scheduler.packets.values(),key=lambda p:(p.category in ('fl_update','command','ack','threat','emergency'),p.created_at),reverse=True)[:200]],packet_results=list(self.packet_results)[-40:],
+            packet_events=[e for e in self.packet_events if e['simulation_time']>=self.seconds-max(.6,self.speed*.4)][-4000:],packet_cursor=self.packet_cursor,
+            interference_regions=deepcopy(self.jammers),
+            disconnected_links=[e for e in self.disconnected_links if e['disconnected_at']>=self.seconds-3],recovery=list(self.recovery.values()),
             flows=list(self.flows.values()) if include_flows else [],commands=list(self.commands.values())[-30:],attacks=self.attacks.state(),runtime=self.runtime_status(),
             event_gap=bool(self.events and after>0 and (after<self.events[0]['cursor']-1 or sum(e['cursor']>after for e in self.events)>200)),
             oldest_cursor=self.events[0]['cursor'] if self.events else self.event_cursor,events=[e for e in self.events if e['cursor']>after][-200:],cursor=self.event_cursor,
             statistics=dict(total=n,active=len(active),offline=n-len(active),quarantined=sum(d.containment=='quarantined' for d in self.nodes.values()),
-                active_links=len(edges),average_degree=2*len(edges)/max(1,n),density=2*len(edges)/max(1,n*(n-1)),availability=reachable/max(1,n),
+                active_links=sum(l.loss<=self.cfg['radio']['max_loss'] and pair(l.a,l.b) not in self.blocked|self.auto_blocked for l in edges),physical_links=len(edges),pending=len(p.packets),average_degree=2*len(edges)/max(1,n),density=2*len(edges)/max(1,n*(n-1)),availability=reachable/max(1,n),
                 generated=p.generated,delivered=p.delivered,dropped=p.dropped,pdr=p.delivered/max(1,p.delivered+p.dropped),
                 average_latency_ms=p.latency_sum/max(1,p.delivered),throughput_mbps=p.bytes_delivered*8/max(1,self.seconds)/1e6,
                 active_routes=len(self.flows),average_hops=sum(max(0,len(f['hops'])-1) for f in self.flows.values())/max(1,len(self.flows)),
+                connected_components=self.connected_components(),jitter_ms=self.jitter_ms(),
                 reroutes=self.reroutes,failed_routes=self.failed_routes,jammed_links=sum(l.status=='jammed' for l in self.links.values()),
                 threats=sum(s.get('attack_type') in ('barrage','sweep','spot') or ((s.get('network_detection') or {}).get('risk_score') or 0)>.35 for s in self.security.values())))
+    def connected_components(self):
+        adjacency=build_adjacency({e:l for e,l in self.links.items() if 'base' not in e},self.nodes,self.blocked|self.auto_blocked)
+        unseen={d.id for d in self.nodes.values() if d.available and d.health>0 and d.containment!='quarantined'}; count=0
+        while unseen:
+            count+=1; todo=[unseen.pop()]
+            while todo:
+                for peer,_ in adjacency.get(todo.pop(),[]):
+                    if peer in unseen: unseen.remove(peer); todo.append(peer)
+        return count
+
+    def jitter_ms(self):
+        by_flow={}; differences=[]
+        for p in self.scheduler.completions:
+            if p['status']!='delivered': continue
+            key=(p['source'],p['destination'],p['category'])
+            if key in by_flow: differences.append(abs(p['latency_ms']-by_flow[key]))
+            by_flow[key]=p['latency_ms']
+        return sum(differences)/len(differences) if differences else 0.
+
     def runtime_status(self):
         now=time.time(); components=deepcopy(self.runtime)
         for value in components.values():

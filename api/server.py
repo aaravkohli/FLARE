@@ -2880,6 +2880,12 @@ async def websocket_endpoint(websocket: WebSocket):
             or mission_after_id < 0
         ):
             raise ValueError("Invalid mission journal cursor")
+        packet_cursor=auth_message.get('packet_cursor')
+        packet_session=auth_message.get('packet_session_id')
+        if packet_cursor is not None and (isinstance(packet_cursor,bool) or not isinstance(packet_cursor,int) or packet_cursor<0):
+            raise ValueError('Invalid packet cursor')
+        if packet_session is not None and (not isinstance(packet_session,str) or not packet_session):
+            raise ValueError('Invalid packet session')
     except (asyncio.TimeoutError, ValueError, HTTPException, json.JSONDecodeError):
         await websocket.close(code=4401, reason="Authentication required")
         return
@@ -2887,6 +2893,8 @@ async def websocket_endpoint(websocket: WebSocket):
     if mission_after_id is None:
         mission_after_id = await _latest_completed_mission_cursor()
     await websocket.send_json({"type": "auth", "status": "ok"})
+    websocket.state.packet_cursor=packet_cursor
+    websocket.state.packet_session_id=packet_session
     _ws_inspected[websocket] = {"drone_1"}
     _mission_ws_cursors[websocket] = mission_after_id
     _ws_clients.append(websocket)

@@ -2,7 +2,7 @@
 import os
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.mission import MissionConfig, MissionControl, MissionCommand, MissionAttack, ClearMissionAttacks
+from schemas.mission import MissionConfig, MissionControl, MissionCommand, MissionAttack, ClearMissionAttacks, MissionProbe, ExperimentRequest, ExperimentControl
 
 
 def service_url():
@@ -34,6 +34,46 @@ def mission_router(current_user, admin, runtime_mode):
     async def control(request: MissionControl): return await service_request('POST','/control',request.model_dump())
     @router.post('/commands',dependencies=writes)
     async def command(request: MissionCommand): return await service_request('POST','/commands',request.model_dump())
+    @router.get('/topologies')
+    async def topologies(): return await service_request('GET','/topologies')
+    @router.get('/routes')
+    async def route(source: str,destination: str,traffic_class: str='sensor'):
+        return await service_request('GET','/routes',params=dict(source=source,destination=destination,traffic_class=traffic_class))
+    @router.get('/packet-events')
+    async def packet_events(after: int=0,limit: int=2000):
+        return await service_request('GET','/packet-events',params=dict(after=after,limit=limit))
+    @router.post('/probes',dependencies=writes)
+    async def probe(request: MissionProbe): return await service_request('POST','/probes',request.model_dump())
+    @router.post('/experiments',dependencies=writes)
+    async def create_experiment(request: ExperimentRequest): return await service_request('POST','/experiments',request.model_dump())
+    @router.get('/experiments/{identity}')
+    async def experiment(identity: str): return await service_request('GET','/experiments/'+identity)
+    @router.post('/experiments/{identity}/control',dependencies=writes)
+    async def experiment_control(identity: str,request: ExperimentControl):
+        return await service_request('POST','/experiments/'+identity+'/control',request.model_dump())
+    @router.get('/experiments/{identity}/export')
+    async def experiment_export(identity: str,format: str='json'):
+        from fastapi.responses import Response
+        if format not in ('json','csv'): raise HTTPException(422,'Unsupported export format')
+        state=await service_request('GET','/experiments/'+identity)
+        import json, csv, io
+        if format=='json': content=json.dumps(state,indent=2)
+        else:
+            from simulation.swarm.experiments import CSV_FIELDS
+            fields=CSV_FIELDS
+            output=io.StringIO(); writer=csv.DictWriter(output,fieldnames=fields,extrasaction='ignore'); writer.writeheader(); writer.writerows(state.get('results',[])); content=output.getvalue()
+        return Response(content,media_type='application/json' if format=='json' else 'text/csv',
+            headers={'Content-Disposition':f'attachment; filename="flare-{identity}.{format}"'})
+    @router.get('/experiments/{identity}/traces/{filename}')
+    async def experiment_trace(identity: str,filename: str):
+        from fastapi.responses import Response
+        state=await service_request('GET','/experiments/'+identity)
+        if filename not in state.get('trace_files',[]): raise HTTPException(404,'Trace is unavailable')
+        async with httpx.AsyncClient(timeout=30) as client:
+            response=await client.get(service_url()+'/simulation/experiments/'+identity+'/traces/'+filename,
+                headers={'Authorization':'Bearer '+os.getenv('AJ_SDN_TOKEN','antijam-development-sdn-token')})
+        if not response.is_success: raise HTTPException(response.status_code,'Trace retrieval failed')
+        return Response(response.content,media_type='application/gzip',headers={'Content-Disposition':f'attachment; filename="{filename}"'})
     @router.get('/commands/{identity}')
     async def command_status(identity: str): return await service_request('GET','/commands/'+identity)
     @router.get('/scenarios')
@@ -59,18 +99,30 @@ def mission_router(current_user, admin, runtime_mode):
 
 async def mission_broadcaster(clients):
     import asyncio
-    cursors={}
+    cursors={}; packet_cursors={}
     while True:
         if clients and os.getenv('FLARE_SWARM_ENABLED')=='1':
             try:
                 snapshot=await service_request('GET','/state',params={'after':min(cursors.values(),default=0)})
+                packet_session=snapshot['session_id']
+                for ws in clients:
+                    if ws not in packet_cursors and getattr(ws.state,'packet_session_id',None)==packet_session and getattr(ws.state,'packet_cursor',None) is not None:
+                        packet_cursors[ws]=(packet_session,min(ws.state.packet_cursor,snapshot.get('packet_cursor',0)))
+                packet_after=min((value[1] for value in packet_cursors.values() if value[0]==packet_session),default=max(0,snapshot.get('packet_cursor',0)-4000))
+                packets=await service_request('GET','/packet-events',params={'after':packet_after,'limit':5000})
                 for ws in list(clients):
                     cursor=cursors.get(ws,0)
                     frame=dict(snapshot,events=[e for e in snapshot['events'] if e['cursor']>cursor])
                     try:
-                        async with asyncio.timeout(1): await ws.send_json({'type':'mission_snapshot','data':frame})
                         cursors[ws]=snapshot['cursor']
-                    except Exception: cursors.pop(ws,None)
-                for ws in set(cursors)-set(clients): cursors.pop(ws,None)
+                        previous=packet_cursors.get(ws)
+                        after=previous[1] if previous and previous[0]==packet_session else packet_after
+                        batch=dict(packets,events=[e for e in packets['events'] if e['cursor']>after],event_gap=after>0 and after<packets.get('oldest_cursor',1)-1)
+                        async with asyncio.timeout(1):
+                            await ws.send_json({'type':'mission_snapshot','data':frame})
+                            await ws.send_json({'type':'mission_packet_events','data':batch})
+                        packet_cursors[ws]=(packet_session,max(after,packets['cursor']))
+                    except Exception: cursors.pop(ws,None); packet_cursors.pop(ws,None)
+                for ws in set(cursors)-set(clients): cursors.pop(ws,None); packet_cursors.pop(ws,None)
             except HTTPException: pass
         await asyncio.sleep(.2)

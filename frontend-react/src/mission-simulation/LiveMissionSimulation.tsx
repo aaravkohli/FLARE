@@ -1,3 +1,4 @@
+import { RouteSelector, DecisionEvidence } from './MissionEvidencePanels';
 import DecisionPanel from './DecisionPanel';
 import { decisionEventKey, decisionPhase, emptyDecisionHistory, reduceDecisionHistory, PHASE_LABELS } from './world/decisionPresentation';
 import type { DecisionEventItem as MissionEvent, DecisionPhase } from './world/decisionPresentation';
@@ -102,14 +103,6 @@ interface LiveMissionSimulationProps {
   onSelectDrone: (drone: string) => void;
   onApplyAttack: (path: CommunicationRoute, profile: AttackProfile) => Promise<void>;
 }
-
-const TELEMETRY_LABELS: Record<string, string> = {
-  rssi: 'RSSI',
-  pdr: 'PDR',
-  sinr: 'SINR',
-  latency: 'Latency',
-  packet_loss: 'Packet loss',
-};
 
 function formatPercent(value?: number, digits = 1) {
   return value === undefined ? '—' : `${(value * 100).toFixed(digits)}%`;
@@ -656,44 +649,6 @@ function MissionStateSummary({ state, clearedAttack, evidence, requestPending, r
   );
 }
 
-function RouteSelector({ state, inspectedRoute, evidence, onInspect }: {
-  state: MissionSimulationState;
-  inspectedRoute: CommunicationRoute;
-  evidence: MissionEvidenceStatus;
-  onInspect: (route: CommunicationRoute) => void;
-}) {
-  return (
-    <div className="mission-route-strip" aria-label="Communication routes">
-      {state.routes.map(route => {
-        const requested = state.requestedRoute === route.id && !route.active;
-        const health = routeHealth(route, state.noSafeRoute);
-        const label = !evidence.evidenceCurrent
-          ? !evidence.lastSnapshot ? 'No snapshot'
-            : route.active ? 'Last installed'
-              : requested ? 'Last requested'
-                : route.metric ? 'Last metric' : 'Unknown'
-          : requested ? state.sdnApplied === false || state.sdnError ? 'Request not confirmed' : 'Requested · not installed' : state.sdnApplied === false && route.active ? 'Last confirmed' : health;
-        return (
-        <button
-          type="button"
-          key={route.id}
-          className={`mission-route-option${route.active ? ' mission-route-option--active' : ''}${requested ? ' mission-route-option--requested' : ''}${inspectedRoute === route.id ? ' mission-route-option--inspected' : ''}${evidence.evidenceCurrent ? '' : ' mission-route-option--retained'}`}
-          onClick={() => onInspect(route.id)}
-          aria-pressed={inspectedRoute === route.id}
-          disabled={evidence.evidenceCurrent && !route.available}
-        >
-          <span className="mission-route-option__name">{ROUTE_LABELS[route.id]}</span>
-          <span className="mission-route-option__latency">{formatMetric(route.metric?.latency, 'ms')}</span>
-          <span className="mission-route-option__threat">Threat {formatPercent(route.threatScore, 0)}</span>
-          <span className={`mission-route-option__state mission-route-option__state--${requested ? 'requested' : health.toLowerCase()}`}>
-            {route.active && evidence.evidenceCurrent ? '● ' : ''}{label}
-          </span>
-        </button>
-      )})}
-    </div>
-  );
-}
-
 function NetworkStateStrip({ state, evidenceCurrent }: { state: MissionSimulationState; evidenceCurrent: boolean }) {
   const appliedHold = state.installedRoute === 'hold';
   const requestedHold = state.requestedRoute === 'hold' || state.networkAction === 'hold';
@@ -776,32 +731,6 @@ function SelectedDroneTelemetry({ state, inspectedRoute, evidence, requestPendin
         </dl>
       </details>
     </aside>
-  );
-}
-
-function DecisionEvidence({ state, evidenceCurrent }: { state: MissionSimulationState; evidenceCurrent: boolean }) {
-  if (!state.explanation) return null;
-  return (
-    <details className="mission-evidence">
-      <summary>
-        <ChevronDown aria-hidden="true" />
-        <span>{evidenceCurrent ? 'Decision evidence' : 'Last snapshot · decision evidence'} <small>Integrated Gradients · model attribution</small></span>
-        <b>{formatPercent(state.explanation.normalized_completeness_error, 2)} error</b>
-      </summary>
-      <div className="mission-evidence__grid">
-        {state.explanation.feature_attributions.map(item => (
-          <div key={item.feature}>
-            <span>{TELEMETRY_LABELS[item.feature.toLowerCase()] || titleCase(item.feature)}</span>
-            <strong>{formatPercent(item.importance)}</strong>
-            <i
-              className={item.signed_attribution >= 0 ? 'is-positive' : 'is-negative'}
-              style={{ '--evidence-width': `${Math.min(100, item.importance * 100)}%` } as React.CSSProperties}
-            />
-          </div>
-        ))}
-      </div>
-      <p>Attribution indicates model sensitivity, not causal proof. {state.explanation.method} · target {state.explanation.target.head}[{state.explanation.target.index}]</p>
-    </details>
   );
 }
 

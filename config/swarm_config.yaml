@@ -2,10 +2,11 @@
 default_count: 30
 max_count: 100
 seed: 42
-topology: manet
+topology: self_healing_mesh
 formation: distributed
 fixed_step_s: 0.05
 network_interval_s: 0.2
+discovery_timeout_s: 0.6
 radio:
   range_m: 350.0
   reference_rssi_dbm: -36.0
@@ -20,6 +21,8 @@ packets:
   capacity: 10000
   ttl_s: 20.0
   retries: 3
+  jitter_ms: 2.0
+  retry_backoff_ms: 2.0
 fl:
   client_pool_size: 5
   transfer_timeout_s: 90.0
