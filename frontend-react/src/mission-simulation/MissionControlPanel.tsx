@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { COMMANDS, ROLES, commandParameters } from './commandParameters';
-import { FORMATIONS, title, selectAllMissionTargets, clearMissionTargets } from './swarm';
+import { FORMATIONS, title, selectAllMissionTargets, clearMissionTargets, toggleMissionTarget } from './swarm';
 import type { SwarmSnapshot } from './swarm';
-type Props = {snapshot:SwarmSnapshot; first:string; targets:string[]; busy:boolean; tab:'inspect'|'commands'; onTab:(tab:'inspect'|'commands')=>void;
+type Props = {snapshot:SwarmSnapshot; first:string; targets:string[]; busy:boolean; tab:'events'|'inspect'|'commands';
  linkId:string; onLink:(id:string)=>void; select:(id:string,additive?:boolean)=>void; mutate:(path:string,body:Record<string,unknown>,method?:string)=>Promise<unknown>};
-export default function MissionControlPanel({snapshot,first,targets,busy,tab,onTab,linkId,onLink,select,mutate}:Props) {
+export default function MissionControlPanel({snapshot,first,targets,busy,tab,linkId,onLink,select,mutate}:Props) {
  const [query,setQuery]=useState(''),[command,setCommand]=useState('hold'),[error,setError]=useState('');
  const [fields,setFields]=useState<Record<string,string|boolean>>({altitude:'120',x:'0',y:'100',z:'0',points:'[[0,100,0],[100,100,100]]',loop:false,family:'mesh',role:'relay',formation:'v'});
- const drone=snapshot.nodes.find(n=>n.id===first),link=snapshot.links.find(l=>l.id===linkId);
+ const drone=snapshot.nodes.find(n=>n.id===first),link=snapshot.links.find(l=>l.id===linkId&&(l.a===first||l.b===first));
  const linkOptions=snapshot.links.filter(l=>l.a===first||l.b===first);
  function send(){setError('');try{
   const parameters=commandParameters(command,fields);
@@ -16,13 +16,13 @@ export default function MissionControlPanel({snapshot,first,targets,busy,tab,onT
  }catch(reason){setError(reason instanceof Error?reason.message:'Invalid parameters');}}
  const field=(name:string,value:string|boolean)=>setFields(old=>({...old,[name]:value}));
  const visible=snapshot.nodes.filter(n=>`${n.alias} ${n.id} ${n.role}`.toLowerCase().includes(query.toLowerCase()));
- return <section className="mission-control-panel" aria-label="Central control">
-  <div className="inspector-tabs" role="tablist" aria-label="UAV tools">{(['inspect','commands'] as const).map(id=><button key={id} role="tab" id={`uav-tab-${id}`} aria-selected={tab===id} tabIndex={tab===id?0:-1} onKeyDown={e=>{if(['ArrowLeft','ArrowRight','Home','End'].includes(e.key)){e.preventDefault();const next=e.key==='Home'?'inspect':e.key==='End'?'commands':id==='inspect'?'commands':'inspect';onTab(next);document.getElementById(`uav-tab-${next}`)?.focus();}}} aria-controls={`uav-panel-${id}`} onClick={()=>onTab(id)}>{id==='inspect'?'Inspect':'Commands'}</button>)}<span>{targets.length} selected</span></div>
-  <div role="tabpanel" id="uav-panel-commands" aria-labelledby="uav-tab-commands" hidden={tab!=='commands'}>
+ return <section className="mission-control-panel" aria-label="Central control" hidden={tab==='events'}>
+  <div role="tabpanel" id="uav-tools-panel-commands" aria-label="Commands" hidden={tab!=='commands'}>
    {error&&<p role="alert" className="swarm-error">{error}</p>}
     <input aria-label="Search fleet" placeholder="Search UAV, identity, role" value={query} onChange={e=>setQuery(e.target.value)}/>
     <div className="swarm-selection"><button onClick={selectAllMissionTargets}>Select all</button><button onClick={clearMissionTargets}>Clear</button></div>
-    <div className="swarm-fleet" role="group" aria-label="Fleet selection">{visible.map(n=><button key={n.id} aria-pressed={targets.includes(n.id)} onClick={e=>select(n.id,e.shiftKey||e.ctrlKey||e.metaKey)}><span>{n.alias}</span><small>{n.available?n.role:'OFFLINE'} · {Math.round(n.battery*100)}%</small></button>)}</div>
+    <div className="swarm-fleet" role="group" aria-label="Fleet selection">{visible.map(n=><label key={n.id} className="fleet-target"><input type="checkbox" aria-label={`Target ${n.alias}`} checked={targets.includes(n.id)} onChange={()=>toggleMissionTarget(n.id)}/><span>{n.alias}<small>{n.available?n.role:'Offline'} · {Math.round(n.battery*100)}%</small></span><button aria-label={`Inspect ${n.alias}`} onClick={()=>select(n.id)}>Inspect</button></label>)}{!visible.length&&<p>No matching UAVs</p>}</div>
+    <p className="selection-count">{targets.length} command targets</p>
     <label>Command<select aria-label="Command" value={command} onChange={e=>{setCommand(e.target.value);setError('');}}>{COMMANDS.map(n=><option key={n} value={n}>{n==='hold'?'Flight HOLD':title(n)}</option>)}</select></label>
     {command==='altitude'&&<label>Altitude (local m, 35–300)<input aria-label="Command altitude" type="number" min="35" max="300" value={String(fields.altitude)} onChange={e=>field('altitude',e.target.value)}/></label>}
     {command==='move'&&<div className="swarm-coordinate-fields">{['x','y','z'].map(k=><label key={k}>{k.toUpperCase()} (local m)<input aria-label={`Command ${k}`} type="number" min={k==='y'?35:-10000} max={k==='y'?300:10000} value={String(fields[k])} onChange={e=>field(k,e.target.value)}/></label>)}</div>}
@@ -36,7 +36,7 @@ export default function MissionControlPanel({snapshot,first,targets,busy,tab,onT
     <p className="swarm-note">Flight HOLD stops movement. Network HOLD suspends data forwarding. Route preferences remain safety constrained. During command-link loss, UAV networking continues autonomously; undelivered commands expire without replay.</p>
 
   </div>
-  <div role="tabpanel" id="uav-panel-inspect" aria-labelledby="uav-tab-inspect" hidden={tab!=='inspect'}>
+  <div role="tabpanel" id="uav-tools-panel-inspect" aria-label="Inspect" hidden={tab!=='inspect'}>
    <label>Inspected UAV<select aria-label="Inspected UAV" value={first} onChange={e=>select(e.target.value)}>{snapshot.nodes.map(n=><option key={n.id} value={n.id}>{n.alias}</option>)}</select></label>
    {drone&&<div className="swarm-detail"><h3>{drone.alias}<small>{drone.id} · {drone.available?'Online':'Offline'}</small></h3>
     {Object.entries({

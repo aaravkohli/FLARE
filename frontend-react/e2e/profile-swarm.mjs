@@ -9,7 +9,7 @@ const browser=await chromium.launch({executablePath:process.env.FLARE_CHROME_PAT
 const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();
 const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try{
- await page.goto('http://127.0.0.1:15173/?profile=1');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('http://127.0.0.1:15173/?profile=1#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await center.waitFor();
  const auth=await context.request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});const token=(await auth.json()).access_token;const headers={Authorization:`Bearer ${token}`};
  let mission=await (await context.request.get('http://127.0.0.1:18000/mission/simulation',{headers})).json();

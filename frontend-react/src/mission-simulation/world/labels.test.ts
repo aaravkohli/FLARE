@@ -2,9 +2,27 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { compactDroneId, craftMarkerBox, placeLabel, worldDroneLabel } from './labels.ts';
-import { cameraEye, cameraPreset, CAMERA_FOV, clampCamera } from './cameraRig.ts';
+import { cameraEye, cameraPreset, CAMERA_FOV, clampCamera, rangeCamera } from './cameraRig.ts';
 import { GROUND_STATION_VISUAL_ENDPOINT } from './groundStation.ts';
 import * as THREE from 'three';
+import { terrainHeight } from './terrain.ts';
+
+test('mission range camera frames ground landmarks and the full aircraft volume together', () => {
+ const aircraft=[];
+ for(const x of [-360,360])for(const z of [-240,240])for(const y of [35,130])aircraft.push({x,y,z});
+ const original=structuredClone(aircraft);
+ const landmarks=[[-420,-210],[350,-210],[-420,300],[350,300],[-280,170],[250,160]].map(([x,z])=>({x,y:terrainHeight(x,z),z}));
+ for(const aspect of [.75,1.5,2.5]){
+  const rig=rangeCamera(aircraft,aspect);
+  const camera=new THREE.PerspectiveCamera(CAMERA_FOV,aspect,2,4500);
+  camera.position.copy(cameraEye(rig,aspect));camera.lookAt(rig.target.x,rig.target.y,rig.target.z);camera.updateMatrixWorld();
+  for(const point of [...aircraft,...landmarks]){
+   const projected=new THREE.Vector3(point.x,point.y,point.z).project(camera);
+   assert.ok(Math.abs(projected.x)<.95&&Math.abs(projected.y)<.95&&projected.z<1,JSON.stringify({point,aspect,projected}));
+  }
+ }
+ assert.deepEqual(aircraft,original);assert.ok(rangeCamera(aircraft).target.y<70);
+});
 test('labels use compact identity and alternate collision-free positions',()=>{
  assert.equal(compactDroneId('drone_12',0),'D12');
  const first=placeLabel(200,200,100,22,768,450,[])!;

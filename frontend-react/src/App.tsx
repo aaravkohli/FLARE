@@ -1,35 +1,21 @@
-import { publishPacketEvents, publishMissionSnapshot, clearMissionSnapshot, getMissionSnapshot, selectMissionTarget, subscribeMission } from './mission-simulation/swarm';
+import { publishPacketEvents, publishMissionSnapshot, clearMissionSnapshot, getMissionSnapshot, inspectMissionTarget, subscribeMission } from './mission-simulation/swarm';
 import SwarmCommandCenter from './mission-simulation/SwarmCommandCenter';
 import type { PacketBatch, SwarmSnapshot } from './mission-simulation/swarm';
 import React, { useState, useEffect, useRef } from 'react';
-import {
-  Activity,
-  AlertTriangle,
-  Database,
-  Radio,
-  Server,
-  Shield,
-  Wifi,
-  WifiOff,
-  Lock,
-  Compass,
-  BrainCircuit,
-  ShieldCheck,
-  FileText,
-  Sliders,
-  RefreshCw,
-  Cpu,
-  Layers,
-  Play,
-  RotateCcw,
-  ArrowRight,
-  Check,
-  ChevronDown,
-  UserPlus,
-  X
-} from 'lucide-react';
+import { WifiOff, ShieldCheck, RefreshCw, UserPlus } from 'lucide-react';
 import './App.css';
-import CommandOverview from './command-overview/CommandOverview';
+import SignIn from './sign-in/SignIn';
+import { ApplicationHeader, SectionTabs } from './application/ApplicationShell';
+import { useApplicationNavigation } from './application/useApplicationNavigation';
+import Overview, { ContributionChart } from './application/Overview';
+import Fleet from './application/Fleet';
+import SecurityMonitoring from './application/SecurityMonitoring';
+import Validation from './application/Validation';
+import ActivityDrawer from './application/Activity';
+import { useTrafficValidation } from './application/useTrafficValidation';
+import type { ActivityEntry, ChartDataPoint } from './application/presentation';
+import { federationForSession } from './application/presentation';
+import './application/application.css';
 import LiveMissionSimulation from './mission-simulation/LiveMissionSimulation';
 import SecureFlControlCenter from './fl-control-center/SecureFlControlCenter';
 import type {
@@ -76,54 +62,13 @@ const API_BASE_URL = resolveApiBaseUrl();
 const WS_BASE_URL = resolveWsBaseUrl(API_BASE_URL);
 const TelemetryCharts = React.lazy(() => import('./TelemetryCharts'));
 
-const formatRiskPercent = (value: number | null | undefined): string =>
-  value == null ? 'Unavailable' : `${(value * 100).toFixed(0)}%`;
-
 type DroneId = string;
-type InsiderProfile =
+export type InsiderProfile =
   | 'normal'
   | 'selective_forwarding'
   | 'telemetry_falsification'
   | 'control_flood'
   | 'replay';
-
-const INSIDER_SCENARIOS: Array<{
-  profile: InsiderProfile;
-  label: string;
-  summary: string;
-  evidence: string;
-}> = [
-  {
-    profile: 'normal',
-    label: 'Normal baseline',
-    summary: 'Honest forwarding and control traffic.',
-    evidence: 'High forwarding ratio, aligned claims, and low replay/control scores.'
-  },
-  {
-    profile: 'selective_forwarding',
-    label: 'Selective forwarding',
-    summary: 'Silently drops transit packets.',
-    evidence: 'Controller-observed forwarding falls below received traffic.'
-  },
-  {
-    profile: 'telemetry_falsification',
-    label: 'Telemetry falsification',
-    summary: 'Reports forwarding that did not occur.',
-    evidence: 'Drone claims diverge from controller-observed packet counts.'
-  },
-  {
-    profile: 'control_flood',
-    label: 'Control flood',
-    summary: 'Overloads the control plane with messages.',
-    evidence: 'Control-rate and duplicate-sequence evidence rise sharply.'
-  },
-  {
-    profile: 'replay',
-    label: 'Replay attack',
-    summary: 'Reuses stale or duplicate sequences.',
-    evidence: 'Duplicate-sequence ratio and inconsistent packet claims increase.'
-  }
-];
 
 // Type definitions
 interface MetricDetail {
@@ -146,7 +91,7 @@ interface ReadinessTransition {
   unavailable_paths: Record<string, string[]>;
 }
 
-interface SdnReadinessState {
+export interface SdnReadinessState {
   ready: boolean;
   status: string;
   connected_switches: number;
@@ -156,7 +101,7 @@ interface SdnReadinessState {
   alert?: ReadinessTransition;
 }
 
-interface ClientSecurityMetric {
+export interface ClientSecurityMetric {
   client_id: string;
   status: 'NORMAL' | 'SUSPICIOUS' | 'MALICIOUS' | 'ATTACK_ARMED' | 'NO_UPDATE';
   action: 'ACCEPTED' | 'DOWN_WEIGHTED' | 'REJECTED' | 'PENDING';
@@ -170,7 +115,7 @@ interface ClientSecurityMetric {
   simulation_mode?: 'normal' | 'noisy' | 'poisoned';
 }
 
-interface FleetDrone {
+export interface FleetDrone {
   drone_id: DroneId;
   display_name: string;
   index: number;
@@ -192,7 +137,7 @@ interface FlClientManagerStatus {
   clients?: Record<string, { status: string; pid?: number | null; dataset?: string | null }>;
 }
 
-interface FlProtectionSelfTest {
+export interface FlProtectionSelfTest {
   passed: boolean;
   mode: 'isolated_shadow_test';
   protection_active: boolean;
@@ -210,7 +155,7 @@ interface FlProtectionSelfTest {
   clients: ClientSecurityMetric[];
 }
 
-type FlProtectionPhase = 'idle' | 'preparing' | 'analyzing' | 'verifying' | 'complete' | 'failed';
+export type FlProtectionPhase = 'idle' | 'preparing' | 'analyzing' | 'verifying' | 'complete' | 'failed';
 
 interface ModelExplanation {
   method: string;
@@ -260,7 +205,7 @@ interface NetworkSecurityAnalysis {
   available_signals?: string[];
 }
 
-interface RoutingExplanation {
+export interface RoutingExplanation {
   available: boolean;
   reason?: string;
   diagnostic_only?: boolean;
@@ -282,25 +227,7 @@ interface RoutingExplanation {
   };
 }
 
-interface InsiderDecision {
-  installedPath: string;
-  networkAction: string;
-  constraintReason: string | null;
-  sdnApplied: boolean;
-}
-
-interface TrafficDefenseBaseline {
-  droneId: DroneId;
-  capturedAt: number;
-  analysis: InsiderAnalysis;
-  containment: ContainmentAnalysis | null;
-  decision: InsiderDecision | null;
-}
-
-type InsiderEvidenceState = 'loading' | 'waiting' | 'live' | 'stale' | 'error';
-type TrafficValidationPhase = 'idle' | 'capturing_baseline' | 'running_attack' | 'complete' | 'failed';
-
-interface InsiderEvidenceSnapshot {
+export interface InsiderEvidenceSnapshot {
   available: boolean;
   reason?: string;
   current_profile: InsiderProfile;
@@ -356,7 +283,7 @@ interface CanonicalEventPayload {
 }
 
 // Matches the new generator.py output: paths is an array, not a keyed dict
-interface TelemetryPayload extends MissionTelemetryPayload {
+export interface TelemetryPayload extends MissionTelemetryPayload {
   event?: CanonicalEventPayload & NonNullable<MissionTelemetryPayload['event']>;
   telemetry_age_s?: number;
   explanation?: ModelExplanation | null;
@@ -370,30 +297,14 @@ interface TelemetrySafetyState {
   applied: boolean | null;
 }
 
-export interface ChartDataPoint {
-  time: string;
-  rssi_direct: number;
-  rssi_satellite: number;
-  rssi_mesh: number;
-  sinr_direct: number;
-  sinr_satellite: number;
-  sinr_mesh: number;
-  latency_direct: number;
-  latency_satellite: number;
-  latency_mesh: number;
-  loss_direct: number;
-  loss_satellite: number;
-  loss_mesh: number;
-  reward: number;
-}
-
-function observedMetric(value:unknown,digits=4,suffix=''):string {
-  return typeof value==='number'&&Number.isFinite(value)?`${value.toFixed(digits)}${suffix}`:'Unavailable';
-}
-
 function App() {
-  const showLegacyFlControls = import.meta.env.VITE_SHOW_LEGACY_FL_CONTROLS === 'true';
-  const showLegacyCommandOverview = import.meta.env.VITE_SHOW_LEGACY_COMMAND_OVERVIEW === 'true';
+  const {page,navigate} = useApplicationNavigation();
+  const [activityOpen,setActivityOpen] = useState(false);
+  const [securityTab,setSecurityTab] = useState<'policy'|'monitoring'>('policy');
+  const [fleetDetailId,setFleetDetailId] = useState('');
+  const [reporting,setReporting] = useState(false);
+  const [reportError,setReportError] = useState<string|null>(null);
+  const [flRunSession,setFlRunSession] = useState<string|undefined>();
   // Auth state
   const [username, setUsername] = useState('admin');
   const [password, setPassword] = useState('');
@@ -415,7 +326,7 @@ function App() {
       const next = getMissionSnapshot()?.session_id;
       if(!next || next === session)return;
       session = next;
-      setMissionPayloads({});setMissionPayload(null);setHistory([]);setTelemetry({});
+      setMissionPayloads({});setMissionPayload(null);setHistory([]);setFlMetrics((previous:any)=>federationForSession(previous,next));setByzantineStatus([]);setInsiderAnalysis(null);setContainmentAnalysis(null);
       setActivePath('unknown');setThreatLevel('UNKNOWN');setNoSafeRoute(false);
       setTelemetrySafetyState(null);setTelemetryUnavailable('Awaiting model inference for this mission session');
     });
@@ -437,11 +348,7 @@ function App() {
   const [sdnController, setSdnController] = useState<string>('UNKNOWN');
   const [sdnReadiness, setSdnReadiness] = useState<SdnReadinessState | null>(null);
   const [readinessHistory, setReadinessHistory] = useState<ReadinessTransition[]>([]);
-  const [fleetDrones, setFleetDrones] = useState<FleetDrone[]>([
-    { drone_id: 'drone_1', display_name: 'Drone 1', index: 1, mac: '00:00:00:00:00:02', access_port: 4, enabled: true, rf_profile: { rssi_offset: 0, pdr_offset: 0, latency_factor: 1 } },
-    { drone_id: 'drone_2', display_name: 'Drone 2', index: 2, mac: '00:00:00:00:00:03', access_port: 5, enabled: true, rf_profile: { rssi_offset: 0, pdr_offset: 0, latency_factor: 1 } },
-    { drone_id: 'drone_3', display_name: 'Drone 3', index: 3, mac: '00:00:00:00:00:04', access_port: 6, enabled: true, rf_profile: { rssi_offset: 0, pdr_offset: 0, latency_factor: 1 } }
-  ]);
+  const [fleetDrones, setFleetDrones] = useState<FleetDrone[]>([]);
   const [managedFleetDrones, setManagedFleetDrones] = useState<FleetDrone[]>([]);
   const [canManageFleet, setCanManageFleet] = useState(false);
   const [flClientManager, setFlClientManager] = useState<FlClientManagerStatus | null>(null);
@@ -462,7 +369,6 @@ function App() {
   const attackSimulationEnabled = systemMode.toLowerCase() === 'simulation';
 
   // Telemetry details
-  const [telemetry, setTelemetry] = useState<Record<string, MetricDetail> | null>(null);
   const [missionPayload, setMissionPayload] = useState<TelemetryPayload | null>(null);
   const [missionReceiptAtMs, setMissionReceiptAtMs] = useState<number | null>(null);
   const [missionPayloads, setMissionPayloads] = useState<Record<DroneId, TelemetryPayload>>({});
@@ -472,28 +378,11 @@ function App() {
 
   // Control action states
   const [jamDuration, setJamDuration] = useState<number>(15);
-  const [statusLog, setStatusLog] = useState<string[]>([]);
-  
+  const [statusLog, setStatusLog] = useState<ActivityEntry[]>([]);
+
   // Capstone Phase 4/5 States
   const [insiderAnalysis, setInsiderAnalysis] = useState<InsiderAnalysis | null>(null);
   const [containmentAnalysis, setContainmentAnalysis] = useState<ContainmentAnalysis | null>(null);
-  const [insiderDecision, setInsiderDecision] = useState<InsiderDecision | null>(null);
-  const [insiderProfiles, setInsiderProfiles] = useState<Record<DroneId, InsiderProfile>>({
-    drone_1: 'normal',
-    drone_2: 'normal',
-    drone_3: 'normal'
-  });
-  const [selectedInsiderProfile, setSelectedInsiderProfile] = useState<InsiderProfile>('control_flood');
-  const [scenarioMenuOpen, setScenarioMenuOpen] = useState(false);
-  const [insiderDemoTab, setInsiderDemoTab] = useState<'traffic' | 'model'>('traffic');
-  const [insiderCommand, setInsiderCommand] = useState<InsiderProfile | null>(null);
-  const [insiderFeedback, setInsiderFeedback] = useState<string | null>(null);
-  const [insiderEvidenceState, setInsiderEvidenceState] = useState<InsiderEvidenceState>('loading');
-  const [insiderEvidenceMessage, setInsiderEvidenceMessage] = useState('Checking the live control loop…');
-  const [insiderEventAge, setInsiderEventAge] = useState<number | null>(null);
-  const [observedInsiderProfile, setObservedInsiderProfile] = useState<InsiderProfile | null>(null);
-  const [trafficDefenseBaseline, setTrafficDefenseBaseline] = useState<TrafficDefenseBaseline | null>(null);
-  const [trafficValidationPhase, setTrafficValidationPhase] = useState<TrafficValidationPhase>('idle');
   const [byzantineStatus, setByzantineStatus] = useState<ClientSecurityMetric[]>(
     (['drone_1', 'drone_2', 'drone_3'] as const).map((drone_id) => ({
       client_id: drone_id,
@@ -520,19 +409,19 @@ function App() {
   const reconnectAttemptsRef = useRef(0);
   const shouldReconnectRef = useRef(false);
   const activeDroneRef = useRef(activeDrone);
+  const authTokenRef = useRef(token);
+  useEffect(() => {authTokenRef.current=token;},[token]);
   const routeTransitionsRef = useRef<MissionRouteTransitionState>(initialMissionRouteTransitionState);
-  const scenarioMenuRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!scenarioMenuOpen) return;
-    const closeScenarioMenu = (event: PointerEvent) => {
-      if (!scenarioMenuRef.current?.contains(event.target as Node)) {
-        setScenarioMenuOpen(false);
-      }
-    };
-    document.addEventListener('pointerdown', closeScenarioMenu);
-    return () => document.removeEventListener('pointerdown', closeScenarioMenu);
-  }, [scenarioMenuOpen]);
+    if(token)return;
+    setMissionPayloads({});setMissionPayload(null);setHistory([]);setFlMetrics(null);setFlConfig(null);
+    setInsiderAnalysis(null);setContainmentAnalysis(null);setRouteTransitions(initialMissionRouteTransitionState);
+    routeTransitionsRef.current=initialMissionRouteTransitionState;setRouteRequestReceiptByDrone({});
+    setEditingDrone(null);setFleetDetailId('');setShowEnrollment(false);setActivityOpen(false);
+    setFlProtectionTest(null);setFlProtectionPhase('idle');setIsRunningFlProtectionTest(false);setReportError(null);
+    setStatusLog([]);setWsStatus('disconnected');setFleetDrones([]);setManagedFleetDrones([]);setCanManageFleet(false);setFlClientManager(null);setByzantineStatus([]);
+  },[token]);
 
   // Set up WebSocket connection when authenticated
   useEffect(() => {
@@ -544,7 +433,6 @@ function App() {
     fetchFlConfig();
     fetchFlMetrics();
     fetchFleet();
-    fetchInsiderProfiles();
     const healthTimer = window.setInterval(fetchSystemHealth, 5000);
     const fleetTimer = window.setInterval(fetchFleet, 5000);
 
@@ -566,8 +454,7 @@ function App() {
 
   useEffect(() => {
     if (!token) return;
-    setInsiderEvidenceState('loading');
-    setInsiderEvidenceMessage('Checking the live control loop…');
+
     fetchInsiderEvidence(activeDrone);
     const evidenceTimer = window.setInterval(
       () => fetchInsiderEvidence(activeDrone),
@@ -577,10 +464,16 @@ function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [token, activeDrone]);
 
-  // Log helper
-  const addLog = (msg: string) => {
-    const timeStr = new Date().toLocaleTimeString();
-    setStatusLog(prev => [`[${timeStr}] ${msg}`, ...prev.slice(0, 49)]);
+  // Keep original messages with explicit metadata only when known at the call site.
+  const addLog = (message: string, meta: Partial<ActivityEntry> = {}) => {
+    const entry: ActivityEntry = {...meta,id:crypto.randomUUID(),timestamp:Date.now(),message};
+    setStatusLog(previous => [entry,...previous.slice(0,49)]);
+  };
+  const trafficValidation = useTrafficValidation(API_BASE_URL,token,activeDrone,attackSimulationEnabled,addLog);
+  const inspectInMission = (id:string) => {
+    inspectMissionTarget(id);
+    selectDrone(id);
+    navigate('mission');
   };
 
   const fetchSystemHealth = async () => {
@@ -641,6 +534,7 @@ function App() {
   // JWT Login
   const handleLogin = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    if (isAuthenticating) return;
     setIsAuthenticating(true);
     setAuthError(null);
     try {
@@ -655,14 +549,17 @@ function App() {
       });
 
       if (!res.ok) {
-        throw new Error('Invalid credentials');
+        throw new Error(res.status === 401 || res.status === 403
+          ? 'Operator name or password is incorrect. Please try again.'
+          : res.status === 429 ? 'Too many sign-in attempts. Please try again shortly.'
+          : `Sign-in service is unavailable (${res.status}). Please try again.`);
       }
 
       const data = await res.json();
       setToken(data.access_token);
-      addLog('Authentication successful. Command interface unlocked.');
+      addLog('Authentication successful. Command interface unlocked.',{type:'authentication',source:'api',severity:'info'});
     } catch (err: any) {
-      setAuthError(err.message || 'Connection to authentication server failed.');
+      setAuthError(err instanceof TypeError ? 'Unable to reach FLARE. Check your connection and try again.' : err.message || 'Unable to sign in. Please try again.');
     } finally {
       setIsAuthenticating(false);
     }
@@ -671,12 +568,13 @@ function App() {
   // WebSocket Connection
   const connectWebSocket = () => {
     setWsStatus('connecting');
-    addLog('Connecting to command loop telemetry stream...');
+    addLog('Connecting to command loop telemetry stream...',{type:'connection',source:'websocket',severity:'info'});
 
     const ws = new WebSocket(`${WS_BASE_URL}/ws`);
     wsRef.current = ws;
 
     ws.onopen = () => {
+      if(wsRef.current !== ws || authTokenRef.current !== token){ws.close();return;}
       reconnectAttemptsRef.current = 0;
       const lastMissionCursor = routeTransitionsRef.current.cursor;
       const packetMission=getMissionSnapshot();
@@ -685,10 +583,11 @@ function App() {
         ...(lastMissionCursor > 0 ? { cursor: lastMissionCursor } : {}),
       }));
       setWsStatus('connected');
-      addLog('WebSocket link established. Receiving real-time RF payload.');
+      addLog('WebSocket link established. Receiving real-time RF payload.',{type:'connection',source:'websocket',severity:'info'});
     };
 
     ws.onmessage = (event) => {
+      if(wsRef.current !== ws || authTokenRef.current !== token)return;
       try {
         const received: unknown = JSON.parse(event.data);
         if(received && typeof received==='object' && 'type' in received && received.type==='mission_snapshot' && 'data' in received){
@@ -728,7 +627,7 @@ function App() {
               setReward(completed.decision.reward);
               setStep(completed.decision.step);
               setNoSafeRoute(Boolean(completed.decision.no_safe_route));
-              setTelemetry(Object.fromEntries(completed.metrics.paths.map(path => [path.path_id, path])));
+
             }
           }
           return;
@@ -748,7 +647,7 @@ function App() {
           }
           return;
         }
-        
+
         // If it's a telemetry broadcast
         if (payload.type === 'telemetry') {
           const dec = payload.decision;
@@ -785,30 +684,11 @@ function App() {
               }
             });
 
-            setTelemetry(metricsDict as any);
-
             const canonicalEvent = payload.event;
             if (canonicalEvent?.insider_analysis) {
               setInsiderAnalysis(canonicalEvent.insider_analysis);
               setContainmentAnalysis(canonicalEvent.containment ?? null);
-              if(!getMissionSnapshot())setObservedInsiderProfile(canonicalEvent.telemetry?.security_evidence?.simulation_profile ?? null);
-              setInsiderEventAge(
-                canonicalEvent.timestamp
-                  ? Math.max(0, Date.now() / 1000 - canonicalEvent.timestamp)
-                  : 0
-              );
-              setInsiderEvidenceState('live');
-              setInsiderEvidenceMessage('Receiving measured evidence from the control loop.');
-            }
-            if (canonicalEvent?.decision && canonicalEvent.insider_analysis) {
-              setInsiderDecision({
-                installedPath: canonicalEvent.decision.installed_path
-                  || canonicalEvent.decision.requested_path
-                  || dec.path_name,
-                networkAction: canonicalEvent.decision.network_action || 'forward',
-                constraintReason: canonicalEvent.decision.constraint_reason ?? null,
-                sdnApplied: Boolean(canonicalEvent.sdn?.applied)
-              });
+
             }
             if (payload.byzantine) {
               setByzantineStatus(payload.byzantine);
@@ -822,18 +702,18 @@ function App() {
             setHistory(prev => {
               const newPoint: ChartDataPoint = {
                 time: timeStr,
-                rssi_direct: metricsDict.direct?.rssi ?? -120,
-                rssi_satellite: metricsDict.satellite?.rssi ?? -120,
-                rssi_mesh: metricsDict.mesh?.rssi ?? -120,
-                sinr_direct: metricsDict.direct?.sinr ?? 0,
-                sinr_satellite: metricsDict.satellite?.sinr ?? 0,
-                sinr_mesh: metricsDict.mesh?.sinr ?? 0,
-                latency_direct: metricsDict.direct?.latency ?? 0,
-                latency_satellite: metricsDict.satellite?.latency ?? 0,
-                latency_mesh: metricsDict.mesh?.latency ?? 0,
-                loss_direct: metricsDict.direct?.packet_loss ?? 0,
-                loss_satellite: metricsDict.satellite?.packet_loss ?? 0,
-                loss_mesh: metricsDict.mesh?.packet_loss ?? 0,
+                rssi_direct: metricsDict.direct?.rssi ?? null,
+                rssi_satellite: metricsDict.satellite?.rssi ?? null,
+                rssi_mesh: metricsDict.mesh?.rssi ?? null,
+                sinr_direct: metricsDict.direct?.sinr ?? null,
+                sinr_satellite: metricsDict.satellite?.sinr ?? null,
+                sinr_mesh: metricsDict.mesh?.sinr ?? null,
+                latency_direct: metricsDict.direct?.latency ?? null,
+                latency_satellite: metricsDict.satellite?.latency ?? null,
+                latency_mesh: metricsDict.mesh?.latency ?? null,
+                loss_direct: metricsDict.direct?.packet_loss ?? null,
+                loss_satellite: metricsDict.satellite?.packet_loss ?? null,
+                loss_mesh: metricsDict.mesh?.packet_loss ?? null,
                 reward: dec.reward
               };
               // Limit history to 20 ticks
@@ -848,13 +728,14 @@ function App() {
     };
 
     ws.onclose = () => {
+      if(wsRef.current !== ws || authTokenRef.current !== token)return;
       setWsStatus('disconnected');
       if (shouldReconnectRef.current) {
         const attempt = reconnectAttemptsRef.current;
         const delay = Math.min(1000 * Math.pow(1.8, attempt) + Math.random() * 400, 15000);
         reconnectAttemptsRef.current = attempt + 1;
         const delaySec = (delay / 1000).toFixed(1);
-        addLog(`WebSocket link closed. Reconnecting in ${delaySec}s (retry #${attempt + 1})...`);
+        addLog(`WebSocket link closed. Reconnecting in ${delaySec}s (retry #${attempt + 1})...`,{type:'connection',source:'websocket',severity:'warning'});
         reconnectTimerRef.current = window.setTimeout(connectWebSocket, delay);
       }
     };
@@ -887,11 +768,7 @@ function App() {
         setManagedFleetDrones([]);
         setCanManageFleet(false);
       }
-      setInsiderProfiles(prev => {
-        const next = { ...prev };
-        drones.forEach(drone => { next[drone.drone_id] ??= 'normal'; });
-        return next;
-      });
+
       setByzantineStatus(prev => drones.map(drone => (
         prev.find(row => row.client_id === drone.drone_id) || {
           client_id: drone.drone_id,
@@ -900,7 +777,7 @@ function App() {
           simulation_mode: 'normal'
         }
       )));
-      if (!drones.some(drone => drone.drone_id === activeDroneRef.current)) {
+      if (drones.length && !drones.some(drone => drone.drone_id === activeDroneRef.current)) {
         selectDrone(drones[0].drone_id);
       }
     } catch (err: any) {
@@ -950,7 +827,7 @@ function App() {
         editingDrone.drone_id,
         simulationEditable ? editDraft : { display_name: editDraft.display_name }
       );
-      addLog(`${editingDrone.drone_id.toUpperCase()} details updated.`);
+      addLog(`${editingDrone.drone_id.toUpperCase()} details updated.`,{type:'fleet',source:'api',severity:'info'});
       setEditingDrone(null);
     } catch (err: any) {
       setEditError(err.message || 'Could not save UAV details');
@@ -1005,7 +882,7 @@ function App() {
         access_port: prev.access_port + 1
       }));
       addLog(`${enrolledId.toUpperCase()} enrolled. Telemetry detection and routing discovery are active.`);
-      selectDrone(enrolledId);
+      setFleetDetailId(enrolledId);
     } catch (err: any) {
       setEnrollmentError(err.message || 'Enrollment failed');
     } finally {
@@ -1045,7 +922,7 @@ function App() {
       addLog(profile === 'none'
         ? `Communication impairment cleared for ${activeDrone.toUpperCase()}.`
         : `Simulation event active on: ${JSON.stringify(data.paths)}. Profile: ${profile.toUpperCase()}. Duration: ${data.duration}s.`);
-      
+
     } catch (err: any) {
       addLog(`Error injecting jam: ${err.message}`);
     }
@@ -1083,236 +960,16 @@ function App() {
     }
   };
 
-  const fetchInsiderProfiles = async () => {
-    if (!token) return;
-    try {
-      const res = await fetch(`${API_BASE_URL}/swarm/insider`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error('Insider simulation state is unavailable');
-      const data = await res.json();
-      if (data?.profiles) {
-        setInsiderProfiles(prev => ({ ...prev, ...data.profiles }));
-      }
-    } catch (err: any) {
-      addLog(`Failed to read insider simulation state: ${err.message}`);
-    }
-  };
-
   const fetchInsiderEvidence = async (drone: DroneId) => {
     if (!token) return;
+    const session = getMissionSnapshot()?.session_id;
     try {
-      const res = await fetch(`${API_BASE_URL}/swarm/insider/${drone}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      if (!res.ok) throw new Error(`Evidence endpoint returned ${res.status}`);
-      const data = await res.json() as InsiderEvidenceSnapshot;
-      setInsiderProfiles(prev => ({ ...prev, [drone]: data.current_profile }));
-      if (!data.available) {
-        setInsiderEvidenceState('waiting');
-        setInsiderEvidenceMessage('The orchestrator has not produced a decision yet. Keep the simulation services running.');
-        return;
-      }
-
-      const age = Number(data.event_age_s ?? 0);
-      setInsiderEventAge(age);
-      setObservedInsiderProfile(data.observed_profile ?? null);
-      if (data.analysis) {
-        setInsiderAnalysis(data.analysis);
-        setContainmentAnalysis(data.containment ?? null);
-        setInsiderDecision({
-          installedPath: data.decision?.installed_path
-            || data.decision?.requested_path
-            || 'unknown',
-          networkAction: data.decision?.network_action || 'unknown',
-          constraintReason: data.decision?.constraint_reason ?? null,
-          sdnApplied: Boolean(data.sdn_applied)
-        });
-      }
-
-      if (!data.profile_synchronized) {
-        setInsiderEvidenceState('waiting');
-        setInsiderEvidenceMessage(`Scenario accepted. Waiting for ${data.current_profile.replaceAll('_', ' ')} evidence to reach the control loop.`);
-      } else if (age > 5) {
-        setInsiderEvidenceState('stale');
-        setInsiderEvidenceMessage(`The last decision is ${Math.round(age)} seconds old. Restart or check the orchestrator.`);
-      } else if (data.analysis) {
-        setInsiderEvidenceState('live');
-        setInsiderEvidenceMessage('Receiving measured evidence from the control loop.');
-      } else {
-        setInsiderEvidenceState('waiting');
-        setInsiderEvidenceMessage('Telemetry arrived without insider analysis. Waiting for a complete control cycle.');
-      }
-    } catch (err: any) {
-      setInsiderEvidenceState('error');
-      setInsiderEvidenceMessage(`Live evidence is unavailable: ${err.message}. Check that the API and orchestrator are running.`);
-    }
-  };
-
-  const applyInsiderProfile = async (profile: InsiderProfile) => {
-    if (!token || insiderCommand) return;
-    if (!attackSimulationEnabled) {
-      setInsiderFeedback('Attack controls are locked outside simulation mode.');
-      return;
-    }
-    setInsiderCommand(profile);
-    setInsiderFeedback(null);
-    addLog(`Applying ${profile.replaceAll('_', ' ')} behavior to ${activeDrone.toUpperCase()}...`);
-    try {
-      const res = await fetch(`${API_BASE_URL}/swarm/insider/${activeDrone}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ profile })
-      });
-      if (!res.ok) throw new Error('Insider simulation command failed');
-      if (profile !== 'normal' && activeInsiderProfile === 'normal' && insiderAnalysis) {
-        setTrafficDefenseBaseline({
-          droneId: activeDrone,
-          capturedAt: Date.now(),
-          analysis: insiderAnalysis,
-          containment: containmentAnalysis,
-          decision: insiderDecision
-        });
-      }
-      setInsiderProfiles(prev => ({ ...prev, [activeDrone]: profile }));
-      setInsiderAnalysis(null);
-      setContainmentAnalysis(null);
-      setInsiderDecision(null);
-      setObservedInsiderProfile(null);
-      setInsiderEvidenceState('waiting');
-      setInsiderEvidenceMessage(`Scenario accepted. Waiting for ${profile.replaceAll('_', ' ')} evidence to reach the control loop.`);
-      const message = profile === 'normal'
-        ? `${activeDroneName} returned to normal. Risk history will settle over the next few cycles.`
-        : `${activeDroneName} is now running the ${profile.replaceAll('_', ' ')} scenario.`;
-      if (profile === 'normal') {
-        setTrafficValidationPhase('idle');
-        setTrafficDefenseBaseline(null);
-      }
-      setInsiderFeedback(message);
-      addLog(message);
-      window.setTimeout(() => fetchInsiderEvidence(activeDrone), 500);
-    } catch (err: any) {
-      const message = `Unable to update insider scenario: ${err.message}`;
-      setInsiderFeedback(message);
-      addLog(message);
-    } finally {
-      setInsiderCommand(null);
-    }
-  };
-
-  const runTrafficDefenseValidation = async () => {
-    if (!token || insiderCommand || !attackSimulationEnabled) return;
-
-    const scenario = selectedInsiderProfile;
-    const postProfile = async (profile: InsiderProfile) => {
-      const res = await fetch(`${API_BASE_URL}/swarm/insider/${activeDrone}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ profile })
-      });
-      if (!res.ok) throw new Error(`Unable to apply ${profile.replaceAll('_', ' ')}`);
-      setInsiderProfiles(previous => ({ ...previous, [activeDrone]: profile }));
-    };
-    const waitForEvidence = async (
-      profile: InsiderProfile,
-      { requireNormalStatus = false, requireEnforcement = false } = {}
-    ) => {
-      let latest: InsiderEvidenceSnapshot | null = null;
-      for (let attempt = 0; attempt < 30; attempt += 1) {
-        const res = await fetch(`${API_BASE_URL}/swarm/insider/${activeDrone}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        if (!res.ok) throw new Error(`Evidence endpoint returned ${res.status}`);
-        latest = await res.json() as InsiderEvidenceSnapshot;
-        const profileReady = latest.available
-          && latest.profile_synchronized
-          && latest.observed_profile === profile
-          && Boolean(latest.analysis);
-        const statusReady = !requireNormalStatus || latest.analysis?.status === 'NORMAL';
-        const enforcementReady = !requireEnforcement || Boolean(
-          latest.analysis
-          && latest.analysis.status !== 'NORMAL'
-          && latest.containment
-          && latest.containment.mode !== 'normal'
-          && latest.sdn_applied
-        );
-        if (profileReady && statusReady && enforcementReady) return latest;
-        await new Promise(resolve => window.setTimeout(resolve, 500));
-      }
-      throw new Error(
-        latest?.analysis && requireNormalStatus
-          ? 'Normal risk did not settle before the validation timeout'
-          : latest?.analysis && requireEnforcement
-            ? `${profile.replaceAll('_', ' ')} was observed but no containment rule was enforced`
-            : `${profile.replaceAll('_', ' ')} evidence did not reach the control loop`
-      );
-    };
-    const applySnapshot = (snapshot: InsiderEvidenceSnapshot) => {
-      setObservedInsiderProfile(snapshot.observed_profile ?? null);
-      setInsiderAnalysis(snapshot.analysis ?? null);
-      setContainmentAnalysis(snapshot.containment ?? null);
-      setInsiderDecision(snapshot.analysis ? {
-        installedPath: snapshot.decision?.installed_path || snapshot.decision?.requested_path || 'unknown',
-        networkAction: snapshot.decision?.network_action || 'unknown',
-        constraintReason: snapshot.decision?.constraint_reason ?? null,
-        sdnApplied: Boolean(snapshot.sdn_applied)
-      } : null);
-      setInsiderEventAge(Number(snapshot.event_age_s ?? 0));
-      setInsiderEvidenceState('live');
-      setInsiderEvidenceMessage('Receiving measured evidence from the control loop.');
-    };
-
-    setInsiderCommand(scenario);
-    setTrafficDefenseBaseline(null);
-    setTrafficValidationPhase('capturing_baseline');
-    setInsiderEvidenceState('waiting');
-    setInsiderFeedback(`Establishing a measured normal baseline for ${activeDroneName}…`);
-    addLog(`Starting traffic-defense validation for ${activeDrone.toUpperCase()}: normal baseline → ${scenario.replaceAll('_', ' ')}.`);
-
-    try {
-      await postProfile('normal');
-      const baselineSnapshot = await waitForEvidence('normal', { requireNormalStatus: true });
-      if (!baselineSnapshot.analysis) throw new Error('Normal baseline did not include analyzer evidence');
-      const baselineDecision: InsiderDecision | null = baselineSnapshot.decision ? {
-        installedPath: baselineSnapshot.decision.installed_path || baselineSnapshot.decision.requested_path || 'unknown',
-        networkAction: baselineSnapshot.decision.network_action || 'unknown',
-        constraintReason: baselineSnapshot.decision.constraint_reason ?? null,
-        sdnApplied: Boolean(baselineSnapshot.sdn_applied)
-      } : null;
-      setTrafficDefenseBaseline({
-        droneId: activeDrone,
-        capturedAt: Date.now(),
-        analysis: baselineSnapshot.analysis,
-        containment: baselineSnapshot.containment ?? null,
-        decision: baselineDecision
-      });
-      applySnapshot(baselineSnapshot);
-
-      setTrafficValidationPhase('running_attack');
-      setInsiderEvidenceState('waiting');
-      setInsiderFeedback(`Baseline captured. Injecting ${scenario.replaceAll('_', ' ')} and waiting for enforcement…`);
-      await postProfile(scenario);
-      const attackSnapshot = await waitForEvidence(scenario, { requireEnforcement: true });
-      applySnapshot(attackSnapshot);
-      setTrafficValidationPhase('complete');
-      setInsiderFeedback(`Validation complete: normal baseline compared with the enforced ${scenario.replaceAll('_', ' ')} response.`);
-      addLog(`Traffic-defense validation completed for ${activeDrone.toUpperCase()}.`);
-    } catch (err: any) {
-      const message = err.message || 'Traffic-defense validation failed';
-      setTrafficValidationPhase('failed');
-      setInsiderEvidenceState('error');
-      setInsiderEvidenceMessage(message);
-      setInsiderFeedback(`${message}. Reset to normal and try again.`);
-      addLog(`Traffic-defense validation failed: ${message}`);
-    } finally {
-      setInsiderCommand(null);
-    }
+      const response = await fetch(`${API_BASE_URL}/swarm/insider/${encodeURIComponent(drone)}`,{headers:{Authorization:`Bearer ${token}`}});
+      if(!response.ok)return;
+      const data = await response.json() as InsiderEvidenceSnapshot;
+      if(activeDroneRef.current !== drone || !data.available || session !== getMissionSnapshot()?.session_id || authTokenRef.current !== token)return;
+      if(data.analysis){setInsiderAnalysis(data.analysis);setContainmentAnalysis(data.containment ?? null);}
+    } catch { /* Connection state is reported by the shared transport. */ }
   };
 
   // Save FL Config
@@ -1331,13 +988,13 @@ function App() {
       if (res.ok) {
         const data = await res.json();
         setFlConfig(data.config);
-        addLog('Secure FL parameters updated and saved to config/fl_config.yaml.');
+        addLog('Secure FL parameters updated and saved to config/fl_config.yaml.',{type:'policy',source:'api',severity:'info'});
         return true;
       } else {
         throw new Error('Save configuration failed');
       }
     } catch (err: any) {
-      addLog(`Error saving FL config: ${err.message}`);
+      addLog(`Error saving FL config: ${err.message}`,{type:'policy',source:'api',severity:'warning'});
       return false;
     } finally {
       setIsSavingConfig(false);
@@ -1351,6 +1008,7 @@ function App() {
     if (isRunningFlProtectionTest) return;
     const startedAt = performance.now();
     setIsRunningFlProtectionTest(true);
+    setFlRunSession(getMissionSnapshot()?.session_id);
     setFlProtectionTest(null);
     setFlProtectionTestError(null);
     setFlProtectionRunTimeMs(null);
@@ -1372,8 +1030,10 @@ function App() {
       ]);
       if (!res.ok) throw new Error(`Protection self-test returned ${res.status}`);
       const result = await res.json() as FlProtectionSelfTest;
+      if(authTokenRef.current !== token)return;
       setFlProtectionPhase('verifying');
       await new Promise(resolve => window.setTimeout(resolve, 400));
+      if(authTokenRef.current !== token)return;
       setFlProtectionTest(result);
       setFlProtectionRunTimeMs(Math.round(performance.now() - startedAt));
       setFlProtectionRunAt(new Date().toLocaleTimeString([], {
@@ -1388,13 +1048,14 @@ function App() {
           : 'Model protection self-test did not meet all safety checks.'
       );
     } catch (err: any) {
+      if(authTokenRef.current !== token)return;
       const message = err.message || 'Protection self-test failed';
       setFlProtectionTestError(message);
       setFlProtectionRunTimeMs(Math.round(performance.now() - startedAt));
       setFlProtectionPhase('failed');
       addLog(`Unable to verify model protection: ${message}`);
     } finally {
-      setIsRunningFlProtectionTest(false);
+      if(authTokenRef.current === token)setIsRunningFlProtectionTest(false);
     }
   };
 
@@ -1409,6 +1070,7 @@ function App() {
 
   // Switch Active Drone Selector
   const selectDrone = (drone: DroneId) => {
+    if(activeDroneRef.current === drone)return;
     activeDroneRef.current = drone;
     setActiveDrone(drone);
     setMissionPayload(null);
@@ -1417,19 +1079,13 @@ function App() {
     setHistory([]);
     setInsiderAnalysis(null);
     setContainmentAnalysis(null);
-    setInsiderDecision(null);
-    setObservedInsiderProfile(null);
-    setInsiderEventAge(null);
-    setTrafficDefenseBaseline(null);
-    setTrafficValidationPhase('idle');
-    setInsiderEvidenceState('loading');
-    setInsiderEvidenceMessage('Checking the selected drone…');
-    setInsiderFeedback(null);
-    addLog(`Swapped active interface to [${drone.toUpperCase()}]. Recalibrating gauges.`);
+
+    addLog(`Swapped active interface to [${drone.toUpperCase()}]. Recalibrating gauges.`,{type:'inspection',source:'interface',severity:'info'});
   };
 
   const downloadReport = async () => {
-    if (!token) return;
+    if (!token || reporting) return;
+    setReporting(true); setReportError(null);
     try {
       const response = await fetch(`${API_BASE_URL}/api/report/generate`, {
         headers: { 'Authorization': `Bearer ${token}` }
@@ -1445,18 +1101,14 @@ function App() {
       link.click();
       link.remove();
       URL.revokeObjectURL(reportUrl);
-      addLog('Evaluation report generated securely.');
+      addLog('Evaluation report generated securely.',{type:'report',source:'api',severity:'info'});
     } catch (err: any) {
-      addLog(`Error generating report: ${err.message}`);
-    }
+      addLog(`Error generating report: ${err.message}`,{type:"report",severity:"warning",source:"api"});
+      setReportError(err.message || "Report export failed");
+    } finally { setReporting(false); }
   };
 
-  const routeNames = ['direct', 'satellite', 'mesh'];
   const activeAvailablePaths = sdnReadiness?.available_paths?.[activeDrone] || [];
-  const unavailablePaths = sdnReadiness?.ready
-    ? routeNames.filter(path => !activeAvailablePaths.includes(path))
-    : routeNames;
-  const activeInsiderProfile = insiderProfiles[activeDrone] || 'normal';
   const activeDroneRecord = fleetDrones.find(drone => drone.drone_id === activeDrone);
   const activeDroneName = activeDroneRecord?.display_name || activeDrone.replaceAll('_', ' ');
   const canonicalEvent = missionPayload?.event;
@@ -1466,14 +1118,9 @@ function App() {
     ? evidenceProvenance?.category === 'ryu_openflow' ? 'ingress port window' : 'simulated port window'
     : networkSecurity?.available_signals?.includes('drop') ? 'simulated counters' : 'not observed';
   const routingExplanation = missionPayload?.routing_explanation;
-  const topRoutingAttributions = routingExplanation?.available
-    ? [...(routingExplanation.explanation?.feature_attributions || [])]
-        .sort((a, b) => Math.abs(b.signed_attribution) - Math.abs(a.signed_attribution))
-        .slice(0, 5)
-    : [];
   const latestFlRows: ClientSecurityMetric[] = Array.isArray(flMetrics?.latest?.client_security)
     ? flMetrics.latest.client_security : [];
-  const flSnapshotMismatch = latestFlRows.some(row => !fleetDrones.some(drone => drone.drone_id === row.client_id));
+  const flSnapshotMismatch = latestFlRows.some(row => !fleetDrones.some(drone => drone.drone_id === row.client_id)) || Boolean(getMissionSnapshot() && flMetrics?.latest?.mission_session && flMetrics.latest.mission_session !== getMissionSnapshot()?.session_id) || Boolean(getMissionSnapshot() && flMetrics?.session_id && flMetrics.session_id !== getMissionSnapshot()?.session_id);
   const flSnapshotTimestamp = typeof flMetrics?.latest?.timestamp === 'string' ? flMetrics.latest.timestamp : null;
   const flSnapshotHasZone = Boolean(flSnapshotTimestamp && /(?:Z|[+-]\d\d:\d\d)$/.test(flSnapshotTimestamp));
   const flSnapshotAge = flSnapshotHasZone && flSnapshotTimestamp
@@ -1481,135 +1128,11 @@ function App() {
   const participatingClientIds = new Set([...Object.keys(flClientManager?.clients ?? {}), ...latestFlRows.map(row => row.client_id)]);
   const displayedByzantineStatus: ClientSecurityMetric[] = (flSnapshotMismatch
     ? fleetDrones.map(drone => ({ client_id: drone.drone_id, status: 'NO_UPDATE' as const, action: 'PENDING' as const }))
-    : byzantineStatus).filter(row => !getMissionSnapshot() || participatingClientIds.has(row.client_id));
+    : latestFlRows.length ? latestFlRows : byzantineStatus).filter(row => !getMissionSnapshot() || participatingClientIds.has(row.client_id));
   const activeFlSecurity = displayedByzantineStatus.find(client => client.client_id === activeDrone);
-  const trafficDefenseActive = activeInsiderProfile !== 'normal';
-  const activeTrafficBaseline = trafficDefenseBaseline?.droneId === activeDrone
-    ? trafficDefenseBaseline
-    : null;
-  const trafficDefenseVerified = Boolean(
-    trafficDefenseActive
-    && insiderEvidenceState === 'live'
-    && observedInsiderProfile === activeInsiderProfile
-    && insiderAnalysis
-    && insiderAnalysis.status !== 'NORMAL'
-    && containmentAnalysis
-    && containmentAnalysis.mode !== 'normal'
-    && insiderDecision?.sdnApplied
-  );
-  const selectedInsiderScenario = INSIDER_SCENARIOS.find(
-    scenario => scenario.profile === selectedInsiderProfile
-  ) || INSIDER_SCENARIOS[0];
-  const activeInsiderScenario = INSIDER_SCENARIOS.find(
-    scenario => scenario.profile === activeInsiderProfile
-  ) || INSIDER_SCENARIOS[0];
-  const flProtectionCandidate = flProtectionTest?.clients.find(
-    client => client.client_id === flProtectionTest.malicious_candidate
-  );
-  const flProtectionAssertions = flProtectionTest ? [
-    {
-      label: 'Hostile candidate rejected',
-      observed: flProtectionTest.malicious_candidate_action,
-      passed: flProtectionTest.malicious_candidate_action === 'REJECTED'
-    },
-    {
-      label: 'Candidate influence removed',
-      observed: `weight ${(flProtectionCandidate?.aggregation_weight ?? 0).toFixed(3)}`,
-      passed: flProtectionCandidate?.aggregation_weight === 0
-    },
-    {
-      label: 'Protected result closer to control',
-      observed: `${flProtectionTest.secure_aggregate_distance.toFixed(6)} < ${flProtectionTest.attacked_fedavg_distance.toFixed(6)}`,
-      passed: flProtectionTest.secure_aggregate_distance < flProtectionTest.attacked_fedavg_distance
-    },
-    {
-      label: 'Deployed global model untouched',
-      observed: flProtectionTest.global_model_modified ? 'modified' : 'unchanged',
-      passed: !flProtectionTest.global_model_modified
-    },
-    {
-      label: 'Trust and client state untouched',
-      observed: flProtectionTest.trust_history_modified || flProtectionTest.client_modes_modified ? 'modified' : 'unchanged',
-      passed: !flProtectionTest.trust_history_modified && !flProtectionTest.client_modes_modified
-    }
-  ] : [];
-  const flProtectionAssertionsPassed = flProtectionAssertions.filter(assertion => assertion.passed).length;
-  const flProtectionAllAssertionsPassed = Boolean(
-    flProtectionTest?.passed && flProtectionAssertions.every(assertion => assertion.passed)
-  );
-  const insiderEvidenceLabel: Record<InsiderEvidenceState, string> = {
-    loading: 'Checking',
-    waiting: 'Starting',
-    live: 'Live',
-    stale: 'Stale',
-    error: 'Stream unavailable'
-  };
-  const insiderEvidenceTone = insiderEvidenceState === 'live'
-    ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-    : insiderEvidenceState === 'loading' || insiderEvidenceState === 'waiting'
-      ? 'border-blue-500/30 bg-blue-500/10 text-blue-300'
-      : 'border-rose-500/30 bg-rose-500/10 text-rose-300';
-  // Unauthenticated view
+  // Authentication remains owned here; presentation is isolated from the mounted workspace.
   if (!token) {
-    return (
-      <main className="app-shell login-shell">
-        <section className="login-surface" aria-labelledby="login-title">
-          <header className="login-header">
-            <p className="login-wordmark">FLARE</p>
-            <h1 id="login-title">UAV Network Resilience</h1>
-          </header>
-
-          <form onSubmit={handleLogin} className="login-form">
-            <div className="login-field">
-              <label htmlFor="operator-id">Operator</label>
-              <input
-                id="operator-id"
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                aria-label="Operator ID"
-                autoComplete="username"
-                placeholder="Operator"
-                required
-              />
-            </div>
-
-            <div className="login-field">
-              <label htmlFor="operator-password">Password</label>
-              <input
-                id="operator-password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                aria-label="Access Signature"
-                autoComplete="current-password"
-                placeholder="Password"
-                required
-              />
-            </div>
-
-            {authError && (
-              <div role="alert" aria-live="assertive" className="login-error">
-                <AlertTriangle aria-hidden="true" />
-                <span>{authError}</span>
-              </div>
-            )}
-
-            <button
-              type="submit"
-              disabled={isAuthenticating}
-              className="login-submit"
-            >
-              {isAuthenticating ? (
-                <span>Signing in...</span>
-              ) : (
-                <span>Sign in</span>
-              )}
-            </button>
-          </form>
-        </section>
-      </main>
-    );
+    return <SignIn username={username} password={password} error={authError} pending={isAuthenticating} onUsernameChange={setUsername} onPasswordChange={setPassword} onSubmit={handleLogin} />;
   }
 
   const enrollmentForm = (
@@ -1646,233 +1169,12 @@ function App() {
   );
 
   return (
-    <div className="app-shell font-sans">
-      <main className="command-main">
-      <CommandOverview
-        systemMode={systemMode}
-        wsStatus={wsStatus}
-        sdnController={sdnController}
-        sdnReadiness={sdnReadiness}
-        readinessHistory={readinessHistory}
-        fleetDrones={fleetDrones}
-        inactiveDrones={managedFleetDrones.filter(drone => !drone.enabled)}
-        activeDrone={activeDrone}
-        threatLevel={threatLevel}
-        noSafeRoute={noSafeRoute}
-        swarmPayloads={missionPayloads}
-        unavailablePaths={unavailablePaths}
-        activeAvailablePaths={activeAvailablePaths}
-        showEnrollment={showEnrollment}
-        enrollment={enrollmentForm}
-        onToggleEnrollment={() => { setShowEnrollment(value => !value); setEnrollmentError(null); }}
-        onSelectDrone={selectDrone}
-        onEditDrone={canManageFleet ? openFleetEditor : undefined}
-        onExportReport={downloadReport}
-        onLock={() => setToken(null)}
-      />
-
-      {editingDrone && canManageFleet && <section className="content-section glass-panel mb-6 p-5" aria-labelledby="fleet-edit-heading">
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div><h2 id="fleet-edit-heading" className="text-sm font-semibold text-gray-100">Edit {editingDrone.display_name}</h2><p className="mt-1 text-xs text-gray-500">{editingDrone.drone_id} · MAC {editingDrone.mac} · SDN port {editingDrone.access_port}</p></div>
-          <button type="button" onClick={() => { setEditingDrone(null); setConfirmDisable(false); }} className="rounded-lg border border-white/10 px-3 py-2 text-xs text-gray-300 hover:border-white/30" aria-label="Close UAV editor"><X className="h-4 w-4" /></button>
-        </div>
-        <form onSubmit={saveFleetEdit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <label className="text-xs text-gray-400">Display name<input required maxLength={80} value={editDraft.display_name} onChange={e => setEditDraft(prev => ({ ...prev, display_name: e.target.value }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
-          {systemMode.toLowerCase() === 'simulation' && sdnController.toLowerCase().startsWith('mock') && <>
-            <label className="text-xs text-gray-400">RSSI offset (dB)<input required type="number" min={-60} max={60} step="any" value={editDraft.rssi_offset} onChange={e => setEditDraft(prev => ({ ...prev, rssi_offset: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
-            <label className="text-xs text-gray-400">PDR offset<input required type="number" min={-1} max={1} step="any" value={editDraft.pdr_offset} onChange={e => setEditDraft(prev => ({ ...prev, pdr_offset: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
-            <label className="text-xs text-gray-400">Latency factor<input required type="number" min={0.1} max={10} step="any" value={editDraft.latency_factor} onChange={e => setEditDraft(prev => ({ ...prev, latency_factor: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
-          </>}
-          {editError && <p role="alert" className="sm:col-span-2 lg:col-span-4 text-xs text-rose-300">{editError}</p>}
-          <div className="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-4">
-            <button type="submit" disabled={editBusy} className="min-h-10 rounded-lg bg-blue-500 px-4 text-xs font-semibold text-slate-950 disabled:opacity-50">{editBusy ? 'Saving…' : 'Save details'}</button>
-            {systemMode.toLowerCase() === 'simulation' && sdnController.toLowerCase().startsWith('mock') && <button type="button" disabled={editBusy} onClick={toggleFleetDrone} className={`min-h-10 rounded-lg border px-4 text-xs font-semibold disabled:opacity-50 ${editingDrone.enabled ? 'border-amber-500/35 text-amber-300' : 'border-emerald-500/35 text-emerald-300'}`}>{editingDrone.enabled ? confirmDisable ? 'Confirm disable' : 'Disable UAV' : 'Re-enable UAV'}</button>}
-            {confirmDisable && <button type="button" onClick={() => setConfirmDisable(false)} className="min-h-10 px-3 text-xs text-gray-400">Cancel disable</button>}
-          </div>
-        </form>
-        <p className="mt-3 text-xs text-gray-500">Drone ID, MAC, and SDN port are fixed during live operation. RF offsets affect synthetic simulation only.</p>
-        {confirmDisable && <p className="mt-3 text-xs text-amber-300">This removes the UAV from active simulation discovery and stops its Flower client after reconciliation. History and identity remain. Mock-SDN state is not real packet enforcement.</p>}
-      </section>}
-
-      {showLegacyCommandOverview && <>
-      {/* HEADER SECTION */}
-      <header className="mb-6 flex flex-col items-start justify-between gap-5 border-b border-[#252b36] pb-5 xl:flex-row xl:items-center">
-        <div>
-          <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-blue-500/30 bg-blue-500/8">
-              <Shield className="w-5 h-5 text-blue-400" />
-            </div>
-            <div>
-              <h1 className="flex flex-wrap items-center gap-2 text-lg font-bold tracking-tight text-slate-100 sm:text-xl">
-                FLARE COMMAND CENTER
-                <span className="rounded border border-blue-500/25 bg-blue-500/8 px-2 py-1 text-[10px] font-semibold uppercase text-blue-300">
-                  {systemMode} Mode
-                </span>
-              </h1>
-              <p className="mt-1 max-w-2xl text-sm leading-5 text-slate-400">Communication Threat Detection · Secure Federated Learning · Safe DQN Routing</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Connections State */}
-        <div className="flex w-full flex-wrap items-center gap-2 xl:w-auto xl:justify-end">
-          {/* WS status */}
-          <div className="flex min-h-10 items-center gap-2 rounded-lg border border-[#252b36] bg-[#0d0f14] px-3 py-2 text-xs">
-            {wsStatus === 'connected' ? (
-              <>
-                <Wifi className="w-3.5 h-3.5 text-emerald-400" />
-                <span className="text-gray-300 font-medium">Link Status: </span>
-                <span className="text-emerald-400 font-semibold uppercase">ONLINE</span>
-              </>
-            ) : wsStatus === 'connecting' ? (
-              <>
-                <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                <span className="text-gray-300 font-medium">Link Status: </span>
-                <span className="text-amber-400 font-semibold uppercase">TUNING...</span>
-              </>
-            ) : (
-              <>
-                <WifiOff className="w-3.5 h-3.5 text-rose-500" />
-                <span className="text-gray-300 font-medium">Link Status: </span>
-                <span className="text-rose-500 font-semibold uppercase">OFFLINE</span>
-              </>
-            )}
-          </div>
-
-          {/* Controller Mode */}
-          <div className={`flex min-h-10 items-center gap-2 rounded-lg bg-[#0d0f14] px-3 py-2 text-xs ${
-            sdnReadiness?.ready ? 'border-emerald-500/20' : 'border-amber-500/30'
-          }`}>
-            <Server className={`w-3.5 h-3.5 ${sdnReadiness?.ready ? 'text-emerald-400' : 'text-amber-400'}`} />
-            <span className="text-gray-300 font-medium">SDN: </span>
-            <span className={sdnReadiness?.ready ? 'text-emerald-400 font-semibold' : 'text-amber-400 font-semibold'}>
-              {sdnController} · {sdnReadiness?.ready ? 'READY' : sdnReadiness ? 'NOT READY' : 'CHECKING'}
-            </span>
-          </div>
-
-          <button
-            onClick={downloadReport}
-            className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-blue-500/30 bg-blue-500/8 px-3 py-2 text-xs font-semibold text-blue-300 transition-colors hover:bg-blue-500/15"
-          >
-            <FileText className="w-3.5 h-3.5" />
-            Export Academic Report
-          </button>
-
-          <button
-            onClick={() => setToken(null)}
-            className="cursor-pointer rounded-lg border border-rose-500/30 bg-transparent px-3 py-2 text-xs font-semibold text-rose-300 transition-colors hover:bg-rose-500/10"
-          >
-            Lock Terminal
-          </button>
-        </div>
-      </header>
-
-      {/* SWARM DRONE SELECTOR CARDS */}
-      {sdnReadiness && !sdnReadiness.ready && (
-        <div
-          role="alert"
-          className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/40 bg-amber-950/20 p-4 text-amber-100"
-        >
-          <WifiOff className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
-          <div>
-            <p className="text-sm font-bold uppercase">SDN data plane not ready</p>
-            <p className="mt-1 text-xs text-amber-100/80">
-              {sdnReadiness.alert?.message || (
-                `Routing changes are unavailable while the controller reports ${sdnReadiness.error || sdnReadiness.status.replace('_', ' ')}${
-                  sdnReadiness.expected_switches > 0
-                    ? ` (${sdnReadiness.connected_switches}/${sdnReadiness.expected_switches} switches connected).`
-                    : '.'
-                }`
-              )}
-            </p>
-          </div>
-        </div>
-      )}
-
-      {sdnReadiness?.ready && unavailablePaths.length > 0 && (
-        <div
-          role="status"
-          className="mb-6 flex items-start gap-3 rounded-xl border border-amber-500/30 bg-amber-950/15 p-4 text-amber-100"
-        >
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-amber-400" />
-          <div>
-            <p className="text-sm font-bold uppercase">Reduced path availability</p>
-            <p className="mt-1 text-xs text-amber-100/80">
-              {unavailablePaths.map(path => path.toUpperCase()).join(', ')} unavailable for {activeDrone.toUpperCase()}.
-              Available routes: {activeAvailablePaths.map(path => path.toUpperCase()).join(', ') || 'none'}.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {readinessHistory.length > 0 && (
-        <section className="content-section mb-6 rounded-xl border border-[#252b36] bg-[#0d0f14] p-4">
-          <div className="mb-3 flex items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-200">
-              <Activity className="h-4 w-4 text-blue-400" />
-              Recent SDN state changes
-            </h2>
-            <span className="text-[10px] uppercase text-gray-500">
-              Process-local history
-            </span>
-          </div>
-          <div className="space-y-2">
-            {readinessHistory.map((event, index) => (
-              <div
-                key={`${event.timestamp}-${index}`}
-                className="flex flex-col gap-1 border-t border-[#252b36] px-1 py-2 first:border-t-0 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex items-center gap-2 text-xs text-gray-300">
-                  <span className={`h-2 w-2 shrink-0 rounded-full ${
-                    event.severity === 'critical'
-                      ? 'bg-rose-500'
-                      : event.severity === 'warning'
-                        ? 'bg-amber-400'
-                        : 'bg-emerald-400'
-                  }`} />
-                  <span>{event.message}</span>
-                </div>
-                <time className="pl-4 text-[10px] text-gray-500 sm:pl-0">
-                  {new Date(event.timestamp * 1000).toLocaleTimeString()}
-                </time>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
-      </>}
-
-      {noSafeRoute && (
-        <div
-          role="alert"
-          className="mb-6 flex items-start gap-3 rounded-xl border border-rose-500/40 bg-rose-950/20 p-4 text-rose-200"
-        >
-          <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-rose-400" />
-          <div>
-            <p className="text-sm font-bold uppercase">Last reported: no safe route available</p>
-            <p className="mt-1 text-xs text-rose-200/80">
-              {activePath === 'hold'
-                ? missionPayload?.event?.decision?.installed_path === 'hold' && missionPayload.event.sdn?.applied === true
-                  ? 'The last controller response reported HOLD applied. This does not verify packet-level dropping.'
-                  : 'HOLD was requested; the current event does not confirm installation.'
-                : ['direct', 'satellite', 'mesh'].includes(activePath)
-                  ? `The legacy v2 policy reported the least-risk route (${activePath.toUpperCase()}) in degraded mode; forwarding is not verified here.`
-                  : 'The requested route has no confirmed installation in the current event.'}
-            </p>
-          </div>
-        </div>
-      )}
-
-      <section aria-labelledby="provenance-heading" className="glass-panel mb-6 overflow-hidden">
-        <div className="flex flex-col gap-2 border-b border-white/5 p-4 sm:flex-row sm:items-end sm:justify-between sm:p-5">
-          <div>
-            <h2 id="provenance-heading" className="text-sm font-semibold text-gray-100">Decision evidence and model provenance</h2>
-            <p className="mt-1 text-[11px] leading-5 text-gray-500">Source labels describe what the runtime actually consumed; scenario injection is shown separately from detector output.</p>
-          </div>
-          <span className="font-mono text-[10px] text-gray-500">Event schema {canonicalEvent?.schema_version || 'unavailable'}</span>
-        </div>
-
-        {telemetryUnavailable ? (
+    <div className="app-shell flare-application">
+      <ApplicationHeader page={page} navigate={navigate} online={wsStatus} reporting={reporting} onReport={downloadReport} onActivity={() => setActivityOpen(true)} onLock={() => setToken(null)} />
+      <main className="application-content" id="application-content">
+        <section className="application-page" aria-label="Overview" hidden={page !== 'overview'} tabIndex={-1}>
+          <Overview mode={systemMode} connection={wsStatus} controller={sdnController} readiness={sdnReadiness} controllerEvent={readinessHistory[0]} activeDrone={activeDrone} activeName={activeDroneName} payload={missionPayload} receivedAtMs={missionReceiptAtMs} unavailable={telemetryUnavailable} charts={<React.Suspense fallback={<p role="status">Loading charts…</p>}><TelemetryCharts history={history} /></React.Suspense>}>
+<div className="overview-provenance">        {telemetryUnavailable ? (
           <div role="status" className="flex items-start gap-3 bg-amber-500/[0.06] p-5 text-amber-200">
             <WifiOff className="mt-0.5 h-4 w-4 shrink-0" />
             <div>
@@ -1918,803 +1220,10 @@ function App() {
           </div>
         )}
 
-        <div className="border-t border-white/5 bg-black/10 p-5">
-          <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-            <div>
-              <h3 className="text-xs font-semibold text-gray-200">DQN Q-value explanation</h3>
-              <p className="mt-1 text-[10px] text-gray-500">Local diagnostic for the policy-selected action, not causal proof. An installed safety override is a separate decision.</p>
-            </div>
-            {routingExplanation?.available && (
-              <span className="mt-2 rounded-full border border-blue-500/20 bg-blue-500/10 px-2.5 py-1 font-mono text-[9px] text-blue-300 sm:mt-0">
-                policy {routingExplanation.policy_path} → installed {routingExplanation.installed_path || 'unknown'}
-              </span>
-            )}
-          </div>
-          {routingExplanation?.available ? (
-            <div className="mt-4 grid gap-2 sm:grid-cols-2 lg:grid-cols-5">
-              {topRoutingAttributions.map(item => (
-                <div key={item.feature} className="rounded-lg border border-white/5 bg-white/[0.02] p-3">
-                  <p className="truncate text-[10px] text-gray-500" title={item.feature}>{item.feature.replaceAll('_', ' ')}</p>
-                  <p className={`mt-1 font-mono text-xs ${item.signed_attribution >= 0 ? 'text-amber-300' : 'text-blue-300'}`}>{item.signed_attribution >= 0 ? '+' : ''}{item.signed_attribution.toFixed(4)}</p>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="mt-3 text-[11px] text-gray-500">Unavailable: {routingExplanation?.reason?.replaceAll('_', ' ') || 'awaiting a persisted standard-DQN event'}</p>
-          )}
-        </div>
-      </section>
-
-      {showLegacyCommandOverview && <>
-      <section aria-labelledby="fleet-heading" className="glass-panel mb-6 overflow-hidden">
-        <div className="flex flex-col gap-3 border-b border-white/5 p-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <h2 id="fleet-heading" className="text-sm font-semibold text-gray-100">Enrolled UAV fleet</h2>
-              <span className="rounded-full border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 font-mono text-[9px] text-blue-300">{fleetDrones.length} active</span>
-            </div>
-            <p className="mt-1 text-[10px] text-gray-500">One registry drives telemetry, anomaly detection, routing, SDN identity checks, and FL authorization.</p>
-          </div>
-          <button
-            type="button"
-            onClick={() => { setShowEnrollment(value => !value); setEnrollmentError(null); }}
-            className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-blue-500/25 bg-blue-500/10 px-3 text-[10px] font-semibold text-blue-200 transition-colors hover:bg-blue-500/15"
-          >
-            {showEnrollment ? <X className="h-3.5 w-3.5" /> : <UserPlus className="h-3.5 w-3.5" />}
-            {showEnrollment ? 'Close enrollment' : 'Enroll a UAV'}
-          </button>
-        </div>
-
-        {showEnrollment && (
-          <form onSubmit={enrollDrone} className="border-b border-blue-500/10 bg-blue-500/[0.035] p-4">
-            <div className="mb-3 flex items-start gap-3">
-              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-blue-500/20 bg-blue-500/10 text-blue-300"><UserPlus className="h-4 w-4" /></div>
-              <div>
-                <p className="text-xs font-semibold text-gray-200">Authorize a new drone identity</p>
-                <p className="mt-0.5 text-[10px] leading-4 text-gray-500">The shared anomaly model applies immediately because it evaluates telemetry features, not a fixed drone number. A physical Flower client participates after it connects with this ID.</p>
-              </div>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-              <label className="text-[9px] font-semibold uppercase tracking-wide text-gray-500">Drone ID
-                <input required pattern="[a-z][a-z0-9_-]{2,63}" placeholder="drone_4" value={newDrone.drone_id} onChange={e => setNewDrone(prev => ({ ...prev, drone_id: e.target.value.toLowerCase() }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-xs normal-case text-gray-200 outline-none focus:border-blue-400/50" />
-              </label>
-              <label className="text-[9px] font-semibold uppercase tracking-wide text-gray-500">Display name
-                <input required placeholder="Survey Drone 4" value={newDrone.display_name} onChange={e => setNewDrone(prev => ({ ...prev, display_name: e.target.value }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-xs normal-case text-gray-200 outline-none focus:border-blue-400/50" />
-              </label>
-              <label className="text-[9px] font-semibold uppercase tracking-wide text-gray-500">Device MAC
-                <input required pattern="(?:[0-9a-fA-F]{2}:){5}[0-9a-fA-F]{2}" value={newDrone.mac} onChange={e => setNewDrone(prev => ({ ...prev, mac: e.target.value }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 font-mono text-xs normal-case text-gray-200 outline-none focus:border-blue-400/50" />
-              </label>
-              <label className="text-[9px] font-semibold uppercase tracking-wide text-gray-500">SDN access port
-                <input required type="number" min="1" max="65535" value={newDrone.access_port} onChange={e => setNewDrone(prev => ({ ...prev, access_port: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 font-mono text-xs normal-case text-gray-200 outline-none focus:border-blue-400/50" />
-              </label>
-            </div>
-            <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <p role="alert" className={`text-[10px] ${enrollmentError ? 'text-rose-300' : 'text-gray-600'}`}>{enrollmentError || 'Duplicate drone IDs, MAC addresses, and switch ports are rejected.'}</p>
-              <button type="submit" disabled={isEnrolling} className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-blue-500 px-4 text-[10px] font-bold text-slate-950 transition-colors hover:bg-blue-400 disabled:cursor-wait disabled:opacity-60">
-                {isEnrolling ? <RefreshCw className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
-                {isEnrolling ? 'Authorizing…' : 'Authorize and add'}
-              </button>
-            </div>
-          </form>
-        )}
-
-        <div aria-label="Swarm drone selection" className="grid grid-cols-1 gap-3 p-4 md:grid-cols-2 xl:grid-cols-3">
-        {fleetDrones.map((drone) => {
-          const id = drone.drone_id;
-          const isActive = activeDrone === id;
-          const isJammed = activeDrone === id && (threatLevel === 'HIGH' || threatLevel === 'MEDIUM');
-          
-          return (
-            <button
-              type="button"
-              key={id}
-              onClick={e => {if(getMissionSnapshot())selectMissionTarget(id,e.shiftKey||e.ctrlKey||e.metaKey);selectDrone(id);}}
-              aria-pressed={isActive}
-              className={`glass-panel relative w-full cursor-pointer overflow-hidden p-5 text-left transition-colors ${
-                isActive 
-                  ? isJammed 
-                    ? 'glow-border-red border-red-500/40' 
-                    : 'glow-border-blue border-blue-500/40'
-                  : 'border-white/5 hover:border-white/10'
-              }`}
-            >
-              <div className="flex justify-between items-start">
-                <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center border ${
-                    isActive
-                      ? isJammed ? 'bg-red-500/10 border-red-500/20' : 'bg-blue-500/10 border-blue-500/20'
-                      : 'bg-white/5 border-white/5'
-                  }`}>
-                    <Compass className={`w-5 h-5 ${
-                      isActive 
-                        ? isJammed ? 'text-red-400' : 'text-blue-400'
-                        : 'text-gray-400'
-                    }`} />
-                  </div>
-                  <div>
-                    <span className="block font-bold text-gray-100">{drone.display_name}</span>
-                    <p className="font-mono text-[9px] text-gray-500">{id} · port {drone.access_port}</p>
-                  </div>
-                </div>
-
-                {/* status breathing light */}
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] font-bold text-gray-400 tracking-wider">
-                    {isActive ? (isJammed ? 'THREAT' : 'ACTIVE') : 'STANDBY'}
-                  </span>
-                  <div className={`w-2.5 h-2.5 rounded-full ${
-                    isActive 
-                      ? isJammed ? 'bg-red-500 animate-status-pulse' : 'bg-emerald-400 animate-status-pulse' 
-                      : 'bg-blue-500/30'
-                  }`} />
-                </div>
-              </div>
-
-              {/* small summary line */}
-              {isActive && (
-                <div className="mt-4 pt-3 border-t border-white/5 flex justify-between text-xs text-gray-400">
-                  <span>PDR: <strong className="text-gray-200">{Math.round((telemetry?.[activePath as 'direct' | 'satellite' | 'mesh']?.pdr || 0) * 100)}%</strong></span>
-                  <span>Lat: <strong className="text-gray-200">{Math.round(telemetry?.[activePath as 'direct' | 'satellite' | 'mesh']?.latency || 0)}ms</strong></span>
-                  <span>Path: <strong className="text-blue-400 uppercase">{activePath}</strong></span>
-                </div>
-              )}
-            </button>
-          );
-        })}
-        </div>
-      </section>
-      </>}
-
-      {/* WEBSITE-CONTROLLED INSIDER DEFENSE DEMO */}
-      <section data-testid="defense-validation-lab" className="defense-lab content-section mb-6 overflow-hidden">
-        <div className="defense-lab__header flex flex-col gap-4 p-5 sm:p-6 lg:flex-row lg:items-center lg:justify-between">
-          <div>
-            <h2 className="text-[24px] font-semibold tracking-[-0.025em] text-gray-100">Defense validation</h2>
-          </div>
-          <div className="defense-lab__context">
-            <span>{activeDroneName}</span>
-            <span className={`defense-lab__context-state ${
-              insiderDemoTab === 'model'
-                ? 'is-safe'
-                : attackSimulationEnabled
-                  ? 'is-live'
-                  : 'is-warning'
-            }`}>
-              {insiderDemoTab === 'model'
-                ? 'Isolated test'
-                : attackSimulationEnabled
-                  ? 'Simulation available'
-                  : 'Simulation unavailable'}
-            </span>
-          </div>
-        </div>
-
-        <div className="defense-lab__nav px-5 py-3 sm:px-6">
-          <div role="tablist" aria-label="Defense demonstration mode" data-active={insiderDemoTab} className="defense-lab__tabs inline-flex w-full p-1 sm:w-[326px]">
-            <button
-              type="button"
-              role="tab"
-              aria-selected={insiderDemoTab === 'traffic'}
-              onClick={() => setInsiderDemoTab('traffic')}
-              className={`defense-lab__tab flex min-h-10 flex-1 items-center justify-center gap-2 px-4 text-[13px] font-medium ${
-                insiderDemoTab === 'traffic' ? 'defense-lab__tab--active' : ''
-              }`}
-            >
-              Traffic evidence
-            </button>
-            <button
-              type="button"
-              role="tab"
-              aria-selected={insiderDemoTab === 'model'}
-              onClick={() => setInsiderDemoTab('model')}
-              className={`defense-lab__tab flex min-h-10 flex-1 items-center justify-center gap-2 px-4 text-[13px] font-medium ${
-                insiderDemoTab === 'model' ? 'defense-lab__tab--active' : ''
-              }`}
-            >
-              FL update gate
-            </button>
-          </div>
-        </div>
-
-        <div className="defense-lab__body grid grid-cols-1 lg:grid-cols-12">
-          <div className="defense-lab__controls p-5 sm:p-6 lg:col-span-5">
-            {insiderDemoTab === 'traffic' ? (
-              <>
-                <div className="mb-6">
-                  <div>
-                    <h3 className="text-[18px] font-semibold tracking-[-0.015em] text-gray-100">Traffic test</h3>
-                    <p className="mt-2 text-[13px] text-gray-500">State <span className={`ml-2 capitalize ${activeInsiderProfile === 'normal' ? 'text-emerald-300' : 'text-rose-300'}`}>{activeInsiderProfile.replaceAll('_', ' ')}</span></p>
-                  </div>
-                </div>
-
-                <label id="insider-scenario-label" className="mb-2 block text-[13px] font-medium text-gray-300">Scenario</label>
-                <div ref={scenarioMenuRef} className="relative">
-                  <button
-                    type="button"
-                    aria-labelledby="insider-scenario-label insider-scenario-value"
-                    aria-haspopup="listbox"
-                    aria-expanded={scenarioMenuOpen}
-                    onClick={() => setScenarioMenuOpen(open => !open)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Escape') setScenarioMenuOpen(false);
-                      if (event.key === 'ArrowDown' && !scenarioMenuOpen) {
-                        event.preventDefault();
-                        setScenarioMenuOpen(true);
-                      }
-                    }}
-                    className={`defense-lab__select flex min-h-12 w-full items-center justify-between px-3.5 text-left text-sm text-gray-100 outline-none ${scenarioMenuOpen ? 'defense-lab__select--open' : ''}`}
-                  >
-                    <span id="insider-scenario-value">{selectedInsiderScenario.label}</span>
-                    <ChevronDown className={`h-4 w-4 text-gray-500 transition-transform ${scenarioMenuOpen ? 'rotate-180' : ''}`} />
-                  </button>
-                  {scenarioMenuOpen && (
-                    <div role="listbox" aria-labelledby="insider-scenario-label" className="defense-lab__select-menu absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden p-1.5">
-                      {INSIDER_SCENARIOS.filter(scenario => scenario.profile !== 'normal').map(scenario => {
-                        const selected = scenario.profile === selectedInsiderProfile;
-                        return (
-                          <button
-                            key={scenario.profile}
-                            type="button"
-                            role="option"
-                            aria-selected={selected}
-                            onClick={() => {
-                              setSelectedInsiderProfile(scenario.profile);
-                              setScenarioMenuOpen(false);
-                            }}
-                            className={`defense-lab__select-option flex min-h-11 w-full items-center justify-between gap-3 px-3 text-left text-[13px] ${selected ? 'defense-lab__select-option--selected' : ''}`}
-                          >
-                            <span>{scenario.label}</span>
-                            {selected && <Check className="h-4 w-4" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  )}
-                </div>
-
-                <div className="defense-lab__scenario-note mt-3">
-                  <p>{selectedInsiderScenario.summary}</p>
-                  <details className="defense-lab__scenario-details">
-                    <summary>Expected detector response <ChevronDown aria-hidden="true" /></summary>
-                    <p>{selectedInsiderScenario.evidence}</p>
-                  </details>
-                </div>
-
-                <div className="mt-5 flex flex-col gap-2 sm:flex-row">
-                  <button
-                    type="button"
-                    onClick={runTrafficDefenseValidation}
-                    disabled={!attackSimulationEnabled || insiderCommand !== null}
-                    className="defense-lab__primary flex min-h-12 flex-1 items-center justify-center gap-2 px-4 text-[13px] font-semibold"
-                  >
-                    {insiderCommand !== null
-                      ? <RefreshCw className="h-4 w-4 animate-spin" />
-                      : <Play className="h-4 w-4" />}
-                    {trafficValidationPhase === 'capturing_baseline'
-                      ? 'Capturing baseline...'
-                      : trafficValidationPhase === 'running_attack'
-                        ? 'Running test...'
-                        : 'Run test'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => applyInsiderProfile('normal')}
-                    disabled={!attackSimulationEnabled || insiderCommand !== null || activeInsiderProfile === 'normal'}
-                    className="defense-lab__secondary flex min-h-12 items-center justify-center gap-2 px-4 text-[13px] font-medium"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" />
-                    Reset
-                  </button>
-                </div>
-
-                <div className="defense-lab__progress mt-6" aria-label="Traffic test progress">
-                  {[
-                    ['Baseline', trafficValidationPhase !== 'idle'],
-                    ['Attack', trafficValidationPhase === 'running_attack' || trafficValidationPhase === 'complete'],
-                    ['Results', trafficValidationPhase === 'complete']
-                  ].map(([label, active]) => (
-                    <div key={String(label)} className={`defense-lab__progress-step ${active ? 'is-active' : ''}`}>
-                      <span aria-hidden="true">{active ? <Check /> : null}</span>
-                      <small>{label}</small>
-                    </div>
-                  ))}
-                </div>
-              </>
-            ) : (
-              <>
-                <div className="defense-lab__test-intro">
-                  <h3>Federated update test</h3>
-                  <p>Test the Byzantine update gate using isolated model copies.</p>
-                  <span><Lock aria-hidden="true" /> Isolated test <i aria-hidden="true" /> Live model unchanged</span>
-                </div>
-
-                <div className="defense-lab__configuration mt-6">
-                  <p className="defense-lab__subheading">Test configuration</p>
-                  <dl>
-                    <div><dt>Input</dt><dd>4 reference updates + 1 adversarial update</dd></div>
-                    <div><dt>Control</dt><dd>FedAvg</dd></div>
-                    <div><dt>Defense</dt><dd>Trust-weighted FedAvg</dd></div>
-                    <div><dt>Isolation</dt><dd>In-memory copies</dd></div>
-                  </dl>
-                </div>
-
-                <div className="defense-lab__conditions mt-5">
-                  <p className="defense-lab__subheading">Pass conditions</p>
-                  <div>
-                    {[
-                      ['Hostile update rejected', flProtectionAssertions[0]?.passed],
-                      ['Protected aggregate remains close to control', flProtectionAssertions[1]?.passed],
-                      ['Live model remains unchanged', flProtectionAssertions[2]?.passed]
-                    ].map(([condition, passed]) => (
-                      <div key={String(condition)} className={flProtectionPhase === 'complete' ? passed ? 'is-passed' : 'is-failed' : ''}>
-                        <span>
-                          {flProtectionPhase === 'complete' && (passed ? <Check aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />)}
-                        </span>
-                        {condition}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mt-5 grid gap-2 sm:grid-cols-[1fr_auto]">
-                  <button
-                    type="button"
-                    onClick={runFlProtectionSelfTest}
-                    disabled={isRunningFlProtectionTest}
-                    className="defense-lab__primary flex min-h-12 items-center justify-center gap-2 whitespace-nowrap px-4 text-[13px] font-semibold"
-                  >
-                    {isRunningFlProtectionTest ? <Activity className="h-4 w-4 animate-pulse motion-reduce:animate-none" /> : <Play className="h-4 w-4" />}
-                    {isRunningFlProtectionTest ? 'Test in progress' : flProtectionTest ? 'Run test again' : 'Start isolated test'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={resetFlProtectionSelfTest}
-                    disabled={isRunningFlProtectionTest || flProtectionPhase === 'idle'}
-                    className="defense-lab__secondary flex min-h-12 items-center justify-center gap-2 whitespace-nowrap px-4 text-[13px] font-medium"
-                  >
-                    <RotateCcw className="h-3.5 w-3.5" /> Reset
-                  </button>
-                </div>
-
-                {flProtectionPhase === 'complete' && (
-                  <button
-                    type="button"
-                    onClick={() => setInsiderDemoTab('traffic')}
-                    className="defense-lab__link mt-3 flex min-h-10 w-full items-center justify-center gap-2 px-3 text-xs font-medium text-blue-200"
-                  >
-                    <Radio className="h-3.5 w-3.5" /> Back to traffic evidence
-                  </button>
-                )}
-              </>
-            )}
-
-            {insiderDemoTab === 'traffic' && insiderFeedback && (
-              <p role="status" aria-live="polite" className="defense-lab__feedback mt-4 px-3 py-2.5 text-xs leading-5 text-gray-400">
-                {insiderFeedback}
-              </p>
-            )}
-          </div>
-
-          <div className="defense-lab__evidence p-5 sm:p-6 lg:col-span-7">
-            {insiderDemoTab === 'traffic' ? (
-              <>
-                <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                  <p className="text-sm font-semibold text-gray-100">Results</p>
-                  <span className={`defense-lab__live-state w-fit text-[11px] font-medium ${insiderEvidenceTone}`}>
-                    {insiderEvidenceLabel[insiderEvidenceState]}
-                  </span>
-                </div>
-
-                {insiderAnalysis ? (
-                  <>
-                    {insiderEvidenceState !== 'live' && (
-                      <div role={insiderEvidenceState === 'error' || insiderEvidenceState === 'stale' ? 'alert' : 'status'} className={`mb-4 rounded-lg border px-3 py-2 text-[10px] leading-4 ${insiderEvidenceTone}`}>
-                        {insiderEvidenceMessage}
-                      </div>
-                    )}
-                    {trafficDefenseActive ? (
-                      <>
-                        <div role="status" aria-live="polite" className={`defense-lab__verdict p-4 sm:p-5 ${trafficDefenseVerified ? 'defense-lab__verdict--passed' : 'defense-lab__verdict--pending'}`}>
-                          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                            <div className="flex items-center gap-3">
-                              <span className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-full ${trafficDefenseVerified ? 'bg-emerald-500/10 text-emerald-300' : 'bg-amber-500/10 text-amber-300'}`}>
-                                {trafficDefenseVerified ? <ShieldCheck className="h-5 w-5" /> : <Activity className="h-5 w-5 animate-pulse motion-reduce:animate-none" />}
-                              </span>
-                              <div>
-                                <p className="text-base font-semibold tracking-[-0.01em] text-gray-100">
-                                  {trafficDefenseVerified ? `${activeInsiderScenario.label} detected and contained` : `Validating ${activeInsiderScenario.label.toLowerCase()}`}
-                                </p>
-                                <p className="mt-1 text-xs text-gray-500">
-                                  {trafficDefenseVerified ? 'The observed attack reached an enforced SDN response.' : insiderEvidenceMessage}
-                                </p>
-                              </div>
-                            </div>
-                            <span className={`defense-lab__result-state w-fit text-[11px] font-medium ${trafficDefenseVerified ? 'text-emerald-300' : 'text-amber-300'}`}>
-                              {trafficDefenseVerified ? 'Contained' : 'Pending'}
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="defense-lab__trace mt-4 grid sm:grid-cols-3">
-                          {[
-                            {
-                              key: 'observed',
-                              label: 'Attack observed',
-                              value: observedInsiderProfile?.replaceAll('_', ' ') || 'synchronizing',
-                              tone: 'text-rose-300'
-                            },
-                            {
-                              key: 'changed',
-                              label: 'Evidence changed',
-                              value: `${(insiderAnalysis.control_rate_score * 100).toFixed(0)}% control, ${formatRiskPercent(insiderAnalysis.risk_score)} risk`,
-                              tone: 'text-amber-300'
-                            },
-                            {
-                              key: 'enforced',
-                              label: 'Policy enforced',
-                              value: `${containmentAnalysis?.mode.replaceAll('_', ' ') || 'pending'}, ${insiderDecision?.networkAction || 'pending'}`,
-                              tone: trafficDefenseVerified ? 'text-emerald-300' : 'text-gray-400'
-                            }
-                          ].map(stage => (
-                            <div key={stage.key} className="defense-lab__trace-step p-3.5">
-                              <p className="text-[11px] font-medium text-gray-500">{stage.label}</p>
-                              <p className={`mt-2 text-[13px] font-medium capitalize ${stage.tone}`}>{stage.value}</p>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="defense-lab__comparison mt-4 overflow-hidden">
-                          <div className="grid grid-cols-[1.2fr_0.8fr_0.8fr] px-4 py-3 text-[11px] font-medium text-gray-500">
-                            <span>Measured signal</span>
-                            <span>Normal baseline</span>
-                            <span>Under attack</span>
-                          </div>
-                          {[
-                            [
-                              'Insider risk',
-                              activeTrafficBaseline ? formatRiskPercent(activeTrafficBaseline.analysis.risk_score) : 'Not captured',
-                              formatRiskPercent(insiderAnalysis.risk_score)
-                            ],
-                            [
-                              'Control-rate score',
-                              activeTrafficBaseline ? `${(activeTrafficBaseline.analysis.control_rate_score * 100).toFixed(0)}%` : 'Not captured',
-                              `${(insiderAnalysis.control_rate_score * 100).toFixed(0)}%`
-                            ],
-                            [
-                              'Containment',
-                              activeTrafficBaseline?.containment?.mode.replaceAll('_', ' ') || 'normal',
-                              containmentAnalysis?.mode.replaceAll('_', ' ') || 'pending'
-                            ],
-                            [
-                              'Network action',
-                              activeTrafficBaseline?.decision?.networkAction || 'forward',
-                              insiderDecision?.networkAction || 'pending'
-                            ]
-                          ].map(([label, baseline, attacked]) => (
-                            <div key={label} className="defense-lab__comparison-row grid grid-cols-[1.2fr_0.8fr_0.8fr] px-4 py-3 text-xs">
-                              <span className="text-gray-400">{label}</span>
-                              <span className="font-mono capitalize text-gray-500">{baseline}</span>
-                              <span className="font-mono font-semibold capitalize text-rose-200">{attacked}</span>
-                            </div>
-                          ))}
-                        </div>
-
-                        <div className="defense-lab__isolation mt-4 flex flex-col gap-3 p-4 sm:flex-row sm:items-center sm:justify-between">
-                          <div className="flex items-start gap-2.5">
-                            <Lock className="mt-0.5 h-4 w-4 shrink-0 text-blue-300" />
-                            <div>
-                              <p className="text-xs font-semibold text-gray-200">Model path unaffected</p>
-                              <p className="mt-1 text-[11px] leading-4 text-gray-500">This traffic test created no Flower update. Live FL action remains {activeFlSecurity?.action?.replaceAll('_', ' ').toLowerCase() || 'not observed'}.</p>
-                            </div>
-                          </div>
-                          <button type="button" onClick={() => setInsiderDemoTab('model')} className="defense-lab__link min-h-10 shrink-0 px-3 text-xs font-medium text-blue-200">
-                            Open model test
-                          </button>
-                        </div>
-                      </>
-                    ) : (
-                      <div className="defense-lab__baseline p-4 sm:p-5">
-                        <div className="flex items-center gap-3">
-                          <span className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-emerald-300"><Check className="h-5 w-5" /></span>
-                          <div>
-                            <p className="text-base font-semibold tracking-[-0.01em] text-gray-100">Baseline ready</p>
-                          </div>
-                        </div>
-                        <div className="defense-lab__metric-strip mt-5 grid sm:grid-cols-4">
-                          {[
-                            ['Risk', formatRiskPercent(insiderAnalysis.risk_score)],
-                            ['Control', `${(insiderAnalysis.control_rate_score * 100).toFixed(0)}%`],
-                            ['Containment', containmentAnalysis?.mode.replaceAll('_', ' ') || 'normal'],
-                            ['Network', insiderDecision?.networkAction || 'forward']
-                          ].map(([label, value]) => (
-                            <div key={label} className="defense-lab__metric p-3">
-                              <p className="text-[11px] text-gray-500">{label}</p>
-                              <p className="mt-1.5 font-mono text-sm capitalize text-emerald-200">{value}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    <div className="defense-lab__metadata mt-3 flex flex-wrap items-center gap-x-4 gap-y-1">
-                      <span>Observed: {observedInsiderProfile?.replaceAll('_', ' ') || 'unknown'}</span>
-                      <span>Event age: {insiderEventAge === null ? 'N/A' : `${insiderEventAge.toFixed(1)}s`}</span>
-                      <span>Transport: {wsStatus === 'connected' ? 'WebSocket + snapshot' : 'Snapshot fallback'}</span>
-                    </div>
-
-                    <details className="defense-lab__detector mt-4">
-                      <summary>Detector signals <ChevronDown aria-hidden="true" /></summary>
-                      <div className="defense-lab__detector-grid grid grid-cols-2 sm:grid-cols-4">
-                        {[
-                          ['Instant risk', `${(insiderAnalysis.instantaneous_risk * 100).toFixed(1)}%`],
-                          ['Forwarding ratio', `${(insiderAnalysis.forwarding_ratio * 100).toFixed(1)}%`],
-                          ['Claim gap', `${(insiderAnalysis.telemetry_claim_gap * 100).toFixed(1)}%`],
-                          ['Control score', `${(insiderAnalysis.control_rate_score * 100).toFixed(1)}%`],
-                          ['Replay score', `${(insiderAnalysis.replay_score * 100).toFixed(1)}%`],
-                          ['Freshness', `${(insiderAnalysis.evidence_freshness * 100).toFixed(1)}%`],
-                          ['Constraint', insiderDecision?.constraintReason?.replaceAll('_', ' ') || 'none'],
-                          ['Profile match', observedInsiderProfile === activeInsiderProfile ? 'yes' : 'waiting']
-                        ].map(([label, value]) => (
-                          <div key={label}>
-                            <p>{label}</p>
-                            <strong>{value}</strong>
-                          </div>
-                        ))}
-                      </div>
-                    </details>
-                  </>
-                ) : (
-                  <div className={`defense-lab__empty flex min-h-64 flex-col items-center justify-center px-6 text-center ${insiderEvidenceTone}`}>
-                    {insiderEvidenceState === 'loading' || insiderEvidenceState === 'waiting'
-                      ? <Activity className="mb-3 h-6 w-6 animate-pulse" />
-                      : <AlertTriangle className="mb-3 h-6 w-6" />}
-                    <p className="text-sm font-semibold">
-                      {insiderEvidenceState === 'error' ? 'Live services are unreachable' : insiderEvidenceState === 'stale' ? 'Control loop stopped updating' : 'Starting control-loop analysis'}
-                    </p>
-                    <p className="mt-2 max-w-md text-[11px] leading-5 opacity-80">{insiderEvidenceMessage}</p>
-                    <div className="defense-lab__service-state mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1">
-                      <span>API {systemMode === 'UNKNOWN' ? 'offline' : 'online'}</span>
-                      <span>Stream {wsStatus}</span>
-                      <span>SDN {sdnReadiness?.ready ? 'ready' : 'not ready'}</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => fetchInsiderEvidence(activeDrone)}
-                      className="defense-lab__secondary mt-5 flex min-h-10 items-center gap-2 px-4 text-xs font-medium"
-                    >
-                      <RefreshCw className="h-3.5 w-3.5" /> Retry
-                    </button>
-                  </div>
-                )}
-              </>
-            ) : (
-              <>
-                <div className="mb-4">
-                  <div>
-                    <h3 className="text-sm font-semibold text-gray-100">Update gate</h3>
-                    <p className="mt-1 text-[11px] text-gray-500">
-                      {flProtectionPhase === 'idle'
-                        ? 'Waiting for an operator to start the experiment'
-                        : flProtectionPhase === 'complete'
-                          ? `Completed${flProtectionRunAt ? ` at ${flProtectionRunAt}` : ''}${flProtectionRunTimeMs !== null ? ` in ${flProtectionRunTimeMs} ms` : ''}`
-                          : flProtectionPhase === 'failed'
-                            ? 'The test stopped before a verdict was produced'
-                            : 'Executing the real secure-aggregation self-test'}
-                    </p>
-                  </div>
-                </div>
-                {isRunningFlProtectionTest && !flProtectionTest ? (
-                  <div role="status" aria-live="polite" className="defense-lab__gate-running min-h-80 overflow-hidden rounded-xl border border-amber-500/20 bg-amber-500/[0.025]">
-                    <div className="flex items-center justify-between border-b border-white/5 px-4 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <Activity className="h-4 w-4 animate-pulse text-amber-300 motion-reduce:animate-none" />
-                        <div>
-                          <p className="text-xs font-semibold text-gray-200">Experiment running</p>
-                          <p className="mt-0.5 text-[11px] text-gray-500">Analyzing isolated model copies</p>
-                        </div>
-                      </div>
-                      <span className="font-mono text-[9px] text-amber-300">LIVE</span>
-                    </div>
-                    <div className="px-5 py-4">
-                      {[
-                        { phase: 'preparing', icon: Database, label: 'Prepare isolated model copies', detail: 'Constructing four synthetic reference updates and one amplified sign-flip candidate.' },
-                        { phase: 'analyzing', icon: Shield, label: 'Run Byzantine update analysis', detail: 'Computing trust, robust deviation, update norm, and cosine direction.' },
-                        { phase: 'verifying', icon: Layers, label: 'Verify aggregation invariants', detail: 'Comparing protected output with the honest control and checking live state.' }
-                      ].map((stage, index) => {
-                        const currentIndex = ['preparing', 'analyzing', 'verifying'].indexOf(flProtectionPhase);
-                        const completed = currentIndex > index;
-                        const active = currentIndex === index;
-                        const StageIcon = stage.icon;
-                        return (
-                          <div key={stage.phase} className="relative flex gap-3 pb-5 last:pb-0">
-                            {index < 2 && <span className={`absolute left-[15px] top-8 h-[calc(100%-1.5rem)] w-px ${completed ? 'bg-emerald-500/35' : 'bg-white/10'}`} aria-hidden="true" />}
-                            <span className={`relative flex h-8 w-8 shrink-0 items-center justify-center rounded-md border ${
-                              completed
-                                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300'
-                                : active
-                                  ? 'border-amber-500/35 bg-amber-500/10 text-amber-300'
-                                  : 'border-white/10 bg-white/[0.025] text-gray-600'
-                            }`}>
-                              {completed ? <Check className="h-4 w-4" /> : <StageIcon className={`h-4 w-4 ${active ? 'animate-pulse motion-reduce:animate-none' : ''}`} />}
-                            </span>
-                            <div className="pt-0.5">
-                              <p className={`text-xs font-semibold ${active ? 'text-amber-200' : completed ? 'text-emerald-200' : 'text-gray-500'}`}>{stage.label}</p>
-                              <p className="mt-1 text-[9px] leading-4 text-gray-600">{stage.detail}</p>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                ) : flProtectionTest ? (
-                  <>
-                    <div role="status" className={`defense-lab__gate-verdict flex flex-col gap-4 rounded-xl border-l-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between ${
-                      flProtectionAllAssertionsPassed
-                        ? 'border-emerald-400 bg-emerald-500/[0.065]'
-                        : 'border-rose-400 bg-rose-500/[0.065]'
-                    }`}>
-                      <div className="flex items-center gap-4">
-                        <div className={`defense-lab__gate-mark flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border-2 ${
-                          flProtectionAllAssertionsPassed
-                            ? 'border-emerald-400/60 text-emerald-300'
-                            : 'border-rose-400/60 text-rose-300'
-                        }`}>
-                          {flProtectionAllAssertionsPassed ? <ShieldCheck aria-hidden="true" /> : <AlertTriangle aria-hidden="true" />}
-                        </div>
-                        <div>
-                          <p className="text-base font-semibold text-gray-100">
-                            {flProtectionAllAssertionsPassed ? 'Update gate passed' : 'Update gate failed'}
-                          </p>
-                        </div>
-                      </div>
-                      <div className="shrink-0 text-left sm:text-right">
-                        <p className={`font-mono text-2xl font-semibold ${flProtectionAllAssertionsPassed ? 'text-emerald-300' : 'text-rose-300'}`}>{flProtectionAssertionsPassed}/{flProtectionAssertions.length}</p>
-                        <p className="text-[9px] text-gray-600">assertions passed</p>
-                      </div>
-                    </div>
-
-                    <div className="defense-lab__assertions mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/15">
-                      <div className="flex items-center justify-between border-b border-white/5 px-4 py-3">
-                        <p className="text-xs font-semibold text-gray-200">Assertion report</p>
-                        <span className="font-mono text-[9px] text-gray-600">actual vs expected</span>
-                      </div>
-                      <div className="grid sm:grid-cols-2">
-                        {flProtectionAssertions.map((assertion, index) => (
-                          <div key={assertion.label} className={`flex items-start gap-2.5 px-4 py-3 ${index >= 2 ? 'border-t border-white/5' : ''} ${index % 2 === 1 ? 'sm:border-l sm:border-white/5' : ''} ${index === 1 ? 'border-t border-white/5 sm:border-t-0' : ''}`}>
-                            <span className={`mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border ${assertion.passed ? 'border-emerald-500/30 text-emerald-300' : 'border-rose-500/30 text-rose-300'}`}>
-                              {assertion.passed ? <Check className="h-3 w-3" /> : <AlertTriangle className="h-3 w-3" />}
-                            </span>
-                            <div className="min-w-0">
-                              <p className="text-[10px] font-semibold text-gray-300">{assertion.label}</p>
-                              <p className={`mt-0.5 break-words font-mono text-[9px] ${assertion.passed ? 'text-emerald-300/75' : 'text-rose-300/75'}`}>Observed: {assertion.observed}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-
-                    <p className="mb-2 mt-4 text-[10px] font-semibold text-gray-300">Evidence trace</p>
-                    <div className="grid items-stretch gap-3 md:grid-cols-[minmax(0,1fr)_36px_minmax(170px,0.72fr)]">
-                      <div className="defense-lab__updates overflow-hidden rounded-xl border border-white/10 bg-black/15">
-                        <div className="flex items-center justify-between border-b border-white/5 px-3.5 py-2.5">
-                          <div>
-                            <p className="text-xs font-semibold text-gray-200">Test updates</p>
-                            <p className="mt-0.5 text-[11px] text-gray-500">Reference A to D are isolated test vectors</p>
-                          </div>
-                          <span className="font-mono text-[10px] text-gray-500">{flProtectionTest.tested_updates} total</span>
-                        </div>
-                        <div className="divide-y divide-white/5">
-                          {flProtectionTest.clients.map((client, index) => {
-                            const rejected = client.action === 'REJECTED';
-                            const isCandidate = client.client_id === flProtectionTest.malicious_candidate;
-                            const referenceSuffix = client.client_id.match(/^reference_update_([a-d])$/)?.[1];
-                            const clientLabel = isCandidate
-                              ? 'Hostile test update'
-                              : referenceSuffix
-                                ? `Reference update ${referenceSuffix.toUpperCase()}`
-                                : 'Reference update';
-                            return (
-                              <div key={client.client_id} className={`defense-lab__candidate flex min-h-10 items-center gap-3 px-3.5 py-2 ${isCandidate ? 'is-candidate' : ''} ${rejected ? 'is-rejected bg-rose-500/[0.05]' : ''}`}>
-                                <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border font-mono text-[9px] ${rejected ? 'border-rose-500/30 bg-rose-500/10 text-rose-300' : 'border-white/10 bg-white/[0.035] text-gray-400'}`}>
-                                  {isCandidate ? '!' : index + 1}
-                                </span>
-                                <div className="min-w-0 flex-1">
-                                  <p className={`truncate text-[10px] font-semibold ${rejected ? 'text-rose-200' : 'text-gray-300'}`}>{clientLabel}</p>
-                                  <p className="mt-0.5 font-mono text-[8px] text-gray-600">weight {(client.aggregation_weight ?? 0).toFixed(3)}</p>
-                                </div>
-                                <span className={`text-[9px] font-semibold ${rejected ? 'text-rose-300' : client.action === 'DOWN_WEIGHTED' ? 'text-amber-300' : 'text-emerald-300'}`}>
-                                  {client.action.replaceAll('_', ' ').toLowerCase()}
-                                </span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                      <div className="hidden items-center justify-center md:flex" aria-hidden="true">
-                        <ArrowRight className="h-5 w-5 text-gray-600" />
-                      </div>
-                      <div className={`defense-lab__gate-outcome flex min-h-48 flex-col justify-between rounded-xl border p-4 ${flProtectionAllAssertionsPassed ? 'border-emerald-500/25 bg-emerald-500/[0.055]' : 'border-rose-500/25 bg-rose-500/[0.055]'}`}>
-                        <div>
-                          <div className={`flex h-10 w-10 items-center justify-center rounded-lg border ${flProtectionAllAssertionsPassed ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-300' : 'border-rose-500/30 bg-rose-500/10 text-rose-300'}`}>
-                            {flProtectionAllAssertionsPassed ? <ShieldCheck className="h-5 w-5" /> : <AlertTriangle className="h-5 w-5" />}
-                          </div>
-                          <p className="mt-4 text-base font-semibold text-gray-100">
-                            {flProtectionAllAssertionsPassed ? 'Hostile update rejected' : 'Update requires review'}
-                          </p>
-                          <p className="mt-1.5 text-[10px] leading-4 text-gray-500">
-                            {flProtectionTest.rejected_updates} of {flProtectionTest.tested_updates} copied updates rejected before aggregation.
-                          </p>
-                        </div>
-                        <div className="mt-4 border-t border-white/10 pt-3">
-                          <p className="text-[9px] text-gray-600">Aggregation method</p>
-                          <p className="mt-1 font-mono text-[10px] text-emerald-200">{flProtectionTest.aggregation_method.replaceAll('_', ' ')}</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="defense-lab__influence mt-3 overflow-hidden rounded-xl border border-white/10 bg-black/15">
-                      <div className="flex flex-col gap-1 border-b border-white/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
-                        <p className="text-xs font-semibold text-gray-200">Measured model influence</p>
-                        <p className="text-[9px] text-gray-500">Distance from the honest aggregate. Lower is safer.</p>
-                      </div>
-                      <div className="grid items-stretch sm:grid-cols-[1fr_auto_1fr]">
-                        <div className="px-4 py-3.5">
-                          <p className="text-[10px] text-gray-500">Without the guard</p>
-                          <p className="mt-1 font-mono text-xl font-semibold text-rose-300">{flProtectionTest.attacked_fedavg_distance.toFixed(6)}</p>
-                          <p className="mt-1 text-[9px] text-rose-300/70">Poisoned update included by FedAvg</p>
-                        </div>
-                        <div className="flex items-center justify-center border-y border-white/5 px-4 py-3 sm:border-x sm:border-y-0">
-                          <div className="text-center">
-                            <ArrowRight className="mx-auto h-4 w-4 text-gray-600" />
-                            <p className="mt-1 font-mono text-[10px] font-semibold text-emerald-300">{flProtectionTest.damage_reduction_percent.toFixed(3)}%</p>
-                            <p className="text-[8px] text-gray-600">influence removed</p>
-                          </div>
-                        </div>
-                        <div className="px-4 py-3.5">
-                          <p className="text-[10px] text-gray-500">With FLARE protection</p>
-                          <p className="mt-1 font-mono text-xl font-semibold text-emerald-300">{flProtectionTest.secure_aggregate_distance.toFixed(6)}</p>
-                          <p className="mt-1 text-[9px] text-emerald-300/70">Hostile candidate receives zero weight</p>
-                        </div>
-                      </div>
-                    </div>
-                  </>
-                ) : (
-                  <div className="defense-lab__gate-ready min-h-80 p-5">
-                    <div className="grid items-center gap-4 md:grid-cols-[1fr_auto_0.8fr]">
-                      <div>
-                        <p className="text-[10px] font-semibold text-gray-400">Copied updates</p>
-                        <div className="mt-3 flex gap-2" aria-hidden="true">
-                          {[0, 1, 2, 3].map(index => <span key={index} className="flex h-8 w-8 items-center justify-center rounded-md border border-white/10 bg-white/[0.03] font-mono text-[9px] text-gray-500">D{index + 1}</span>)}
-                          <span className="flex h-8 w-8 items-center justify-center rounded-md border border-rose-500/25 bg-rose-500/[0.07] font-mono text-xs text-rose-300">!</span>
-                        </div>
-                      </div>
-                      <ArrowRight className="hidden h-5 w-5 text-gray-600 md:block" aria-hidden="true" />
-                      <div className="defense-lab__gate-target flex items-center gap-3 p-3.5">
-                        <ShieldCheck className="h-6 w-6 shrink-0 text-emerald-300" />
-                        <div>
-                          <p className="text-xs font-semibold text-gray-200">Update gate</p>
-                          <p className="mt-1 text-[11px] leading-4 text-gray-500">Ready to test</p>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                {flProtectionTestError && (
-                  <div role="alert" className="mt-3 rounded-lg border border-rose-500/25 bg-rose-500/[0.06] px-3 py-2 text-[10px] text-rose-300">
-                    Verification failed to run: {flProtectionTestError}. Check that the API service is online, then try again.
-                  </div>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </section>
-
-      {/* LIVE MISSION NETWORK — reuses the parent WebSocket and selected-drone state */}
-      <div className="mission-demo-access">
-        <span>Recorded controlled simulation · single UAV · mock SDN</span>
-        <a href={`${import.meta.env.BASE_URL}mission-demo.html`}>Replay Direct → Satellite response</a>
-      </div>
+<ContributionChart explanation={routingExplanation} /></div>
+          </Overview>
+        </section>
+        <section className="application-page mission-application-page" aria-label="Mission" hidden={page !== 'mission'} tabIndex={-1}>
       {swarmSnapshot && token ? <SwarmCommandCenter snapshot={swarmSnapshot} api={API_BASE_URL} token={token} evidence={{payload:missionPayload,receivedAtMs:missionReceiptAtMs,transportStatus:wsStatus,unavailable:telemetryUnavailable,
         request:routeTransitions.pendingByDrone[activeDrone]??null,completion:routeTransitions.completedByDrone[activeDrone]??null,
         requestReceivedAtMs:routeRequestReceiptByDrone[activeDrone]??null,controller:sdnController}} onSnapshot={s=>{publishMissionSnapshot(s);setSwarmSnapshot(previous=>previous??s);}} onInspect={id=>{selectDrone(id);if(wsRef.current?.readyState===WebSocket.OPEN)wsRef.current.send(JSON.stringify({type:"inspect",drone_ids:[id]}));}}/> : <LiveMissionSimulation
@@ -2751,605 +1260,43 @@ function App() {
         onApplyAttack={injectJamming}
       />}
 
-      <React.Suspense fallback={<div className="glass-panel mb-6 h-[300px] animate-pulse" aria-label="Loading telemetry charts" />}>
-        <TelemetryCharts history={history} />
-      </React.Suspense>
-
-      {/* SECURE FEDERATED LEARNING CONFIGURATION & PRIVACY CONTROL CENTER */}
-      {flConfig && <SecureFlControlCenter
-        config={flConfig}
-        metrics={flSnapshotMismatch ? null : flMetrics}
-        evidenceWarning={flSnapshotMismatch ? 'A test-fleet snapshot was withheld. Start a new Flower round with the enrolled fleet.' : undefined}
-        isSaving={isSavingConfig}
-        onConfigChange={setFlConfig}
-        onSave={saveFlConfig}
-      />}
-
-      {showLegacyFlControls && flConfig && (
-        <section className="content-section glass-panel mb-6 p-4 sm:p-6">
-          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 mb-6 pb-4 border-b border-white/5">
-            <div>
-              <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-100">
-                <Sliders className="w-4 h-4 text-blue-400" />
-                Secure FL Swarm Config & Privacy Controls
-              </h2>
-              <p className="text-xs text-gray-400 mt-0.5">Dynamically adjust parameters, enable Differential Privacy, Compression, and pFedMe Personalization</p>
-            </div>
-            <button
-              onClick={() => saveFlConfig(flConfig)}
-              disabled={isSavingConfig}
-              className="flex cursor-pointer items-center gap-1.5 rounded-lg bg-blue-600 px-4 py-2 text-xs font-semibold text-white transition-colors hover:bg-blue-500 disabled:bg-blue-800"
-            >
-              {isSavingConfig ? (
-                <>
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  Saving Parameters...
-                </>
-              ) : (
-                <>
-                  <Database className="w-3.5 h-3.5" />
-                  Save config/fl_config.yaml
-                </>
-              )}
-            </button>
+        </section>
+        <section className="application-page" aria-label="Fleet" hidden={page !== 'fleet'} tabIndex={-1}>
+          <Fleet active={page === 'fleet'} drones={fleetDrones} managed={managedFleetDrones} payloads={missionPayloads} canManage={canManageFleet} detailId={fleetDetailId} onDetail={id => { setFleetDetailId(id); if(id)openFleetEditor(id); else { setEditingDrone(null); setConfirmDisable(false); } }} onInspect={inspectInMission} enrolling={showEnrollment} onEnrollment={setShowEnrollment} enrollment={enrollmentForm} onEdit={openFleetEditor} editor={
+      editingDrone && canManageFleet && <section className="fleet-editor" aria-labelledby="fleet-edit-heading">
+        <h3 id="fleet-edit-heading">Configuration</h3>
+        <form onSubmit={saveFleetEdit} className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <label className="text-xs text-gray-400">Display name<input required maxLength={80} value={editDraft.display_name} onChange={e => setEditDraft(prev => ({ ...prev, display_name: e.target.value }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+          {systemMode.toLowerCase() === 'simulation' && sdnController.toLowerCase().startsWith('mock') && <>
+            <label className="text-xs text-gray-400">RSSI offset (dB)<input required type="number" min={-60} max={60} step="any" value={editDraft.rssi_offset} onChange={e => setEditDraft(prev => ({ ...prev, rssi_offset: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+            <label className="text-xs text-gray-400">PDR offset<input required type="number" min={-1} max={1} step="any" value={editDraft.pdr_offset} onChange={e => setEditDraft(prev => ({ ...prev, pdr_offset: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+            <label className="text-xs text-gray-400">Latency factor<input required type="number" min={0.1} max={10} step="any" value={editDraft.latency_factor} onChange={e => setEditDraft(prev => ({ ...prev, latency_factor: Number(e.target.value) }))} className="mt-1 w-full rounded-lg border border-white/10 bg-black/25 px-3 py-2 text-sm text-gray-200 focus:border-blue-400" /></label>
+          </>}
+          {editError && <p role="alert" className="sm:col-span-2 lg:col-span-4 text-xs text-rose-300">{editError}</p>}
+          <div className="flex flex-wrap items-center gap-2 sm:col-span-2 lg:col-span-4">
+            <button type="submit" disabled={editBusy} className="min-h-10 rounded-lg bg-blue-500 px-4 text-xs font-semibold text-slate-950 disabled:opacity-50">{editBusy ? 'Saving…' : 'Save details'}</button>
+            {systemMode.toLowerCase() === 'simulation' && sdnController.toLowerCase().startsWith('mock') && <button type="button" disabled={editBusy} onClick={toggleFleetDrone} className={`min-h-10 rounded-lg border px-4 text-xs font-semibold disabled:opacity-50 ${editingDrone.enabled ? 'border-amber-500/35 text-amber-300' : 'border-emerald-500/35 text-emerald-300'}`}>{editingDrone.enabled ? confirmDisable ? 'Confirm disable' : 'Disable UAV' : 'Re-enable UAV'}</button>}
+            {confirmDisable && <button type="button" onClick={() => setConfirmDisable(false)} className="min-h-10 px-3 text-xs text-gray-400">Cancel disable</button>}
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            {/* CONFIG SLIDERS / CONTROLS (Left 7 cols) */}
-            <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-5">
-              {/* DP section */}
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase">
-                    <Shield className="w-3.5 h-3.5 text-emerald-400" />
-                    Differential Privacy
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      aria-label="Differential Privacy enabled"
-                      checked={flConfig.differential_privacy?.enabled ?? false}
-                      onChange={(e) => setFlConfig({
-                        ...flConfig,
-                        differential_privacy: {
-                          ...flConfig.differential_privacy,
-                          enabled: e.target.checked
-                        }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-8 h-4 bg-[#111218] border border-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
-                  </label>
-                </div>
-                {flConfig.differential_privacy?.enabled && (
-                  <div className="space-y-3 pt-2 border-t border-white/5 text-[11px]">
-                    <div>
-                      <div className="flex justify-between text-gray-400 mb-1">
-                        <span>Client Epsilon (ε Budget)</span>
-                        <span className="font-mono text-gray-200">{flConfig.differential_privacy?.client_side?.epsilon}</span>
-                      </div>
-                      <input
-                        type="range"
-                        aria-label="Client Epsilon budget"
-                        min="1"
-                        max="10"
-                        step="0.5"
-                        value={flConfig.differential_privacy?.client_side?.epsilon ?? 5.0}
-                        onChange={(e) => setFlConfig({
-                          ...flConfig,
-                          differential_privacy: {
-                            ...flConfig.differential_privacy,
-                            client_side: {
-                              ...flConfig.differential_privacy.client_side,
-                              epsilon: parseFloat(e.target.value)
-                            }
-                          }
-                        })}
-                        className="w-full bg-[#111218] rounded-lg appearance-none h-1 cursor-pointer accent-blue-500"
-                      />
-                    </div>
-                    <div>
-                      <div className="flex justify-between text-gray-400 mb-1">
-                        <span>Server DP Noise Scale (σ)</span>
-                        <span className="font-mono text-gray-200">{flConfig.differential_privacy?.server_side?.noise_scale}</span>
-                      </div>
-                      <input
-                        type="range"
-                        aria-label="Server differential privacy noise scale"
-                        min="0"
-                        max="0.10"
-                        step="0.01"
-                        value={flConfig.differential_privacy?.server_side?.noise_scale ?? 0.01}
-                        onChange={(e) => setFlConfig({
-                          ...flConfig,
-                          differential_privacy: {
-                            ...flConfig.differential_privacy,
-                            server_side: {
-                              ...flConfig.differential_privacy.server_side,
-                              noise_scale: parseFloat(e.target.value)
-                            }
-                          }
-                        })}
-                        className="w-full bg-[#111218] rounded-lg appearance-none h-1 cursor-pointer accent-blue-500"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Compression section */}
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase">
-                    <Cpu className="w-3.5 h-3.5 text-blue-400" />
-                    Gradient Compression
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      aria-label="Gradient Compression enabled"
-                      checked={flConfig.compression?.enabled ?? false}
-                      onChange={(e) => setFlConfig({
-                        ...flConfig,
-                        compression: {
-                          ...flConfig.compression,
-                          enabled: e.target.checked
-                        }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-8 h-4 bg-[#111218] border border-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
-                  </label>
-                </div>
-                {flConfig.compression?.enabled && (
-                  <div className="space-y-3 pt-2 border-t border-white/5 text-[11px]">
-                    <div>
-                      <label className="text-gray-400 mb-1 block">Compression Strategy</label>
-                      <select
-                        aria-label="Compression Strategy"
-                        value={flConfig.compression?.strategy ?? 'topk'}
-                        onChange={(e) => setFlConfig({
-                          ...flConfig,
-                          compression: {
-                            ...flConfig.compression,
-                            strategy: e.target.value
-                          }
-                        })}
-                        className="w-full bg-[#111218] border border-white/5 text-gray-200 py-1 px-1.5 rounded focus:outline-none text-[10px] cursor-pointer"
-                      >
-                        <option value="topk">Top-K Sparsification</option>
-                        <option value="quantize">INT8 Quantization</option>
-                        <option value="both">Sparsify & Quantize</option>
-                        <option value="none">None (Float32)</option>
-                      </select>
-                    </div>
-                    {flConfig.compression?.strategy !== 'quantize' && (
-                      <div>
-                        <div className="flex justify-between text-gray-400 mb-1">
-                          <span>Top-K Sparsity Ratio</span>
-                          <span className="font-mono text-gray-200">{Math.round((flConfig.compression?.topk?.ratio ?? 0.10) * 100)}%</span>
-                        </div>
-                        <input
-                          type="range"
-                          aria-label="Top-K Sparsity Ratio"
-                          min="0.01"
-                          max="0.50"
-                          step="0.01"
-                          value={flConfig.compression?.topk?.ratio ?? 0.10}
-                          onChange={(e) => setFlConfig({
-                            ...flConfig,
-                            compression: {
-                              ...flConfig.compression,
-                              topk: {
-                                ...flConfig.compression.topk,
-                                ratio: parseFloat(e.target.value)
-                              }
-                            }
-                          })}
-                          className="w-full bg-[#111218] rounded-lg appearance-none h-1 cursor-pointer accent-blue-500"
-                        />
-                      </div>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Personalization (pFedMe) */}
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase">
-                    <BrainCircuit className="w-3.5 h-3.5 text-blue-400" />
-                    pFedMe Personalization
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      aria-label="pFedMe Personalization enabled"
-                      checked={flConfig.personalization?.enabled ?? false}
-                      onChange={(e) => setFlConfig({
-                        ...flConfig,
-                        personalization: {
-                          ...flConfig.personalization,
-                          enabled: e.target.checked
-                        }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-8 h-4 bg-[#111218] border border-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
-                  </label>
-                </div>
-                {flConfig.personalization?.enabled && (
-                  <div className="space-y-3 pt-2 border-t border-white/5 text-[11px]">
-                    <div>
-                      <div className="flex justify-between text-gray-400 mb-1">
-                        <span>Proximal Regularization (λ)</span>
-                        <span className="font-mono text-gray-200">{flConfig.personalization?.lambda_prox}</span>
-                      </div>
-                      <input
-                        type="range"
-                        aria-label="Proximal Regularization lambda"
-                        min="0.01"
-                        max="1.0"
-                        step="0.05"
-                        value={flConfig.personalization?.lambda_prox ?? 0.1}
-                        onChange={(e) => setFlConfig({
-                          ...flConfig,
-                          personalization: {
-                            ...flConfig.personalization,
-                            lambda_prox: parseFloat(e.target.value)
-                          }
-                        })}
-                        className="w-full bg-[#111218] rounded-lg appearance-none h-1 cursor-pointer accent-blue-500"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Client Selection */}
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase">
-                    <Layers className="w-3.5 h-3.5 text-blue-400" />
-                    Swarm Selection
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      aria-label="Swarm Selection enabled"
-                      checked={flConfig.client_selection?.enabled ?? false}
-                      onChange={(e) => setFlConfig({
-                        ...flConfig,
-                        client_selection: {
-                          ...flConfig.client_selection,
-                          enabled: e.target.checked
-                        }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-8 h-4 bg-[#111218] border border-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
-                  </label>
-                </div>
-                {flConfig.client_selection?.enabled && (
-                  <div className="space-y-3 pt-2 border-t border-white/5 text-[11px]">
-                    <div>
-                      <label className="text-gray-400 mb-1 block">Selection Strategy</label>
-                      <select
-                        aria-label="Selection Strategy"
-                        value={flConfig.client_selection?.strategy ?? 'combined'}
-                        onChange={(e) => setFlConfig({
-                          ...flConfig,
-                          client_selection: {
-                            ...flConfig.client_selection,
-                            strategy: e.target.value
-                          }
-                        })}
-                        className="w-full bg-[#111218] border border-white/5 text-gray-200 py-1 px-1.5 rounded focus:outline-none text-[10px] cursor-pointer"
-                      >
-                        <option value="poco">Power-of-Choice (Oort)</option>
-                        <option value="ucb">UCB (Exploration/Exploit)</option>
-                        <option value="combined">Combined Oort + UCB</option>
-                        <option value="random">Random Sampling</option>
-                      </select>
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Asynchronous FL */}
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase">
-                    <Activity className="w-3.5 h-3.5 text-blue-400" />
-                    Asynchronous FL
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      aria-label="Asynchronous FL enabled"
-                      checked={flConfig.async_fl?.enabled ?? false}
-                      onChange={(e) => setFlConfig({
-                        ...flConfig,
-                        async_fl: {
-                          ...flConfig.async_fl,
-                          enabled: e.target.checked
-                        }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-8 h-4 bg-[#111218] border border-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
-                  </label>
-                </div>
-                {flConfig.async_fl?.enabled && (
-                  <div className="space-y-3 pt-2 border-t border-white/5 text-[11px]">
-                    <div>
-                      <div className="flex justify-between text-gray-400 mb-1">
-                        <span>FedBuff Buffer Size (K)</span>
-                        <span className="font-mono text-gray-200">{flConfig.async_fl?.buffer_size}</span>
-                      </div>
-                      <input
-                        type="range"
-                        aria-label="FedBuff Buffer Size"
-                        min="2"
-                        max="10"
-                        step="1"
-                        value={flConfig.async_fl?.buffer_size ?? 4}
-                        onChange={(e) => setFlConfig({
-                          ...flConfig,
-                          async_fl: {
-                            ...flConfig.async_fl,
-                            buffer_size: parseInt(e.target.value)
-                          }
-                        })}
-                        className="w-full bg-[#111218] rounded-lg appearance-none h-1 cursor-pointer accent-blue-500"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Trust Decay / Reputation */}
-              <div className="bg-white/[0.02] border border-white/5 p-4 rounded-xl space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-xs font-bold text-gray-200 flex items-center gap-1.5 uppercase">
-                    <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-                    Reputation Engine
-                  </span>
-                  <label className="relative inline-flex items-center cursor-pointer">
-                    <input
-                      type="checkbox"
-                      aria-label="Reputation Engine enabled"
-                      checked={flConfig.trust?.enabled ?? false}
-                      onChange={(e) => setFlConfig({
-                        ...flConfig,
-                        trust: {
-                          ...flConfig.trust,
-                          enabled: e.target.checked
-                        }
-                      })}
-                      className="sr-only peer"
-                    />
-                    <div className="w-8 h-4 bg-[#111218] border border-gray-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-gray-400 after:border-gray-300 after:border after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-blue-600 peer-checked:after:bg-white"></div>
-                  </label>
-                </div>
-                {flConfig.trust?.enabled && (
-                  <div className="space-y-3 pt-2 border-t border-white/5 text-[11px]">
-                    <div>
-                      <div className="flex justify-between text-gray-400 mb-1">
-                        <span>Historical Rejection Threshold</span>
-                        <span className="font-mono text-gray-200">{flConfig.trust?.reject_trust_threshold}</span>
-                      </div>
-                      <input
-                        type="range"
-                        aria-label="Quarantine Threshold"
-                        min="0.05"
-                        max="0.50"
-                        step="0.05"
-                        value={flConfig.trust?.reject_trust_threshold ?? 0.15}
-                        onChange={(e) => setFlConfig({
-                          ...flConfig,
-                          trust: {
-                            ...flConfig.trust,
-                            reject_trust_threshold: parseFloat(e.target.value)
-                          }
-                        })}
-                        className="w-full bg-[#111218] rounded-lg appearance-none h-1 cursor-pointer accent-blue-500"
-                      />
-                    </div>
-                  </div>
-                )}
-              </div>
-            </div>
-
-            {/* REAL-TIME FL MONITORING METRICS (Right 4 cols) */}
-            <div className="lg:col-span-4 bg-white/[0.01] border border-white/5 p-4 rounded-xl flex flex-col justify-between">
-              <div>
-                <h3 className="mb-3 flex items-center gap-1.5 border-b border-white/5 pb-1.5 text-sm font-semibold text-gray-100">
-                  <Activity className="w-3.5 h-3.5 text-blue-400" />
-                  FL Live Metrics Console
-                </h3>
-                {flSnapshotMismatch ? (
-                  <div className="py-8 text-center text-[11px] text-amber-300">Test-fleet metrics withheld. Awaiting a round from the enrolled fleet.</div>
-                ) : flMetrics && flMetrics.latest ? (
-                  <div className="space-y-3.5 text-xs">
-                    <div className="flex justify-between items-center">
-                      <span className="text-gray-400">FL Round</span>
-                      <span className="font-mono font-bold text-gray-100 bg-[#111218] border border-white/5 px-2 py-0.5 rounded">
-                        {flMetrics.latest.round}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Threat Classifier F1</span>
-                      <span className="font-mono text-emerald-400 font-bold">{observedMetric(flMetrics.latest.threat_f1)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Cumulative Privacy (ε)</span>
-                      <span className="metric-number font-mono font-bold text-blue-300">{observedMetric(flMetrics.latest.privacy_epsilon)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Reported compression ratio</span>
-                      <span className="metric-number font-mono font-bold text-slate-200">{observedMetric(flMetrics.latest.compression_ratio,1,'×')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Mean Client Trust</span>
-                      <span className="metric-number font-mono font-bold text-emerald-400">{observedMetric(flMetrics.latest.mean_trust)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Jain's Selection Fairness</span>
-                      <span className="font-mono text-amber-400 font-bold">{observedMetric(flMetrics.latest.jains_fairness)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Client Drift Rate</span>
-                      <span className="metric-number font-mono font-bold text-slate-200">{observedMetric(typeof flMetrics.latest.drift_rate==='number'?flMetrics.latest.drift_rate*100:null,1,'%')}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Aggregation Method</span>
-                      <span className="max-w-[55%] text-right font-mono text-blue-300">{flMetrics.latest.aggregation_method ?? 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Suspected This Round</span>
-                      <span className="font-mono font-bold text-amber-300">{flMetrics.latest.suspected_malicious_clients ?? 'Unavailable'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Rejected This Round</span>
-                      <span className="font-mono font-bold text-rose-400">{flMetrics.latest.rejected_updates ?? 'Unavailable'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Detected Attempts</span>
-                      <span className="font-mono font-bold text-slate-200">{flMetrics.latest.poisoning_attempts_detected ?? 'Unavailable'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Adaptive Clip Bound</span>
-                      <span className="font-mono font-bold text-slate-200">{typeof flMetrics.latest.effective_clip_norm === 'number' ? flMetrics.latest.effective_clip_norm.toFixed(3) : 'N/A'}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Sample Claims Capped</span>
-                      <span className="font-mono font-bold text-amber-300">{flMetrics.latest.sample_count_capped_clients ?? 'Unavailable'}</span>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="py-8 text-center text-[11px] text-gray-500">
-                    Awaiting server orchestration to push FL aggregation metrics...
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-4 pt-3 border-t border-white/5 text-[9px] text-gray-500 text-center">
-                SecureFedAvgV2 Pipeline Core Enabled
-              </div>
-            </div>
+        </form>
+        <p className="mt-3 text-xs text-gray-500">Drone ID, MAC, and SDN port are fixed during live operation. RF offsets affect synthetic simulation only.</p>
+        {confirmDisable && <p className="mt-3 text-xs text-amber-300">This removes the UAV from active simulation discovery and stops its Flower client after reconciliation. History and identity remain. Mock-SDN state is not real packet enforcement.</p>}
+      </section>
+          } />
+        </section>
+        <section className="application-page" aria-label="Security" hidden={page !== 'security'} tabIndex={-1}>
+          <div className="application-section security-page"><div className="page-heading"><div><h1>Security</h1><p>Federated learning policy and update evidence</p></div></div>
+            <SectionTabs label="security" value={securityTab} onChange={setSecurityTab} items={[{id:'policy',label:'Policy'},{id:'monitoring',label:'Monitoring'}]} />
+            <div role="tabpanel" id="security-policy-panel" aria-labelledby="security-policy-tab" hidden={securityTab !== 'policy'}>{flConfig ? <SecureFlControlCenter config={flConfig} isSaving={isSavingConfig} onConfigChange={setFlConfig} onSave={saveFlConfig} /> : <p className="empty-state">Policy unavailable. Check the API connection.</p>}</div>
+            <div role="tabpanel" id="security-monitoring-panel" aria-labelledby="security-monitoring-tab" hidden={securityTab !== 'monitoring'}><SecurityMonitoring active={page === 'security' && securityTab === 'monitoring'} rows={displayedByzantineStatus} metrics={flMetrics} warning={flSnapshotMismatch ? 'Snapshot belongs to a different fleet. Its security verdicts are withheld.' : undefined} age={flSnapshotAge} clientManager={flClientManager?.status ?? 'unavailable'} onInspect={inspectInMission} inspectable={fleetDrones.map(d => d.drone_id)} /></div>
           </div>
         </section>
-      )}
-
-      {/* FEDERATED UPDATE SECURITY CONSOLE */}
-      <section className="content-section glass-panel mb-6 p-5">
-        <div className="mb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div>
-            <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-100">
-              <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              Federated Update Security Console
-            </h2>
-            <p className="text-[10px] text-gray-500 mt-0.5">Model-delta evidence, historical trust, and Byzantine aggregation actions</p>
-          </div>
-          <span className="rounded border border-blue-500/20 bg-blue-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-blue-400">
-            {flSnapshotMismatch ? 'Test snapshot withheld' : flMetrics?.latest?.aggregation_method || 'Awaiting aggregation'}
-          </span>
-        </div>
-        <div className={`mb-4 rounded-lg border px-3 py-2 text-xs ${flSnapshotMismatch ? 'border-amber-500/30 bg-amber-500/5 text-amber-200' : 'border-white/10 bg-white/[0.02] text-gray-400'}`} role="status">
-          {flSnapshotMismatch ? 'FL snapshot belongs to a different fleet (including a test client); its security verdicts are withheld.' : `Last completed FL round: ${flMetrics?.last_round ?? 'none'}.`}
-          {' '}Snapshot age: {flSnapshotAge == null ? flSnapshotTimestamp ? 'unknown (legacy timestamp has no time zone)' : 'unavailable' : flSnapshotAge < 60 ? `${flSnapshotAge}s` : `${Math.floor(flSnapshotAge / 60)}m`}.
-          {' '}Client manager: {flClientManager?.status || 'unavailable'}.
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          {displayedByzantineStatus.length === 0 && <p className="text-xs text-gray-500">No participating Flower client or current-round update observed. Start the client pool and play the mission. Fleet participation is shown in the inspected UAV details.</p>}
-          {displayedByzantineStatus.map((drone) => {
-            const isMalicious = drone.status === 'MALICIOUS' || drone.action === 'REJECTED';
-            const isSuspicious = drone.status === 'SUSPICIOUS' || drone.action === 'DOWN_WEIGHTED';
-            const isPending = drone.action === 'PENDING';
-            const clientReadiness = flClientManager?.clients?.[drone.client_id]?.status || 'not observed';
-            return (
-              <div key={drone.client_id} className={`p-4 rounded-xl border transition-all ${isMalicious ? 'bg-red-950/15 border-red-500/30' : isSuspicious ? 'bg-amber-950/10 border-amber-500/25' : 'bg-white/5 border-white/5'}`}>
-                <div className="flex justify-between items-center mb-2.5">
-                  <span className="text-xs font-bold text-gray-200">{drone.client_id.toUpperCase().replace('_', ' ')}</span>
-                  <span className={`text-[9px] font-bold px-2 py-0.5 rounded ${isMalicious ? 'bg-red-500/10 border border-red-500/20 text-red-400' : isSuspicious ? 'bg-amber-500/10 border border-amber-500/20 text-amber-300' : isPending ? 'bg-white/5 border border-white/10 text-gray-300' : 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-400'}`}>
-                    {drone.status}
-                  </span>
-                </div>
-                
-                <div className="space-y-1.5 text-xs">
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Historical Trust</span>
-                    <span className="font-mono text-gray-300">{typeof drone.trust_score === 'number' ? drone.trust_score.toFixed(3) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Update Deviation</span>
-                    <span className="font-mono text-gray-300">{typeof drone.deviation_score === 'number' ? drone.deviation_score.toFixed(3) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Update Norm</span>
-                    <span className="font-mono text-gray-300">{typeof drone.update_norm === 'number' ? drone.update_norm.toFixed(3) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Aggregate Weight</span>
-                    <span className="font-mono text-gray-300">{typeof drone.aggregation_weight === 'number' ? drone.aggregation_weight.toFixed(3) : 'N/A'}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-500">Effective Samples</span>
-                    <span className="font-mono text-gray-300">
-                      {typeof drone.effective_num_examples === 'number'
-                        ? `${Math.round(drone.effective_num_examples)} / ${drone.reported_num_examples ?? 'N/A'}`
-                        : 'N/A'}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center pt-1 border-t border-white/5">
-                    <span className="text-gray-500">Aggregation Filter</span>
-                    <span className={`font-bold uppercase ${isMalicious ? 'text-red-400 text-glow-red' : isSuspicious ? 'text-amber-300' : isPending ? 'text-gray-300' : 'text-emerald-400'}`}>{drone.action}</span>
-                  </div>
-                </div>
-
-                <div className={`mt-3.5 flex min-h-9 items-center justify-center gap-2 rounded-lg border px-3 text-[9px] font-bold uppercase ${isPending ? 'border-white/10 bg-white/[0.02] text-gray-400' : 'border-emerald-500/15 bg-emerald-500/[0.04] text-emerald-300'}`}>
-                  <Lock className="h-3 w-3" />
-                  {isPending ? `No update inspected · client ${clientReadiness.replaceAll('_', ' ')}` : 'Protected · read-only monitoring'}
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* FOOTER TERMINAL LOG VIEW */}
-      <footer className="content-section glass-panel p-5">
-        <div className="flex justify-between items-center mb-3">
-          <h2 className="flex items-center gap-2 text-sm font-semibold text-gray-100">
-            <Database className="w-4 h-4 text-emerald-400" />
-            Tactical Operation Log
-          </h2>
-          <span className="rounded border border-emerald-500/20 bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold uppercase text-emerald-400">
-            Live Stream
-          </span>
-        </div>
-
-        {/* Scrolling Log Output */}
-        <div
-          className="operation-log h-[160px] space-y-1.5 overflow-y-auto rounded-lg border border-[#252b36] bg-[#090b0f] p-4 font-mono text-xs text-gray-400"
-          role="log"
-          aria-live="polite"
-        >
-          {statusLog.length === 0 ? (
-            <div className="text-gray-600">Awaiting telemetry packets...</div>
-          ) : (
-            statusLog.map((log, idx) => (
-              <div key={idx} className="flex gap-2">
-                <span className="text-blue-400" aria-hidden="true">›</span>
-                <span>{log}</span>
-              </div>
-            ))
-          )}
-        </div>
-      </footer>
+        <section className="application-page" aria-label="Validation" hidden={page !== 'validation'} tabIndex={-1}>
+          <Validation traffic={trafficValidation} drones={fleetDrones} simulation={attackSimulationEnabled} fl={{result:flProtectionTest,phase:flProtectionPhase,busy:isRunningFlProtectionTest,error:flProtectionTestError,duration:flProtectionRunTimeMs,at:flProtectionRunAt,retained:Boolean(flProtectionTest && flRunSession !== getMissionSnapshot()?.session_id),run:runFlProtectionSelfTest,reset:resetFlProtectionSelfTest}} />
+        </section>
       </main>
+      <ActivityDrawer open={activityOpen} onClose={() => setActivityOpen(false)} entries={statusLog} />
+      {reportError && <div className="application-toast" role="alert">{reportError}<button aria-label="Dismiss report error" onClick={() => setReportError(null)}>Dismiss</button></div>}
     </div>
   );
 }

@@ -107,8 +107,8 @@ export function createTerrainSurface(encoded: string, grid: TerrainGrid): Terrai
 const missionTerrain = createTerrainSurface(HEIGHTMAP_BASE64, TERRAIN_GRID);
 export const TERRAIN_PROVENANCE = missionTerrain.provenance;
 export const TERRAIN_DISCLOSURE = missionTerrain.provenance === 'usgs-3dep'
-  ? 'USGS 3DEP elevation core · representative outer terrain · illustrative land cover and props · FLARE local-metre movement, not surveyed UAV positions'
-  : 'Representative mission terrain and illustrative props · FLARE local-metre movement';
+  ? 'USGS 3DEP elevation core · representative outer terrain · illustrative land cover and props, roads, launch pads and facilities · visual only, no RF or flight effect · FLARE local-metre movement, not surveyed UAV positions'
+  : 'Representative mission terrain and illustrative props, roads, launch pads and facilities · visual only, no RF or flight effect · FLARE local-metre movement';
 export const terrainElevation = missionTerrain.elevation;
 export const terrainHeight = missionTerrain.height;
 export const GROUND_STATION = Object.freeze({ x: -280, y: terrainHeight(-280, 170) + 5, z: 170 });

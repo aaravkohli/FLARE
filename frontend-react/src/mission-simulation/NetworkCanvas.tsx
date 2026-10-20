@@ -1,33 +1,42 @@
-import { useEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import { useEffect, useImperativeHandle, useRef, useState } from 'react';
+import type { Ref, RefObject } from 'react';
+import type { CanvasControls, CameraAction } from './WorkspaceControls';
 import { Crosshair, Minus, Plus } from 'lucide-react';
 import type { NetworkCamera, NetworkDisplay, SwarmSnapshot } from './swarm';
 import { edgePoint, playbackTime, samplePacketEvents } from './world/networkPlayback';
 import { createFrameRateSampler } from './world/framePerformance';
 
-type Props={snapshot:SwarmSnapshot;selected:string;targets?:string[];display:NetworkDisplay;current?:boolean;camera?:RefObject<NetworkCamera>;onSelect:(id:string,additive?:boolean)=>void;onLink?:(id:string)=>void;onGround?:()=>void};
+type Props={snapshot:SwarmSnapshot;selected:string;targets?:string[];display:NetworkDisplay;current?:boolean;camera?:RefObject<NetworkCamera>;onSelect:(id:string,additive?:boolean)=>void;onLink?:(id:string)=>void;onGround?:()=>void;externalTools?:boolean;controls?:Ref<CanvasControls>};
 const EMPTY_EVENTS:NonNullable<SwarmSnapshot['packet_events']>=[];
 export default function NetworkCanvas(props:Props){
+ const [groundOutside,setGroundOutside]=useState(false);
  const [hover,setHover]=useState<{id:string;x:number;y:number}|null>(null);
  const canvas=useRef<HTMLCanvasElement>(null),localCamera=useRef<NetworkCamera>({x:0,z:0,span:0});
  const installedPolicy=props.snapshot.flows.find(f=>f.source===props.selected&&f.destination==='base'&&f.traffic_class==='telemetry');
  const camera=props.camera??localCamera,latest=useRef(props),receipt=useRef({snapshot:props.snapshot,previous:props.snapshot,at:performance.now()});
  if(receipt.current.snapshot.session_id!==props.snapshot.session_id||receipt.current.snapshot.simulation_time!==props.snapshot.simulation_time||receipt.current.snapshot.playing!==props.snapshot.playing){receipt.current={previous:receipt.current.snapshot,snapshot:props.snapshot,at:performance.now()};}
  latest.current=props;
- function fit(){
-  const snapshot=latest.current.snapshot,points=[...snapshot.nodes.map(n=>n.position),snapshot.base_position];
+ function fit(scope:'fleet'|'full'=props.externalTools?'fleet':'full'){
+  const snapshot=latest.current.snapshot,points=[...snapshot.nodes.map(n=>n.position),...(scope==='full'?[snapshot.base_position]:[])];
+  if(!points.length)return;
   const xs=points.map(p=>p[0]),zs=points.map(p=>p[2]);
   const width=canvas.current?.clientWidth||600,height=canvas.current?.clientHeight||600,minimum=Math.min(width,height);
   camera.current={x:(Math.min(...xs)+Math.max(...xs))/2,z:(Math.min(...zs)+Math.max(...zs))/2,
-   span:Math.max(300,(Math.max(...xs)-Math.min(...xs))*minimum/width,(Math.max(...zs)-Math.min(...zs))*minimum/height)*1.35};
+   span:Math.max(props.externalTools?160:300,(Math.max(...xs)-Math.min(...xs))*minimum/width,(Math.max(...zs)-Math.min(...zs))*minimum/height)*1.2};
  }
+ useImperativeHandle(props.controls,()=>({camera(action:CameraAction){
+  if(action==='fleet'||action==='full')fit(action);
+  else if(action==='selected'){const node=latest.current.snapshot.nodes.find(n=>n.id===latest.current.selected);if(node)camera.current={x:node.position[0],z:node.position[2],span:Math.min(camera.current.span||500,500)};}
+  else if(action==='in')camera.current.span=Math.max(100,camera.current.span*.8);
+  else if(action==='out')camera.current.span=Math.min(6000,camera.current.span*1.2);
+ }}));
  useEffect(()=>{
   const element=canvas.current!,context=element.getContext('2d');if(!context)return;
   const reduced=matchMedia('(prefers-reduced-motion: reduce)');let frame=0,disposed=false;
   const sampler=createFrameRateSampler();let last=0;
   const profile=new URLSearchParams(location.search).has('profile')?{values:new Float64Array(72000),count:0}:null;
   if(profile)(element as HTMLCanvasElement & {__flareFrameTimes:typeof profile}).__flareFrameTimes=profile;
-  let positions=new Map<string,{x:number;z:number}>();let fittedSession='',fittedCount=0;
+  let positions=new Map<string,{x:number;z:number}>();let fittedSession=latest.current.snapshot.session_id,fittedCount=latest.current.snapshot.nodes.length,wasOutside=false;
   function screen(x:number,z:number){const c=camera.current,scale=Math.min(element.clientWidth,element.clientHeight)/c.span;return {x:element.clientWidth/2+(x-c.x)*scale,y:element.clientHeight/2+(z-c.z)*scale};}
   function draw(now:number){
    if(disposed)return;
@@ -42,6 +51,8 @@ export default function NetworkCanvas(props:Props){
    const past=new Map(rec.previous.session_id===s.session_id?rec.previous.nodes.map(n=>[n.id,n]):[]);
    positions=new Map(s.nodes.map(n=>{const old=past.get(n.id);return [n.id,{x:old?old.position[0]+(n.position[0]-old.position[0])*mix:n.position[0],z:old?old.position[2]+(n.position[2]-old.position[2])*mix:n.position[2]}];}));
    positions.set('base',{x:s.base_position[0],z:s.base_position[2]});
+   const ground=screen(s.base_position[0],s.base_position[2]),outside=ground.x<25||ground.x>w-25||ground.y<25||ground.y>h-25;
+   if(outside!==wasOutside){wasOutside=outside;setGroundOutside(outside);}
    const seconds=p.display.replay?.time??playbackTime(s.simulation_time,s.speed,now-rec.at,s.playing,p.current!==false);
    const packets=p.display.packets?samplePacketEvents(s.packet_events??EMPTY_EVENTS,seconds,p.selected,200,p.display.replay?.packetId):[];
    const active=new Set(packets.filter(v=>v.kind==='flight').map(v=>[v.from,v.to].sort().join(':')));
@@ -108,7 +119,8 @@ export default function NetworkCanvas(props:Props){
     const hop=p.display.hops.indexOf(n.id);if(hop>=0){ctx.fillStyle=p.display.candidate?'#b5a1ea':'#99e1bc';ctx.font='10px monospace';ctx.fillText(String(hop+1),pos.x-20,pos.y+3);ctx.font='11px Inter, sans-serif';}
    }
    if(s.links.some(l=>l.a==='base'||l.b==='base')){const b=screen(s.base_position[0],s.base_position[2]);ctx.fillStyle='#efd69a';ctx.fillRect(b.x-5,b.y-5,10,10);ctx.fillText('GROUND',b.x+12,b.y+4);}
-   ctx.strokeStyle='#8ba3ac';ctx.fillStyle='#8ba3ac';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(24,h-32);ctx.lineTo(24+100*scale,h-32);ctx.stroke();ctx.font='10px monospace';ctx.fillText('100 m',24,h-41);
+   const scaleMetres=[1,2,5,10,20,50,100,200,500,1000].filter(value=>value*scale<=Math.min(w*.2,120)).at(-1)??1,scaleLeft=w-scaleMetres*scale-20;
+   ctx.strokeStyle='#8ba3ac';ctx.fillStyle='#8ba3ac';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(scaleLeft,h-24);ctx.lineTo(w-20,h-24);ctx.stroke();ctx.font='10px monospace';ctx.fillText(`${scaleMetres} m`,scaleLeft,h-34);
    element.dataset.packetVisual='authoritative-packet-events';element.dataset.packetCount=String(packets.filter(v=>v.packet.family!=='satellite').length+satPackets.length);
    const report=sampler.record(now,s.playing&&p.current!==false);if(report){element.dataset.fpsAverage=String(report.averageFps);element.dataset.fpsLow=String(report.lowFps);}
    if(profile&&last&&s.playing&&profile.count<profile.values.length)profile.values[profile.count++]=now-last;last=now;
@@ -135,7 +147,8 @@ export default function NetworkCanvas(props:Props){
  // eslint-disable-next-line react-hooks/exhaustive-deps
  },[camera]);
  return <div className="network-canvas-wrap"><canvas ref={canvas} aria-label="Authoritative 2D mission network" role="img" tabIndex={0} onKeyDown={e=>{if(e.key==='+'||e.key==='=')camera.current.span*=.8;else if(e.key==='-')camera.current.span*=1.2;else if(e.key==='f')fit();else if(e.key==='Enter'){e.preventDefault();const nodes=props.snapshot.nodes,index=nodes.findIndex(n=>n.id===props.selected);props.onSelect(nodes[(index+1)%nodes.length].id,e.shiftKey);}else if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();const delta=camera.current.span*.05;camera.current.x+=e.key==='ArrowLeft'?-delta:e.key==='ArrowRight'?delta:0;camera.current.z+=e.key==='ArrowUp'?-delta:e.key==='ArrowDown'?delta:0;}}}/>
-  <div className="network-camera-controls"><button aria-label="Zoom in" onClick={()=>camera.current.span*=.8}><Plus size={16}/></button><button aria-label="Zoom out" onClick={()=>camera.current.span*=1.2}><Minus size={16}/></button><button aria-label="Fit network" onClick={fit}><Crosshair size={16}/></button></div>
+  {!props.externalTools&&<div className="network-camera-controls"><button aria-label="Zoom in" onClick={()=>camera.current.span*=.8}><Plus size={16}/></button><button aria-label="Zoom out" onClick={()=>camera.current.span*=1.2}><Minus size={16}/></button><button aria-label="Fit network" onClick={()=>fit()}><Crosshair size={16}/></button></div>}
+  {props.externalTools&&groundOutside&&<button className="ground-edge-locator" onClick={()=>fit('full')}>Ground control ↗</button>}
   {props.snapshot.routing_mode!=='mesh_reference'&&<div className="network-policy-badge" aria-label="Installed FLARE route"><strong>{installedPolicy?.family.toUpperCase()??'NO INSTALLED ROUTE'}</strong><span>{props.snapshot.nodes.find(n=>n.id===props.selected)?.security?.routing_source==='rl_model'?'DQN decision':props.snapshot.nodes.find(n=>n.id===props.selected)?.security?.routing_source??'Local routing'} · {installedPolicy?'confirmed telemetry policy':'awaiting telemetry policy'}</span></div>}
 
   {hover&&<div className="network-tooltip" role="tooltip" style={{left:hover.x,top:hover.y}}><strong>{props.snapshot.nodes.find(n=>n.id===hover.id)?.alias}</strong><span>{props.snapshot.nodes.find(n=>n.id===hover.id)?.neighbors.length} neighbors · {props.snapshot.nodes.find(n=>n.id===hover.id)?.containment}</span><small>{hover.id}</small></div>}

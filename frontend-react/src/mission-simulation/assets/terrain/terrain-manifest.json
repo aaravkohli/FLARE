@@ -53,8 +53,8 @@
     "edgeTreatment": "outer 150 m blends to representative procedural terrain",
     "simulationEffect": "visual only; no RF, routing, flight, or collision calculation uses this DEM"
   },
-  "surfaceMaps": "DEM-derived illustrative albedo, normals and roughness fade to the representative outer material; not orthoimagery or land-cover evidence",
-  "sceneProps": "Deterministic illustrative scrub and rocks and a 50 m local-scale cue; no source-mapped vegetation, rocks, road or water",
+  "surfaceMaps": "1024px illustrative dry grass, soil and stone albedo with synthetic fine grain, normals and roughness; edge palette matches the representative outer terrain; not orthoimagery or land-cover evidence",
+  "sceneProps": "Deterministic illustrative research test range: eight buildings including hangars and labs, marked flight apron, operations and service yards, 32 solar panels, planted test plots, connecting roads, three launch pads, six wooded areas and a 50 m scale cue; facilities, land use, roads and vegetation are not source-mapped and have no RF, routing, flight or collision effect",
   "verticalDatum": "not asserted from delivered GeoTIFF",
   "sourceSha256": "381bdfb12720fbe954f0d092d049d7dd79f051d233c4f2bc4799e76ac5692f6c",
   "heightmapSha256": "a0543485b86d3b137491c6e6b4ffaa345e3af13705fae3b539b6df0573f9ccd8",

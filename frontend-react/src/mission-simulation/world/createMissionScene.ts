@@ -13,7 +13,8 @@ import { Line2 } from 'three/addons/lines/Line2.js';
 import { LineGeometry } from 'three/addons/lines/LineGeometry.js';
 import { LineMaterial } from 'three/addons/lines/LineMaterial.js';
 import { terrainHeight, GROUND_STATION, TERRAIN_DISCLOSURE, TERRAIN_EXTENT, TERRAIN_PROVENANCE } from './terrain';
-import { createEnvironmentProps, GROUND_SCALE_CUE } from './environmentProps';
+import { GROUND_SCALE_CUE } from './environmentProps';
+import { createFieldStation } from './fieldStationScene';
 import { GROUND_STATION_SITE, GROUND_STATION_VISUAL_ENDPOINT, stationFootingTopY, stationGroundY } from './groundStation';
 import { DAYLIGHT, groundShadowPosition } from './daylight';
 import { UAV_VISUAL, rotorDisplayAngle } from './uavVisual';
@@ -24,7 +25,7 @@ import type { RenderQuality } from './renderQuality';
 import type { DroneMotion, Vector3 } from './dynamics';
 import type { AttackProfile, MissionSimulationState } from '../types';
 
-export function createMissionScene(canvas: HTMLCanvasElement) {
+export function createMissionScene(canvas: HTMLCanvasElement, invalidate: () => void = () => {}) {
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'low-power' });
   let quality: RenderQuality = 'high';
   renderer.setPixelRatio(renderPixelRatio(quality, window.devicePixelRatio));
@@ -39,8 +40,8 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
   scene.background = new THREE.Color('#b7c8c8');
   scene.fog = new THREE.Fog('#b7c8c8', DAYLIGHT.fogNearM, DAYLIGHT.fogFarM);
   const camera = new THREE.PerspectiveCamera(CAMERA_FOV, 1.5, 2, 4500);
-  scene.add(new THREE.HemisphereLight('#dce9ef', '#657363', 1.7));
-  const sun = new THREE.DirectionalLight('#fff0db', 2.4);
+  scene.add(new THREE.HemisphereLight('#dce9ef', '#7c8070', 1.15));
+  const sun = new THREE.DirectionalLight('#fff1df', 2.7);
   sun.position.set(DAYLIGHT.sun.x, DAYLIGHT.sun.y, DAYLIGHT.sun.z);
   sun.castShadow = true;
   sun.shadow.mapSize.set(DAYLIGHT.shadowMapSize, DAYLIGHT.shadowMapSize);
@@ -79,6 +80,7 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
       }
     }
     refreshPixelRatio();
+    site.setQuality(quality);
     canvas.dataset.quality = quality;
     canvas.dataset.shadowMapSize = String(sun.shadow.mapSize.x);
   }
@@ -123,8 +125,10 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
   const missionMaterial = mat(new THREE.MeshStandardMaterial({ color: '#ffffff', vertexColors: true, roughness: .94 }));
   const terrainTextures: THREE.Texture[] = [];
   let terrainDisposed = false;
-  const lowland = new THREE.Color('#4d604c'), highland = new THREE.Color('#848476');
-  const stone = new THREE.Color('#999588'), surfaceColor = new THREE.Color();
+  // Also used by the offline surface generator at the tile boundary. These
+  // colors remain a complete fallback when optional surface maps cannot load.
+  const lowland = new THREE.Color('#899376'), highland = new THREE.Color('#a9a084');
+  const stone = new THREE.Color('#a6a595'), surfaceColor = new THREE.Color();
   const surfaceNormal = new THREE.Vector3();
   function terrainTile(x0: number, x1: number, z0: number, z1: number, xSegments: number, zSegments: number, central: boolean) {
     const tile = geo(new THREE.PlaneGeometry(x1 - x0, z1 - z0, xSegments, zSegments));
@@ -174,15 +178,19 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
       terrainTextures.push(texture);
       attach();
       missionMaterial.needsUpdate = true;
+      invalidate();
     };
     loader.load(new URL('../assets/terrain/terrain-albedo.png', import.meta.url).href, texture => loaded(texture, () => {
       texture.colorSpace = THREE.SRGBColorSpace;
       missionMaterial.map = texture;
+      // Albedo contains the complete surface color. Multiplying it by a second
+      // colored base darkens the grass and erases the subtle cover variation.
+      missionMaterial.vertexColors = false;
       canvas.dataset.terrainMaterial = 'dem-derived-maps';
-    }), undefined, () => { canvas.dataset.terrainMaterial = 'vertex-color'; });
+    }), undefined, () => { if (!terrainDisposed) { canvas.dataset.terrainMaterial = 'vertex-color'; invalidate(); } });
     loader.load(new URL('../assets/terrain/terrain-normal.png', import.meta.url).href, texture => loaded(texture, () => {
       missionMaterial.normalMap = texture;
-      missionMaterial.normalScale.set(.35, .35);
+      missionMaterial.normalScale.set(.22, .22);
     }), undefined, () => {});
     loader.load(new URL('../assets/terrain/terrain-roughness.png', import.meta.url).href, texture => loaded(texture, () => {
       missionMaterial.roughnessMap = texture;
@@ -196,36 +204,10 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
       new THREE.Vector3(x,terrainHeight(x,z)+.6,z),new THREE.Vector3(x,terrainHeight(x,insetZ)+.6,insetZ));
   }
   scene.add(new THREE.LineSegments(geo(new THREE.BufferGeometry().setFromPoints(boundary)),mat(new THREE.LineBasicMaterial({color:'#89958d',transparent:true,opacity:.3}))));
-  const environmentProps = createEnvironmentProps();
-  canvas.dataset.environmentProps = String(environmentProps.length);
-  const instanceObject = new THREE.Object3D(), instanceColor = new THREE.Color();
-  function addGroundInstances(kind: 'scrub' | 'rock') {
-    const props = environmentProps.filter(prop => prop.kind === kind);
-    const shape = geo(kind === 'scrub' ? new THREE.IcosahedronGeometry(1, 0) : new THREE.DodecahedronGeometry(1, 0));
-    shape.scale(1, kind === 'scrub' ? .65 : .48, 1);
-    shape.translate(0, kind === 'scrub' ? .65 : .48, 0);
-    const material = mat(new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1, flatShading: true }));
-    const instances = new THREE.InstancedMesh(shape, material, props.length);
-    const dark = new THREE.Color(kind === 'scrub' ? '#53684e' : '#777c72');
-    const light = new THREE.Color(kind === 'scrub' ? '#879474' : '#a39e8b');
-    props.forEach((prop, index) => {
-      instanceObject.position.set(prop.x, prop.y - (kind === 'rock' ? .3 : .1), prop.z);
-      instanceObject.rotation.set(0, prop.rotation, 0);
-      instanceObject.scale.setScalar(prop.radiusM);
-      instanceObject.updateMatrix();
-      instances.setMatrixAt(index, instanceObject.matrix);
-      instances.setColorAt(index, instanceColor.copy(dark).lerp(light, prop.tone));
-    });
-    instances.instanceMatrix.needsUpdate = true;
-    if (instances.instanceColor) instances.instanceColor.needsUpdate = true;
-    instances.castShadow = true;
-    instances.receiveShadow = true;
-    instances.computeBoundingSphere();
-    scene.add(instances);
-    return instances;
-  }
-  const scrubInstances = addGroundInstances('scrub');
-  const rockInstances = addGroundInstances('rock');
+  const site = createFieldStation(); scene.add(site.group);
+  canvas.dataset.environmentProps = String(site.count);
+  canvas.dataset.siteBuildings = String(site.buildings); canvas.dataset.sitePads = String(site.pads);
+  canvas.dataset.siteWoodlands = String(site.woodlands); canvas.dataset.siteSolarPanels = String(site.solarPanels);
   const scaleLines: THREE.Vector3[] = [];
   function scalePoint(x: number, z: number) { return new THREE.Vector3(x, terrainHeight(x, z) + .8, z); }
   for (let i = 0; i < 8; i++) {
@@ -536,6 +518,9 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
   const interferenceMaterial=mat(new THREE.LineBasicMaterial({color:'#ddb078',transparent:true,opacity:.18}));
   const interferenceRegions=Array.from({length:8},()=>{const mesh=new THREE.LineSegments(rangeSphere.geometry,interferenceMaterial);mesh.visible=false;scene.add(mesh);return mesh;});
   function draw(drones: readonly DroneMotion[], selectedId: string, orbit: Vector3, rig: CameraRig, state: MissionSimulationState, seconds: number, reduced = false, hoveredId?: string, showAlternatives = false, evidenceCurrent = true, mission?: SwarmSnapshot, selectedIds: string[] = [], display?: NetworkDisplay) {
+    const siteVisible = display?.siteDetails !== false;
+    site.setVisible(siteVisible);
+    if (canvas.dataset.siteDetails !== String(siteVisible)) canvas.dataset.siteDetails = String(siteVisible);
     const ids = new Set(drones.map(d => d.id));
     for (const [id, entity] of fleet) if (!ids.has(id)) { scene.remove(entity.group, entity.stem, entity.shadow); entity.stem.geometry.dispose(); entity.blades.dispose(); entity.rotors.dispose(); fleet.delete(id); }
     for (const drone of drones) {
@@ -817,5 +802,5 @@ export function createMissionScene(canvas: HTMLCanvasElement) {
     return { x: (projected.x + 1) * canvas.clientWidth / 2, y: (1 - projected.y) * canvas.clientHeight / 2,
       visible: Math.abs(projected.x) < .96 && Math.abs(projected.y) < .94 && projected.z > -1 && projected.z < 1 };
   }
-  return { draw, pick, screenPoint, routeScreenPoint, setQuality, dispose() { swarmParts.forEach(p=>p.dispose()); swarmPackets.dispose(); terrainDisposed = true; terrainTextures.forEach(texture => texture.dispose()); scrubInstances.dispose(); rockInstances.dispose(); threats.dispose(); for (const entity of fleet.values()) { entity.stem.geometry.dispose(); entity.blades.dispose(); entity.rotors.dispose(); } sun.shadow.dispose(); shadowTexture.dispose(); geometries.forEach(g=>g.dispose()); materials.forEach(m=>m.dispose()); routeLines.forEach(link=>{ link.packets.dispose(); link.trails.dispose(); }); renderer.dispose(); } };
+  return { draw, pick, screenPoint, routeScreenPoint, setQuality, dispose() { swarmParts.forEach(p=>p.dispose()); swarmPackets.dispose(); terrainDisposed = true; terrainTextures.forEach(texture => texture.dispose()); site.dispose(); threats.dispose(); for (const entity of fleet.values()) { entity.stem.geometry.dispose(); entity.blades.dispose(); entity.rotors.dispose(); } sun.shadow.dispose(); shadowTexture.dispose(); geometries.forEach(g=>g.dispose()); materials.forEach(m=>m.dispose()); routeLines.forEach(link=>{ link.packets.dispose(); link.trails.dispose(); }); renderer.dispose(); } };
 }

@@ -59,9 +59,6 @@ export default function AttackLab({snapshot, inspected, targets, busy, stale, mu
     <label>Communication target<select aria-label="Communication target" value={target} disabled={disabled || pathless || multiple} onChange={e => {setTarget(e.target.value);setPaths([e.target.value]);}}>
       {['direct','satellite','mesh'].map(p => <option key={p} value={p}>{title(p)}</option>)}
     </select></label>
-    {!pathless && <details className="attack-advanced"><summary>Multiple route families</summary><label className="swarm-check"><input type="checkbox" checked={multiple} disabled={disabled} onChange={e => {setMultiple(e.target.checked);setPaths([target]);}}/>Target multiple families</label>
-      {multiple && <fieldset><legend>Route families</legend>{['direct','satellite','mesh'].map(p => <label key={p} className="swarm-check"><input type="checkbox" aria-label={`Attack ${p} route`} checked={paths.includes(p)} disabled={disabled} onChange={() => setPaths(old => old.includes(p) ? old.filter(n => n !== p) : [...old,p])}/>{title(p)}</label>)}</fieldset>}
-    </details>}
     <div className="attack-duration"><label htmlFor="attack-duration">Duration <span>simulation seconds</span></label><input id="attack-duration" aria-label="Attack duration" type="number" min="1" max="300" step="1" value={duration} disabled={disabled || clear} aria-invalid={!clear && !validDuration} onChange={e => setDuration(e.target.value)}/>
       <input aria-label="Attack duration slider" type="range" min="5" max="60" step="5" value={Math.max(5, Math.min(60, Number(duration) || 5))} disabled={disabled || clear} onChange={e => setDuration(e.target.value)}/>
     </div>
@@ -71,6 +68,9 @@ export default function AttackLab({snapshot, inspected, targets, busy, stale, mu
     {error && <p className="attack-error" role="alert">{error}</p>}
     {feedback && <p className="attack-feedback" role="status"><ShieldCheck size={14} aria-hidden="true"/>{feedback}</p>}
     {stale ? <p className="attack-context" role="status">Simulation connection stale. Waiting for current state.</p> : !snapshot.playing && <p className="attack-paused">Mission paused · timers wait for Play.</p>}
+    {!pathless && <details className="attack-advanced"><summary>Advanced settings</summary><label className="swarm-check"><input type="checkbox" checked={multiple} disabled={disabled} onChange={e => {setMultiple(e.target.checked);setPaths([target]);}}/>Target multiple families</label>
+      {multiple && <fieldset><legend>Route families</legend>{['direct','satellite','mesh'].map(p => <label key={p} className="swarm-check"><input type="checkbox" aria-label={`Attack ${p} route`} checked={paths.includes(p)} disabled={disabled} onChange={() => setPaths(old => old.includes(p) ? old.filter(n => n !== p) : [...old,p])}/>{title(p)}</label>)}</fieldset>}
+    </details>}
     <div className="swarm-active-attacks" aria-label="Active conditions">
       <div className="active-conditions-heading"><span>Injected conditions · {active.length}</span>{active.length > 0 && <button disabled={disabled} onClick={() => void submit('/attacks/clear', {session_id:snapshot.session_id}, 'All injected conditions cleared.')}>Clear all conditions</button>}</div>
       {active.length ? active.map(a => <div className="active-condition" key={a.attack_id}>

@@ -1,3 +1,4 @@
+import type { CanvasControls } from '../WorkspaceControls';
 import type { NetworkDisplay, SwarmSnapshot } from '../swarm';
 import { playbackTime } from './networkPlayback';
 import { createDrone } from './dynamics';
@@ -9,8 +10,8 @@ import { threatQueuePath, threatVisual } from './threatState';
 import { networkRouteState } from './networkState';
 import { packetFlowEnabled } from './PacketStream';
 import { requestedAnnotation, routeAppearance } from './routeVisual';
-import { memo, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import type { RefObject } from 'react';
+import { memo, useEffect, useImperativeHandle, useLayoutEffect, useRef, useState } from 'react';
+import type { Ref, RefObject } from 'react';
 import type { MissionFleetDrone, MissionSimulationState } from '../types';
 import { createMissionScene } from './createMissionScene';
 import { frameClock, resetClock } from './clock';
@@ -20,13 +21,15 @@ import { createAutoQualityDecision } from './renderQuality';
 import type { RenderQuality } from './renderQuality';
 import { angleDifference, reconcileFleet, STEP } from './dynamics';
 import { interpolateDrone } from './projection';
-import { cameraPreset, clampCamera, dampCamera } from './cameraRig';
-import type { CameraMode, NetworkFrame } from './cameraRig';
+import { cameraPreset, clampCamera, dampCamera, rangeCamera } from './cameraRig';
+import type { CameraRig, CameraMode, NetworkFrame } from './cameraRig';
 import { MISSION_SATELLITE_ORBIT, satelliteOrbitAt } from './satelliteOrbit';
 import { satelliteWorldPosition } from './satelliteWorldPosition';
 import { TERRAIN_DISCLOSURE, TERRAIN_PROVENANCE } from './terrain';
 
 export interface MissionWorldProps {
+  externalTools?:boolean; controls?:Ref<CanvasControls>; cameraState?:RefObject<{rig:CameraRig;mode:CameraMode|'manual';session?:string}|null>;
+  quality?:RenderQuality; onQualityChange?:(quality:RenderQuality)=>void;
   state: MissionSimulationState; drones: MissionFleetDrone[]; selectedDroneId: string; paused: boolean;
   /** Phase 9 may supply a receipt-freshness decision; omitted means current for existing callers. */
   evidenceCurrent?: boolean;
@@ -68,16 +71,19 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
   const downlinkAnnotation = useRef<HTMLSpanElement>(null);
   const hovered = useRef<string | undefined>(undefined);
   const alternatives = useRef(false);
+  const siteDetails = useRef(true);
   const wake = useRef<() => void>(() => {});
+  const groundLocator=useRef<HTMLButtonElement>(null);
   const applyQuality = useRef<(quality: RenderQuality) => void>(() => {});
-  const qualityRef = useRef<RenderQuality>(props.mission ? 'balanced' : 'high');
-  const manualHighOverride = useRef(false);
-  const desired = useRef(cameraPreset('overview'));
-  const modeRef = useRef<CameraMode | 'manual'>('overview');
+  const qualityRef = useRef<RenderQuality>(props.quality??(props.mission ? 'balanced' : 'high'));
+  const manualHighOverride = useRef(props.quality==='high');
+  const desired = useRef(props.cameraState?.current?.rig??cameraPreset('overview'));
+  const modeRef = useRef<CameraMode | 'manual'>(props.cameraState?.current?.mode??(props.externalTools?'manual':'overview'));
   const networkFrame = useRef<NetworkFrame>('unknown');
-  const [mode, setMode] = useState<CameraMode | 'manual'>('overview');
+  const [mode, setMode] = useState<CameraMode | 'manual'>(props.externalTools?'manual':'overview');
   const [showAlternatives, setShowAlternatives] = useState(false);
-  const [quality, setQuality] = useState<RenderQuality>(props.mission ? 'balanced' : 'high');
+  const [showSiteDetails, setShowSiteDetails] = useState(true);
+  const [quality, setQuality] = useState<RenderQuality>(props.quality??(props.mission ? 'balanced' : 'high'));
   const missionReceipt=useRef({previous:props.mission,current:props.mission,at:0});
   useLayoutEffect(() => {
     if(props.mission?.session_id!==missionReceipt.current.current?.session_id||props.mission?.simulation_time!==missionReceipt.current.current?.simulation_time||props.mission?.playing!==missionReceipt.current.current?.playing) missionReceipt.current={previous:missionReceipt.current.current,current:props.mission,at:performance.now()};
@@ -107,14 +113,35 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
   function chooseQuality(next: RenderQuality) {
     qualityRef.current = next;
     manualHighOverride.current = next === 'high';
-    setQuality(next);
+    setQuality(next);props.onQualityChange?.(next);
     applyQuality.current(next);
     wake.current();
   }
+  function fitFrame(full=false){
+    const nodes=latest.current.mission?.nodes??[];
+    const points=[...nodes.map(n=>n.position),...(full&&latest.current.mission?[latest.current.mission.base_position]:[])];if(!points.length)return;
+    const xs=points.map(p=>p[0]),ys=points.map(p=>p[1]),zs=points.map(p=>p[2]);
+    const aspect=(canvas.current?.clientWidth||600)/(canvas.current?.clientHeight||500);
+    manual();desired.current={yaw:.28,elevation:.8,target:{x:(Math.min(...xs)+Math.max(...xs))/2,y:(Math.min(...ys)+Math.max(...ys))/2,z:(Math.min(...zs)+Math.max(...zs))/2},span:Math.max(220,(Math.max(...xs)-Math.min(...xs))/Math.min(aspect,1.5),Math.max(...zs)-Math.min(...zs))*1.5};wake.current();
+  }
+  useImperativeHandle(props.controls,()=>({camera(action){
+    if(action==='fleet'||action==='full')fitFrame(action==='full');
+    else if(action==='selected')choose('follow');
+    else if(action==='in'||action==='out')adjust(0,action==='in'?.85:1.15);
+    else if(action==='left'||action==='right')adjust(action==='left'?-.15:.15,1);
+    else choose(action);
+  },quality:chooseQuality}));
+  useEffect(()=>{
+    const storage=props.cameraState,session=props.mission?.session_id;
+    if(props.externalTools&&storage?.current?.session!==session)choose('range');
+    return ()=>{if(storage)storage.current={rig:desired.current,mode:modeRef.current,session};};
+  // The rig is owned by the frame loop; fit once per session and retain it across view switches.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[props.mission?.session_id]);
   useEffect(() => {
     const node = canvas.current!;
     let scene: ReturnType<typeof createMissionScene>;
-    try { scene = createMissionScene(node); } catch { latest.current.onFallback(); return; }
+    try { scene = createMissionScene(node, () => wake.current()); } catch { latest.current.onFallback(); return; }
     scene.setQuality(qualityRef.current);
     const reduced = matchMedia('(prefers-reduced-motion: reduce)');
     let fleetInput: MissionFleetDrone[] | undefined;
@@ -165,6 +192,7 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
           const extent=Math.max(360,...drones.map(d=>Math.hypot(d.position.x,d.position.z)));
           desired.current={...cameraPreset('overview'),span:Math.min(6000,extent*2.6)};
         }
+        if(modeRef.current==='range')desired.current=rangeCamera(drones.map(d=>d.position),node.clientWidth/Math.max(1,node.clientHeight));
       }
       const selected = drones.find(d=>d.id===props.selectedDroneId);
       if (cameraSelection !== props.selectedDroneId) {
@@ -184,7 +212,7 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
       const dt = previous ? (now-previous)/1000 : 1/60; previous = now;
       rig = dampCamera(rig, desired.current, dt, reduced.matches, props.mission?6000:1350);
       const orbit = satelliteOrbitAt(MISSION_SATELLITE_ORBIT, MISSION_SATELLITE_ORBIT.config.epochSeconds+c.simulationSeconds);
-      const rendered = scene.draw(drones, props.selectedDroneId, satelliteWorldPosition(orbit.direction), rig, props.state, c.simulationSeconds, reduced.matches, hovered.current, alternatives.current, props.evidenceCurrent !== false, props.mission, props.selectedDroneIds, props.visualization);
+      const rendered = scene.draw(drones, props.selectedDroneId, satelliteWorldPosition(orbit.direction), rig, props.state, c.simulationSeconds, reduced.matches, hovered.current, (props.externalTools?!!props.visualization?.alternatives:alternatives.current), props.evidenceCurrent !== false, props.mission, props.selectedDroneIds, props.externalTools?props.visualization:{packets:true,inactive:true,ranges:false,hops:[],...props.visualization,siteDetails:siteDetails.current});
       const eligibleFrame = rendered && !frozen();
       if(profile&&eligibleFrame){
         if(lastProfileFrame && profile.count<profile.values.length)profile.values[profile.count++]=now-lastProfileFrame;
@@ -199,13 +227,14 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
         if (autoQuality.observe(now, frameReport.averageFps, qualityRef.current, manualHighOverride.current)) {
           qualityRef.current = 'balanced';
           scene.setQuality('balanced');
-          setQuality('balanced');
+          setQuality('balanced');latest.current.onQualityChange?.('balanced');
           frameRate.reset();
           clearFrameRate();
         }
       }
       const occupied: LabelBox[] = [];
       const viewportWidth=node.clientWidth, viewportHeight=node.clientHeight;
+      if(groundLocator.current){const point=scene.screenPoint('base');groundLocator.current.hidden=!!point?.visible&&point.x>=20&&point.x<=viewportWidth-20&&point.y>=20&&point.y<=viewportHeight-20;}
       for (const [id, marker] of craftMarkers.current) {
         const point=scene.screenPoint(id);
         const selected=id===props.selectedDroneId, hover=id===hovered.current && !selected;
@@ -316,8 +345,9 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
   const threatSceneNote = threat.profile === 'dos' && !threatQueuePath(threat, forwardingPath)
     ? 'DOS REPORTED · QUEUE UNAVAILABLE\nNO CONFIRMED FORWARDING PATH' : threat.sceneNote;
   return <div className="mission-world" data-camera-mode={mode} data-quality={quality}>
-    <div className="mission-camera-controls" role="group" aria-label="Mission camera">
+    {!props.externalTools&&<div className="mission-camera-controls" role="group" aria-label="Mission camera">
       <button type="button" aria-pressed={mode==='overview'} onClick={()=>choose('overview')}>Overview</button>
+      <button type="button" aria-pressed={mode==='range'} onClick={()=>choose('range')}>Mission range</button>
       <button type="button" aria-pressed={mode==='tactical'} onClick={()=>choose('tactical')}>Tactical</button>
       <button type="button" aria-pressed={mode==='follow'} disabled={!props.drones.some(d=>d.drone_id===props.selectedDroneId)} onClick={()=>choose('follow')}>Follow {props.mission?.nodes.find(n=>n.id===props.selectedDroneId)?.alias||compactDroneId(props.selectedDroneId,props.drones.findIndex(d=>d.drone_id===props.selectedDroneId))}</button>
       <button type="button" aria-pressed={mode==='network'} onClick={()=>choose('network')}>Network camera</button>
@@ -338,8 +368,9 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
           ? 'USGS 3DEP core · simulated local positions'
           : 'Representative mission terrain · simulated local positions'}
       </span>
-    </div>
+    </div>}
     <div className="mission-world-viewport"><canvas ref={canvas} className="mission-world-canvas" aria-label="Simulated mission terrain, UAV patrols, satellite and ground station. Use the fleet and camera buttons to interact." role="img" />
+      {props.externalTools&&<button ref={groundLocator} className="ground-edge-locator" onClick={()=>fitFrame(true)}>Ground control ↗</button>}
       <FleetOverlays drones={props.drones} markers={craftMarkers} labels={labels}/>
       <div className="mission-world-route-annotations" aria-hidden="true">
         <span ref={requestedRouteAnnotation} data-kind="requested">REQUESTED</span>
@@ -354,12 +385,13 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
         {flowVisible && <span className="mission-world-flow-note">Metric-derived flow · not packet capture</span>}
       </div>}
     </div>
-    <div className="mission-world-assets" role="group" aria-label="Mission assets and network display">
+    {!props.externalTools&&<div className="mission-world-assets" role="group" aria-label="Mission assets and network display">
       <button type="button" onClick={()=>props.onSelectAsset('base')}>Ground control</button>
       <button type="button" onClick={()=>props.onSelectAsset('satellite')}>Satellite</button>
       {threat.profile!=='none' && <button type="button" onClick={()=>props.onSelectAsset('jammer')}>Threat details · {props.state.activeAttack.replaceAll('_',' ')}</button>}
       <button type="button" aria-pressed={showAlternatives} onClick={toggleAlternatives}>Alternative routes</button>
-    </div>
+      <button type="button" aria-pressed={showSiteDetails} onClick={()=>{siteDetails.current=!siteDetails.current;setShowSiteDetails(siteDetails.current);wake.current();}}>Site details</button>
+    </div>}
     {!props.mission&&<div className="mission-world-fleet" role="group" aria-label="Select mission drone">
       {props.drones.map(d=><button type="button" key={d.drone_id} aria-pressed={d.drone_id===props.selectedDroneId} onClick={()=>props.onSelectDrone(d.drone_id)}>{d.drone_id.replaceAll('_',' ').replace(/^drone/, 'Drone')}</button>)}
     </div>}
@@ -374,7 +406,7 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
 
     </div>}
     <div className="mission-world-footer"><span>{props.mission?`Authoritative packet simulation · ${props.mission.speed}×`:'Visual simulation · 1×'}</span>
-    <details className="mission-world-notes"><summary>Simulation scope</summary><p>{props.mission?'Backend terrain, motion, radio links and packet forwarding are modeled. Installed mesh hops and packet events come from the simulator. Encryption indicators describe simulated policy. No RF calibration, real OpenFlow forwarding or UAV field validation is implied.':<>{TERRAIN_DISCLOSURE}. Screen-size UAV symbols aid identification and do not show aircraft dimensions. SIM ALT labels show local simulation altitude, not AGL or GPS. The DEM does not drive flight or RF calculations. Orbital scale is compressed. Alternative routes are optional schematic context; mesh lines show a neighborhood and forwarding hops are unavailable. Packet pulses visualize reported latency and loss, not captured packets or measured traffic volume. Threat fields show the injected affected area around the selected UAV ground projection, never an attacker location. GPS marker direction and spacing are schematic because there is no trusted position reference. DoS queue marks are fixed illustrative glyphs, not measured queue depth.</>}</p></details>
+    {!props.externalTools&&<details className="mission-world-notes"><summary>Simulation scope</summary><p>{props.mission?'Backend terrain, motion, radio links and packet forwarding are modeled. Installed mesh hops and packet events come from the simulator. Encryption indicators describe simulated policy. No RF calibration, real OpenFlow forwarding or UAV field validation is implied.':<>{TERRAIN_DISCLOSURE}. Screen-size UAV symbols aid identification and do not show aircraft dimensions. SIM ALT labels show local simulation altitude, not AGL or GPS. The DEM does not drive flight or RF calculations. Orbital scale is compressed. Alternative routes are optional schematic context; mesh lines show a neighborhood and forwarding hops are unavailable. Packet pulses visualize reported latency and loss, not captured packets or measured traffic volume. Threat fields show the injected affected area around the selected UAV ground projection, never an attacker location. GPS marker direction and spacing are schematic because there is no trusted position reference. DoS queue marks are fixed illustrative glyphs, not measured queue depth.</>}</p></details>}
     </div>
   </div>;
 }

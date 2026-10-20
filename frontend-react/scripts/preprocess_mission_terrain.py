@@ -68,7 +68,11 @@ def make_surface_maps(
     heights: list[float], columns: int, rows: int, dx_m: float, dz_m: float,
     minimum: float, maximum: float, output: Path,
 ) -> None:
-    """Illustrative DEM-derived color and material maps, not aerial photography."""
+    """Illustrative cover and fine material detail, never aerial photography.
+
+    Elevation samples are not resampled or rewritten. Only the visual maps are
+    enlarged; cover variation is synthetic and must not be treated as land data.
+    """
     albedo = Image.new("RGB", (columns, rows))
     normal = Image.new("RGB", (columns, rows))
     roughness = Image.new("L", (columns, rows))
@@ -92,28 +96,45 @@ def make_surface_maps(
                 + value_noise(column, row, 3) * 0.15
             )
             rock = clamp((slope - 0.16) * 2.4 + (elevation_ratio - 0.68) * 0.8)
-            vegetation = clamp(0.56 - slope * 0.8 - elevation_ratio * 0.24 + grain * 0.09)
-            soil = (111, 101, 81)
-            scrub = (86, 101, 77)
-            stone = (132, 130, 116)
+            vegetation = clamp(0.64 - slope * 1.3 - elevation_ratio * 0.2 + grain * 0.42)
+            soil = (166, 153, 125)
+            scrub = (132, 145, 111)
+            stone = (172, 169, 151)
             rgb = tuple(
                 round(clamp((soil[channel] * (1 - vegetation) + scrub[channel] * vegetation)
-                      * (1 - rock) + stone[channel] * rock + grain * 6, 0, 255))
+                      * (1 - rock) + stone[channel] * rock + grain * 14, 0, 255))
                 for channel in range(3)
             )
-            # White is a neutral multiplier for the shared vertex-colored base.
-            # The edge fades to white so the georeferenced tile meets the
-            # representative outer ring with identical material response.
+            # This is the complete albedo, not a multiplier for vertex colors.
+            # Match the outer ring's linear-light vertex palette at the seam.
             edge_distance = min(
                 column * dx_m, (columns - 1 - column) * dx_m,
                 row * dz_m, (rows - 1 - row) * dz_m,
             )
             blend = clamp(edge_distance / edge_fade_m)
             blend = blend * blend * (3 - 2 * blend)
-            ap[column, row] = tuple(
-                round(255 - (255 - (194 + channel * 0.38)) * blend)
-                for channel in rgb
-            )
+            x = (column - (columns - 1) / 2) * dx_m
+            z = (row - (rows - 1) / 2) * dz_m
+            representative = (13 * math.exp(-((x + 220)**2 / 65000 + (z + 140)**2 / 19000))
+                              + 8 * math.exp(-((x - 260)**2 / 24000 + (z - 80)**2 / 43000)) - 3)
+            edge_weight = clamp(edge_distance / EDGE_BLEND_M)
+            edge_weight = edge_weight * edge_weight * (3 - 2 * edge_weight)
+            local_height = representative + (elevation - maximum + MAX_WORLD_HEIGHT_M - representative) * edge_weight
+            height_mix = clamp((local_height + 52) / 70)
+            stone_mix = clamp((1 - 1 / math.sqrt(1 + slope * slope)) * 2.8, 0, .48)
+
+            def linear(channel: int) -> float:
+                c = channel / 255
+                return c / 12.92 if c <= .04045 else ((c + .055) / 1.055)**2.4
+
+            def srgb(channel: float) -> int:
+                c = channel * 12.92 if channel <= .0031308 else 1.055 * channel**(1 / 2.4) - .055
+                return round(clamp(c) * 255)
+
+            low, high, outer_stone = (137, 147, 118), (169, 160, 132), (166, 165, 149)
+            edge_rgb = tuple(srgb((linear(low[c]) * (1 - height_mix) + linear(high[c]) * height_mix)
+                                 * (1 - stone_mix) + linear(outer_stone[c]) * stone_mix) for c in range(3))
+            ap[column, row] = tuple(round(edge_rgb[c] * (1 - blend) + rgb[c] * blend) for c in range(3))
             # Small normal-map influence supplements the actual displaced geometry.
             nx, ny, nz = -east_slope * 0.16, -south_slope * 0.16, 1.0
             magnitude = math.sqrt(nx * nx + ny * ny + nz * nz)
@@ -122,9 +143,30 @@ def make_surface_maps(
                 round(128 + ((ny / magnitude * 0.5 + 0.5) * 255 - 128) * blend),
                 round(255 + ((nz / magnitude * 0.5 + 0.5) * 255 - 255) * blend),
             )
-            target_roughness = 255 * clamp(0.89 + 0.07 * vegetation - 0.05 * rock, 0, 1)
+            target_roughness = 255 * clamp(0.91 + 0.06 * vegetation - 0.04 * rock, 0, 1)
             rp[column, row] = round(255 + (target_roughness - 255) * blend)
 
+    # A second scale of subtle, static soil grain keeps close views readable.
+    # It changes material response only, not the source relief or its checksum.
+    size = 1024
+    albedo = albedo.resize((size, size), Image.Resampling.BICUBIC)
+    normal = normal.resize((size, size), Image.Resampling.BICUBIC)
+    roughness = roughness.resize((size, size), Image.Resampling.BICUBIC)
+    ap, np, rp = albedo.load(), normal.load(), roughness.load()
+    for row in range(size):
+        for column in range(size):
+            distance = min(column * dx_m * (columns - 1) / (size - 1),
+                           (size - 1 - column) * dx_m * (columns - 1) / (size - 1),
+                           row * dz_m * (rows - 1) / (size - 1),
+                           (size - 1 - row) * dz_m * (rows - 1) / (size - 1))
+            weight = clamp(distance / edge_fade_m)
+            weight = weight * weight * (3 - 2 * weight)
+            grain = value_noise(column, row, 4) * 3.5 + value_noise(column, row, 1) * 2.5
+            ap[column, row] = tuple(round(clamp(c + grain * weight, 0, 255)) for c in ap[column, row])
+            nx, ny, nz = np[column, row]
+            np[column, row] = (round(clamp(nx + grain * 2.5 * weight, 0, 255)),
+                               round(clamp(ny + value_noise(column + 77, row + 31, 2) * 10 * weight, 0, 255)), nz)
+            rp[column, row] = round(clamp(rp[column, row] + grain * weight, 0, 255))
     albedo.save(output / "terrain-albedo.png", optimize=True)
     normal.save(output / "terrain-normal.png", optimize=True)
     roughness.save(output / "terrain-roughness.png", optimize=True)
@@ -218,8 +260,8 @@ def build(source: Path, output: Path) -> None:
             "edgeTreatment": "outer 150 m blends to representative procedural terrain",
             "simulationEffect": "visual only; no RF, routing, flight, or collision calculation uses this DEM",
         },
-        "surfaceMaps": "DEM-derived illustrative albedo, normals and roughness fade to the representative outer material; not orthoimagery or land-cover evidence",
-        "sceneProps": "Deterministic illustrative scrub and rocks and a 50 m local-scale cue; no source-mapped vegetation, rocks, road or water",
+        "surfaceMaps": "1024px illustrative dry grass, soil and stone albedo with synthetic fine grain, normals and roughness; edge palette matches the representative outer terrain; not orthoimagery or land-cover evidence",
+        "sceneProps": "Deterministic illustrative research test range: eight buildings including hangars and labs, marked flight apron, operations and service yards, 32 solar panels, planted test plots, connecting roads, three launch pads, six wooded areas and a 50 m scale cue; facilities, land use, roads and vegetation are not source-mapped and have no RF, routing, flight or collision effect",
         "verticalDatum": "not asserted from delivered GeoTIFF",
         "sourceSha256": hashlib.sha256(source.read_bytes()).hexdigest(),
         "heightmapSha256": hashlib.sha256(encoded).hexdigest(),

@@ -9,7 +9,7 @@
     "lint": "oxlint",
     "preview": "vite preview",
     "typecheck": "tsc -b",
-    "test": "node --experimental-strip-types --test src/mission-simulation/world/*.test.ts",
+    "test": "node --experimental-strip-types --test src/mission-simulation/world/*.test.ts src/application/*.test.ts",
     "test:browser": "playwright test",
     "profile:swarm": "node e2e/profile-swarm.mjs",
     "validate:swarm": "npm run test:browser && npm run profile:swarm"

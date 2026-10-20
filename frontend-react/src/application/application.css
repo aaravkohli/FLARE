@@ -1,0 +1,161 @@
+/* Signed-in application shell. Mission internals and the sign-in view retain their own styles. */
+.flare-application {height:100dvh;min-height:0;overflow:hidden;display:grid;grid-template-rows:64px minmax(0,1fr);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;background:#101114;color:#edf0f4;font-size:14px;line-height:1.5;--app-line:#2a2c32;--app-muted:#a0a4ae;--app-raised:#1b1d22;}
+.flare-application [hidden] {display:none!important;}
+.flare-application .application-header {display:flex;align-items:center;gap:30px;padding:0 24px;border-bottom:1px solid var(--app-line);background:#17181c;position:relative;z-index:20;}
+.flare-application .application-wordmark {font-size:15px;letter-spacing:.1em;font-weight:720;color:#f3f4f6;text-decoration:none;}
+.flare-application .application-header nav {align-self:stretch;display:flex;align-items:stretch;gap:6px;}
+.flare-application .application-header nav a {display:flex;align-items:center;padding:0 13px;color:var(--app-muted);text-decoration:none;border-bottom:2px solid transparent;font-size:13px;}
+.flare-application .application-header nav a[aria-current] {color:#f4f6fa;border-bottom-color:#7aafff;}
+.flare-application .application-header nav a:hover {color:white;background:#ffffff05;}
+.flare-application .application-connection {margin-left:auto;color:#ddba7b;font-size:12px;white-space:nowrap;}
+.flare-application .application-connection::before {content:'';display:inline-block;background:currentColor;width:6px;height:6px;border-radius:50%;margin-right:7px;}
+.flare-application .application-connection.is-connected {color:#8bc9a7;}
+.flare-application .application-header-actions {display:flex;align-items:center;gap:5px;}
+.flare-application :is(.application-header,.application-section,.application-drawer,.application-toast) button,.flare-application .button-link {min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:0 13px;border:1px solid var(--app-line);border-radius:7px;background:#202228;color:#e2e5eb;font:inherit;font-size:13px;font-weight:500;cursor:pointer;text-decoration:none;}
+.flare-application .application-header-actions button {border-color:transparent;background:transparent;padding:0 10px;}
+.flare-application :is(.application-header,.application-section,.application-drawer) button:hover:not(:disabled) {background:#2a2d34;border-color:#444953;}
+.flare-application :is(.application-header,.application-section,.application-drawer) button:disabled {opacity:.45;cursor:not-allowed;}
+.flare-application :is(.application-section,.application-drawer) .primary {background:#3675d4;color:white;border-color:#4b85df;}
+.flare-application :is(.application-section,.application-drawer) .primary:hover:not(:disabled) {background:#4482e2;}
+.flare-application :is(.application-header,.application-section,.application-drawer) :is(button,a,input,select,summary):focus-visible {outline:2px solid #8cbaff;outline-offset:3px;}
+.flare-application .application-menu-button {display:none!important;}
+.flare-application .skip-link {position:fixed;top:0;left:15px;transform:translateY(-150%);padding:12px;background:#315f9e;color:white;z-index:120;}
+.flare-application .skip-link:focus {transform:none;}
+.flare-application .application-content {min-height:0;min-width:0;position:relative;}
+.flare-application .application-page {height:100%;overflow:auto;overscroll-behavior:contain;outline:none;}
+.flare-application .application-section {max-width:1500px;margin:auto;padding:28px 36px 48px;}
+.flare-application .page-heading {display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:24px;}
+.flare-application .page-heading h1 {font-size:26px;line-height:1.25;letter-spacing:-.035em;font-weight:650;margin:0;}
+.flare-application .page-heading p {font-size:13px;color:var(--app-muted);margin:7px 0 0;}
+.flare-application :is(.application-section,.application-drawer) h2 {font-size:16px;font-weight:600;letter-spacing:-.015em;margin:0;}
+.flare-application :is(.application-section,.application-drawer) h3 {font-size:14px;font-weight:600;margin:16px 0 10px;}
+.flare-application :is(.application-section,.application-drawer) label {display:grid;gap:7px;font-size:13px;color:#b7bbc4;}
+.flare-application :is(.application-section,.application-drawer) :is(input:not([type=checkbox]),select) {min-height:44px;border:1px solid #363942;border-radius:6px;background:#191b20;color:#e4e7ed;padding:8px 10px;font:inherit;font-size:14px;min-width:0;max-width:100%;width:100%;}
+.flare-application :is(.application-section,.application-drawer) input[type=range] {padding:0;background:transparent;border:0;accent-color:#83b1f5;}
+.flare-application :is(.application-section,.application-drawer) summary {min-height:44px;padding:10px 0;cursor:pointer;font-size:13px;font-weight:550;}
+.flare-application :is(.application-section,.application-drawer) details > p {font-size:13px;color:var(--app-muted);margin:8px 0;}
+.flare-application .subtle,.flare-application .controller-event {color:var(--app-muted);font-size:12px;margin:12px 0;}
+.flare-application .controller-event time {font-variant-numeric:tabular-nums;margin-right:12px;}
+.flare-application .application-notice {border-left:2px solid #cba15e;background:#d7a45e08;padding:10px 14px;color:#dec49a;font-size:13px;margin:16px 0;}
+.flare-application .overview-status,.flare-application .overview-decision {display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--app-line);border-bottom:1px solid var(--app-line);}
+.flare-application :is(.overview-status,.overview-decision) > div {padding:16px 20px 16px 0;display:grid;align-content:start;gap:5px;min-width:0;}
+.flare-application :is(.overview-status,.overview-decision) span {font-size:12px;color:var(--app-muted);}
+.flare-application :is(.overview-status,.overview-decision) strong {font-weight:500;font-size:14px;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+.flare-application .overview-decision {grid-template-columns:repeat(5,minmax(0,1fr));background:#17191e;margin:20px 0 28px;padding:0 18px;border-radius:6px;border:0;}
+.flare-application .tone-success {color:#95d1af!important;}
+.flare-application .tone-warning {color:#e5ba79!important;}
+.flare-application .section-heading {display:flex;justify-content:space-between;align-items:center;gap:15px;margin:24px 0 12px;}
+.flare-application .section-heading > span {color:var(--app-muted);font-size:12px;}
+.flare-application .telemetry-charts {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:28px;}
+.flare-application .network-chart {min-width:0;padding:14px 0;}
+.flare-application .network-chart h2 {font-size:14px;}
+.flare-application .network-chart h2 svg {display:none;}
+.flare-application .network-chart p {font-size:12px;color:var(--app-muted);}
+.flare-application .decision-disclosure {border-top:1px solid var(--app-line);margin-top:24px;}
+.flare-application .decision-disclosure > summary {display:list-item;font-size:15px;}
+.flare-application .decision-disclosure > summary span {font-size:12px;color:var(--app-muted);margin-left:16px;font-weight:400;}
+.flare-application .overview-provenance {background:#15171c;border-radius:6px;padding:8px 0;}
+.flare-application .overview-provenance .text-gray-500 {color:#a0a4ae;}
+.flare-application .overview-provenance .text-\[10px\],.flare-application .overview-provenance .text-\[11px\] {font-size:12px;}
+.flare-application .overview-provenance dl > div {flex-wrap:wrap;}
+.flare-application .overview-provenance dd {overflow-wrap:anywhere;white-space:normal;}
+.flare-application .research-resource {margin-top:24px;color:var(--app-muted);}
+.flare-application .research-resource a {font-size:13px;color:#9ec2f7;}
+.flare-application .contribution-chart {padding:0 20px 15px;border-top:1px solid var(--app-line);}
+.flare-application .contribution-chart > p {font-size:12px;color:var(--app-muted);}
+.flare-application .contribution-values {display:flex;flex-wrap:wrap;gap:24px;font-size:12px;margin:15px 0;color:var(--app-muted);}
+.flare-application .contribution-values strong {margin-left:8px;color:#e6e8ed;font-weight:500;}
+.flare-application .contribution-row {display:grid;grid-template-columns:minmax(100px,1fr) minmax(100px,2fr) minmax(110px,1fr);gap:16px;align-items:center;min-height:34px;font-size:12px;}
+.flare-application .contribution-row output {text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;}
+.flare-application .contribution-track {height:15px;position:relative;border-left:0;background:#ffffff03;}
+.flare-application .contribution-track::before {content:'';position:absolute;height:100%;left:50%;border-left:1px solid #747985;}
+.flare-application .contribution-track i {position:absolute;top:3px;height:9px;background:#91b5e9;}
+.flare-application .contribution-track i.positive {background:#c5ad81;}
+.flare-application .table-toolbar {display:flex;gap:18px;align-items:center;flex-wrap:wrap;margin:16px 0;}
+.flare-application .table-toolbar > span {margin-left:auto;color:var(--app-muted);font-size:12px;}
+.flare-application .search-field {min-width:200px;flex:0 1 300px;}
+.flare-application .application-segments {display:flex;align-items:center;padding:3px;border:1px solid var(--app-line);border-radius:7px;align-self:end;}
+.flare-application .application-segments button {border:0;background:transparent;min-width:88px;}
+.flare-application .application-segments button[aria-pressed=true] {background:#30333a;color:#fff;}
+.flare-application .table-scroll {overflow-x:auto;max-width:100%;}
+.flare-application .application-table {border-collapse:collapse;width:100%;font-size:13px;text-align:left;font-variant-numeric:tabular-nums;}
+.flare-application .application-table th {font-weight:500;color:var(--app-muted);font-size:12px;white-space:nowrap;}
+.flare-application .application-table :is(th,td) {padding:10px 16px;border-bottom:1px solid var(--app-line);}
+.flare-application .application-table th:first-child,.flare-application .application-table td:first-child {padding-left:0;}
+.flare-application .application-table th button {padding:0;background:transparent;border:0;justify-content:flex-start;color:var(--app-muted);font-size:12px;}
+.flare-application .application-table .table-row-link {padding:0;display:grid;text-align:left;justify-content:start;gap:1px;border:0;background:transparent;min-height:44px;color:#ebedf2;font-size:14px;}
+.flare-application .table-row-link small {font-weight:400;color:var(--app-muted);font-size:12px;}
+.flare-application .application-table tr.is-selected {background:#78a7ee0b;}
+.flare-application .empty-state {padding:30px 12px;text-align:center;font-size:13px;color:var(--app-muted);}
+.flare-application .application-drawer {position:fixed;inset:0 0 0 auto;margin:0;width:min(520px,100%);height:100dvh;max-height:100dvh;max-width:100%;padding:0;border:0;border-left:1px solid var(--app-line);background:#191b20;color:#e5e8ef;box-shadow:-12px 0 50px #0003;}
+.flare-application .application-drawer::backdrop {background:#0007;}
+.flare-application .application-drawer-body {height:100%;display:grid;grid-template-rows:auto minmax(0,1fr);}
+.flare-application .application-drawer-body > header {display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:1px solid var(--app-line);}
+.flare-application .application-drawer-body > header button {width:44px;padding:0;background:transparent;border:0;}
+.flare-application .application-drawer-content {padding:20px;overflow-y:auto;min-height:0;}
+.flare-application .application-drawer h3 {margin-top:24px;}
+.flare-application .drawer-identity h3 {font-size:21px;margin:0;}
+.flare-application .drawer-identity p {font-size:13px;color:var(--app-muted);margin-top:6px;}
+.flare-application .detail-list {margin:16px 0 24px;}
+.flare-application .detail-list > div {display:flex;justify-content:space-between;gap:16px;padding:9px 0;border-bottom:1px solid #ffffff06;}
+.flare-application .detail-list dt {font-size:13px;color:var(--app-muted);}
+.flare-application .detail-list dd {font-size:13px;text-align:right;overflow-wrap:anywhere;font-variant-numeric:tabular-nums;min-width:0;}
+.flare-application .fleet-editor form {display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:18px 0;}
+.flare-application .fleet-editor form > div,.flare-application .fleet-editor form > p {grid-column:1/-1;}
+.flare-application .application-drawer-content form {background:transparent;padding:0;border:0;}
+.flare-application .application-drawer-content form > .grid {grid-template-columns:1fr 1fr;gap:16px;}
+.flare-application .application-drawer-content form .text-\[9px\],.flare-application .application-drawer-content form .text-\[10px\] {font-size:12px;letter-spacing:normal;text-transform:none;}
+.flare-application .application-tabs {display:flex;gap:20px;border-bottom:1px solid var(--app-line);margin-bottom:24px;}
+.flare-application .application-tabs button {border:0;border-radius:0;background:transparent;border-bottom:2px solid transparent;padding:0 2px 8px;min-height:44px;color:var(--app-muted);}
+.flare-application .application-tabs button[aria-selected=true] {border-bottom-color:#8ab6f6;color:#f1f3f7;}
+.flare-application .application-policy {background:transparent;border:0;border-radius:0;box-shadow:none;overflow:visible;}
+.flare-application .policy-actions {display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:24px;color:var(--app-muted);font-size:13px;}
+.flare-application .policy-actions > div {display:flex;gap:10px;}
+.flare-application .policy-group {border-top:1px solid var(--app-line);}
+.flare-application .policy-group > summary {font-size:15px;padding:16px 0;}
+.flare-application .application-policy .flc-modules {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;background:transparent;padding-bottom:24px;}
+.flare-application .application-policy .flc-module {background:transparent;min-height:0;padding:0;}
+.flare-application .application-policy .flc-module__header {grid-template-columns:minmax(0,1fr) auto auto;align-items:center;gap:12px;}
+.flare-application .application-policy .flc-module__icon {display:none;}
+.flare-application .application-policy .flc-module h3 {font-size:14px;margin:0;}
+.flare-application .application-policy .flc-module p {font-size:12px;color:var(--app-muted);margin-top:5px;}
+.flare-application .application-policy .flc-module__state {font-size:12px;}
+.flare-application .application-policy .flc-toggle {width:44px;height:44px;display:flex;align-items:center;}
+.flare-application .application-policy .flc-select-field svg {display:none;}
+.flare-application .application-policy .flc-range-field output {font-size:13px;}
+.flare-application .application-policy .flc-range-field label {display:flex;font-size:13px;}
+.flare-application .evidence-grid {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:0 28px;}
+.flare-application .federation-evidence {border-top:1px solid var(--app-line);margin-top:24px;}
+.flare-application .status-rejected {color:#edaba6;}
+.flare-application .status-down_weighted {color:#e5c18a;}
+.flare-application .status-accepted {color:#a0d2b5;}
+.flare-application .validation-layout {display:grid;grid-template-columns:minmax(280px,.8fr) minmax(0,1.7fr);gap:36px;}
+.flare-application .validation-config {padding-right:30px;border-right:1px solid var(--app-line);}
+.flare-application .validation-config > label {margin:20px 0;}
+.flare-application .action-row {display:flex;gap:10px;flex-wrap:wrap;margin:20px 0;}
+.flare-application .validation-results {min-width:0;}
+.flare-application .validation-results > .section-heading {margin-top:0;}
+.flare-application .validation-comparison {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;}
+.flare-application .validation-observation {min-width:0;}
+.flare-application .validation-results .overview-status {grid-template-columns:repeat(3,minmax(0,1fr));}
+.flare-application .validation-results .overview-status strong {font-size:13px;overflow-wrap:anywhere;}
+.flare-application .assertion-list {list-style:none;padding:0;margin:24px 0;}
+.flare-application .assertion-list li {display:flex;justify-content:space-between;gap:16px;border-bottom:1px solid var(--app-line);padding:10px 0;font-size:13px;}
+.flare-application :is(.application-section,.application-drawer) pre {max-width:100%;white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;background:#111317;padding:12px;line-height:1.6;border-radius:5px;}
+.flare-application .activity-filters {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;}
+.flare-application .application-activity {list-style:none;margin:0;padding:0;}
+.flare-application .application-activity li {border-bottom:1px solid var(--app-line);padding:16px 0;font-size:13px;}
+.flare-application .application-activity time {font-size:12px;color:var(--app-muted);font-variant-numeric:tabular-nums;}
+.flare-application .application-activity p {margin:5px 0;overflow-wrap:anywhere;}
+.flare-application .application-activity small {color:var(--app-muted);font-size:12px;}
+.flare-application .application-toast {position:fixed;right:20px;bottom:20px;max-width:calc(100vw - 40px);display:flex;align-items:center;gap:20px;padding:12px;background:#262126;color:#f3b9b5;border:1px solid #875955;border-radius:8px;z-index:110;}
+/* Outer sizing only: the existing Mission Workspace owns all internal layout and controls. */
+.flare-application .mission-application-page {padding:8px 12px;}
+.flare-application .mission-application-page > .swarm-center:not(.swarm-presentation) {margin:0;height:100%;min-height:640px;}
+@media (max-width:1200px) {.flare-application .application-header {gap:15px;padding-inline:16px;}.flare-application .application-header nav a {padding-inline:10px;}.flare-application .application-connection {display:none;}.flare-application .application-header-actions {margin-left:auto;}}
+@media (max-width:1099px) {.flare-application .application-section {padding:24px;}.flare-application .application-policy .flc-modules {grid-template-columns:1fr;}.flare-application .validation-layout {grid-template-columns:1fr;gap:28px;}.flare-application .validation-config {border-right:0;border-bottom:1px solid var(--app-line);padding-right:0;padding-bottom:20px;}.flare-application .overview-decision {grid-template-columns:repeat(3,minmax(0,1fr));}.flare-application .evidence-grid {grid-template-columns:repeat(2,minmax(0,1fr));}.flare-application .telemetry-charts {grid-template-columns:1fr;}.flare-application .mission-application-page > .swarm-center:not(.swarm-presentation) {height:auto;min-height:calc(100dvh - 80px);}}
+@media (max-width:767px) {.flare-application {grid-template-rows:60px minmax(0,1fr);}.flare-application .application-header {gap:12px;padding:0 12px;}.flare-application .application-menu-button {display:inline-flex!important;background:transparent;border:0;min-width:44px;padding:0;}.flare-application .application-header nav {display:none;position:absolute;left:12px;right:12px;top:56px;padding:6px;flex-direction:column;background:#23252b;border:1px solid #434751;border-radius:8px;box-shadow:0 15px 30px #0005;}.flare-application .application-header nav.is-open {display:flex;}.flare-application .application-header nav a {min-height:46px;border:0;border-radius:4px;}.flare-application .application-header nav a[aria-current] {background:#8bb5f21c;}.flare-application .application-header-actions {gap:0;}.flare-application .application-header-actions button {width:44px;padding:0;}.flare-application .application-header-actions button span {display:none;}.flare-application .application-section {padding:22px 16px 36px;}.flare-application .page-heading h1 {font-size:24px;}.flare-application .page-heading {gap:12px;}.flare-application .overview-status,.flare-application .overview-decision {grid-template-columns:repeat(2,minmax(0,1fr));}.flare-application .section-heading {align-items:start;flex-direction:column;gap:5px;}.flare-application .decision-disclosure > summary span {display:none;}.flare-application .contribution-row {grid-template-columns:minmax(80px,1fr) minmax(60px,1fr);gap:10px;}.flare-application .contribution-row output {grid-column:1/-1;text-align:left;}.flare-application .contribution-chart {padding-inline:12px;}.flare-application .table-toolbar {gap:12px;}.flare-application .table-toolbar .search-field {order:3;flex:1 1 100%;}.flare-application .application-table {min-width:570px;}.flare-application .application-drawer {width:100%;}.flare-application .application-drawer-content {padding:16px;}.flare-application .application-drawer-content .application-table {min-width:360px;}.flare-application .fleet-editor form,.flare-application .application-drawer-content form > .grid {grid-template-columns:1fr;}.flare-application .evidence-grid,.flare-application .validation-comparison {grid-template-columns:1fr;}.flare-application .validation-results .overview-status {grid-template-columns:1fr;}.flare-application .policy-actions {align-items:start;flex-direction:column;}.flare-application .application-policy .flc-module__header {gap:8px;}.flare-application .activity-filters {grid-template-columns:1fr;}.flare-application .mission-application-page {padding:0;}}
+@media (max-height:800px) and (min-width:1100px) {.flare-application .mission-application-page > .swarm-center:not(.swarm-presentation) {min-height:0;}}
+@media (prefers-reduced-motion:reduce) {.flare-application :is(.application-header,.application-section,.application-drawer) * {scroll-behavior:auto;transition:none;animation:none;}}
+.flare-application .application-header-actions button {white-space:nowrap;}
+@media (min-width:768px) and (max-width:950px) {.flare-application .application-header-actions button {width:44px;padding:0;}.flare-application .application-header-actions button span {display:none;}}

@@ -4,7 +4,7 @@ import { GROUND_STATION_VISUAL_ENDPOINT } from './groundStation.ts';
 import { terrainHeight } from './terrain.ts';
 
 export const CAMERA_FOV = 44;
-export type CameraMode = 'overview' | 'tactical' | 'follow' | 'network';
+export type CameraMode = 'overview' | 'range' | 'tactical' | 'follow' | 'network';
 export type NetworkFrame = 'direct' | 'mesh' | 'satellite' | 'unknown';
 export type CameraSubject = Pick<DroneMotion, 'position' | 'heading'>;
 export interface CameraRig { yaw: number; elevation: number; span: number; target: Vector3 }
@@ -18,9 +18,31 @@ const overview = (): CameraRig => ({
   yaw: .28, elevation: radians(35), span: 1350, target: { x: 50, y: 190, z: 30 },
 });
 
+/** Ground context and aircraft share the frame; display geometry stays fixed. */
+export function rangeCamera(points: readonly Vector3[] = [], aspect = 1.5): CameraRig {
+  const xs = [-435, 375, ...points.map(p => p.x)], zs = [-225, 315, ...points.map(p => p.z)];
+  const minX = Math.min(...xs), maxX = Math.max(...xs), minZ = Math.min(...zs), maxZ = Math.max(...zs);
+  const x = (minX + maxX) / 2, z = (minZ + maxZ) / 2;
+  const ground = terrainHeight(x, z), altitude = Math.max(100, ...points.map(p => p.y));
+  const target = { x, y: (ground + altitude) / 2, z }, yaw = .28, elevation = radians(47);
+  const landmarks: Vector3[] = [];
+  for (const px of [-435, 375]) for (const pz of [-225, 315]) landmarks.push({ x: px, y: terrainHeight(px, pz), z: pz });
+  const tan = Math.tan(CAMERA_FOV * Math.PI / 360), ratio = Math.max(.5, aspect);
+  let distance = 600;
+  for (const p of [...points, ...landmarks]) {
+    const dx = p.x - target.x, dy = p.y - target.y, dz = p.z - target.z;
+    const right = dx * Math.cos(yaw) - dz * Math.sin(yaw);
+    const up = -dx * Math.sin(yaw) * Math.sin(elevation) + dy * Math.cos(elevation) - dz * Math.cos(yaw) * Math.sin(elevation);
+    const towardEye = dx * Math.sin(yaw) * Math.cos(elevation) + dy * Math.sin(elevation) + dz * Math.cos(yaw) * Math.cos(elevation);
+    distance = Math.max(distance, towardEye + Math.max(Math.abs(right) / (tan * ratio * .88), Math.abs(up) / (tan * .88)));
+  }
+  return { yaw, elevation, span: distance * 2 * tan * Math.min(ratio, 1.5), target };
+}
+
 /** Camera coordinates are local visual metres; the orbit and flight state are unchanged. */
 export function cameraPreset(mode: CameraMode, selected?: CameraSubject, networkFrame: NetworkFrame = 'unknown'): CameraRig {
   if (mode === 'overview') return overview();
+  if (mode === 'range') return rangeCamera();
   if (mode === 'follow') {
     if (!selected) return overview();
     const { position, heading } = selected;

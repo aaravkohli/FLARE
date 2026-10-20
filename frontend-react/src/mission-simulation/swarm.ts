@@ -11,10 +11,10 @@ export interface PacketEvent {schema_version:'mission_packet_event_v1';session_i
 export interface PacketBatch {session_id:string;events:PacketEvent[];cursor:number;event_gap?:boolean}
 export interface TopologyMetadata {id:string;label:string;description:string;suggested_formation:string}
 export interface RouteInspection {session_id:string;network_revision:number;source:string;destination:string;candidate_hops:string[];installed_hops:string[];reachable:boolean;routing_source:string}
-export interface NetworkDisplay {packets:boolean;inactive:boolean;ranges:boolean;hops:string[];candidate?:boolean;replay?:{packetId:string;time:number}}
+export interface NetworkDisplay {packets:boolean;alternatives?:boolean;siteDetails?:boolean;inactive:boolean;ranges:boolean;hops:string[];candidate?:boolean;replay?:{packetId:string;time:number}}
 export interface NetworkCamera {x:number;z:number;span:number}
-export interface ExperimentResult {topology:string;seed:number;generated:number;delivered:number;dropped:number;pdr:number|null;average_latency_ms:number|null;jitter_ms:number|null;throughput_mbps:number;average_hops:number|null;connected_components:number;route_convergence_ms?:number|null;service_recovery_ms?:number|null;unrecovered_flows?:number;conservation:boolean;recovery:{source:string;destination:string;service_recovery_ms?:number;route_convergence_ms?:number}[]}
-export interface ExperimentState {id:string;mode:'compare'|'benchmark';status:string;progress:number;results:ExperimentResult[];runs?:SwarmSnapshot[];error?:string;trace_files?:string[];configuration:{topologies:string[];seeds:number[];scenario:string;count:number;range_m:number;duration_s:number;warmup_s:number}}
+export interface ExperimentResult {topology:string;seed:number;generated:number;delivered:number;dropped:number;pdr:number|null;average_latency_ms:number|null;jitter_ms:number|null;throughput_mbps:number;average_hops:number|null;connected_components:number;failed_routes?:number;route_convergence_ms?:number|null;service_recovery_ms?:number|null;unrecovered_flows?:number;conservation:boolean;recovery:{source:string;destination:string;service_recovery_ms?:number;route_convergence_ms?:number}[]}
+export interface ExperimentState {id:string;mode:'compare'|'benchmark';status:string;progress:number;results:ExperimentResult[];runs?:SwarmSnapshot[];error?:string;trace_files?:string[];current_topology?:string;current_seed?:number;source_sha256?:string;simulator_version?:string;routing_policy?:string;terrain_provenance?:Record<string,unknown>;configuration:{topologies:string[];seeds:number[];scenario:string;count:number;range_m:number;duration_s:number;warmup_s:number}}
 
 export interface SwarmEvent {cursor:number;simulation_time:number;category:string;kind:string;data:Record<string,unknown>}
 export interface SwarmSnapshot {
@@ -29,7 +29,7 @@ export interface SwarmSnapshot {
  recovery?:{source:string;destination:string;disrupted_at:number;route_convergence_ms?:number;service_recovery_ms?:number}[];
  events:SwarmEvent[];cursor:number;timestamp:number;event_gap?:boolean;statistics:Record<string,number>;terrain:Record<string,unknown>;
 }
-export interface SwarmCommand {command_id:string;action:string;expires_at?:number;outcomes:Record<string,{status:string;reason?:string;result?:{changed?:boolean;reason?:string;installed_hops?:string[]}}>}
+export interface SwarmCommand {command_id:string;action:string;simulation_time?:number;expires_at?:number;outcomes:Record<string,{status:string;reason?:string;result?:{changed?:boolean;reason?:string;installed_hops?:string[]}}>}
 export interface SwarmAttack {attack_id:string;group:string;profile:string;affected_targets:string[];effective_paths:string[];expires_at:number;status:string;outcomes:Record<string,{generated_packets?:number;rate_capped?:boolean;status?:string;round?:number}>}
 export const TOPOLOGIES=['full_mesh','partial_mesh','star','ring','tree','cluster_mesh','grid','random_geometric','hybrid_mesh','self_healing_mesh'];
 export const FORMATIONS=['grid','v','line','circle','diamond','wedge','column','distributed','cluster'];
@@ -40,6 +40,12 @@ const retiredSessions=new Set<string>();
 const missionListeners=new Set<()=>void>();
 const selectionListeners=new Set<()=>void>();
 let selection:{targets:string[];inspected:string}={targets:[],inspected:''};
+export function inspectMissionTarget(id:string){
+ if(currentMission?.nodes.some(n=>n.id===id))setSelection(selection.targets,id);
+}
+export function toggleMissionTarget(id:string){
+ if(currentMission?.nodes.some(n=>n.id===id))setSelection(selection.targets.includes(id)?selection.targets.filter(n=>n!==id):[...selection.targets,id],selection.inspected);
+}
 function setSelection(targets:string[],inspected:string){selection={targets,inspected};for(const listener of selectionListeners)listener();}
 export function selectMissionTarget(id:string,additive=false){
  if(!currentMission?.nodes.some(n=>n.id===id))return;

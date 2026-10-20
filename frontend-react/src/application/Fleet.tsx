@@ -1,0 +1,25 @@
+import { useState, useSyncExternalStore, type ReactNode } from 'react';
+import { getMissionSnapshot, subscribeMission } from '../mission-simulation/swarm';
+import type { MissionTelemetryPayload } from '../mission-simulation/types';
+import type { FleetDrone } from '../App';
+import { compare, fleetMeasurement, matches, metric, title } from './presentation';
+import { Drawer } from './ApplicationShell';
+
+type Props = { active: boolean; drones: FleetDrone[]; managed: FleetDrone[]; payloads: Record<string, MissionTelemetryPayload>; canManage: boolean; detailId: string; onDetail: (id: string) => void; onInspect: (id: string) => void; editor: ReactNode; onEdit: (id: string) => void; enrollment: ReactNode; enrolling: boolean; onEnrollment: (value: boolean) => void };
+export default function Fleet(props: Props) {
+  const mission = useSyncExternalStore(subscribeMission, getMissionSnapshot);
+  const [filter, setFilter] = useState('active'), [query, setQuery] = useState('');
+  const [sort, setSort] = useState({ key: 'drone_id', descending: false });
+  const all = props.managed.length ? props.managed : props.drones;
+  const rows = all.map(drone => ({ ...drone, ...fleetMeasurement(drone.drone_id, mission, props.payloads[drone.drone_id]), operational: !drone.enabled ? 'Disabled' : mission?.nodes.find(n => n.id === drone.drone_id)?.available === false ? 'Unavailable' : 'Active' })).filter(row => (filter === 'active' ? row.enabled : !row.enabled) && matches(query, row.drone_id, row.display_name)).sort((a, b) => compare(a[sort.key as keyof typeof a], b[sort.key as keyof typeof b], sort.descending));
+  const detail = all.find(row => row.drone_id === props.detailId);
+  const observed = detail ? fleetMeasurement(detail.drone_id, mission, props.payloads[detail.drone_id]) : null;
+  return <div className="application-section"><div className="page-heading"><div><h1>Fleet</h1><p>{props.drones.length} active UAVs · {all.filter(d => !d.enabled).length} disabled</p></div>{props.canManage && <button className="primary" onClick={() => props.onEnrollment(true)}>Enroll UAV</button>}</div>
+    <div className="table-toolbar"><div className="application-segments" aria-label="Fleet availability">{['active', 'disabled'].map(value => <button key={value} aria-pressed={filter === value} onClick={() => setFilter(value)}>{title(value)}</button>)}</div><label className="search-field">Search UAVs<input type="search" value={query} onChange={e => setQuery(e.target.value)} placeholder="Name or ID" /></label><span>{rows.length} UAVs</span></div>
+    <div className="table-scroll"><table className="application-table" aria-label="Fleet UAVs"><thead><tr>{[['drone_id', 'UAV'], ['operational', 'Operational status'], ['route', 'Installed route'], ['pdr', 'PDR'], ['latency', 'Latency']].map(([key, label]) => <th key={key} aria-sort={sort.key === key ? sort.descending ? 'descending' : 'ascending' : 'none'}><button onClick={() => setSort({ key, descending: sort.key === key && !sort.descending })}>{label}{sort.key === key ? sort.descending ? ' ↓' : ' ↑' : ''}</button></th>)}</tr></thead><tbody>{rows.map(row => <tr key={row.drone_id} className={props.detailId === row.drone_id ? 'is-selected' : ''} onClick={() => props.onDetail(row.drone_id)}><td><button className="table-row-link" aria-label={`Details for ${row.display_name}`} onClick={e => {e.stopPropagation();props.onDetail(row.drone_id);}}>{row.display_name}<small>{row.drone_id}</small></button></td><td>{row.operational}</td><td>{row.route ? title(row.route) : '—'}</td><td>{metric(row.pdr == null ? null : row.pdr * 100, 1, '%')}</td><td>{metric(row.latency, 1, ' ms')}</td></tr>)}</tbody></table>{!rows.length && <p className="empty-state">No matching UAVs.</p>}</div>
+    <Drawer open={Boolean(detail)} active={props.active && !props.enrolling} title="UAV details" onClose={() => props.onDetail('')}>
+      {detail && <><div className="drawer-identity"><h3>{detail.display_name}</h3><p>{detail.drone_id} · {detail.enabled ? 'Active' : 'Disabled'}</p></div><dl className="detail-list"><div><dt>Installed route</dt><dd>{observed?.route ? title(observed.route) : '—'}</dd></div><div><dt>PDR</dt><dd>{metric(observed?.pdr == null ? null : observed.pdr * 100, 1, '%')}</dd></div><div><dt>Latency</dt><dd>{metric(observed?.latency, 1, ' ms')}</dd></div><div><dt>Telemetry source</dt><dd>{observed?.source ?? '—'}</dd></div><div><dt>MAC</dt><dd>{detail.mac}</dd></div><div><dt>SDN port</dt><dd>{detail.access_port}</dd></div><div><dt>FL client</dt><dd>{detail.fl_client?.status ?? '—'}</dd></div></dl>{detail.enabled && (!mission || mission.nodes.some(n => n.id === detail.drone_id)) && <button onClick={() => props.onInspect(detail.drone_id)}>Inspect in Mission</button>}{props.canManage && (props.editor || <button onClick={() => props.onEdit(detail.drone_id)}>Edit details</button>)}</>}
+    </Drawer>
+    <Drawer open={props.enrolling} active={props.active} title="Enroll UAV" onClose={() => props.onEnrollment(false)}>{props.enrollment}</Drawer>
+  </div>;
+}

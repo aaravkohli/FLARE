@@ -6,7 +6,7 @@ const dir=process.env.FLARE_ARTIFACT_DIR||`artifacts/repair-flower-ui-${Date.now
 const browser=await chromium.launch({executablePath:process.env.FLARE_CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true,args:['--use-angle=metal']});
 const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try{
- await page.goto(front);await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto(front+'#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  await center.getByRole('button',{name:'Select all',exact:true}).click();await center.getByLabel('Command',{exact:true}).selectOption('route');await center.getByLabel('Command route').selectOption('satellite');await center.getByRole('button',{name:'Send to 30 UAVs'}).click();
  await center.getByRole('group',{name:'Fleet selection'}).getByRole('button',{name:/^UAV-001/}).click();await center.getByLabel('Condition group').selectOption('fl');await center.getByLabel('Attack profile').selectOption('poisoned');await center.getByLabel('Attack duration').fill('300');await center.getByRole('button',{name:'Apply condition to 1 UAV',exact:true}).click();

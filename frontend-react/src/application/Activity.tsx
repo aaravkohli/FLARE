@@ -1,0 +1,8 @@
+import { useState } from 'react';
+import { Drawer } from './ApplicationShell';
+import { title, type ActivityEntry } from './presentation';
+export default function Activity({ open, onClose, entries }: { open: boolean; onClose: () => void; entries: ActivityEntry[] }) {
+  const [filters, setFilters] = useState({ type: '', severity: '', source: '' });
+  const visible = entries.filter(entry => Object.entries(filters).every(([key, value]) => !value || (entry[key as 'type' | 'severity' | 'source'] ?? 'unclassified') === value));
+  return <Drawer open={open} title="Activity" onClose={onClose}><div className="activity-filters">{(['type', 'severity', 'source'] as const).map(key => <label key={key}>{title(key)}<select aria-label={title(key)} value={filters[key]} onChange={e => setFilters(previous => ({ ...previous, [key]: e.target.value }))}><option value="">All</option>{[...new Set(entries.map(e => e[key] ?? 'unclassified'))].sort().map(value => <option key={value} value={value}>{title(value)}</option>)}</select></label>)}</div><p className="subtle">{visible.length} events · latest 50 retained</p><ol className="application-activity" aria-label="Tactical Operation Log">{visible.map(entry => <li key={entry.id}><time dateTime={new Date(entry.timestamp).toISOString()}>{new Date(entry.timestamp).toLocaleTimeString()}</time><p>{entry.message}</p>{entry.severity && <small>{title(entry.severity)} · {entry.source ?? 'Unclassified source'}</small>}{entry.details != null && <details><summary>Technical details</summary><pre>{JSON.stringify(entry.details, null, 2)}</pre></details>}</li>)}</ol>{!visible.length && <p className="empty-state">No matching events.</p>}</Drawer>;
+}
