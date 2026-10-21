@@ -1,0 +1,435 @@
+{
+  "binary_detection": {
+    "f1": 0.9714285714285714,
+    "false_negatives": 2,
+    "false_positives": 0,
+    "precision": 1.0,
+    "recall": 0.9444444444444444,
+    "true_negatives": 9,
+    "true_positives": 34
+  },
+  "experiment": "controlled_insider_detection_v1",
+  "mean_attack_risk": 0.6018194799533152,
+  "mean_normal_risk": 0.031470339783868054,
+  "profiles": [
+    "normal",
+    "selective_forwarding",
+    "telemetry_falsification",
+    "control_flood",
+    "replay"
+  ],
+  "quarantined_records": 0,
+  "records": [
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.03808727187164466,
+      "round": 1,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.02948011326155185,
+      "round": 2,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.037474607659964784,
+      "round": 3,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.5338710449393471,
+      "round": 1,
+      "seed": 7,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "restricted",
+      "predicted_class": "selective_forwarding",
+      "risk_score": 0.6362261956115286,
+      "round": 2,
+      "seed": 7,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.5954525874918757,
+      "round": 3,
+      "seed": 7,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.4476427797200858,
+      "round": 1,
+      "seed": 7,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.4108742525815612,
+      "round": 2,
+      "seed": 7,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.4300245216329459,
+      "round": 3,
+      "seed": 7,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 1,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 2,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 3,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "control_only",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.72,
+      "round": 1,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "control_only",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.72,
+      "round": 2,
+      "seed": 7,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "normal",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.33206626023232233,
+      "round": 3,
+      "seed": 7,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.01647005589307976,
+      "round": 1,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.030469804963081548,
+      "round": 2,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.04086137622151378,
+      "round": 3,
+      "seed": 42,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "control_only",
+      "predicted_class": "selective_forwarding",
+      "risk_score": 0.72,
+      "round": 1,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "control_only",
+      "predicted_class": "selective_forwarding",
+      "risk_score": 0.72,
+      "round": 2,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.6110990392881334,
+      "round": 3,
+      "seed": 42,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.3979570218741334,
+      "round": 1,
+      "seed": 42,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.5012318472188638,
+      "round": 2,
+      "seed": 42,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.4745983995387202,
+      "round": 3,
+      "seed": 42,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 1,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 2,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 3,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "control_only",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.72,
+      "round": 1,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "control_only",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.72,
+      "round": 2,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "control_only",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.72,
+      "round": 3,
+      "seed": 42,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.027697538032765784,
+      "round": 1,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.022426832839227945,
+      "round": 2,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "normal",
+      "containment": "normal",
+      "predicted_class": "normal",
+      "risk_score": 0.04026545731198238,
+      "round": 3,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.5806684534935573,
+      "round": 1,
+      "seed": 99,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "control_only",
+      "predicted_class": "selective_forwarding",
+      "risk_score": 0.72,
+      "round": 2,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "selective_forwarding",
+      "containment": "control_only",
+      "predicted_class": "selective_forwarding",
+      "risk_score": 0.72,
+      "round": 3,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.4292213760275822,
+      "round": 1,
+      "seed": 99,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.4810202631470882,
+      "round": 2,
+      "seed": 99,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "telemetry_falsification",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.4013801234181494,
+      "round": 3,
+      "seed": 99,
+      "status": "SUSPICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 1,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 2,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "control_flood",
+      "containment": "control_only",
+      "predicted_class": "control_flood",
+      "risk_score": 0.72,
+      "round": 3,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "control_only",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.72,
+      "round": 1,
+      "seed": 99,
+      "status": "MALICIOUS"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "normal",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.3419348627420065,
+      "round": 2,
+      "seed": 99,
+      "status": "NORMAL"
+    },
+    {
+      "actual_profile": "replay",
+      "containment": "restricted",
+      "predicted_class": "telemetry_falsification",
+      "risk_score": 0.380232249361448,
+      "round": 3,
+      "seed": 99,
+      "status": "SUSPICIOUS"
+    }
+  ],
+  "rounds_per_profile": 3,
+  "seeds": [
+    7,
+    42,
+    99
+  ]
+}

@@ -1,0 +1,417 @@
+{
+  "created_at_utc": "2026-10-21T05:15:12.020792+00:00",
+  "scope": "Final panel review preparation; not completion of the exhaustive application audit",
+  "requirements": [
+    {
+      "id": "1",
+      "requirement": "Project understanding",
+      "artifact": "README.md",
+      "evidence": "What/why, architecture/module responsibilities, technology and scientific boundaries",
+      "status": "Passed"
+    },
+    {
+      "id": "2",
+      "requirement": "Panel presentation",
+      "artifact": "presentation/output/FLARE-panel-review.pptx",
+      "evidence": "Ten editable slides and notes",
+      "status": "Passed"
+    },
+    {
+      "id": "3a",
+      "requirement": "Core demonstration",
+      "artifact": "DEMO.md",
+      "evidence": "Exact controls, inputs, speaking lines, observations and backend responsibilities for 5\u20137 minutes",
+      "status": "Passed"
+    },
+    {
+      "id": "3b",
+      "requirement": "Extended demonstration",
+      "artifact": "DEMO.md",
+      "evidence": "Replay, 3D/layers, commands, synchronized comparison, benchmark and optional Traffic Evidence for 10\u201315 minutes",
+      "status": "Passed"
+    },
+    {
+      "id": "4",
+      "requirement": "Results explanation",
+      "artifact": "RESULTS.md",
+      "evidence": "Protocol-specific results, baseline comparison and accuracy limitations",
+      "status": "Passed"
+    },
+    {
+      "id": "5",
+      "requirement": "Panel questions",
+      "artifact": "QUESTIONS.md",
+      "evidence": "45 categorized short/deeper answers, including six complete conditional scripts for actual contribution roles; no invented ownership",
+      "status": "Passed"
+    },
+    {
+      "id": "6",
+      "requirement": "Readiness and backup",
+      "artifact": "REVIEW_DAY.md",
+      "evidence": "Services, checkpoints, disposable setup, failure recovery and saved evidence",
+      "status": "Passed"
+    },
+    {
+      "id": "7a",
+      "requirement": "Thirty-second introduction",
+      "artifact": "README.md",
+      "evidence": "Spoken introduction",
+      "status": "Passed"
+    },
+    {
+      "id": "7b",
+      "requirement": "Two-minute explanation",
+      "artifact": "README.md",
+      "evidence": "Spoken explanation",
+      "status": "Passed"
+    },
+    {
+      "id": "7c",
+      "requirement": "Five-minute script",
+      "artifact": "presentation/output/FLARE-speaker-script.md",
+      "evidence": "691-word script timed across ten slides",
+      "status": "Passed"
+    },
+    {
+      "id": "7d",
+      "requirement": "Features, architecture and memorable results",
+      "artifact": "README.md",
+      "evidence": "Prioritized showcase and simple architecture, with details in RESULTS.md",
+      "status": "Passed"
+    }
+  ],
+  "source_state": {
+    "root": "/Users/aaravkohli/.codex/worktrees/efb1/Capstone",
+    "head": "9561d48eddc8812cbeffa1e2344d65b0f12e5384",
+    "branch": "codex/mesh-workspace-attacks",
+    "dirty": true,
+    "selected_source_sha256_at_packaging": {
+      "simulation/swarm/engine.py": "c30891f341007c35be28d026a9038cbf89ec70cdb8ff61360912dae3ce5fcc50",
+      "simulation/swarm/network.py": "72df13ab6f8975aabe8230fe2a47c9ba32cd5eb2e68c8a67c9a5f63d01df4d31",
+      "simulation/swarm/topology.py": "72fbc65c731d0c58a6f6f8101365dbb8398497ec0eb2e6e23dfdda22cf15b9aa",
+      "simulation/swarm/experiments.py": "f57ab8d190123c924505ae6731e6f0f194aa5f59c0eb7c794901c26d50116cd6",
+      "simulation/swarm/attacks.py": "d6da9dbb19a2f42b7b133579ee5c4ce2c1da3cf043c10fb3057a989eb0b0a737",
+      "fl/model.py": "42ee7dad5b7dbb57cd8492c0e09f3a585d6225e75f1d4965ab2ad3639445a38c",
+      "fl/trust.py": "bad2c0dac7e2bc80993d4a9fb0fb799910942fd852c035a7ef0e6507478244b6",
+      "fl/aggregator.py": "6d33b985674667181c45e67b211b8c0960c825771f30b2c6513138aee18707a7",
+      "fl/client.py": "eaaa51dbe14b74502bd7c8c7f953c778cea7cd506adb79c69c00811849af6aef",
+      "fl/server.py": "34daf58f76a20285e4555d32d86ab7f7337c083a81ebf81f9e72d949cc10a4cb",
+      "fl/insider.py": "9e63d35049285bf7d28c9b79ea5a0a701a0bb02885510717b867b1e5707609e1",
+      "security/network_detector.py": "ef253b82de3c7ce4ba769badd4f363675b776f06bb9d79266ee2a5b9a378e03b",
+      "rl/agent.py": "efbbf0becf329a01d94802043c32d19e76d55e0b1c8c19c80b4fe01d8d77f858",
+      "rl/safety.py": "c1ec2926360feff17a75b4cdc312461eb309f66ae56c793f3d837cc1e907a608",
+      "rl/evaluation.py": "bfa9ee2ee9521e356ab3d22d20bbd6d086f641190d3701aedca005028b57de0c",
+      "orchestrator/loop.py": "639b78ea125864230e874cffe6b232bc2936dceca44fd872617c74283830f085",
+      "api/server.py": "b967df2df3de2d7538bb2407f436ee9b2ec6e09d991525533c3f29eb9a006e1d",
+      "api/mission.py": "fed0d72ce20e3ea1ca7f8673e872676bc9f70c5986b3c7a782920309dac90a82",
+      "sdn/mock_sdn.py": "eeba903eb37c87ea4e691ba20092fbe0e7440996170daa8a7595b09693301ad9",
+      "scripts/swarm_test_services.py": "11c96170377538f7b4c5245e998743115808c453530aa7d19c04c0eedf5f60ef",
+      "scripts/audit_support.py": "f005abd04e2d946924a19c1a17f13df7027e1846888c98c842d784e49881519c",
+      "datasets/README.md": "39e34f6d197baee0a0859b8c0c69a539fc8bafe0ec700e7234af3072d7fa326c",
+      "datasets/preprocess.py": "2bfbc105e6ae354953ba504b2ccf0c20fd7bf2ebf890afc896c85717e8065517",
+      "fl/data.py": "5bcd52ea8e9cbd3e85629ee3a72776c253cee2a43185d5c92909b8547cdbfd0b",
+      "frontend-react/e2e/review-demo.mjs": "6f54bb2c7b6d44340ef8f4dd87c927cfb9c1e966ede32ccfa2baf4a177c430c2",
+      "frontend-react/e2e/review-extended.mjs": "92e8c2703f656a3e15bde86e3e045332f2985b32bba629078467c0320eebfb8f",
+      "frontend-react/src/mission-simulation/SwarmCommandCenter.tsx": "01c0c9606d94e2d4c4ec6089533401e180025f2fd7a9b1cb6eee86d57da8910e",
+      "frontend-react/src/mission-simulation/NetworkInspector.tsx": "72981c27a04ea6c77b535354901260c39e55af784660e79030444af6f4966517",
+      "frontend-react/src/mission-simulation/AttackLab.tsx": "1ceb047d25effc92849cc0a34cfbd60462f3f9c87d5073c08cc35537053662d2",
+      "frontend-react/src/mission-simulation/MissionControlPanel.tsx": "a12544f976ea930a23903f066cb500576ee336407d3af6f2b0d77f5900782595",
+      "frontend-react/src/mission-simulation/ExperimentPanel.tsx": "d58ab6f4661fe463a70fc0e1f109d8108a430884ed3edb15d67ab3f912750df0",
+      "frontend-react/src/mission-simulation/ExperimentResults.tsx": "b4610f29a02b9c828f27c806b3ca93825235ddff5bb209c915591f22ae0d83d6",
+      "frontend-react/src/application/Validation.tsx": "e4ba5c88a2574f6d619b6ee8934e06180e39934d7724aaf5b19f58545aad276f",
+      "frontend-react/src/application/useTrafficValidation.ts": "8d8123dd497dad37334bfa143e3975e6a7cc9f021284f6ca4bf87b649ece75c8"
+    },
+    "note": "Individual experiment files retain their own protocols/fingerprints; packaging hashes do not establish that every older experiment ran on one identical source."
+  },
+  "rehearsals": {
+    "core": {
+      "status": "Passed",
+      "exit_code": 0,
+      "result": "final-rehearsal/result.json"
+    },
+    "extended": {
+      "status": "Passed",
+      "exit_code": 0,
+      "result": "final-rehearsal/extended-result.json"
+    },
+    "initial_extended_harness": {
+      "status": "Failed",
+      "result": "final-rehearsal/extended-initial-failure.json",
+      "reason": "A new browser context did not contain a prior context\u2019s in-memory packet results. Utility corrected to observe a new probe before replay; old failure retained."
+    }
+  },
+  "remaining_boundaries": [
+    {
+      "status": "Not Tested",
+      "capability": "Personal module ownership",
+      "reason": "Ownership cannot be established from repository evidence. CONTRIBUTION.md supplies six complete conditional role scripts; the operator selects only the truthful one. No role is assigned."
+    },
+    {
+      "status": "Not Tested",
+      "capability": "Representative deployed BiLSTM field accuracy",
+      "reason": "No representative fresh held-out RF evaluation supports this claim."
+    },
+    {
+      "status": "Blocked",
+      "capability": "Real-network and hardware gates",
+      "reason": "Docker preflight unavailable; ns-3 source/build absent. No hardware substitution claimed."
+    },
+    {
+      "status": "Failed",
+      "capability": "Latest broad production browser suite",
+      "reason": "34 passed, 2 failed, 1 skipped; targeted demo reruns do not erase broad failures."
+    },
+    {
+      "status": "Failed",
+      "capability": "Advanced live federation integrations",
+      "reason": "Asynchronous buffer and adaptive selector settings have recorded live-effect gaps."
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "CONTRIBUTION.md",
+      "bytes": 6184,
+      "sha256": "f574e7e90c0c23ee76a68949dd67abe91f49459f9ceba75c4972ee5c8707c0ec"
+    },
+    {
+      "path": "DEMO.md",
+      "bytes": 19230,
+      "sha256": "3cac4a830dedd2db5ff5d5daa96d23500cfd3b256d46bdf4a1b57909a3920ad6"
+    },
+    {
+      "path": "QUESTIONS.md",
+      "bytes": 25994,
+      "sha256": "aee427aa640e46d6671d14b3c360c35f41ae972e3dd2144e487fbc8cb3e67a17"
+    },
+    {
+      "path": "README.md",
+      "bytes": 22960,
+      "sha256": "28cae436cbd040a3da514e80e484afc5dafaf734f970486924ccbbd9e379aa14"
+    },
+    {
+      "path": "RESULTS.md",
+      "bytes": 17078,
+      "sha256": "e3bcd80703d7ad944fb139d4f2004f98480e8e120629128bd38309b902844306"
+    },
+    {
+      "path": "REVIEW_DAY.md",
+      "bytes": 6872,
+      "sha256": "31a1ffde9c15980ed0e00eb952ddd27727b37e90a322acce30597b0e08d9131d"
+    },
+    {
+      "path": "evidence/01-ring-paused.png",
+      "bytes": 149202,
+      "sha256": "cdddc93dc3997e09715da50bae9a1871f5e45c8aaa0dedac009aa57f039b31de"
+    },
+    {
+      "path": "evidence/02-multihop-candidate.png",
+      "bytes": 164908,
+      "sha256": "688a5f9d37f2cb98e12e5b6713f2446393c4972e734130a21777c586e79c9d5c"
+    },
+    {
+      "path": "evidence/03-probe-result.png",
+      "bytes": 157631,
+      "sha256": "d5855ddf951016b995a11e287dc5dbce496f4b0fb09454881b98421cf308a4e3"
+    },
+    {
+      "path": "evidence/05-live-decision.png",
+      "bytes": 216588,
+      "sha256": "c8920e67cacf3f6cc6cb16f8658d3825dc3940f5c42786fe2a601bab96345f56"
+    },
+    {
+      "path": "evidence/06-expiry.png",
+      "bytes": 225091,
+      "sha256": "34435dfddd68132daa5ae5238ee4722964f2c204b42dffb3ea000aada59f90c3"
+    },
+    {
+      "path": "evidence/07-update-gate.png",
+      "bytes": 112181,
+      "sha256": "c503e494690f2804a9a0b12b5c00f3b6084110ddcd6f47f2c43bdf84337a3dc4"
+    },
+    {
+      "path": "evidence/REHEARSAL.md",
+      "bytes": 3013,
+      "sha256": "76cd9c38a1f64ce008bb790c8ce55071a2550b2ed2a675c95802b856980a1dec"
+    },
+    {
+      "path": "evidence/byzantine_aggregation.json",
+      "bytes": 22602,
+      "sha256": "95451a7038b0097577e5aaa211196202eb8e1b27cb596d452e0b01108125e336"
+    },
+    {
+      "path": "evidence/demo-probe-result.json",
+      "bytes": 2117,
+      "sha256": "6bbed668a52191f11e2ca53f26e3be86e84fb1c0ea96fd195077f0b275e0fab7"
+    },
+    {
+      "path": "evidence/demo-rehearsal.json",
+      "bytes": 38811,
+      "sha256": "2b1f3b0bc13649854b4c73fcc006451c4ab81f1d55ee8ea290ceb1bff06f8481"
+    },
+    {
+      "path": "evidence/demo-result.json",
+      "bytes": 2140,
+      "sha256": "2416f31784f2cf54afec8d7cb4fa9222840f766d92eddbab891de24d552fc70c"
+    },
+    {
+      "path": "evidence/final-rehearsal/01-ring-paused.png",
+      "bytes": 149256,
+      "sha256": "471ab90d4be6a8888df63ad3fba7387c8a27b9286cf3556a54703ebdbadb9cac"
+    },
+    {
+      "path": "evidence/final-rehearsal/02-multihop-candidate.png",
+      "bytes": 164834,
+      "sha256": "cb8d7ad3d752037c45803779cbbef247f4b4e9a1656517a25d778107577f6f4c"
+    },
+    {
+      "path": "evidence/final-rehearsal/03-probe-result.png",
+      "bytes": 158357,
+      "sha256": "813f271fb58e6ba914c7c25fc78c533363254c65b990e58ed65cf9c1152148bf"
+    },
+    {
+      "path": "evidence/final-rehearsal/04-direct-jam-paused.png",
+      "bytes": 224517,
+      "sha256": "76af83a5e3cdd88c2cc1245655e65788e95b35c473880609a4f67b490ff8d042"
+    },
+    {
+      "path": "evidence/final-rehearsal/05-live-decision.png",
+      "bytes": 215077,
+      "sha256": "e975aab3adc77bc289f28cabb83074e283c1e4689db1f57f1a19ac0a59199222"
+    },
+    {
+      "path": "evidence/final-rehearsal/06-expiry.png",
+      "bytes": 223970,
+      "sha256": "208b7fba663fc0cc12ac98e08969d911b0ecf59b61dde05532d749dda46d26b5"
+    },
+    {
+      "path": "evidence/final-rehearsal/07-update-gate.png",
+      "bytes": 112561,
+      "sha256": "c993d4e7afeb7dd5009408ea2ed229090f96ca5166e11e15122e245779dd6d94"
+    },
+    {
+      "path": "evidence/final-rehearsal/08-world.png",
+      "bytes": 637221,
+      "sha256": "7e9049b0555f58aac204251c3fbbad179a1b24d11f5cf3383f7f2721b14a09d1"
+    },
+    {
+      "path": "evidence/final-rehearsal/09-command.png",
+      "bytes": 241434,
+      "sha256": "2e0e38c7d64eaaff793ecaab76e5e91f1fa7592facb0d942be6dbcd8f6722496"
+    },
+    {
+      "path": "evidence/final-rehearsal/10-comparison.png",
+      "bytes": 161754,
+      "sha256": "f88fc8c1433afac5ccd5ea9c4aa2eedde1af860adb6614432b42e41e5199365d"
+    },
+    {
+      "path": "evidence/final-rehearsal/11-benchmark.png",
+      "bytes": 100938,
+      "sha256": "4b627ed6ac1ff9ce0c7c5f83fddf630ddff80c2873599cbd484c828fd40c7f52"
+    },
+    {
+      "path": "evidence/final-rehearsal/core.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence/final-rehearsal/extended-initial-failure.json",
+      "bytes": 818,
+      "sha256": "f6ad3af1f126b2faf23ffe0a181881552c0bde816dfff4e109fdff718260670f"
+    },
+    {
+      "path": "evidence/final-rehearsal/extended-result.json",
+      "bytes": 1623,
+      "sha256": "6e2fe6858faac2e6de4d36d200d15150b907e4e8793b9bb83d72575a4aabec38"
+    },
+    {
+      "path": "evidence/final-rehearsal/extended.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "evidence/final-rehearsal/frontend-mode.json",
+      "bytes": 324,
+      "sha256": "271cc44489649baad5b6b5854650c76b587e268b4e29440c31a39b2cc61de510"
+    },
+    {
+      "path": "evidence/final-rehearsal/probe-result.json",
+      "bytes": 2117,
+      "sha256": "d4bbc0efc5380ef4c81b6877555bb6ef34147c527f2040a980a87c440ff0926a"
+    },
+    {
+      "path": "evidence/final-rehearsal/rehearsal.json",
+      "bytes": 38800,
+      "sha256": "68e42f0b832705e5ba8261e6aafd130ddc26e7aaf6403638ad615650abb82224"
+    },
+    {
+      "path": "evidence/final-rehearsal/result.json",
+      "bytes": 2140,
+      "sha256": "70b85f57707116bf94557e3891cfed0df04f5038427b63f98e2c1044ef2305dd"
+    },
+    {
+      "path": "evidence/final-rehearsal/small-benchmark.json",
+      "bytes": 17125,
+      "sha256": "c4af88042d91c0fdfc44a5613709d9b32cbc9d6a183ac01e1c575741ce40c559"
+    },
+    {
+      "path": "evidence/fl_resilience_matrix.json",
+      "bytes": 381439,
+      "sha256": "4dffda461cb169b21ecd1e1aaf729f69d7dd42eb3b431f79d9493b0db74b9c01"
+    },
+    {
+      "path": "evidence/historical-provenance-check.json",
+      "bytes": 173,
+      "sha256": "9a4270c94540097b3b00e042844dfab764473e72f6171df53dd1bb20d43158a2"
+    },
+    {
+      "path": "evidence/insider_detection.json",
+      "bytes": 11100,
+      "sha256": "5beac76ca554fa66f83bfdb4b925fd2e5606c6e5ef5549bc85eec9be643d7fa1"
+    },
+    {
+      "path": "evidence/isolation.json",
+      "bytes": 9956,
+      "sha256": "fbe2cf151ba343b17ccfb3280aff74254455f9a0ef6446ba5fe064d320e06b67"
+    },
+    {
+      "path": "evidence/learning-smokes.json",
+      "bytes": 12997,
+      "sha256": "732b6bd297797906fc713abb33babb3844f228363cccd43f5fbc328d446dd12d"
+    },
+    {
+      "path": "evidence/mesh-results.json",
+      "bytes": 44204,
+      "sha256": "20b68ed62c5baca25fd795c5d347a30b35c65d69737f9231b0eb3cb30b95dc9f"
+    },
+    {
+      "path": "evidence/network_security.json",
+      "bytes": 35830,
+      "sha256": "6c7bb0500fb1814d7af36d1040b84dcc5eefffe2fc81c71aa2a0642daefdf57b"
+    },
+    {
+      "path": "evidence/review-facts.json",
+      "bytes": 9050,
+      "sha256": "996308bc242fd9917eada1e33086f0995702eb215af5f1d4a2347cf65e9db7a8"
+    },
+    {
+      "path": "evidence/routing-evaluation.json",
+      "bytes": 6844,
+      "sha256": "03c633fde93d723535ef090fe71e4531420f6b767a48294c10021a288559824c"
+    },
+    {
+      "path": "presentation/output/FLARE-panel-review.pptx",
+      "bytes": 682987,
+      "sha256": "11ec36798e7ee41059702cf0b64c2872f0abd591c8f17cc51aa2a30e89965a45"
+    },
+    {
+      "path": "presentation/output/FLARE-speaker-script.md",
+      "bytes": 10483,
+      "sha256": "ca41cf0b085ab8bf72a5cbb6825e0da9654fc63d9a0a958384183d6b4b541f3c"
+    },
+    {
+      "path": "tools/verify_pack.py",
+      "bytes": 5458,
+      "sha256": "55baeea7638e022ddb20651c45afd4a802efae0345e92e698f534d61f6551eaf"
+    }
+  ]
+}

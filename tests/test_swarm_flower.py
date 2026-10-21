@@ -36,3 +36,31 @@ def test_reset_during_aggregation_restores_weights_and_trust(monkeypatch,tmp_pat
     assert all(np.array_equal(old,new) for old,new in zip(baseline,strategy._global_weights))
     assert strategy._trust.snapshot()==[]
     assert not (tmp_path/'metrics.json').exists()
+
+
+def test_client_training_and_aggregation_have_distinct_event_kinds(monkeypatch,tmp_path):
+    """Only a completed aggregation may set the controller's round-complete state."""
+    from fastapi import FastAPI
+    from fastapi.testclient import TestClient
+    from simulation.swarm.service import attach_simulation
+    from simulation.swarm.session import bootstrap
+    from pathlib import Path
+    registry=tmp_path/'mission.yaml';bootstrap(Path('config/fleet_registry.yaml'),registry)
+    monkeypatch.setenv('FLARE_SWARM_ENABLED','1');monkeypatch.setenv('FLARE_FLEET_REGISTRY',str(registry));monkeypatch.setenv('FLARE_EXPERIMENT_DIR',str(tmp_path/'experiments'))
+    app=FastAPI();attach_simulation(app,lambda:None)
+    with TestClient(app) as client:
+        session=client.get('/simulation/session').json()['session_id']
+        assert client.post('/simulation/fl/events',json={'kind':'client_training_started','session_id':session,'round':1,'outcomes':{'drone_1':'TRAINING'}}).status_code==200
+        before=client.get('/simulation/state').json()
+        assert before['nodes'][0]['fl_status']=='TRAINING'
+        assert before['runtime']['flower']['status']!='round_complete'
+        assert before['events'][-1]['kind']=='client_training_started'
+        assert client.post('/simulation/fl/events',json={'kind':'aggregation_result','session_id':session,'round':1,'outcomes':{'drone_1':'ACCEPTED'},'security_audits':[]}).status_code==200
+        after=client.get('/simulation/state').json()
+        assert after['runtime']['flower']['status']=='round_complete'
+        assert after['events'][-1]['kind']=='aggregation_result'
+
+
+def test_distillation_smoke_checks_accepted_updates_and_rollback():
+    from fl.distillation import _test_distillation_step
+    _test_distillation_step()

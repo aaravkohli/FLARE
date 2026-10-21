@@ -5,6 +5,9 @@ import { Crosshair, Minus, Plus } from 'lucide-react';
 import type { NetworkCamera, NetworkDisplay, SwarmSnapshot } from './swarm';
 import { edgePoint, playbackTime, samplePacketEvents } from './world/networkPlayback';
 import { createFrameRateSampler } from './world/framePerformance';
+import { showGroundLink } from './world/networkLayers';
+import { linkEmphasisScale } from './world/networkLinkStyle';
+import NetworkLayerKey from './NetworkLayerKey';
 
 type Props={snapshot:SwarmSnapshot;selected:string;targets?:string[];display:NetworkDisplay;current?:boolean;camera?:RefObject<NetworkCamera>;onSelect:(id:string,additive?:boolean)=>void;onLink?:(id:string)=>void;onGround?:()=>void;externalTools?:boolean;controls?:Ref<CanvasControls>};
 const EMPTY_EVENTS:NonNullable<SwarmSnapshot['packet_events']>=[];
@@ -58,7 +61,7 @@ export default function NetworkCanvas(props:Props){
    const active=new Set(packets.filter(v=>v.kind==='flight').map(v=>[v.from,v.to].sort().join(':')));
    const route=new Set(p.display.hops.slice(1).map((b,i)=>[p.display.hops[i],b].sort().join(':')));
    const selected=s.nodes.find(n=>n.id===p.selected),neighbors=new Set(selected?.neighbors??[]);
-   const policy=s.flows.find(f=>f.source===p.selected&&f.destination==='base'&&f.traffic_class==='telemetry');
+   const policy=p.display.installedRoutes===false?undefined:s.flows.find(f=>f.source===p.selected&&f.destination==='base'&&f.traffic_class==='telemetry');
    const policyEdges=new Set(policy&&policy.family!=='satellite'?policy.hops.slice(1).map((b,i)=>[policy.hops[i],b].sort().join(':')):[]);
    ctx.strokeStyle='#1a2a32';ctx.lineWidth=1;
    const spacing=100*scale;
@@ -79,11 +82,13 @@ export default function NetworkCanvas(props:Props){
    }
    for(const l of s.links){
     const chosen=route.has(l.id),policyLink=policyEdges.has(l.id),busy=active.has(l.id),near=l.a===p.selected||l.b===p.selected;
+    if(!showGroundLink(l.a,l.b,p.display,chosen||policyLink))continue;
     if(!p.display.inactive&&!chosen&&!policyLink&&!busy&&!near)continue;
     const blocked=l.status==='blocked',degraded=['jammed','degraded'].includes(l.status);
-    line(l.a,l.b,chosen?(p.display.candidate?'#b5a1ea':'#99e1bc'):policyLink?'#88bfec':blocked?'#d4877b':degraded?'#e4b77c':busy?'#8ddce8':'#688895',chosen||policyLink?.95:near?.65:busy?.55:s.nodes.length>50?.12:.22,chosen?2.7:policyLink?1.8:Math.max(.6,1.7*(1-l.loss)),blocked||chosen&&!!p.display.candidate);
+    const emphasis=linkEmphasisScale(p.display.linkEmphasis);
+    line(l.a,l.b,blocked?'#d4877b':degraded&&p.display.qualityColors?'#e4b77c':chosen?(p.display.candidate?'#b5a1ea':'#99e1bc'):policyLink?'#88bfec':busy?'#8ddce8':'#88b4c4',Math.min(.98,(chosen||policyLink?.95:near?.75:busy?.65:s.nodes.length>50?.2:.4)*emphasis),(chosen?2.7:policyLink?1.8:1.3)*emphasis,blocked||chosen&&!!p.display.candidate);
    }
-   if(p.display.inactive)for(const l of s.disconnected_links??[])line(l.a,l.b,'#d4877b',.25,1,true);
+   if(p.display.inactive)for(const l of s.disconnected_links??[])if(showGroundLink(l.a,l.b,p.display))line(l.a,l.b,'#d4877b',.25,1,true);
    const satPackets=packets.filter(v=>v.packet.family==='satellite'&&(v.packet.source===p.selected||p.display.replay?.packetId===v.packet.id));
    if(policy?.family==='satellite'||satPackets.length){
     const x=Math.max(12,w-250),y=w<560?116:72;ctx.fillStyle='#142a35ed';ctx.fillRect(x,y,230,56);ctx.strokeStyle='#3b5b70';ctx.strokeRect(x,y,230,56);
@@ -153,5 +158,6 @@ export default function NetworkCanvas(props:Props){
 
   {hover&&<div className="network-tooltip" role="tooltip" style={{left:hover.x,top:hover.y}}><strong>{props.snapshot.nodes.find(n=>n.id===hover.id)?.alias}</strong><span>{props.snapshot.nodes.find(n=>n.id===hover.id)?.neighbors.length} neighbors · {props.snapshot.nodes.find(n=>n.id===hover.id)?.containment}</span><small>{hover.id}</small></div>}
   <span className="network-view-label">LOCAL AIRSPACE <span>2D · metres</span></span>
+  {props.externalTools&&<NetworkLayerKey snapshot={props.snapshot} selected={props.selected} display={props.display} onLink={props.onLink}/>}
  </div>;
 }

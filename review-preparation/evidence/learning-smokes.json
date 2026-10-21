@@ -1,0 +1,385 @@
+{
+  "scope": "Bounded software training/transport checks, not convergence or field accuracy",
+  "runs": [
+    {
+      "run": "federation-repaired",
+      "source": "/private/tmp/flare-application-audit-20261021/federation-repaired/results.json",
+      "source_sha256": "84685ba6f0ec23a4ba379fdbea001591982420a0c40ed854675da17eeb854580",
+      "results": [
+        {
+          "capability": "real Flower normal",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-repaired/normal/events.json"
+        },
+        {
+          "capability": "real Flower jammed",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-repaired/jammed/events.json"
+        },
+        {
+          "capability": "federation poisoned",
+          "status": "Failed",
+          "error": "AssertionError: No observed protective update action",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-repaired/poisoned"
+        }
+      ]
+    },
+    {
+      "run": "federation-seed-7",
+      "source": "/private/tmp/flare-application-audit-20261021/federation-seed-7/results.json",
+      "source_sha256": "7232bb02cc28ec2b0da1893424448d411040b8152a6e775961e7636256d0b6ee",
+      "results": [
+        {
+          "capability": "real Flower normal",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "seed": 7,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-seed-7/normal/events.json"
+        },
+        {
+          "capability": "federation jammed",
+          "status": "Failed",
+          "error": "AssertionError: Only 1 rounds in 300s",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-seed-7/jammed"
+        }
+      ]
+    },
+    {
+      "run": "federation-seed-7-retry",
+      "source": "/private/tmp/flare-application-audit-20261021/federation-seed-7-retry/results.json",
+      "source_sha256": "f7e062eab70ea87644eca5007ad4f5fee893557ba69f962ff8c0e719821b8193",
+      "results": [
+        {
+          "capability": "real Flower jammed",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "seed": 7,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-seed-7-retry/jammed/events.json"
+        },
+        {
+          "capability": "real Flower poisoned",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "seed": 7,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-seed-7-retry/poisoned/events.json"
+        }
+      ]
+    },
+    {
+      "run": "federation-seed-99",
+      "source": "/private/tmp/flare-application-audit-20261021/federation-seed-99/results.json",
+      "source_sha256": "09f99f818daaf58d9fa2a519de22e3ec6575b91ff75549ed239ee9a471511c2a",
+      "results": [
+        {
+          "capability": "real Flower normal",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "seed": 99,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-seed-99/normal/events.json"
+        },
+        {
+          "capability": "real Flower jammed",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "seed": 99,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-seed-99/jammed/events.json"
+        },
+        {
+          "capability": "real Flower poisoned",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "seed": 99,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-seed-99/poisoned/events.json"
+        }
+      ]
+    },
+    {
+      "run": "federation-poison-satellite",
+      "source": "/private/tmp/flare-application-audit-20261021/federation-poison-satellite/results.json",
+      "source_sha256": "d59920afb02f14fec1bc307ebe6cf33068dc6b721b8a00ae1dc312851f42444f",
+      "results": [
+        {
+          "capability": "real Flower poisoned",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-poison-satellite/poisoned/events.json"
+        }
+      ]
+    },
+    {
+      "run": "training",
+      "source": "/private/tmp/flare-application-audit-20261021/training/results.json",
+      "source_sha256": "bf6a5166b3656695a619526b8b6211bbde12e8fa0dbb5bc31a28774b25f3c248",
+      "results": [
+        {
+          "capability": "dqn training/checkpoint/evaluation",
+          "seed": 7,
+          "command": [
+            "/Users/aaravkohli/.codex/worktrees/efb1/Capstone/venv/bin/python",
+            "-m",
+            "rl.train",
+            "--algo",
+            "dqn",
+            "--timesteps",
+            "1000",
+            "--seed",
+            "7",
+            "--output-path",
+            "/private/tmp/flare-application-audit-20261021/training/dqn-7.zip",
+            "--evaluation-episodes",
+            "3",
+            "--evaluation-frequency",
+            "1000",
+            "--no-tensorboard"
+          ],
+          "status": "Passed",
+          "optimizer_updates": 225,
+          "evaluation_rewards": [
+            161.7791195000052,
+            166.3532068961112,
+            186.16902026319164
+          ],
+          "duration_s": 5.99142570910044
+        },
+        {
+          "capability": "dqn training/checkpoint/evaluation",
+          "seed": 42,
+          "command": [
+            "/Users/aaravkohli/.codex/worktrees/efb1/Capstone/venv/bin/python",
+            "-m",
+            "rl.train",
+            "--algo",
+            "dqn",
+            "--timesteps",
+            "1000",
+            "--seed",
+            "42",
+            "--output-path",
+            "/private/tmp/flare-application-audit-20261021/training/dqn-42.zip",
+            "--evaluation-episodes",
+            "3",
+            "--evaluation-frequency",
+            "1000",
+            "--no-tensorboard"
+          ],
+          "status": "Passed",
+          "optimizer_updates": 225,
+          "evaluation_rewards": [
+            215.71203660330605,
+            219.7082934520856,
+            222.00428129098114
+          ],
+          "duration_s": 4.339337166165933
+        },
+        {
+          "capability": "dqn training/checkpoint/evaluation",
+          "seed": 99,
+          "command": [
+            "/Users/aaravkohli/.codex/worktrees/efb1/Capstone/venv/bin/python",
+            "-m",
+            "rl.train",
+            "--algo",
+            "dqn",
+            "--timesteps",
+            "1000",
+            "--seed",
+            "99",
+            "--output-path",
+            "/private/tmp/flare-application-audit-20261021/training/dqn-99.zip",
+            "--evaluation-episodes",
+            "3",
+            "--evaluation-frequency",
+            "1000",
+            "--no-tensorboard"
+          ],
+          "status": "Passed",
+          "optimizer_updates": 225,
+          "evaluation_rewards": [
+            199.95864681934637,
+            196.79829224513756,
+            190.60840881559668
+          ],
+          "duration_s": 5.542655624914914
+        },
+        {
+          "capability": "sac training/checkpoint/evaluation",
+          "seed": 7,
+          "command": [
+            "/Users/aaravkohli/.codex/worktrees/efb1/Capstone/venv/bin/python",
+            "-m",
+            "rl.train",
+            "--algo",
+            "sac",
+            "--timesteps",
+            "1000",
+            "--seed",
+            "7",
+            "--output-path",
+            "/private/tmp/flare-application-audit-20261021/training/sac-7.pth",
+            "--evaluation-episodes",
+            "3",
+            "--evaluation-frequency",
+            "1000",
+            "--no-tensorboard"
+          ],
+          "status": "Passed",
+          "optimizer_updates": 872,
+          "evaluation_rewards": [
+            218.1727383601242,
+            218.4113945278245,
+            226.0181671992255
+          ],
+          "duration_s": 6.318843666929752
+        },
+        {
+          "capability": "sac training/checkpoint/evaluation",
+          "seed": 42,
+          "command": [
+            "/Users/aaravkohli/.codex/worktrees/efb1/Capstone/venv/bin/python",
+            "-m",
+            "rl.train",
+            "--algo",
+            "sac",
+            "--timesteps",
+            "1000",
+            "--seed",
+            "42",
+            "--output-path",
+            "/private/tmp/flare-application-audit-20261021/training/sac-42.pth",
+            "--evaluation-episodes",
+            "3",
+            "--evaluation-frequency",
+            "1000",
+            "--no-tensorboard"
+          ],
+          "status": "Passed",
+          "optimizer_updates": 872,
+          "evaluation_rewards": [
+            226.9072124132975,
+            233.2842605208042,
+            235.9041468021679
+          ],
+          "duration_s": 6.583884875057265
+        },
+        {
+          "capability": "sac training/checkpoint/evaluation",
+          "seed": 99,
+          "command": [
+            "/Users/aaravkohli/.codex/worktrees/efb1/Capstone/venv/bin/python",
+            "-m",
+            "rl.train",
+            "--algo",
+            "sac",
+            "--timesteps",
+            "1000",
+            "--seed",
+            "99",
+            "--output-path",
+            "/private/tmp/flare-application-audit-20261021/training/sac-99.pth",
+            "--evaluation-episodes",
+            "3",
+            "--evaluation-frequency",
+            "1000",
+            "--no-tensorboard"
+          ],
+          "status": "Passed",
+          "optimizer_updates": 872,
+          "evaluation_rewards": [
+            230.13946012037516,
+            228.5757718232783,
+            229.33871478105206
+          ],
+          "duration_s": 6.433248957851902
+        }
+      ]
+    },
+    {
+      "run": "federation-advanced-repaired",
+      "source": "/private/tmp/flare-application-audit-20261021/federation-advanced-repaired/results.json",
+      "source_sha256": "5c346078532a8d5eed9f20103433df7179df784988d676791973ec1b6e6237d7",
+      "results": [
+        {
+          "capability": "live asynchronous buffering",
+          "status": "Failed",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-advanced-repaired/normal/metrics.json",
+          "actual": 0,
+          "expected": "FedBuff aggregation when enabled",
+          "limitation": "Current live server only advances the buffer round; no updates enter FedBuff"
+        },
+        {
+          "capability": "live adaptive selection",
+          "status": "Failed",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-advanced-repaired/normal/pool.json",
+          "expected": "Configured selector chooses clients",
+          "actual": "Mission configure_fit chooses rotating eligible identities independently of _selector.select"
+        },
+        {
+          "capability": "real Flower normal",
+          "status": "Passed",
+          "rounds": 3,
+          "uploads": 15,
+          "pause_verified": true,
+          "synthetic_windows_per_client": 500,
+          "local_epochs": 1,
+          "pool_size": 5,
+          "transport": "satellite",
+          "evidence": "/private/tmp/flare-application-audit-20261021/federation-advanced-repaired/normal/events.json"
+        }
+      ]
+    }
+  ]
+}

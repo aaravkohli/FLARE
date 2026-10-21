@@ -24,6 +24,7 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 import uvicorn
 import yaml
 from fastapi import Depends, FastAPI, Header, HTTPException, status
+from typing import Annotated
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from fleet.registry import active_drone_ids, get_drone, is_active_drone
@@ -182,12 +183,15 @@ def _select_safe_path(requested: str) -> str:
 async def install_route(
     req: RouteRequest,
     _: None = Depends(require_sdn_token),
+    mission_session: Annotated[str | None, Header(alias="X-FLARE-Mission-Session")] = None,
 ) -> RouteResponse:
     """
     Simulate installing a flow rule on the virtual switch.
     Implements deterministic failover if the requested path is unavailable.
     """
     if app.state.swarm is not None:
+        if mission_session is not None and mission_session != app.state.swarm.session_id:
+            raise HTTPException(409,"Stale mission session")
         return RouteResponse(**app.state.swarm.select_family(req.drone_id, req.path_name, req.decision_context))
     if req.path_name == HOLD_PATH:
         _flow_table[req.drone_id] = {
@@ -242,9 +246,12 @@ async def install_route(
 async def apply_containment(
     req: ContainmentRequest,
     _: None = Depends(require_sdn_token),
+    mission_session: Annotated[str | None, Header(alias="X-FLARE-Mission-Session")] = None,
 ) -> dict:
     """Apply an auditable simulation of the real controller containment rule."""
     if app.state.swarm is not None:
+        if mission_session is not None and mission_session != app.state.swarm.session_id:
+            raise HTTPException(409,"Stale mission session")
         return app.state.swarm.contain(req.drone_id, req.mode, req.reason)
     record = {
         "drone_id": req.drone_id,
@@ -327,6 +334,8 @@ async def simulate_path_restore(
     _: None = Depends(require_sdn_token),
 ) -> dict:
     """Restore a previously failed path."""
+    if path not in VALID_PATHS:
+        raise HTTPException(status_code=400, detail=f"Unknown path: {path}")
     if app.state.swarm is not None:
         app.state.swarm.failed_families.discard(path); app.state.swarm.rebuild()
     _available_paths.add(path)

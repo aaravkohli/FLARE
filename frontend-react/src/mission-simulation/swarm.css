@@ -173,3 +173,75 @@
 .swarm-center .seed-bar-track i {min-width:0}
 @media(max-width:767px) {.swarm-center :is(button,select),.swarm-center input:not([type=checkbox]):not([type=range]) {min-height:44px}.swarm-center .workspace-tabs button {min-height:36px}}
 @media(max-width:1099px) {.swarm-center .workspace-bottom-panel {max-height:none!important}}
+
+/* Authoritative condition lifecycle; duration input remains a draft. */
+.swarm-center .attack-heading>span {max-width:46%;text-align:right;line-height:1.5}
+.swarm-center .attack-duration label span {font-size:11px;line-height:1.5}
+.swarm-center .attack-receipt {margin-top:8px;padding:10px 0;font-size:12px;color:#acb9c9;border-bottom:0}
+.swarm-center .attack-receipt>div {display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.swarm-center .attack-receipt strong {font-weight:550}
+.swarm-center .attack-receipt time {margin-left:auto;font-size:11px;font-variant-numeric:tabular-nums}
+.swarm-center .attack-receipt>span {display:block;margin-top:5px;overflow-wrap:anywhere;line-height:1.5}
+.swarm-center .attack-receipt--quiet {position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);padding:0;margin:0;border:0;white-space:nowrap}
+.swarm-center .receipt-active,.swarm-center .receipt-cleared {color:#a3d2ba}
+.swarm-center .receipt-awaiting,.swarm-center .receipt-unavailable {color:#e4bd82}
+.swarm-center .receipt-failed {color:#efb1a9}
+.swarm-center .attack-expiry-note {display:block;margin-top:4px;font-size:12px;color:#a6c8b5}
+.swarm-center .swarm-active-attacks {margin-top:10px;padding-top:8px}
+.swarm-center .active-conditions-heading {font-size:12px;flex-wrap:wrap}
+.swarm-center .active-conditions-heading button {min-height:44px;font-size:12px}
+.swarm-center .active-condition {padding:8px 0 6px;margin-top:4px;border:0;border-top:1px solid var(--mission-line);background:transparent}
+.swarm-center .active-condition>.condition-row {display:grid;grid-template-columns:minmax(0,1fr) auto 44px;gap:10px;align-items:center}
+.swarm-center .condition-identity {min-width:0}
+.swarm-center .active-condition .condition-identity strong {display:block;color:#dbe1e8;font-size:13px;font-weight:550}
+.swarm-center .active-condition .condition-meta {margin-top:4px;font-size:12px;line-height:1.5;color:#93a2b4}
+.swarm-center .active-condition .condition-clear {min-height:44px;min-width:44px}
+.swarm-center .active-condition .condition-countdown {margin:0;text-align:right;white-space:nowrap}
+.swarm-center .condition-countdown output {font-size:18px;letter-spacing:-.02em;color:#e1c192;font-weight:500;font-variant-numeric:tabular-nums}
+.swarm-center .condition-countdown output small {display:inline;margin-left:3px;font-size:10px;color:#99a7b7;letter-spacing:0}
+.swarm-center .condition-countdown output small .condition-remaining-label {display:inline;font-size:inherit;color:inherit;margin:0}
+.swarm-center .condition-countdown>span {margin-top:3px;font-size:10px;text-align:right;color:#93a2b4}
+.swarm-center .active-condition progress {display:block;appearance:none;width:100%;height:2px;border:0;border-radius:1px;overflow:hidden;background:#28313b;margin:5px 0 0}
+.swarm-center .active-condition progress::-webkit-progress-bar {background:#28313b}
+.swarm-center .active-condition progress::-webkit-progress-value {background:#a68c64}
+.swarm-center .active-condition progress::-moz-progress-bar {background:#a68c64}
+.swarm-center .condition-targets summary {font-size:12px;line-height:1.5;padding:12px 0;min-height:44px;box-sizing:border-box;color:#93a2b4}
+.swarm-center .active-condition .condition-targets summary {padding:10px 0;font-size:11px;color:#8596a9}
+.swarm-center .condition-targets>span {display:block;font-size:12px;line-height:1.6;overflow-wrap:anywhere;color:#a5b3c3}
+.swarm-center .attack-retention-note {font-size:11px;line-height:1.5;color:#8697aa;margin:6px 0 0}
+.swarm-center .attack-advanced {margin-top:16px}
+.swarm-center .workspace-recovery-note {padding:8px 16px;font-size:12px;line-height:1.5;color:#a3b4c7;border-bottom:1px solid var(--mission-line)}
+.swarm-center .mission-route-option__state--pending {color:#a3b4c7}
+@media(min-width:1100px) {.swarm-center .active-condition>.condition-row {column-gap:6px}.swarm-center .condition-countdown output small .condition-remaining-label {display:none}}
+
+/* A route overlay is distinct from the UAV topology and from packet activity. */
+.swarm-center .network-layer-key{position:absolute;right:12px;bottom:12px;z-index:4;display:flex;flex-wrap:wrap;justify-content:flex-end;gap:6px 14px;max-width:calc(100% - 200px);padding:7px 10px;border:1px solid #53667480;border-radius:5px;background:#101c25e8;color:#c5d2dc;font-size:11px;line-height:1.5;pointer-events:none}
+.swarm-center .network-layer-key>span{display:inline-flex;align-items:center;gap:6px}
+.swarm-center .network-layer-key>span::before{content:'';width:17px;border-top:2px solid #88b4c4}
+.swarm-center .network-layer-key .layer-key-installed::before{border-color:#88bfec}
+.swarm-center .network-layer-key--world .layer-key-installed::before,.swarm-center .network-layer-key .layer-key-probe::before{border-color:#91e1c1}
+.swarm-center .network-layer-key .layer-key-candidate::before{border-color:#b5a1ea;border-top-style:dashed}
+.swarm-center .network-probe-visibility{display:flex;align-items:center;gap:8px;min-height:44px;font-size:13px}
+@media(max-width:767px){.swarm-center .network-layer-key{bottom:8px;right:8px;max-width:calc(100% - 180px);font-size:10px;gap:4px 10px}}
+
+/* RF quality remains inspectable even when topology uses a uniform color. */
+.swarm-center .network-layer-key .workspace-popover{pointer-events:auto}
+.swarm-center .network-layer-key .workspace-popover>button{min-height:44px;padding:4px 7px;color:#d3dee6;background:transparent;border:0;font-size:11px;display:flex;align-items:center;gap:6px}
+.swarm-center .network-layer-key .tool-full-label{display:none}.swarm-center .network-layer-key .tool-compact-label{display:inline}
+.swarm-center .network-layer-key .workspace-popover-content{left:auto;right:0;width:min(510px,calc(100vw - 48px));pointer-events:auto;text-align:left}
+.swarm-center .network-link-quality-table{border-collapse:collapse;width:100%;font-size:12px;text-align:left;font-variant-numeric:tabular-nums}
+.swarm-center .network-link-quality-table th,.swarm-center .network-link-quality-table td{padding:7px 5px;border-bottom:1px solid var(--mission-line)}
+.swarm-center .network-link-quality-table button{min-height:44px;padding:4px 0;background:transparent;border:0;text-align:left;font-size:12px;color:#b9d6ed}
+.swarm-center .workspace-radio-context{display:flex;justify-content:space-between;flex-wrap:wrap;gap:5px 18px;padding:7px 16px;border-bottom:1px solid var(--mission-line);color:var(--mission-muted);font-size:11px}
+.swarm-center .workspace-path-cause{margin:0;padding:7px 16px;color:#bacbd7;font-size:12px;line-height:1.5}
+@media(max-width:767px){.swarm-center .network-layer-key{max-width:calc(100% - 180px)}.swarm-center .network-layer-key .workspace-popover-content{width:min(510px,calc(100vw - 36px))}.swarm-center .network-link-quality-table{font-size:11px}.swarm-center .network-link-quality-table th,.swarm-center .network-link-quality-table td{padding:5px 3px}}
+
+/* Keep mission drawers below the application header in stacked layouts. */
+@media(max-width:1099px){
+ .flare-application .swarm-center:not(.swarm-presentation) .workspace-drawer .workspace-popover-content{top:76px;max-height:calc(100dvh - 88px)}
+ .flare-application .swarm-center:not(.swarm-presentation) .workspace-scrim{top:64px}
+}
+@media(max-width:767px){
+ .flare-application .swarm-center:not(.swarm-presentation) .workspace-drawer .workspace-popover-content{top:68px;max-height:calc(100dvh - 76px)}
+ .flare-application .swarm-center:not(.swarm-presentation) .workspace-scrim{top:60px}
+}

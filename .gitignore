@@ -82,6 +82,8 @@ frontend-react/node_modules/
 frontend-react/dist/
 frontend-react/.vite/
 frontend-react/coverage/
+*.tsbuildinfo
+/frontend-react/blob-report/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -218,9 +220,24 @@ docs/
 !frontend-react/public/**
 
 # UI Validation / Repair run directories
+/frontend-react/artifacts/
 frontend-react/artifacts/live-mission-upgrade/
 frontend-react/artifacts/swarm-repair-*/
 **/screenshots/
+
+# Panel review: preserve guides, selected evidence, and the final editable deck.
+!/review-preparation/*.md
+!/review-preparation/evidence/*.md
+!/review-preparation/evidence/*.png
+!/review-preparation/evidence/final-rehearsal/*.png
+!/review-preparation/presentation/output/FLARE-speaker-script.md
+
+# Private slide-authoring buffers, intermediate exports, and download archives.
+/review-preparation/presentation/.build/
+/review-preparation/presentation/.chart-data-*/
+/review-preparation/presentation/output/*.pptx
+!/review-preparation/presentation/output/FLARE-panel-review.pptx
+/review-preparation/*.zip
 
 
 # Audited, reproducible mesh reference benchmark

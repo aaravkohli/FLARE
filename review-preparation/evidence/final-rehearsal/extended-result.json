@@ -1,0 +1,72 @@
+{
+  "checks": [
+    {
+      "name": "Recorded probe outcome and replay",
+      "status": "Passed",
+      "detail": {
+        "packet_id": "p932",
+        "replay_restored_to_live": true
+      }
+    },
+    {
+      "name": "3D, camera and connection emphasis",
+      "status": "Passed",
+      "detail": "Authoritative packet model retained in both views."
+    },
+    {
+      "name": "Paused command queue and acknowledgment",
+      "status": "Passed",
+      "detail": {
+        "command_id": "4d74a4c7-a20d-499e-98e9-7f25074d74fa",
+        "status": "acknowledged",
+        "clock_frozen_while_paused": true
+      }
+    },
+    {
+      "name": "Synchronized A/B and cancellation",
+      "status": "Passed",
+      "detail": {
+        "clock": [
+          "T+1.3s",
+          "T+1.3s"
+        ]
+      }
+    },
+    {
+      "name": "Small all-ten benchmark and export",
+      "status": "Passed",
+      "detail": {
+        "configuration": {
+          "mode": "benchmark",
+          "topologies": [
+            "full_mesh",
+            "partial_mesh",
+            "star",
+            "ring",
+            "tree",
+            "cluster_mesh",
+            "grid",
+            "random_geometric",
+            "hybrid_mesh",
+            "self_healing_mesh"
+          ],
+          "count": 10,
+          "seeds": [
+            7
+          ],
+          "scenario": "normal",
+          "range_m": 350,
+          "duration_s": 10,
+          "warmup_s": 5
+        },
+        "conservation": true
+      }
+    },
+    {
+      "name": "Browser runtime",
+      "status": "Passed",
+      "detail": "No pageerror events."
+    }
+  ],
+  "errors": []
+}

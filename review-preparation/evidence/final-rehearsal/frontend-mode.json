@@ -1,0 +1,19 @@
+{
+  "mode": "production",
+  "api_url": "http://127.0.0.1:18400",
+  "command": [
+    "npm",
+    "--prefix",
+    "frontend-react",
+    "run",
+    "preview",
+    "--",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "15473",
+    "--strictPort",
+    "--outDir",
+    "/private/tmp/flare-panel-final-20261021/frontend-dist"
+  ]
+}

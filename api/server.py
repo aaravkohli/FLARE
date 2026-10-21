@@ -2052,7 +2052,7 @@ async def update_fl_config(new_config: dict, _: dict = Depends(require_admin)):
         _validate_config_patch(new_config, current_cfg)
         updated_cfg = _deep_merge(current_cfg, new_config)
         _write_yaml_atomic(cfg_path, updated_cfg)
-        logger.info("FL config updated dynamically via API.")
+        logger.info("FL config saved; restart FL server and clients to apply runtime settings.")
         return {"status": "success", "config": updated_cfg}
     except HTTPException:
         raise
@@ -2080,32 +2080,34 @@ async def get_fl_metrics(_: dict = Depends(get_current_user)):
     if not metrics_path.exists():
         if os.getenv('FLARE_SWARM_ENABLED')=='1': return await _current_mission_fl_metrics({})
         return {
+            "available": False,
+            "status": "awaiting_first_round",
             "last_round": 0,
             "convergence_round": None,
             "n_rounds_completed": 0,
             "latest": {
                 "round": 0,
-                "threat_f1": 0.0,
-                "attack_accuracy": 0.0,
+                "threat_f1": None,
+                "attack_accuracy": None,
                 "confidence_brier": None,
-                "round_loss": 0.0,
-                "privacy_epsilon": 0.0,
-                "privacy_delta": 1e-5,
-                "compression_ratio": 1.0,
-                "mean_trust": 1.0,
-                "min_trust": 1.0,
-                "quarantine_rate": 0.0,
-                "jains_fairness": 1.0,
-                "drift_rate": 0.0,
-                "mean_drift_score": 0.0,
-                "kd_loss": 0.0,
+                "round_loss": None,
+                "privacy_epsilon": None,
+                "privacy_delta": None,
+                "compression_ratio": None,
+                "mean_trust": None,
+                "min_trust": None,
+                "quarantine_rate": None,
+                "jains_fairness": None,
+                "drift_rate": None,
+                "mean_drift_score": None,
+                "kd_loss": None,
                 "aggregation_method": "awaiting_first_round",
-                "suspected_malicious_clients": 0,
-                "rejected_updates": 0,
-                "poisoning_attempts_detected": 0,
+                "suspected_malicious_clients": None,
+                "rejected_updates": None,
+                "poisoning_attempts_detected": None,
                 "effective_clip_norm": None,
                 "sample_count_cap": None,
-                "sample_count_capped_clients": 0,
+                "sample_count_capped_clients": None,
                 "client_security": []
             },
             "history": []

@@ -2,19 +2,29 @@ import { useState } from 'react';
 import { RouteSelector, DecisionEvidence } from './MissionEvidencePanels';
 import DecisionPanel from './DecisionPanel';
 import { workspaceEvidence } from './world/workspaceEvidence';
+import { withMissionConditions } from './world/missionConditions';
+import { withMissionPathEvidence } from './world/missionPathEvidence';
+import { routeHealth } from './world/routeHealth';
 import type { WorkspaceEvidenceInput } from './world/workspaceEvidence';
 import type { CommunicationRoute } from './types';
 import type { SwarmSnapshot } from './swarm';
 export default function WorkspaceEvidence({input,snapshot,inspected,nowMs,current,tab}:{tab:'telemetry'|'decisions'|'activity';input:WorkspaceEvidenceInput;snapshot:SwarmSnapshot;inspected:string;nowMs:number;current:boolean}) {
   const [route,setRoute] = useState<CommunicationRoute>('direct');
-  const {state,evidence,controllerProgress,phase} = workspaceEvidence(input,snapshot.session_id,inspected,nowMs);
+  const {state:observedState,evidence,controllerProgress,phase} = workspaceEvidence(input,snapshot.session_id,inspected,nowMs);
+  const state=withMissionPathEvidence(withMissionConditions(observedState,snapshot,inspected,current),snapshot,inspected,current);
   const node=snapshot.nodes.find(n=>n.id===inspected);
   const installed=snapshot.flows.find(f=>f.source===inspected&&f.destination==='base'&&f.traffic_class==='telemetry');
-  const metric=state.routes.find(r=>r.id===route)?.metric;
+  const selected=state.routes.find(r=>r.id===route),metric=selected?.measurementUnavailable?undefined:selected?.metric;
   return <section className="workspace-evidence" aria-label="Selected UAV evidence" data-evidence-current={evidence.evidenceCurrent}>
     <div className="workspace-evidence-heading"><div><h3>{node?.alias??'Select a UAV'} <span>→ Ground control</span></h3></div><span className={evidence.evidenceCurrent?'evidence-fresh':'evidence-retained'}>{evidence.label}</span></div>
-    <div role="tabpanel" id="research-details-panel-telemetry" aria-label="Telemetry" hidden={tab!=='telemetry'}><RouteSelector state={state} inspectedRoute={route} evidence={evidence} onInspect={setRoute}/>
-    <div className="workspace-path-detail"><span>{route.charAt(0).toUpperCase()+route.slice(1)} measurements</span><dl>{[
+    <div role="tabpanel" id="research-details-panel-telemetry" aria-label="Telemetry" hidden={tab!=='telemetry'}><RouteSelector state={state} inspectedRoute={route} evidence={evidence} onInspect={setRoute} explainHealth/>
+    <div className="workspace-radio-context" data-interference-context={!current||!snapshot.attacks?'unknown':state.jammedPaths.length?'injected':'none'}>
+      <span>{current&&snapshot.attacks?state.jammedPaths.length?`Injected RF interference · ${state.jammedPaths.join(', ')}`:'No injected RF interference':'Injection state unavailable'}</span>
+      <span>Detector scores and packet loss describe different evidence.</span>
+    </div>
+    {selected&&<p className="workspace-path-cause" role="status">{routeHealth(selected,state.noSafeRoute).reason}</p>}
+    {selected?.recoveryPending&&<p className="workspace-recovery-note" role="status">Condition ended · waiting for new telemetry. Previous risk and measurements are retained.</p>}
+    <div className="workspace-path-detail"><span>{selected?.recoveryPending?'Last ':''}{route.charAt(0).toUpperCase()+route.slice(1)} measurements</span><dl>{[
       ['RSSI',metric?`${metric.rssi.toFixed(1)} dBm`:'—'],['SINR',metric?`${metric.sinr.toFixed(1)} dB`:'—'],
       ['Delivery',metric?`${(metric.pdr*100).toFixed(1)}%`:'—'],['Loss',metric?`${(metric.packet_loss*100).toFixed(1)}%`:'—'],
     ].map(([label,value])=><div key={label}><dt>{label}</dt><dd>{value}</dd></div>)}</dl></div>

@@ -152,6 +152,11 @@ export interface MissionRouteState {
   available: boolean;
   active: boolean;
   jammed: boolean;
+  recoveryPending?: boolean;
+  /** Display-only interpretation; original model inputs remain in metric. */
+  measurementUnavailable?: boolean;
+  availabilityReason?: string;
+  unavailableLabel?: string;
   safe?: boolean;
 }
 

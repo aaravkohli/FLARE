@@ -1,0 +1,130 @@
+{
+  "scope": "Review artifact and quoted-value verification, not whole-application validation",
+  "status": "Passed",
+  "checks": [
+    {
+      "name": "All requested review documents and deck exist",
+      "status": "Passed"
+    },
+    {
+      "name": "45 sequential questions",
+      "status": "Passed"
+    },
+    {
+      "name": "Four question categories",
+      "status": "Passed"
+    },
+    {
+      "name": "Every question has a short and deeper answer",
+      "status": "Passed"
+    },
+    {
+      "name": "All local Markdown links resolve",
+      "status": "Passed"
+    },
+    {
+      "name": "Ten editable slides and ten notes parts",
+      "status": "Passed"
+    },
+    {
+      "name": "Two native chart workbooks",
+      "status": "Passed"
+    },
+    {
+      "name": "Actual screenshots embedded",
+      "status": "Passed"
+    },
+    {
+      "name": "Thirty complete benchmark observations",
+      "status": "Passed"
+    },
+    {
+      "name": "Benchmark packet accounting",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: full_mesh",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: partial_mesh",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: star",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: ring",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: tree",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: cluster_mesh",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: grid",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: random_geometric",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: hybrid_mesh",
+      "status": "Passed"
+    },
+    {
+      "name": "Seed-42 table values: self_healing_mesh",
+      "status": "Passed"
+    },
+    {
+      "name": "All quoted v2 baseline means match evidence",
+      "status": "Passed"
+    },
+    {
+      "name": "Poisoning means match three-seed summary",
+      "status": "Passed"
+    },
+    {
+      "name": "False flags distinguished from false rejections",
+      "status": "Passed"
+    },
+    {
+      "name": "Five-hop probe: evidence/demo-probe-result.json",
+      "status": "Passed"
+    },
+    {
+      "name": "Five-hop probe: evidence/final-rehearsal/probe-result.json",
+      "status": "Passed"
+    },
+    {
+      "name": "Core actual-backend execution passed",
+      "status": "Passed"
+    },
+    {
+      "name": "Extended actual-backend assertions passed",
+      "status": "Passed"
+    },
+    {
+      "name": "Methodological boundaries remain explicit",
+      "status": "Passed"
+    },
+    {
+      "name": "Personal contribution is not invented",
+      "status": "Passed"
+    },
+    {
+      "name": "Six complete conditional contribution scripts",
+      "status": "Passed"
+    },
+    {
+      "name": "Manifest artifact hashes match",
+      "status": "Passed"
+    }
+  ]
+}

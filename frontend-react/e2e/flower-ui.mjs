@@ -8,8 +8,12 @@ const context=await browser.newContext({viewport:{width:1440,height:1000}}),page
 try{
  await page.goto(front+'#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
- await center.getByRole('button',{name:'Select all',exact:true}).click();await center.getByLabel('Command',{exact:true}).selectOption('route');await center.getByLabel('Command route').selectOption('satellite');await center.getByRole('button',{name:'Send to 30 UAVs'}).click();
- await center.getByRole('group',{name:'Fleet selection'}).getByRole('button',{name:/^UAV-001/}).click();await center.getByLabel('Condition group').selectOption('fl');await center.getByLabel('Attack profile').selectOption('poisoned');await center.getByLabel('Attack duration').fill('300');await center.getByRole('button',{name:'Apply condition to 1 UAV',exact:true}).click();
+ for(const [label,value] of [['Fleet size','10'],['Formation','circle'],['Radio range','1000']]){
+  await center.getByRole('button',{name:'Mission setup',exact:true}).click();await center.getByRole('dialog',{name:'Mission setup',exact:true}).getByLabel(label,{exact:true}).selectOption(value);await center.getByRole('button',{name:'Close Mission setup',exact:true}).click();
+ }
+ await center.getByRole('button',{name:'Mission setup',exact:true}).click();await center.getByRole('button',{name:'Reset',exact:true}).click();await center.getByRole('button',{name:'Close Mission setup',exact:true}).click();
+ await center.getByRole('tab',{name:'Commands',exact:true}).click();await center.getByRole('button',{name:'Select all',exact:true}).click();await center.getByLabel('Command',{exact:true}).selectOption('route');await center.getByLabel('Command route').selectOption('satellite');await center.getByRole('button',{name:'Send to 10 UAVs'}).click();
+ await center.getByRole('tab',{name:'Events',exact:true}).click();await center.getByLabel('Condition group').selectOption('fl');await center.getByLabel('Attack profile').selectOption('poisoned');await center.getByLabel('Attack duration',{exact:true}).fill('300');await center.getByTestId('attack-apply').click();
  await expect(center.getByLabel('Active conditions')).toContainText('Awaiting Participating Round');
  await center.getByRole('button',{name:'Play mission',exact:true}).click();
  const auth=await context.request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}}),headers={Authorization:`Bearer ${(await auth.json()).access_token}`};

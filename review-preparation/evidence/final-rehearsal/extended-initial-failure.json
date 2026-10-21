@@ -1,0 +1,10 @@
+{
+  "checks": [
+    {
+      "name": "Extended walkthrough",
+      "status": "Failed",
+      "detail": "expect(locator).toContainText(expected) failed\n\nLocator: getByRole('region', { name: 'Swarm command center' }).locator('.probe-outcomes')\nExpected substring: \"delivered\"\nReceived string:    \"Recent probe outcomesNo recorded probe outcome for this pair.\"\nTimeout: 5000ms\n\nCall log:\n  - Expect \"toContainText\" getByRole('region', { name: 'Swarm command center' }).locator('.probe-outcomes') with timeout 5000ms\n  - waiting for getByRole('region', { name: 'Swarm command center' }).locator('.probe-outcomes')\n    14 × locator resolved to <div class=\"probe-outcomes\">…</div>\n       - unexpected value \"Recent probe outcomesNo recorded probe outcome for this pair.\"\n"
+    }
+  ],
+  "errors": []
+}

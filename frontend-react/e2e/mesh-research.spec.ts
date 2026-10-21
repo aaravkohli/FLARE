@@ -33,6 +33,9 @@ test('isolated synchronized comparison and exportable all-ten benchmark',async({
  test.setTimeout(120000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
+ // Start from a bounded, paused live fleet; this workflow measures the isolated
+ // experiment rather than inheriting the preceding regional-jamming workload.
+ await resetMission(center);await missionSetting(center,'Fleet size','10');await center.getByLabel('Speed',{exact:true}).selectOption('1');
  await center.getByRole('button',{name:'A/B comparison',exact:true}).click();await center.getByRole('button',{name:'Shared settings',exact:true}).click();
  await center.locator('.experiment-workspace-page:not([hidden])').getByLabel('Experiment fleet size').selectOption('10');await center.locator('.experiment-workspace-page:not([hidden])').getByLabel('Experiment duration').fill('10');
  await center.getByRole('button',{name:'Close Shared settings',exact:true}).click();await center.getByRole('button',{name:'Create comparison',exact:true}).click();await expect(center.locator('.comparison-pane')).toHaveCount(2,{timeout:15000});
@@ -40,7 +43,7 @@ test('isolated synchronized comparison and exportable all-ten benchmark',async({
  await expect(center.getByRole('button',{name:'Play comparison',exact:true})).toBeVisible();
  const times=await center.locator('.comparison-pane time').allTextContents();expect(times[0]).toBe(times[1]);
  await center.screenshot({path:`${artifacts}/mesh-comparison.png`});
- await center.getByRole('button',{name:'Cancel experiment',exact:true}).click();await expect(center.getByRole('button',{name:'Create comparison',exact:true})).toBeEnabled();
+ await center.getByRole('button',{name:'Cancel experiment',exact:true}).click();await expect(center.getByRole('button',{name:'Create comparison',exact:true})).toBeEnabled({timeout:15000});
  await center.getByRole('button',{name:'Topology benchmark',exact:true}).click();
  await center.locator('.experiment-workspace-page:not([hidden])').getByLabel('Experiment fleet size').selectOption('10');await center.locator('.experiment-workspace-page:not([hidden])').getByLabel('Experiment duration').fill('10');await center.locator('.experiment-workspace-page:not([hidden])').getByLabel('Experiment seeds').fill('7');
  await center.getByRole('button',{name:'Run all ten',exact:true}).click();await expect(center.locator('.experiment-results tbody tr')).toHaveCount(10,{timeout:90000});

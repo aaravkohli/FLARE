@@ -122,7 +122,14 @@ async def mission_broadcaster(clients):
                             await ws.send_json({'type':'mission_snapshot','data':frame})
                             await ws.send_json({'type':'mission_packet_events','data':batch})
                         packet_cursors[ws]=(packet_session,max(after,packets['cursor']))
-                    except Exception: cursors.pop(ws,None); packet_cursors.pop(ws,None)
+                    except Exception:
+                        cursors.pop(ws,None); packet_cursors.pop(ws,None)
+                        if ws in clients: clients.remove(ws)
+                        # A timed-out subscriber must reconnect with its cursor;
+                        # retaining it would repeatedly replay oversized batches.
+                        try:
+                            async with asyncio.timeout(1): await ws.close(code=1013)
+                        except Exception: pass
                 for ws in set(cursors)-set(clients): cursors.pop(ws,None); packet_cursors.pop(ws,None)
             except HTTPException: pass
         await asyncio.sleep(.2)

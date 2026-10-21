@@ -503,7 +503,7 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str,
             resp = await client.post(
                 SDN_URL,
                 json=payload,
-                headers={"Authorization": f"Bearer {SDN_API_TOKEN}"},
+                headers={"Authorization": f"Bearer {SDN_API_TOKEN}", **({"X-FLARE-Mission-Session": decision_context["session_id"]} if decision_context and decision_context.get("session_id") else {})},
                 timeout=SDN_TIMEOUT,
             )
             resp.raise_for_status()
@@ -525,6 +525,7 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str,
             result["installed_action_id"] = installed_action_id
             return result
         except (httpx.HTTPError, httpx.TimeoutException) as e:
+            if isinstance(e,httpx.HTTPStatusError) and e.response.status_code==409: raise
             last_err = e
             logger.warning("SDN push attempt %d failed: %s", attempt + 1, e)
     if last_err is not None:
@@ -533,13 +534,13 @@ async def _push_to_sdn(client: httpx.AsyncClient, path_name: str, drone_id: str,
 
 
 async def _push_containment(
-    client: httpx.AsyncClient, drone_id: str, mode: str, reason: str
+    client: httpx.AsyncClient, drone_id: str, mode: str, reason: str, mission_session: str | None = None
 ) -> dict:
     """Apply a cross-layer containment decision through the SDN controller."""
     response = await client.post(
         f"http://{SDN_HOST}:{SDN_PORT}/sdn/containment",
         json={"drone_id": drone_id, "mode": mode, "reason": reason},
-        headers={"Authorization": f"Bearer {SDN_API_TOKEN}"},
+        headers={"Authorization": f"Bearer {SDN_API_TOKEN}", **({"X-FLARE-Mission-Session":mission_session} if mission_session else {})},
         timeout=SDN_TIMEOUT,
     )
     response.raise_for_status()
@@ -850,6 +851,10 @@ class Orchestrator:
                     self._mission_session = snapshot["session_id"]
                     if hasattr(self,"_network_analyzer"): self._network_analyzer._risk.clear()
                     if hasattr(self,"_insider_analyzer"): self._insider_analyzer._risk.clear(); self._insider_analyzer._history.clear()
+                    for cache_name,default in (('_prev_path',None),('_prev_path_time',None),('_last_good_decision',None),
+                                               ('_last_good_ts',0.),('_prev_rewards',0.),('_containment_modes','normal')):
+                        cache=getattr(self,cache_name,{})
+                        for identity in cache: cache[identity]=default
                     for history in self._metric_history.values(): history.clear()
                     for agent in self._rl_agents.values(): agent._prev_action=None; agent._prev_reward=0.; agent._step=0
                 metrics={identity:TelemetrySnapshot.model_validate(row).model_dump() for identity,row in snapshot["metrics"].items()}
@@ -972,7 +977,11 @@ class Orchestrator:
             error = None
             response = None
             try:
-                response = await _push_to_sdn(client, HOLD_PATH, drone_id)
+                if os.getenv('FLARE_SWARM_ENABLED')=='1':
+                    session=getattr(self,'_mission_session',None)
+                    if not session: raise RuntimeError('Mission session unavailable; SDN update withheld')
+                    response=await _push_to_sdn(client,HOLD_PATH,drone_id,{'session_id':session})
+                else: response = await _push_to_sdn(client, HOLD_PATH, drone_id)
                 applied = True
                 self._prev_path[drone_id] = HOLD_PATH
                 self._prev_path_time[drone_id] = now
@@ -1227,7 +1236,8 @@ class Orchestrator:
             ):
                 try:
                     containment_response = await _push_containment(
-                        client, drone_id, containment.mode.value, containment.reason
+                        client, drone_id, containment.mode.value, containment.reason,
+                        **({'mission_session':self._mission_session} if os.getenv('FLARE_SWARM_ENABLED')=='1' else {})
                     )
                     self._containment_modes[drone_id] = containment.mode.value
                 except Exception as exc:
@@ -1288,7 +1298,7 @@ class Orchestrator:
             try:
                 context = None
                 if os.getenv("FLARE_SWARM_ENABLED") == "1":
-                    context={"decision_id":f"{RUN_ID}:{self._step}:{drone_id}","trust":client_trust,
+                    context={"session_id":self._mission_session,"decision_id":f"{RUN_ID}:{self._step}:{drone_id}","trust":client_trust,
                         "routing_source":decision.get('decision_source','rl_model'),
                         "threat":min(path_scores),"scores":path_scores,"source":threat.get("source"),
                         "attack_type":threat.get("attack_type"),"confidence":threat.get("confidence"),

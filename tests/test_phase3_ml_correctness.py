@@ -114,3 +114,16 @@ def test_compression_metrics_are_labeled_as_simulated_wire_savings():
     assert stats["compressed_bytes"] < stats["original_bytes"]
     assert stats["wire_compression_applied"] is False
 
+
+
+def test_missing_legacy_federation_evidence_is_unavailable_not_measured_zero(monkeypatch,tmp_path):
+    import asyncio
+    from api.server import get_fl_metrics
+    monkeypatch.setenv('FLARE_SWARM_ENABLED','0')
+    monkeypatch.setenv('FLARE_FL_METRICS_JSON',str(tmp_path/'absent.json'))
+    result=asyncio.run(get_fl_metrics({}))
+    assert result['available'] is False and result['status']=='awaiting_first_round'
+    assert result['last_round']==0 and result['history']==[]
+    assert result['latest']['threat_f1'] is None
+    assert result['latest']['compression_ratio'] is None
+    assert result['latest']['mean_trust'] is None

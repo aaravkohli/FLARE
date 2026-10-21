@@ -597,7 +597,7 @@ def _test_ensemble_labels():
 
 
 def _test_distillation_step():
-    """Verify distillation step runs without error and updates weights."""
+    """Verify optimizer updates and the held-out rollback gate separately."""
     import sys
     sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent.parent))
     from fl.model import build_model, get_model_weights
@@ -605,6 +605,7 @@ def _test_distillation_step():
     cfg = {"input_features": 5, "sequence_len": 10, "hidden_size": 16,
            "num_layers": 1, "dropout": 0.0, "num_paths": 3, "num_attack_classes": 5}
 
+    torch.manual_seed(7)
     global_model = build_model(cfg)
     client_models = [build_model(cfg) for _ in range(2)]
     weights_before = [w.copy() for w in get_model_weights(global_model)]
@@ -612,7 +613,7 @@ def _test_distillation_step():
     X, _ = generate_proxy_dataset(n_samples=50, seq_len=10)
     metrics = feddf_distillation_step(
         global_model, client_models, X,
-        temperature=3.0, kd_epochs=2, kd_lr=0.01, alpha_kd=0.7
+        temperature=3.0, kd_epochs=2, kd_lr=0.001, alpha_kd=1.0
     )
 
     weights_after = get_model_weights(global_model)
@@ -620,9 +621,18 @@ def _test_distillation_step():
         not np.allclose(wb, wa)
         for wb, wa in zip(weights_before, weights_after)
     )
-    assert weights_changed, "Distillation should update global model weights"
+    assert metrics["applied"] and weights_changed, "Accepted distillation should update weights"
     assert "kd_loss" in metrics
     print(f"[PASS] Distillation step: kd_loss={metrics['kd_loss']:.4f}, weights_updated={weights_changed}")
+    retained = [w.copy() for w in get_model_weights(global_model)]
+    losses = iter([0.0, 1.0])
+    rejected = feddf_distillation_step(
+        global_model, client_models, X, kd_epochs=1,
+        validation_loss_fn=lambda _model: next(losses),
+    )
+    assert rejected["rolled_back"] and rejected["rollback_reason"] == "validation_loss_regressed"
+    assert all(np.array_equal(a, b) for a, b in zip(retained, get_model_weights(global_model)))
+    print("[PASS] Validation regression retains the original weights")
 
 
 if __name__ == "__main__":

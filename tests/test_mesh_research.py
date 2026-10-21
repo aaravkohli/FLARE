@@ -78,6 +78,17 @@ def test_shared_radio_contends_but_independent_radios_transmit_together():
     assert second.start_at==pytest.approx(.008)
     assert second.completed_at>first.completed_at
 
+def test_direct_and_mesh_keep_shared_airtime_despite_separate_measurement_cohorts():
+    scheduler=PacketScheduler(dict(ttl_s=2,retries=0,capacity=10,queue_limit=10),random.Random(1),lambda *_:None)
+    links={pair(a,b):Link(a,b,1,-50,30,1,0,1) for a,b in [('a','base'),('a','c')]}
+    direct=scheduler.emit('a','base','sensor',1000,['a','base'],0,0,family='direct')
+    mesh=scheduler.emit('a','c','sensor',1000,['a','c'],0,0,family='mesh')
+    satellite=scheduler.emit('a','base','sensor',1000,['a','base'],0,0,family='satellite')
+    scheduler.step(.1,links,lambda *_:True)
+    assert direct.start_at==satellite.start_at==0
+    assert mesh.start_at==pytest.approx(.008)
+    assert {row[1] for row in scheduler.channel_observations}=={'direct','mesh','satellite'}
+
 def test_reliable_route_repair_preserves_completed_prefix():
     e=engine(); e.scheduler.cfg['jitter_ms']=0; ids=list(e.nodes); a,b,c,d,x=ids[:5]
     e.links={pair(u,v):Link(u,v,1,-50,30,12,0,1) for u,v in [(a,b),(b,c),(c,d),(b,x),(x,d)]}

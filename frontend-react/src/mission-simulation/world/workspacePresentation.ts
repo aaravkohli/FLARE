@@ -54,3 +54,10 @@ export function activityItems(session:string,events:SwarmEvent[],commands:SwarmC
  }
  return items.sort((a,b)=>(b.time??-Infinity)-(a.time??-Infinity)||b.id.localeCompare(a.id));
 }
+
+/** Research size presets plus the authoritative current size, including API values. */
+export function fleetSizeOptions(current:number):number[] {
+ const sizes=[...Array.from({length:10},(_,index)=>(index+1)*10),75];
+ if(Number.isInteger(current)&&current>=10&&current<=100)sizes.push(current);
+ return [...new Set(sizes)].sort((a,b)=>a-b);
+}

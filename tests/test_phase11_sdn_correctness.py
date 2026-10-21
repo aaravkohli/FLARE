@@ -329,3 +329,12 @@ def test_production_fl_client_manager_mounts_and_requires_real_data():
         volume.endswith(":/app/config")
         for volume in compose["services"]["api"]["volumes"]
     )
+
+
+def test_unknown_family_restore_is_rejected_without_polluting_available_paths():
+    from fastapi.testclient import TestClient
+    from sdn import mock_sdn
+    before=mock_sdn._available_paths.copy()
+    response=TestClient(mock_sdn.app).post('/sdn/simulate/restore/not-a-family',headers={'Authorization':'Bearer '+mock_sdn.SDN_API_TOKEN})
+    assert response.status_code==400
+    assert mock_sdn._available_paths==before

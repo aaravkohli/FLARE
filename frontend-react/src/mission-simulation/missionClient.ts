@@ -1,6 +1,11 @@
 import { getMissionSnapshot } from './swarm.ts';
 import type { SwarmSnapshot } from './swarm.ts';
 
+export class MissionRequestError extends Error {
+ outcome:'unconfirmed'|'rejected'|'accepted';response?:unknown;
+ constructor(message:string,outcome:'unconfirmed'|'rejected'|'accepted',response?:unknown){super(message);this.name='MissionRequestError';this.outcome=outcome;this.response=response;}
+}
+
 export function requestError(detail:unknown):string {
  if(typeof detail==='string')return detail;
  if(Array.isArray(detail))return detail.map(e=>`${e.loc?.slice(1).join('.')||'Request'}: ${e.msg||'invalid value'}`).join('; ');
@@ -38,14 +43,19 @@ export class MissionClient {
     if(path==='/commands'&&typeof body.command_id==='string'){
      try{const recovered=await this.read(`/commands/${body.command_id}`);this.publish(await this.read());return recovered;}catch{/* Preserve uncertainty; never issue a duplicate command. */}
     }
-    throw new Error('Delivery could not be confirmed. Refresh status before sending another command.');
+    throw new MissionRequestError('Delivery could not be confirmed. Review current state before submitting again.','unconfirmed');
    }
-   const data=await response.json();
+   let data;
+   try{data=await response.json();}
+   catch{throw new MissionRequestError(response.ok?'Request accepted, but its receipt is unavailable. Waiting for current simulation state.':'The server response could not be read. Review current state before submitting again.',response.ok?'accepted':'unconfirmed');}
    if(response.status===409){this.publish(await this.read());throw new Error('Mission revision changed. Review current targets and retry.');}
    if(response.status===401)throw new Error('Sign-in expired. Sign in again to continue.');
-   if(!response.ok)throw new Error(requestError(data.detail));
+   if(!response.ok)throw new MissionRequestError(requestError(data.detail),'rejected');
    if(data.schema_version==='mission_snapshot_v1')this.publish(data);
-   else this.publish(await this.read());
+   else {
+    try{this.publish(await this.read());}
+    catch{throw new MissionRequestError('Request accepted. Waiting for current simulation state.','accepted',data);}
+   }
    return data;
   });
   this.tail=operation.catch(()=>{});return operation;

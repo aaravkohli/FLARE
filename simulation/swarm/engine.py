@@ -61,7 +61,7 @@ class SwarmEngine:
             reset_attack_state()
         self.session_id=uuid.uuid4().hex; self.seconds=0.; self.playing=False; self.accumulator=0.
         self.rng=random.Random(self.seed); self.nodes={}; self.links={}; self.radio_links={}; self.flows={}; self.forwarding={}; self.blocked=set(); self.auto_blocked=set(); self.jammers=[]
-        self._route_cache={}; self._adjacency_cache={}; self.route_preferences={}; self.families={}; self.flow_constraints={}; self.controller_connected=True; self.commands={}; self.transfers={}; self.security={}
+        self._route_cache={}; self._adjacency_cache={}; self._backup_cache={}; self.route_preferences={}; self.families={}; self.flow_constraints={}; self.controller_connected=True; self.commands={}; self.transfers={}; self.security={}
         self.events.clear(); self.revision+=1; self.network_revision=0; self.reroutes=0; self.failed_routes=0
         self.topology_state={}; self.packet_events=deque(maxlen=50000); self.packet_cursor=0
         self.disconnected_links=deque(maxlen=5000); self.recovery={}; self.scenario_actions=set()
@@ -72,7 +72,7 @@ class SwarmEngine:
         self.scheduler=PacketScheduler(dict(self.cfg['packets'],seed=self.seed),self.rng,self.packet_event)
         self.resize(self.count,initial=True); self.rebuild(); self.event('COMMAND','mission_reset',{'seed':self.seed})
     def _clear_routes(self):
-        self._route_cache.clear(); self._adjacency_cache.clear()
+        self._route_cache.clear(); self._adjacency_cache.clear(); self._backup_cache.clear()
     def check_revision(self,revision):
         if revision!=self.revision: raise RevisionConflict(f'expected revision {self.revision}, received {revision}')
     def resize(self,count,initial=False):
@@ -152,9 +152,9 @@ class SwarmEngine:
             self.seconds+=step
             advance(list(self.nodes.values()),step,self.seconds,self.slots,self.terrain)
             self.scenario_step()
-            self.attacks.step(step)
+            conditions_expired=self.attacks.step(step)
             self.dispatch_commands()
-            if self.seconds-self.last_network>=self.cfg['network_interval_s']-1e-9:
+            if conditions_expired or self.seconds-self.last_network>=self.cfg['network_interval_s']-1e-9:
                 self.rebuild(); self.last_network=self.seconds
             if self.seconds-self.last_traffic>=1-1e-9:
                 self.generate_traffic(); self.last_traffic=self.seconds
@@ -316,12 +316,20 @@ class SwarmEngine:
             return []
         if not old or old['hops']!=hops or old['family']!=family:
             constraints=self.flow_constraints.get(key,{})
-            backup_links={e:l for e,l in self.links.items() if not set(e).intersection(constraints.get('excluded_nodes',[]))}
-            backup_blocked=self.blocked|self.auto_blocked|{pair(*e) for e in constraints.get('excluded_links',[])}
+            backup=[]
+            if family=='mesh':
+                backup_key=(tuple(hops),category in CONTROL_TRAFFIC,tuple(sorted(constraints.get('excluded_nodes',[]))),
+                            tuple(sorted(pair(*e) for e in constraints.get('excluded_links',[]))))
+                if backup_key not in self._backup_cache:
+                    backup_links={e:l for e,l in self.links.items() if not set(e).intersection(constraints.get('excluded_nodes',[]))}
+                    backup_blocked=self.blocked|self.auto_blocked|{pair(*e) for e in constraints.get('excluded_links',[])}
+                    if len(self._backup_cache)>=2048: self._backup_cache.clear()
+                    self._backup_cache[backup_key]=shortest_path(backup_links,source,dest,self.nodes,backup_blocked,
+                        omit={pair(a,b) for a,b in zip(hops,hops[1:])},control=category in CONTROL_TRAFFIC)
+                backup=self._backup_cache[backup_key][:]
             policy=RoutePolicy(policy_id=key,session_id=self.session_id,revision=self.revision,
                 source=source,destination=dest,traffic_class=category,family=family,hops=hops,decision_id=decision,
-                restrictions=dict(self.flow_constraints.get(key,{}),backup_hops=shortest_path(backup_links,source,dest,self.nodes,backup_blocked,
-                    omit={pair(a,b) for a,b in zip(hops,hops[1:])},control=category in CONTROL_TRAFFIC) if family=='mesh' else []))
+                restrictions=dict(self.flow_constraints.get(key,{}),backup_hops=backup))
             result=self.install_policy(policy)
             if not result.get('applied'):
                 self.failed_routes+=1; self.event('SDN','enforcement_failed',{'policy_id':key,'result':result})
@@ -657,11 +665,12 @@ class SwarmEngine:
         measured_graph=build_adjacency(self.links,self.nodes,enforce_security=False)
         window_rows=[r for r in self.scheduler.observations if r[0]>=self.seconds-2]
         outcomes={}; latencies={}
-        for _,_,kind,value in window_rows:
-            if kind in ('attempt_ok','attempt_loss'):
-                totals=outcomes.setdefault(value,[0,0]);totals[0]+=int(kind=='attempt_ok');totals[1]+=1
-            elif kind=='hop_latency':
-                edge,latency=value;totals=latencies.setdefault(edge,[0.,0]);totals[0]+=latency;totals[1]+=1
+        for at,family,edge,success,latency in self.scheduler.channel_observations:
+            if at<self.seconds-2: continue
+            key=(family,edge)
+            totals=outcomes.setdefault(key,[0,0]);totals[0]+=int(success);totals[1]+=1
+            if latency is not None:
+                totals=latencies.setdefault(key,[0.,0]);totals[0]+=latency;totals[1]+=1
         for d in self.nodes.values():
             if not d.available: continue
             paths=[]
@@ -672,11 +681,12 @@ class SwarmEngine:
                 if family=='direct': links=[self.attacks.impair(self.radio_links[pair(d.id,'base')],'direct',(d.id,))] if pair(d.id,'base') in self.radio_links else []
                 if family=='satellite' and hops:
                     sat=self.satellite_link(d.id); channel=('satellite',*pair(d.id,'base'))
-                    pdr=outcomes[channel][0]/outcomes[channel][1] if outcomes.get(channel,[0,0])[1]>=8 else 1-sat.loss
+                    key=(family,pair(d.id,'base'))
+                    pdr=outcomes[key][0]/outcomes[key][1] if outcomes.get(key,[0,0])[1]>=8 else 1-sat.loss
                     values=dict(rssi=sat.rssi,pdr=pdr,sinr=sat.sinr,latency=sat.latency_ms+self.scheduler.queued[channel]*2,packet_loss=1-pdr)
                 elif links:
-                    pdr=math.prod(outcomes[pair(l.a,l.b)][0]/outcomes[pair(l.a,l.b)][1] if outcomes.get(pair(l.a,l.b),[0,0])[1]>=8 else 1-l.loss for l in links)
-                    latency=sum(latencies[pair(l.a,l.b)][0]/latencies[pair(l.a,l.b)][1] if pair(l.a,l.b) in latencies else l.latency_ms+self.scheduler.queued[pair(l.a,l.b)]*2 for l in links)
+                    pdr=math.prod(outcomes[(family,pair(l.a,l.b))][0]/outcomes[(family,pair(l.a,l.b))][1] if outcomes.get((family,pair(l.a,l.b)),[0,0])[1]>=8 else 1-l.loss for l in links)
+                    latency=sum(latencies[(family,pair(l.a,l.b))][0]/latencies[(family,pair(l.a,l.b))][1] if (family,pair(l.a,l.b)) in latencies else l.latency_ms+self.scheduler.queued[pair(l.a,l.b)]*2 for l in links)
                     values=dict(rssi=min(l.rssi for l in links),pdr=pdr,sinr=min(l.sinr for l in links),latency=latency,packet_loss=1-pdr)
                 else: values=dict(rssi=-125.,pdr=0.,sinr=-10.,latency=1000.,packet_loss=1.)
                 paths.append(dict(path_id=family,**values))

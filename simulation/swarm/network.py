@@ -56,7 +56,8 @@ def build_adjacency(links,nodes,blocked=frozenset(),omit=frozenset(),control=Fal
 
 def shortest_path(links,source,destination,nodes,blocked=frozenset(),omit=frozenset(),control=False,adjacency=None):
     if adjacency is None: adjacency=build_adjacency(links,nodes,blocked,omit,control)
-    queue=[(0.,(source,))]; visited=set()
+    if source!=destination and (source not in adjacency or destination not in adjacency): return []
+    queue=[(0.,(source,))]; visited=set(); best={source:(0.,(source,))}
     while queue:
         cost,path=heapq.heappop(queue); current=path[-1]
         if current in visited: continue
@@ -64,7 +65,11 @@ def shortest_path(links,source,destination,nodes,blocked=frozenset(),omit=frozen
         if current=='base' and current!=source: continue
         visited.add(current)
         for peer,weight in adjacency.get(current,[]):
-            if peer not in visited: heapq.heappush(queue,(cost+weight,path+(peer,)))
+            if peer not in visited:
+                candidate=(cost+weight,path+(peer,))
+                if peer not in best or candidate<best[peer]:
+                    best[peer]=candidate
+                    heapq.heappush(queue,candidate)
     return []
 
 @dataclass
@@ -114,6 +119,9 @@ class PacketScheduler:
         self.generated=0; self.delivered=0; self.dropped=0; self.bytes_delivered=0; self.latency_sum=0.
         self.policy_dropped=defaultdict(int); self.radio_dropped=defaultdict(int)
         self.observations=deque(maxlen=20000)
+        # Measurement cohorts are transport-specific; physical reservations below
+        # intentionally remain shared by Direct and Mesh on the same radio.
+        self.channel_observations=deque(maxlen=20000)
         self.transmitted=defaultdict(int); self.received=defaultdict(int); self.forwarded=defaultdict(int)
         self.completions=deque(maxlen=20000)
         self.event_time=None
@@ -209,6 +217,7 @@ class PacketScheduler:
                 self.release(p,at); p.status='queued'
                 if self.draw(p,edge,'loss')<link.loss:
                     self.radio_dropped[a]+=1; self.observations.append((at,a,'attempt_loss',edge))
+                    self.channel_observations.append((at,p.family,pair(a,b),False,None))
                     self.event('packet_attempt_lost',p,at,from_node=a,to_node=b)
                     if p.category in self.RELIABLE and p.retries<self.cfg['retries']:
                         p.retries+=1; self.event('packet_retry',p,at,from_node=a,to_node=b)
@@ -220,6 +229,7 @@ class PacketScheduler:
                     if p.claimed_source_mac: self.observations.append((at,p.source,'source_identity',p.claimed_source_mac))
                 self.observations.append((at,a,'attempt_ok',edge))
                 self.observations.append((at,a,'hop_latency',(edge,(at-p.start_at)*1000)))
+                self.channel_observations.append((at,p.family,pair(a,b),True,(at-p.start_at)*1000))
                 if p.hop>0:
                     self.forwarded[a]+=1; self.observations.append((at,a,'relay_ok',None))
                 p.history.append(dict(from_node=a,to_node=b,start_at=p.start_at,end_at=at,attempt=p.attempt))

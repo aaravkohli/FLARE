@@ -9,17 +9,26 @@ import sys
 import tempfile
 import time
 from simulation.swarm.session import bootstrap
+from scripts.audit_support import runtime_copy
 
 
 def main():
     parser=argparse.ArgumentParser();parser.add_argument('--directory',type=Path)
     parser.add_argument('--flower-rounds',type=int,default=0)
+    parser.add_argument('--audit-smoke-training',action='store_true',help='Private copy only: one local epoch, five clients')
     parser.add_argument('--production',action='store_true',default=os.getenv('FLARE_TEST_PRODUCTION')=='1')
     for name,default in [('simulation',18080),('api',18000),('frontend',15173),('flower',18090)]:parser.add_argument('--'+name+'-port',type=int,default=default)
     args=parser.parse_args()
     if sys.version_info[:2]!=(3,11): raise RuntimeError('Integration services require repository venv/bin/python (Python 3.11)')
     root=Path(__file__).resolve().parents[1];directory=args.directory or Path(tempfile.mkdtemp(prefix='flare-swarm-repair-'));directory.mkdir(parents=True,exist_ok=True)
-    bootstrap(root/'config/fleet_registry.yaml',directory/'fleet_registry.yaml')
+    runtime_root=runtime_copy(root,directory/'project')
+    if args.audit_smoke_training:
+        import yaml
+        filename=runtime_root/'config/fl_config.yaml';configuration=yaml.safe_load(filename.read_text())
+        configuration['training']['local_epochs']=1
+        configuration['federation'].update(min_clients=5,fraction_fit=1.0)
+        filename.write_text(yaml.safe_dump(configuration,sort_keys=False))
+    bootstrap(runtime_root/'config/fleet_registry.yaml',directory/'fleet_registry.yaml')
     env=os.environ.copy();env.update({'OMP_NUM_THREADS':'1','MKL_NUM_THREADS':'1','OPENBLAS_NUM_THREADS':'1','MODE':'simulation','FLARE_SWARM_ENABLED':'1','SDN_PORT':str(args.simulation_port),'SDN_HOST':'127.0.0.1',
         'FLARE_SIMULATION_URL':f'http://127.0.0.1:{args.simulation_port}','FLARE_FLEET_REGISTRY':str(directory/'fleet_registry.yaml'),
         'DATABASE_PATH':str(directory/'decisions.db'),'FL_SERVER_ADDRESS':f'127.0.0.1:{args.flower_port}',
@@ -29,8 +38,8 @@ def main():
         'FLARE_FL_METRICS_CSV':str(directory/'fl_metrics.csv'),'FLARE_FL_TRUST_STATE':str(directory/'trust.json'),
         'FLARE_BYZANTINE_STATE_PATH':str(directory/'byzantine.json'),'VITE_API_BASE_URL':f'http://127.0.0.1:{args.api_port}','AJ_CORS_ORIGINS':f'http://127.0.0.1:{args.frontend_port},http://localhost:{args.frontend_port}'})
     processes=[];owned=[]
-    def launch(name,command):
-        log=(directory/(name+'.log')).open('w');p=subprocess.Popen(command,cwd=root,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True);log.close()
+    def launch(name,command,working_directory=None):
+        log=(directory/(name+'.log')).open('w');p=subprocess.Popen(command,cwd=working_directory or runtime_root,env=env,stdout=log,stderr=subprocess.STDOUT,start_new_session=True);log.close()
         processes.append(p);owned.append({'name':name,'pid':p.pid,'command':command})
         (directory/'owned-processes.json').write_text(json.dumps({'supervisor':os.getpid(),'children':owned},indent=2))
         return p
@@ -66,7 +75,7 @@ def main():
                 subprocess.run(['npm','--prefix','frontend-react','run','build','--','--outDir',str(output),'--emptyOutDir'],cwd=root,env=env,stdout=log,stderr=subprocess.STDOUT,check=True)
             frontend_command=['npm','--prefix','frontend-react','run','preview','--','--host','127.0.0.1','--port',str(args.frontend_port),'--strictPort','--outDir',str(output)]
         (directory/'frontend-mode.json').write_text(json.dumps({'mode':'production' if args.production else 'development','api_url':env['VITE_API_BASE_URL'],'command':frontend_command},indent=2))
-        launch('frontend',frontend_command)
+        launch('frontend',frontend_command,root)
         if args.flower_rounds:
             launch('flower',[sys.executable,'fl/server.py','--rounds',str(args.flower_rounds)])
             launch('clients',[sys.executable,'-m','fl.client_manager','--server-address',f'127.0.0.1:{args.flower_port}','--reconcile-interval','.2'])

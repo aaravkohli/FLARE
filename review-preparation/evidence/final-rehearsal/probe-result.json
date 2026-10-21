@@ -1,0 +1,89 @@
+{
+  "schema_version": "mission_packet_event_v1",
+  "session_id": "95ba2c328206443ea2afe0e41c0dc602",
+  "cursor": 12,
+  "simulation_time": 0.04815747959331477,
+  "kind": "packet_result",
+  "data": {
+    "id": "p1",
+    "source": "drone_1",
+    "destination": "sim_uav_006",
+    "category": "sensor",
+    "size_bytes": 512,
+    "route": [
+      "drone_1",
+      "drone_2",
+      "drone_3",
+      "drone_4",
+      "drone_5",
+      "sim_uav_006"
+    ],
+    "created_at": 0,
+    "expires_at": 20,
+    "revision": 2,
+    "family": "mesh",
+    "hop": 5,
+    "start_at": 0.03889537067383031,
+    "end_at": 0.04815747959331477,
+    "retries": 0,
+    "status": "delivered",
+    "reason": null,
+    "correlation_id": "probe",
+    "sequence": 1,
+    "claimed_source_mac": "00:00:00:00:00:02",
+    "completed_at": 0.04815747959331477,
+    "policy_source": "drone_1",
+    "repair_count": 0,
+    "attempt": 5,
+    "restrictions": {
+      "backup_hops": [
+        "drone_1",
+        "sim_uav_010",
+        "sim_uav_009",
+        "sim_uav_008",
+        "sim_uav_007",
+        "sim_uav_006"
+      ]
+    },
+    "event_at": 0.04815747959331477,
+    "history": [
+      {
+        "from_node": "drone_1",
+        "to_node": "drone_2",
+        "start_at": 0,
+        "end_at": 0.009551539703975973,
+        "attempt": 1
+      },
+      {
+        "from_node": "drone_2",
+        "to_node": "drone_3",
+        "start_at": 0.009551539703975973,
+        "end_at": 0.019297518901751243,
+        "attempt": 2
+      },
+      {
+        "from_node": "drone_3",
+        "to_node": "drone_4",
+        "start_at": 0.019297518901751243,
+        "end_at": 0.02933045266700651,
+        "attempt": 3
+      },
+      {
+        "from_node": "drone_4",
+        "to_node": "drone_5",
+        "start_at": 0.02933045266700651,
+        "end_at": 0.03889537067383031,
+        "attempt": 4
+      },
+      {
+        "from_node": "drone_5",
+        "to_node": "sim_uav_006",
+        "start_at": 0.03889537067383031,
+        "end_at": 0.04815747959331477,
+        "attempt": 5
+      }
+    ],
+    "protocol": "udp_simulated"
+  },
+  "evidence_source": "packet_simulation"
+}

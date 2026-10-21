@@ -13,17 +13,19 @@ async def main():
     response=requests.post(api+'/auth/token',data={'username':os.getenv('AJ_ADMIN_USERNAME','admin'),'password':os.getenv('AJ_ADMIN_PASSWORD','antijam2026')},timeout=5)
     response.raise_for_status();token=response.json()['access_token']
     url=api.replace('http','ws',1)+'/ws'
-    async with websockets.connect(url) as socket:
+    async with websockets.connect(url,max_size=16*1024*1024) as socket:
         await socket.send(json.dumps({'type':'auth','token':'invalid'}))
         try:await asyncio.wait_for(socket.recv(),5)
         except websockets.ConnectionClosed as exc:assert exc.code==4401
         else:raise AssertionError('Unauthenticated stream was accepted')
-    frames=[]
+    frames=[];max_frame_bytes=0
     async def read(socket):
+        nonlocal max_frame_bytes
         while True:
-            message=json.loads(await asyncio.wait_for(socket.recv(),10))
+            payload=await asyncio.wait_for(socket.recv(),10);max_frame_bytes=max(max_frame_bytes,len(payload.encode() if isinstance(payload,str) else payload))
+            message=json.loads(payload)
             if message.get('type')=='mission_snapshot':return message['data']
-    async with websockets.connect(url) as socket:
+    async with websockets.connect(url,max_size=16*1024*1024) as socket:
         await socket.send(json.dumps({'type':'auth','token':token}))
         assert json.loads(await socket.recv())=={'type':'auth','status':'ok'}
         for _ in range(5):frames.append(await read(socket))
@@ -32,13 +34,13 @@ async def main():
     cursors=[e['cursor'] for f in frames for e in f['events']]
     assert cursors==sorted(set(cursors))
     assert all(len(f['events'])<=200 and len(f['packets'])<=200 for f in frames)
-    async with websockets.connect(url) as socket:
+    async with websockets.connect(url,max_size=16*1024*1024) as socket:
         await socket.send(json.dumps({'type':'auth','token':token}))
         assert json.loads(await socket.recv())['status']=='ok'
         current=await read(socket)
     assert current['session_id']==frames[-1]['session_id'] and current['simulation_time']>=frames[-1]['simulation_time']
-    report={'passed':True,'evidence':'controlled_simulation','unauthorized_close':4401,'frames':len(frames),'events':len(cursors),'ordered':True,'reconnect_resynchronized':True,'session_id':current['session_id'],'node_count':len(current['nodes']),'command':[sys.executable,'-m','scripts.swarm_socket_validation']}
-    Path('/private/tmp/swarm-socket-validation.json').write_text(json.dumps(report,indent=2))
+    report={'passed':True,'evidence':'controlled_simulation','unauthorized_close':4401,'max_frame_bytes':max_frame_bytes,'client_frame_limit_bytes':16*1024*1024,'frames':len(frames),'events':len(cursors),'ordered':True,'reconnect_resynchronized':True,'session_id':current['session_id'],'node_count':len(current['nodes']),'command':[sys.executable,'-m','scripts.swarm_socket_validation']}
+    Path(os.getenv('FLARE_SOCKET_REPORT','/private/tmp/swarm-socket-validation.json')).write_text(json.dumps(report,indent=2))
     print(json.dumps(report))
 
 if __name__=='__main__':asyncio.run(main())

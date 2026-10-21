@@ -1,0 +1,293 @@
+{
+  "created_at_utc": "2026-10-21T04:32:24.723566+00:00",
+  "scope": "Final panel review preparation; fresh bounded evidence, not exhaustive audit completion",
+  "tests": {
+    "python": {
+      "passed": 888,
+      "warnings": 5,
+      "log": "/private/tmp/flare-application-audit-20261021/python-complete.log"
+    },
+    "frontend": {
+      "passed": 168,
+      "log": "/private/tmp/flare-application-audit-20261021/frontend-audit-final-units.log"
+    },
+    "production_browser": {
+      "latest": {
+        "startTime": "2026-10-21T04:15:24.699Z",
+        "duration": 673714.856,
+        "expected": 34,
+        "skipped": 1,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "earlier_full_run": {
+        "startTime": "2026-10-21T03:11:55.324Z",
+        "duration": 476565.211,
+        "expected": 36,
+        "skipped": 1,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "note": "Latest broad browser run has two failures. Do not describe all browser workflows as passing. Focused panel rehearsal passed."
+    }
+  },
+  "limitations": [
+    "No fresh real RF/hardware validation",
+    "Docker daemon unavailable; Ryu/Mininet and ns-3 runtime gates blocked",
+    "Adaptive selection and asynchronous buffering not applied by live Flower runtime",
+    "Full-density 100-UAV simulation falls behind wall clock despite passing renderer FPS targets",
+    "Default benchmark measures t in [5,60), a 55-second packet cohort; no formula was changed",
+    "Current BiLSTM field accuracy cannot be inferred from synthetic traffic detector results"
+  ],
+  "models": {
+    "fl_model.pth": {
+      "sha256": "9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+      "metadata": {
+        "checkpoint_sha256": "9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "created_at": "2026-09-15T02:23:30.975353+00:00",
+        "data_definition": "grouped_temporal_v1",
+        "federation_round": 20,
+        "input_features": 5,
+        "metadata_version": 1,
+        "model_config_sha256": "65ae583ce1d38f77fbe1e9c975ab6cfbeabd285d298b90c46fde6ef00000fcd6",
+        "num_attack_classes": 5,
+        "num_paths": 3,
+        "sequence_length": 10,
+        "sequence_stride": 1
+      }
+    },
+    "rl_model_v3.zip": {
+      "sha256": "6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+      "metadata": {
+        "action_count": 4,
+        "algorithm": "dqn",
+        "checkpoint_sha256": "6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "created_at": "2026-09-04T04:47:07.767682+00:00",
+        "max_episode_steps": 500,
+        "metadata_version": 3,
+        "observation_definition": "routing_state_v3",
+        "observation_dim": 18,
+        "reward_contract_sha256": "38d1b1168f89787f61e38781bf4345dbe8d20d3f2e24b9dd6181e61a696f147b",
+        "reward_definition": "routing_security_qos_v3",
+        "training_mode": "synthetic_cross_layer_security",
+        "training_provenance": {
+          "actions": [
+            "direct",
+            "satellite",
+            "mesh",
+            "hold"
+          ],
+          "security_inputs": [
+            "client_trust",
+            "insider_risk",
+            "containment_score",
+            "evidence_freshness"
+          ]
+        },
+        "training_seed": 42,
+        "training_timesteps": 100000
+      }
+    },
+    "rl_model.zip": {
+      "sha256": "8764a63ecf610be83f7e4749110f3b285ecc97ccea06747ea7ec800a5f209c26",
+      "metadata": {
+        "action_count": 3,
+        "algorithm": "dqn",
+        "checkpoint_sha256": "8764a63ecf610be83f7e4749110f3b285ecc97ccea06747ea7ec800a5f209c26",
+        "created_at": "2026-08-15T04:26:08.414178+00:00",
+        "max_episode_steps": 500,
+        "metadata_version": 2,
+        "observation_definition": "routing_state_v2",
+        "observation_dim": 14,
+        "reward_contract_sha256": "f4aa3c7a8b58c5e9de667733200e1faf43d9b9a19a6aaa919e0b37507b9ef6c4",
+        "reward_definition": "routing_qos_v2",
+        "training_mode": "synchronized_trace",
+        "training_provenance": {
+          "evaluation_episode_count": 50,
+          "evaluation_scenarios": [
+            "iid"
+          ],
+          "evaluation_trace_sha256": "b2887f5b718d014d05cf981ac64793cce4bf5b90bd39974f9e470ec5baf60b69",
+          "trace_version": "synchronized_three_path_v1",
+          "training_episode_count": 200,
+          "training_scenarios": [
+            "iid"
+          ],
+          "training_trace_sha256": "7f4e5be1736e688649828c8df0712444304b137fe79b33e74854ec0ffb31aadb"
+        },
+        "training_seed": 42,
+        "training_timesteps": 60000
+      }
+    }
+  },
+  "rendering": {
+    "2d": {
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "reports": [
+        {
+          "view": "2d",
+          "duration_s": 60,
+          "clock_before": [
+            "T+0.0s"
+          ],
+          "clock_after": [
+            "T+19.0s"
+          ],
+          "render_buffers": [
+            {
+              "packet_event_count": "20000",
+              "packet_result_count": "80"
+            }
+          ],
+          "retained_heap_before": 19667836,
+          "retained_heap_after": 50807604,
+          "canvases": [
+            {
+              "buffer_capacity": 72000,
+              "frame_count": 3436,
+              "dpr": 1,
+              "canvas_pixels": [
+                1082,
+                536
+              ],
+              "canvas_css": [
+                1082,
+                536
+              ],
+              "gpu": null,
+              "packet_visual": "authoritative-packet-events",
+              "average_fps": 58.470774822851936,
+              "fifth_percentile_fps": 59.523809523812105
+            }
+          ]
+        }
+      ]
+    },
+    "3d": {
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "reports": [
+        {
+          "view": "3d",
+          "duration_s": 60,
+          "clock_before": [
+            "T+0.0s"
+          ],
+          "clock_after": [
+            "T+21.0s"
+          ],
+          "render_buffers": [
+            {
+              "packet_event_count": "20000",
+              "packet_result_count": "80"
+            }
+          ],
+          "retained_heap_before": 25860488,
+          "retained_heap_after": 53484644,
+          "canvases": [
+            {
+              "buffer_capacity": 72000,
+              "frame_count": 3382,
+              "dpr": 1,
+              "canvas_pixels": [
+                919,
+                455
+              ],
+              "canvas_css": [
+                1082,
+                536
+              ],
+              "gpu": {
+                "vendor": "Google Inc. (Apple)",
+                "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+              },
+              "packet_visual": "authoritative-packet-events",
+              "site_details": "true",
+              "quality": "balanced",
+              "draw_calls": "202",
+              "geometries": "137",
+              "textures": "8",
+              "average_fps": 56.3219845589166,
+              "fifth_percentile_fps": 30.030030030030687
+            }
+          ]
+        }
+      ]
+    },
+    "compare": {
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "reports": [
+        {
+          "view": "compare",
+          "duration_s": 60,
+          "clock_before": [
+            "T+1.0s",
+            "T+1.0s"
+          ],
+          "clock_after": [
+            "T+29.0s",
+            "T+29.0s"
+          ],
+          "render_buffers": [
+            {
+              "packet_event_count": "0",
+              "packet_result_count": "0"
+            }
+          ],
+          "retained_heap_before": 19282528,
+          "retained_heap_after": 21681140,
+          "canvases": [
+            {
+              "buffer_capacity": 72000,
+              "frame_count": 3603,
+              "dpr": 1,
+              "canvas_pixels": [
+                693,
+                420
+              ],
+              "canvas_css": [
+                693,
+                420
+              ],
+              "gpu": null,
+              "packet_visual": "authoritative-packet-events",
+              "average_fps": 60.0022981729525,
+              "fifth_percentile_fps": 59.88023952094243
+            },
+            {
+              "buffer_capacity": 72000,
+              "frame_count": 3603,
+              "dpr": 1,
+              "canvas_pixels": [
+                694,
+                420
+              ],
+              "canvas_css": [
+                694,
+                420
+              ],
+              "gpu": null,
+              "packet_visual": "authoritative-packet-events",
+              "average_fps": 60.0022981729525,
+              "fifth_percentile_fps": 59.88023952094243
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

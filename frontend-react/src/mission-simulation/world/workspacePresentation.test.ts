@@ -1,3 +1,4 @@
+import {fleetSizeOptions} from './workspacePresentation.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { activityItems, formatMetric, mergeEvents, metricDifference, resultRows } from './workspacePresentation.ts';
@@ -28,4 +29,11 @@ test('activity merges cursor duplicates and groups command stages without fabric
  const items=activityItems('session',[submitted,submitted,ack],[{command_id:'cmd',action:'hold',outcomes:{a:{status:'acknowledged'}}},{command_id:'retained',action:'resume',outcomes:{a:{status:'expired'}}}],id=>id);
  assert.equal(items.length,2);assert.equal(items[0].time,2);assert.equal(items[0].events.length,2);assert.match(items[0].summary,/acknowledged/);assert.equal(items[1].time,null);
  assert.notEqual(items[0].id,activityItems('other',[submitted,ack],[],id=>id)[0].id);
+});
+
+test('fleet settings expose all ten research sizes and preserve an authoritative non-preset count',()=>{
+ const sizes=fleetSizeOptions(37);
+ assert.deepEqual(sizes,[10,20,30,37,40,50,60,70,75,80,90,100]);
+ assert.equal(fleetSizeOptions(40).filter(value=>value===40).length,1);
+ assert.equal(fleetSizeOptions(101).includes(101),false);
 });

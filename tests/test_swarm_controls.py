@@ -59,6 +59,64 @@ def test_fhss_mitigation_coexists_and_clearing_preserves_containment(mission):
     e.clear_attacks(ClearMissionAttacks(session_id=e.session_id,expected_revision=e.revision))
     assert not e.attacks.active and e.nodes[n].containment=='quarantined'
 
+def test_expiry_refreshes_impaired_links_without_manual_clear_or_periodic_discovery(mission):
+    e=mission;n=next(iter(e.nodes))
+    # Keep a strong physical link fixed; unrelated policy exclusions remain owned
+    # by the controller. Deliberately delay periodic discovery to expose stale caches.
+    for d in e.nodes.values(): d.mode='hold'; d.velocity=[0.,0.,0.]
+    e.nodes[n].position=[-260.,80.,190.]
+    e.cfg['network_interval_s']=10.;e.rebuild()
+    baseline=e.radio_links[pair(n,'base')]
+    e.blocked.add(pair(n,list(e.nodes)[1]))
+    e.security[n]={'attack_type':'spot','scores':[.9,.1,.2]}
+    inject(e,'spot',paths=['mesh'],duration=.1)
+    assert e.links[pair(n,'base')].loss>baseline.loss
+    revision=e.network_revision;e.playing=True;e.tick(.15)
+    assert not e.attacks.active and e.attacks.history[-1]['status']=='expired'
+    assert e.network_revision>revision and e.seconds<e.cfg['network_interval_s']
+    assert e.links[pair(n,'base')].loss==pytest.approx(baseline.loss)
+    assert e.metrics()[n]['ew_status']=={'active_attack':'none','jammed_paths':[]}
+    assert pair(n,list(e.nodes)[1]) in e.blocked
+    assert e.security[n]['scores']==[.9,.1,.2]
+
+def test_automatic_expiry_preserves_containment(mission):
+    e=mission;n=next(iter(e.nodes));e.contain(n,'quarantined','detector')
+    inject(e,'spot',paths=['direct'],duration=.1);e.playing=True;e.tick(.15)
+    assert not e.attacks.active and e.nodes[n].containment=='quarantined'
+
+def test_direct_jam_does_not_contaminate_mesh_measurements_on_shared_edge(mission):
+    e=mission;n=next(iter(e.nodes))
+    inject(e,'spot',paths=['direct']);lossless(e)
+    # Direct and Mesh may use the same endpoint pair without sharing an RF
+    # impairment or a measurement cohort. They still share serialization airtime.
+    edge=pair(n,'base');e.radio_links[edge].sinr=10
+    baseline=e.links[edge].loss
+    e.scheduler.cfg['jitter_ms']=0
+    packets=[]
+    for family in ('direct','mesh'):
+        for _ in range(16):
+            packets.append(e.scheduler.emit(n,'base','sensor',512,[n,'base'],0,e.revision,family=family))
+    e.scheduler.step(1,e.packet_link,lambda *_:True);e.seconds=1
+    paths={p['path_id']:p for p in e.metrics()[n]['paths']}
+    assert paths['direct']['pdr']<.1
+    assert paths['mesh']['pdr']==1
+    assert e.links[edge].loss==baseline
+    assert paths['mesh']['sinr']==30
+    # Neither packet accounting nor the detector's observation stream is erased.
+    assert sum(r[2] in ('attempt_ok','attempt_loss') for r in e.scheduler.observations)==32
+    assert e.scheduler.generated==e.scheduler.delivered+e.scheduler.dropped+len(e.scheduler.packets)
+    assert packets[16].start_at>packets[0].start_at
+
+def test_family_measurements_fall_back_after_observation_window(mission):
+    e=mission;n=next(iter(e.nodes));lossless(e)
+    for _ in range(8): e.scheduler.emit(n,'base','sensor',512,[n,'base'],0,e.revision,family='direct')
+    edge=pair(n,'base');e.radio_links[edge].loss=1
+    e.scheduler.step(1,e.packet_link,lambda *_:True);e.seconds=1
+    paths={p['path_id']:p for p in e.metrics()[n]['paths']}
+    assert paths['direct']['pdr']==0 and paths['mesh']['pdr']==1
+    e.seconds=4;e.radio_links[edge].loss=0
+    assert all(p['pdr']==1 for p in e.metrics()[n]['paths'] if p['path_id']!='satellite')
+
 @pytest.mark.parametrize('profile,group',[('dos','ew'),('control_flood','traffic'),('replay','traffic'),('spoofing','ew'),('telemetry_falsification','traffic')])
 def test_packet_outcomes_generate_independent_observations(mission,profile,group):
     e=mission;n=next(iter(e.nodes));inject(e,profile,group,paths=[] if group=='traffic' else ['mesh']);lossless(e)

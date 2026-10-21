@@ -1,0 +1,682 @@
+{
+  "id": "296ffe0cccdd45a9a1c143b94658d125",
+  "mode": "benchmark",
+  "configuration": {
+    "mode": "benchmark",
+    "topologies": [
+      "full_mesh",
+      "partial_mesh",
+      "star",
+      "ring",
+      "tree",
+      "cluster_mesh",
+      "grid",
+      "random_geometric",
+      "hybrid_mesh",
+      "self_healing_mesh"
+    ],
+    "count": 10,
+    "seeds": [
+      7
+    ],
+    "scenario": "normal",
+    "range_m": 350.0,
+    "duration_s": 10.0,
+    "warmup_s": 5.0
+  },
+  "simulation_config": {
+    "default_count": 30,
+    "max_count": 100,
+    "seed": 42,
+    "topology": "self_healing_mesh",
+    "formation": "distributed",
+    "fixed_step_s": 0.05,
+    "network_interval_s": 0.2,
+    "discovery_timeout_s": 0.6,
+    "radio": {
+      "range_m": 1000.0,
+      "reference_rssi_dbm": -36.0,
+      "path_loss_exponent": 2.2,
+      "noise_dbm": -100.0,
+      "bandwidth_mbps": 12.0,
+      "minimum_sinr_db": 4.0,
+      "max_loss": 0.35,
+      "propagation_ms": 8.0
+    },
+    "packets": {
+      "queue_limit": 64,
+      "capacity": 10000,
+      "ttl_s": 20.0,
+      "retries": 3,
+      "jitter_ms": 2.0,
+      "retry_backoff_ms": 2.0
+    },
+    "fl": {
+      "client_pool_size": 5,
+      "transfer_timeout_s": 90.0
+    }
+  },
+  "fleet_records": [
+    {
+      "drone_id": "drone_1",
+      "display_name": "Drone 1",
+      "index": 1,
+      "mac": "00:00:00:00:00:02",
+      "access_port": 4,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "drone_2",
+      "display_name": "Drone 2",
+      "index": 2,
+      "mac": "00:00:00:00:00:03",
+      "access_port": 5,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": -8.0,
+        "pdr_offset": -0.05,
+        "latency_factor": 1.3
+      }
+    },
+    {
+      "drone_id": "drone_3",
+      "display_name": "Drone 3",
+      "index": 3,
+      "mac": "00:00:00:00:00:04",
+      "access_port": 6,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": -15.0,
+        "pdr_offset": -0.1,
+        "latency_factor": 1.7
+      }
+    },
+    {
+      "drone_id": "drone_4",
+      "display_name": "Drone 4",
+      "index": 4,
+      "mac": "02:00:00:00:00:04",
+      "access_port": 7,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "drone_5",
+      "display_name": "drone 5",
+      "index": 5,
+      "mac": "02:00:00:00:00:05",
+      "access_port": 8,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_006",
+      "display_name": "UAV-006",
+      "index": 6,
+      "mac": "02:fa:00:00:00:06",
+      "access_port": 9,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_007",
+      "display_name": "UAV-007",
+      "index": 7,
+      "mac": "02:fa:00:00:00:07",
+      "access_port": 10,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_008",
+      "display_name": "UAV-008",
+      "index": 8,
+      "mac": "02:fa:00:00:00:08",
+      "access_port": 11,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_009",
+      "display_name": "UAV-009",
+      "index": 9,
+      "mac": "02:fa:00:00:00:09",
+      "access_port": 12,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_010",
+      "display_name": "UAV-010",
+      "index": 10,
+      "mac": "02:fa:00:00:00:0a",
+      "access_port": 13,
+      "enabled": true,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_011",
+      "display_name": "UAV-011",
+      "index": 11,
+      "mac": "02:fa:00:00:00:0b",
+      "access_port": 14,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_012",
+      "display_name": "UAV-012",
+      "index": 12,
+      "mac": "02:fa:00:00:00:0c",
+      "access_port": 15,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_013",
+      "display_name": "UAV-013",
+      "index": 13,
+      "mac": "02:fa:00:00:00:0d",
+      "access_port": 16,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_014",
+      "display_name": "UAV-014",
+      "index": 14,
+      "mac": "02:fa:00:00:00:0e",
+      "access_port": 17,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_015",
+      "display_name": "UAV-015",
+      "index": 15,
+      "mac": "02:fa:00:00:00:0f",
+      "access_port": 18,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_016",
+      "display_name": "UAV-016",
+      "index": 16,
+      "mac": "02:fa:00:00:00:10",
+      "access_port": 19,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_017",
+      "display_name": "UAV-017",
+      "index": 17,
+      "mac": "02:fa:00:00:00:11",
+      "access_port": 20,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_018",
+      "display_name": "UAV-018",
+      "index": 18,
+      "mac": "02:fa:00:00:00:12",
+      "access_port": 21,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_019",
+      "display_name": "UAV-019",
+      "index": 19,
+      "mac": "02:fa:00:00:00:13",
+      "access_port": 22,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_020",
+      "display_name": "UAV-020",
+      "index": 20,
+      "mac": "02:fa:00:00:00:14",
+      "access_port": 23,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_021",
+      "display_name": "UAV-021",
+      "index": 21,
+      "mac": "02:fa:00:00:00:15",
+      "access_port": 24,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_022",
+      "display_name": "UAV-022",
+      "index": 22,
+      "mac": "02:fa:00:00:00:16",
+      "access_port": 25,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_023",
+      "display_name": "UAV-023",
+      "index": 23,
+      "mac": "02:fa:00:00:00:17",
+      "access_port": 26,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_024",
+      "display_name": "UAV-024",
+      "index": 24,
+      "mac": "02:fa:00:00:00:18",
+      "access_port": 27,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_025",
+      "display_name": "UAV-025",
+      "index": 25,
+      "mac": "02:fa:00:00:00:19",
+      "access_port": 28,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_026",
+      "display_name": "UAV-026",
+      "index": 26,
+      "mac": "02:fa:00:00:00:1a",
+      "access_port": 29,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_027",
+      "display_name": "UAV-027",
+      "index": 27,
+      "mac": "02:fa:00:00:00:1b",
+      "access_port": 30,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_028",
+      "display_name": "UAV-028",
+      "index": 28,
+      "mac": "02:fa:00:00:00:1c",
+      "access_port": 31,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_029",
+      "display_name": "UAV-029",
+      "index": 29,
+      "mac": "02:fa:00:00:00:1d",
+      "access_port": 32,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    },
+    {
+      "drone_id": "sim_uav_030",
+      "display_name": "UAV-030",
+      "index": 30,
+      "mac": "02:fa:00:00:00:1e",
+      "access_port": 33,
+      "enabled": false,
+      "rf_profile": {
+        "rssi_offset": 0.0,
+        "pdr_offset": 0.0,
+        "latency_factor": 1.0
+      }
+    }
+  ],
+  "source_sha256": "eb59108c6e4adac8367b572ad86f9d51270eb7bf81b09ea6210fe5d6e9dd57f5",
+  "simulator_version": "flare_mesh_v2",
+  "routing_policy": "mesh_only_trust_aware_shortest_path",
+  "evidence": "packet_simulation",
+  "scenario_schedule": [],
+  "model_inference": "not_run_reference_policy",
+  "results": [
+    {
+      "configuration_sha256": "a0105c4c852651ff54b525ccf02200cd2990c0e3ef707000b4c9176f810b6b3e",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "full_mesh",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 9.597987744164627,
+      "jitter_ms": 0.7395330841470038,
+      "throughput_mbps": 0.04096,
+      "average_hops": 1.0,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "8d21fed021b4300f3268bcf240220114788d2a0044a859c4c86f74ab4c444063",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "partial_mesh",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 13.33542073152555,
+      "jitter_ms": 0.8773067966358905,
+      "throughput_mbps": 0.04096,
+      "average_hops": 1.4,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "0f525639fcd421c46ea1c02a0a9a4ea38ad8cb467d63acc7f3d2aa931bbdaceb",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "star",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 18.742115898195483,
+      "jitter_ms": 0.798371646459306,
+      "throughput_mbps": 0.04096,
+      "average_hops": 1.8,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "871f5a19f330afded9670b5b8f7c95d6fdccb513a2b1f3c5bdfebf3bddf01074",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "ring",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 49,
+      "dropped": 1,
+      "pdr": 0.98,
+      "average_latency_ms": 47.48361613317262,
+      "jitter_ms": 1.2971688289401284,
+      "throughput_mbps": 0.040140800000000004,
+      "average_hops": 5.0,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "496647b11c60d7de755db83c17da1a6e687dc55959249d848e3b0a36be5c360d",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "tree",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 49,
+      "dropped": 1,
+      "pdr": 0.98,
+      "average_latency_ms": 20.96389087780573,
+      "jitter_ms": 1.190428127612332,
+      "throughput_mbps": 0.040140800000000004,
+      "average_hops": 2.163265306122449,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "f7288d589504c1984cef930dc27934515337219503cf99c863795a75b29e155d",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "cluster_mesh",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 18.742115898195483,
+      "jitter_ms": 0.798371646459306,
+      "throughput_mbps": 0.04096,
+      "average_hops": 1.8,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "4ef806521fed1947ce79d790c659cc50133e032719afc4b576b069935bc26b11",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "grid",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 24.702164535563625,
+      "jitter_ms": 0.8374139066721131,
+      "throughput_mbps": 0.04096,
+      "average_hops": 2.6,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "98711f0e9f3a0f51cec5c08b2b1d184a65ff539a42138f015d8b9bf13e79e567",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "random_geometric",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 9.597987744164627,
+      "jitter_ms": 0.7395330841470038,
+      "throughput_mbps": 0.04096,
+      "average_hops": 1.0,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "5106cb7ccbecf4685b12e8706653cdde78aeb0ba6fa40b119e7148b869881aad",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "hybrid_mesh",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 17.24374028462657,
+      "jitter_ms": 0.8461107783019006,
+      "throughput_mbps": 0.04096,
+      "average_hops": 1.8,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    },
+    {
+      "configuration_sha256": "95aacfba93ce3a21192bcb2b8dc8174e753902a3643226fe6d82536338d6c4ea",
+      "route_convergence_ms": null,
+      "service_recovery_ms": null,
+      "unrecovered_flows": 0,
+      "topology": "self_healing_mesh",
+      "seed": 7,
+      "generated": 50,
+      "delivered": 50,
+      "dropped": 0,
+      "pdr": 1.0,
+      "average_latency_ms": 13.33542073152555,
+      "jitter_ms": 0.8773067966358905,
+      "throughput_mbps": 0.04096,
+      "average_hops": 1.4,
+      "connected_components": 1,
+      "failed_routes": 0,
+      "recovery": [],
+      "conservation": true
+    }
+  ],
+  "status": "completed",
+  "progress": 1.0,
+  "terrain_provenance": {
+    "source": "usgs-3dep-local-simulation",
+    "fallback": false,
+    "extension": "representative_outside_patch",
+    "checksum": "640a089c"
+  },
+  "current_topology": "self_healing_mesh",
+  "current_seed": 7,
+  "trace_files": [
+    "cluster_mesh-7.jsonl.gz",
+    "full_mesh-7.jsonl.gz",
+    "grid-7.jsonl.gz",
+    "hybrid_mesh-7.jsonl.gz",
+    "partial_mesh-7.jsonl.gz",
+    "random_geometric-7.jsonl.gz",
+    "ring-7.jsonl.gz",
+    "self_healing_mesh-7.jsonl.gz",
+    "star-7.jsonl.gz",
+    "tree-7.jsonl.gz"
+  ],
+  "results_sha256": "e1163d0d110c24673aded2132b96839062ebba9e616adbc8c7ba0d6bd812dfa6"
+}

@@ -8,7 +8,7 @@ test('workspace tabs, independent targeting, attack lifecycle, bottom panel and 
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>await (await request.get('http://127.0.0.1:18000/mission/simulation',{headers})).json();
- await missionSetting(center,'Fleet size','10');await missionSetting(center,'Formation','distributed');await resetMission(center);
+ await missionSetting(center,'Fleet size','10');await missionSetting(center,'Formation','distributed');await resetMission(center);await center.getByLabel('Speed',{exact:true}).selectOption('1');
  const attack=center.getByRole('region',{name:'Simulation event'});await expect(attack).toBeVisible();
  await expect(attack.getByLabel('Attack UAV scope')).toHaveValue('inspected');await expect(attack.getByLabel('Communication target',{exact:true})).toHaveValue('direct');await expect(attack.getByLabel('Attack duration',{exact:true})).toHaveValue('15');
  await attack.getByLabel('Attack UAV scope').selectOption('selected');await expect(attack.getByTestId('attack-apply')).toBeDisabled();await attack.getByLabel('Attack UAV scope').selectOption('inspected');

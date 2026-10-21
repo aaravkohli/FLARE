@@ -92,9 +92,10 @@ class AttackConditions:
 
     def step(self, dt):
         e = self.engine
+        expired = False
         for key, a in list(self.active.items()):
             if e.seconds >= a['expires_at']:
-                self.clear(attack_id=key, reason='expired'); continue
+                self.clear(attack_id=key, reason='expired'); expired = True; continue
             profile=a['profile']
             if profile=='sweep': a['effective_paths']=[FAMILIES[int((e.seconds-a['created_at'])/4)%3]]
             if profile=='barrage': a['effective_paths']=list(FAMILIES)
@@ -113,6 +114,7 @@ class AttackConditions:
                 a['outcomes'][n]=dict(jammed_family=paths[0] if paths else None, observed_family=observed)
                 a['effective_paths']=paths
                 self.next_update[state]=e.seconds+(2 if profile=='adaptive' else 1)
+        return expired
 
     def impair(self, link, family, identities):
         """Channel failures affect actual transmission and candidate measurements."""

@@ -1,0 +1,5 @@
+{
+  "status": "Failed",
+  "reason": "published evidence is stale for the current Git/dirty state",
+  "scope": "Historical promoted report is not current-source validation"
+}

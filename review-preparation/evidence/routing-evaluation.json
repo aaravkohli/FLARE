@@ -1,0 +1,183 @@
+{
+  "evidence": "controlled synthetic routing environments; no wireless or hardware result",
+  "v2_checkpoint": "models/rl_model.zip",
+  "v3_checkpoint": "models/rl_model_v3.zip",
+  "v2": {
+    "protocol": {
+      "environment": "DronePathEnv",
+      "reward_definition": "routing_qos_v2",
+      "paired_seeded_traces": true,
+      "base_seed": 42000,
+      "n_episodes": 10,
+      "steps_per_episode": 500,
+      "safety_threat_threshold": 0.8,
+      "all_unsafe_behavior": "least_risk_route"
+    },
+    "policies": {
+      "dqn_runtime": {
+        "mean_episode_reward": 232.32329094683672,
+        "std_episode_reward": 4.6044958437674195,
+        "reward_95ci_half_width": 2.8538960912444367,
+        "min_episode_reward": 227.4668581502707,
+        "max_episode_reward": 239.62409870073515,
+        "mean_switches_per_episode": 205.0,
+        "mean_jammed_selections_per_episode": 4.0,
+        "safety_override_count": 7,
+        "no_safe_route_count": 4,
+        "no_safe_route_pct": 0.08,
+        "action_distribution_pct": {
+          "direct": 61.3,
+          "satellite": 26.74,
+          "mesh": 11.96
+        },
+        "mean_reward_components_per_step": {
+          "throughput_contribution": 0.8816654582079638,
+          "delay_penalty": 0.12390065174460406,
+          "energy_penalty": 0.11720399999999553,
+          "loss_penalty": 0.11441422456968567,
+          "switching_penalty": 0.061499999999999805
+        },
+        "paired_reward_delta_vs_greedy": {
+          "mean": 22.729259618223633,
+          "95ci_half_width": 1.9595950312347985
+        }
+      },
+      "dqn_raw": {
+        "mean_episode_reward": 232.46259152316597,
+        "std_episode_reward": 4.601607959210264,
+        "reward_95ci_half_width": 2.8521061618516703,
+        "min_episode_reward": 227.4668581502707,
+        "max_episode_reward": 239.97150640890317,
+        "mean_switches_per_episode": 204.3,
+        "mean_jammed_selections_per_episode": 4.0,
+        "safety_override_count": 0,
+        "no_safe_route_count": 4,
+        "no_safe_route_pct": 0.08,
+        "action_distribution_pct": {
+          "direct": 61.46,
+          "satellite": 26.64,
+          "mesh": 11.9
+        },
+        "mean_reward_components_per_step": {
+          "throughput_contribution": 0.8815762895401705,
+          "delay_penalty": 0.12394880279660224,
+          "energy_penalty": 0.11695799999999551,
+          "loss_penalty": 0.1144543036972358,
+          "switching_penalty": 0.06128999999999984
+        },
+        "paired_reward_delta_vs_greedy": {
+          "mean": 22.86856019455286,
+          "95ci_half_width": 2.007155247826857
+        }
+      },
+      "greedy_lowest_threat": {
+        "mean_episode_reward": 209.59403132861308,
+        "std_episode_reward": 3.2496282504037417,
+        "reward_95ci_half_width": 2.0141404567403463,
+        "min_episode_reward": 205.48639152196034,
+        "max_episode_reward": 214.28281937824445,
+        "mean_switches_per_episode": 339.8,
+        "mean_jammed_selections_per_episode": 4.0,
+        "safety_override_count": 0,
+        "no_safe_route_count": 4,
+        "no_safe_route_pct": 0.08,
+        "action_distribution_pct": {
+          "direct": 33.5,
+          "satellite": 33.76,
+          "mesh": 32.74
+        },
+        "mean_reward_components_per_step": {
+          "throughput_contribution": 0.9037194110683915,
+          "delay_penalty": 0.11199151765108128,
+          "energy_penalty": 0.1692659999999845,
+          "loss_penalty": 0.10133383076008423,
+          "switching_penalty": 0.10193999999999367
+        }
+      },
+      "myopic_reward": {
+        "mean_episode_reward": 231.78621128070964,
+        "std_episode_reward": 4.0675583258489,
+        "reward_95ci_half_width": 2.521098769751718,
+        "min_episode_reward": 226.80005582809554,
+        "max_episode_reward": 238.43894870825483,
+        "mean_switches_per_episode": 222.4,
+        "mean_jammed_selections_per_episode": 4.0,
+        "safety_override_count": 0,
+        "no_safe_route_count": 4,
+        "no_safe_route_pct": 0.08,
+        "action_distribution_pct": {
+          "direct": 55.9,
+          "satellite": 28.82,
+          "mesh": 15.28
+        },
+        "mean_reward_components_per_step": {
+          "throughput_contribution": 0.8877788849178753,
+          "delay_penalty": 0.12059940143734212,
+          "energy_penalty": 0.12667199999999204,
+          "loss_penalty": 0.11021506091911323,
+          "switching_penalty": 0.06671999999999902
+        }
+      },
+      "static_direct": {
+        "mean_episode_reward": 119.94410289238154,
+        "std_episode_reward": 13.652566793126718,
+        "reward_95ci_half_width": 8.461948566876808,
+        "min_episode_reward": 102.94267828045429,
+        "max_episode_reward": 147.8727360917866,
+        "mean_switches_per_episode": 0.0,
+        "mean_jammed_selections_per_episode": 98.1,
+        "safety_override_count": 0,
+        "no_safe_route_count": 4,
+        "no_safe_route_pct": 0.08,
+        "action_distribution_pct": {
+          "direct": 100.0,
+          "satellite": 0.0,
+          "mesh": 0.0
+        },
+        "mean_reward_components_per_step": {
+          "throughput_contribution": 0.7246469550958449,
+          "delay_penalty": 0.20869064357221104,
+          "energy_penalty": 0.06000000000000197,
+          "loss_penalty": 0.21606810573887086,
+          "switching_penalty": 0.0
+        }
+      },
+      "random": {
+        "mean_episode_reward": 10.455632258287508,
+        "std_episode_reward": 11.89448197981068,
+        "reward_95ci_half_width": 7.372276310230011,
+        "min_episode_reward": -7.037936878474436,
+        "max_episode_reward": 29.682003622967745,
+        "mean_switches_per_episode": 340.7,
+        "mean_jammed_selections_per_episode": 99.0,
+        "safety_override_count": 0,
+        "no_safe_route_count": 4,
+        "no_safe_route_pct": 0.08,
+        "action_distribution_pct": {
+          "direct": 33.3,
+          "satellite": 32.5,
+          "mesh": 34.2
+        },
+        "mean_reward_components_per_step": {
+          "throughput_contribution": 0.721763867776742,
+          "delay_penalty": 0.2102475107601287,
+          "energy_penalty": 0.17081999999998396,
+          "loss_penalty": 0.21757509250003867,
+          "switching_penalty": 0.10220999999999364
+        }
+      }
+    }
+  },
+  "v3": {
+    "episodes": 10,
+    "mean_episode_reward": 78.17652864315025,
+    "std_episode_reward": 17.733693790204928,
+    "unsafe_forward_rate": 0.0,
+    "raw_policy_unsafe_forward_rate": 0.2691278758694489,
+    "clean_forward_availability": 0.9920141969831411,
+    "hold_precision": 0.9894291754756871,
+    "hold_actions": 1892
+  },
+  "duration_s": 3.5298272920772433,
+  "warning": "V2 paired route-policy evaluation and v3 safety evaluation use different observation and reward contracts; do not directly compare their rewards."
+}

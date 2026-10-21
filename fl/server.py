@@ -398,7 +398,7 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             results=eligible
             current=request("GET","/session")
             if current["session_id"]!=self._mission_session: return None,{"invalidated_session":1,"failed_deliveries":len(delivery_failures)}
-            request("POST","/fl/events",{"session_id":self._mission_session,"round":server_round,"delivery_failures":delivery_failures,"outcomes":{r["client_id"]:"delivery_failed" for r in delivery_failures}})
+            request("POST","/fl/events",{"kind":"round_delivery_failures","session_id":self._mission_session,"round":server_round,"delivery_failures":delivery_failures,"outcomes":{r["client_id"]:"delivery_failed" for r in delivery_failures}})
             if not results: return None,{"failed_deliveries":len(delivery_failures)}
             mission_backup=(deepcopy(self._global_weights),deepcopy(self._trust.__dict__) if self._trust else None,
                 deepcopy(self._drift.__dict__) if self._drift else None,deepcopy(self._metrics.__dict__))
@@ -643,7 +643,7 @@ class SecureFedAvgV2(fl.server.strategy.FedAvg):
             from fl.mission_transport import request
             if not mission_current(): return None,{"invalidated_session":1}
             trust_by_id={row['client_id']:row for row in self._trust.snapshot()} if self._trust else {}
-            request("POST","/fl/events",{"session_id":self._mission_session,"round":server_round,
+            request("POST","/fl/events",{"kind":"aggregation_result","session_id":self._mission_session,"round":server_round,
                 "outcomes":{row["client_id"]:"QUARANTINED" if trust_by_id.get(row["client_id"],{}).get("is_quarantined") else row.get("action","analyzed") for row in client_security_audits or []},
                 "security_audits":client_security_audits,"failed_deliveries":delivery_failures,
                 "datasets":{r.metrics['client_id']:r.metrics.get('dataset_fingerprint') for _,r in results},

@@ -555,7 +555,7 @@ class DroneFlClient(fl.client.NumPyClient):
         if os.getenv("FLARE_SWARM_ENABLED")=="1":
             torch.manual_seed(int.from_bytes(hashlib.sha256(f"{self.client_id}:{config['server_round']}:{config.get('mission_seed',42)}".encode()).digest()[:4],'big'))
             from fl.mission_transport import request
-            request("POST","/fl/events",{"session_id":config["mission_session"],"round":int(config["server_round"]),"outcomes":{self.client_id:"TRAINING"}})
+            request("POST","/fl/events",{"kind":"client_training_started","session_id":config["mission_session"],"round":int(config["server_round"]),"outcomes":{self.client_id:"TRAINING"}})
         set_model_weights(self.model, parameters)
         self._setup_training(config)
 

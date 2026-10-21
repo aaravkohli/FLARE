@@ -1,35 +1,31 @@
 import type React from 'react';
 import { ChevronDown } from 'lucide-react';
-import type { CommunicationRoute, MissionRoute, MissionRouteState, MissionSimulationState } from './types';
+import type { CommunicationRoute, MissionRoute, MissionSimulationState } from './types';
 import type { MissionEvidenceStatus } from './world/evidenceFreshness';
+import { routeHealth } from './world/routeHealth';
 const ROUTE_LABELS: Record<MissionRoute,string> = { direct:'Direct', satellite:'Satellite', mesh:'Mesh', hold:'Network hold' };
 const TELEMETRY_LABELS: Record<string,string> = {rssi:'RSSI',pdr:'PDR',sinr:'SINR',latency:'Latency',packet_loss:'Packet loss'};
 const formatPercent = (value?:number,digits=1) => value == null || !Number.isFinite(value) ? '—' : `${(value*100).toFixed(digits)}%`;
 const formatMetric = (value:number|undefined,unit:string) => value == null || !Number.isFinite(value) ? '—' : `${value.toFixed(0)} ${unit}`;
 const titleCase = (value:string) => value.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
-function routeHealth(route:MissionRouteState,noSafeRoute:boolean) {
- if(!route.available)return 'Unavailable';
- if(route.safe===false || (noSafeRoute && route.safe===undefined && route.threatScore!==undefined))return 'Unsafe';
- if(route.jammed || (route.metric?.packet_loss??0)>=.2)return 'Degraded';
- return route.active?'Active':'Available';
-}
-export function RouteSelector({ state, inspectedRoute, evidence, onInspect }: {
+export function RouteSelector({ state, inspectedRoute, evidence, onInspect, explainHealth=false }: {
   state: MissionSimulationState;
   inspectedRoute: CommunicationRoute;
   evidence: MissionEvidenceStatus;
   onInspect: (route: CommunicationRoute) => void;
+  explainHealth?: boolean;
 }) {
   return (
     <div className="mission-route-strip" aria-label="Communication routes">
       {state.routes.map(route => {
         const requested = state.requestedRoute === route.id && !route.active;
-        const health = routeHealth(route, state.noSafeRoute);
+        const status = routeHealth(route, state.noSafeRoute), health = status.health;
         const label = !evidence.evidenceCurrent
           ? !evidence.lastSnapshot ? 'No snapshot'
             : route.active ? 'Last installed'
               : requested ? 'Last requested'
                 : route.metric ? 'Last metric' : 'Unknown'
-          : requested ? state.sdnApplied === false || state.sdnError ? 'Request not confirmed' : 'Requested · not installed' : state.sdnApplied === false && route.active ? 'Last confirmed' : health;
+          : explainHealth&&!route.available ? status.label : requested ? state.sdnApplied === false || state.sdnError ? 'Request not confirmed' : 'Requested · not installed' : state.sdnApplied === false && route.active ? 'Last confirmed' : explainHealth ? status.label : health;
         return (
         <button
           type="button"
@@ -37,13 +33,15 @@ export function RouteSelector({ state, inspectedRoute, evidence, onInspect }: {
           className={`mission-route-option${route.active ? ' mission-route-option--active' : ''}${requested ? ' mission-route-option--requested' : ''}${inspectedRoute === route.id ? ' mission-route-option--inspected' : ''}${evidence.evidenceCurrent ? '' : ' mission-route-option--retained'}`}
           onClick={() => onInspect(route.id)}
           aria-pressed={inspectedRoute === route.id}
-          disabled={evidence.evidenceCurrent && !route.available}
+          data-interference={explainHealth ? route.jammed?'active':'clear' : undefined}
+          disabled={!explainHealth && evidence.evidenceCurrent && !route.available}
+          title={explainHealth ? `${evidence.evidenceCurrent?'':'Retained observation. '}${status.reason}` : undefined}
         >
           <span className="mission-route-option__name">{ROUTE_LABELS[route.id]}</span>
-          <span className="mission-route-option__latency">{formatMetric(route.metric?.latency, 'ms')}</span>
-          <span className="mission-route-option__threat">Threat {formatPercent(route.threatScore, 0)}</span>
+          <span className="mission-route-option__latency">{formatMetric(explainHealth&&route.measurementUnavailable?undefined:route.metric?.latency, 'ms')}</span>
+          <span className="mission-route-option__threat">{explainHealth?route.recoveryPending||!evidence.evidenceCurrent?'Last detector':'Detector':'Threat'} {formatPercent(route.threatScore, 0)}</span>
           <span className={`mission-route-option__state mission-route-option__state--${requested ? 'requested' : health.toLowerCase()}`}>
-            {route.active && evidence.evidenceCurrent ? '● ' : ''}{label}
+            {route.active && evidence.evidenceCurrent && (!explainHealth||route.available) ? '● ' : ''}{label}
           </span>
         </button>
       )})}

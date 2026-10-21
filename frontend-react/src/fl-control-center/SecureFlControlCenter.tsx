@@ -111,7 +111,8 @@ export default function SecureFlControlCenter({ config, isSaving, onConfigChange
   };
 
   return <section className="flc application-policy" aria-label="Federated learning safeguards">
-    <div className="policy-actions"><span role="status">{saveState === 'saved' ? 'Applied' : saveState === 'error' ? 'Save failed. Edits retained.' : dirty ? 'Unsaved edits' : 'Live policy'}</span><div>{dirty && <button type="button" onClick={revert} disabled={isSaving}>Revert edits</button>}<button className="primary" type="button" onClick={save} disabled={isSaving || !dirty}>{isSaving ? 'Saving…' : 'Save safeguards'}</button></div></div>
+    <div className="policy-actions"><span role="status">{saveState === 'saved' ? 'Saved · restart FL services' : saveState === 'error' ? 'Save failed. Edits retained.' : dirty ? 'Unsaved edits' : 'Saved configuration'}</span><div>{dirty && <button type="button" onClick={revert} disabled={isSaving}>Revert edits</button>}<button className="primary" type="button" onClick={save} disabled={isSaving || !dirty}>{isSaving ? 'Saving…' : 'Save safeguards'}</button></div></div>
+    <p className="swarm-note">Saved settings apply after restarting the FL server and clients. Status switches show configuration, not running-service confirmation.</p>
     <details className="policy-group" open><summary>Safeguards</summary><div className="flc-modules">
               <ControlModule
                 icon={Shield}
@@ -137,7 +138,7 @@ export default function SecureFlControlCenter({ config, isSaving, onConfigChange
               <ControlModule
                 icon={Cpu}
                 title="Gradient compression"
-                description="Reduces update payloads before aggregation."
+                description="Simulates compression error. Flower updates still use dense transport."
                 enabled={Boolean(config.compression?.enabled)}
                 onToggle={enabled => update('compression', { enabled })}
               >
@@ -167,7 +168,7 @@ export default function SecureFlControlCenter({ config, isSaving, onConfigChange
               <ControlModule
                 icon={Layers}
                 title="Swarm selection"
-                description="Chooses which eligible clients participate in each round."
+                description="Research setting. Live missions rotate through eligible clients."
                 enabled={Boolean(config.client_selection?.enabled)}
                 onToggle={enabled => update('client_selection', { enabled })}
               >
@@ -185,7 +186,7 @@ export default function SecureFlControlCenter({ config, isSaving, onConfigChange
               <ControlModule
                 icon={Activity}
                 title="Asynchronous FL"
-                description="Buffers updates when client completion times diverge."
+                description="Research setting. Live federation currently runs synchronous rounds."
                 enabled={Boolean(config.async_fl?.enabled)}
                 onToggle={enabled => update('async_fl', { enabled })}
               >

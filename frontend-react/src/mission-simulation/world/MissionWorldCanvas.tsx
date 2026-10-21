@@ -1,4 +1,5 @@
 import type { CanvasControls } from '../WorkspaceControls';
+import NetworkLayerKey from '../NetworkLayerKey';
 import type { NetworkDisplay, SwarmSnapshot } from '../swarm';
 import { playbackTime } from './networkPlayback';
 import { createDrone } from './dynamics';
@@ -28,7 +29,7 @@ import { satelliteWorldPosition } from './satelliteWorldPosition';
 import { TERRAIN_DISCLOSURE, TERRAIN_PROVENANCE } from './terrain';
 
 export interface MissionWorldProps {
-  externalTools?:boolean; controls?:Ref<CanvasControls>; cameraState?:RefObject<{rig:CameraRig;mode:CameraMode|'manual';session?:string}|null>;
+  externalTools?:boolean; onInspectLink?:(id:string)=>void; controls?:Ref<CanvasControls>; cameraState?:RefObject<{rig:CameraRig;mode:CameraMode|'manual';session?:string}|null>;
   quality?:RenderQuality; onQualityChange?:(quality:RenderQuality)=>void;
   state: MissionSimulationState; drones: MissionFleetDrone[]; selectedDroneId: string; paused: boolean;
   /** Phase 9 may supply a receipt-freshness decision; omitted means current for existing callers. */
@@ -370,6 +371,7 @@ export default function MissionWorldCanvas(props: MissionWorldProps) {
       </span>
     </div>}
     <div className="mission-world-viewport"><canvas ref={canvas} className="mission-world-canvas" aria-label="Simulated mission terrain, UAV patrols, satellite and ground station. Use the fleet and camera buttons to interact." role="img" />
+      {props.externalTools&&props.mission&&props.visualization&&<NetworkLayerKey world snapshot={props.mission} selected={props.selectedDroneId} display={props.visualization} onLink={props.onInspectLink}/>}
       {props.externalTools&&<button ref={groundLocator} className="ground-edge-locator" onClick={()=>fitFrame(true)}>Ground control ↗</button>}
       <FleetOverlays drones={props.drones} markers={craftMarkers} labels={labels}/>
       <div className="mission-world-route-annotations" aria-hidden="true">

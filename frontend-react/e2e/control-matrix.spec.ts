@@ -13,17 +13,27 @@ async function setup(page:Page,request:APIRequestContext){
  const auth=await request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>{const r=await request.get(sim,{headers});expect(r.ok()).toBeTruthy();return r.json();};
  const metrics=async()=>{const r=await request.get(api+'/swarm/metrics',{headers});expect(r.ok()).toBeTruthy();return r.json();};
- const reset=async()=>{await resetMission(center);await expect(center.getByRole('button',{name:'Play mission',exact:true})).toBeEnabled();await missionSetting(center,'Fleet size','10');await expect.poll(async()=>(await state()).nodes.length).toBe(10);};
+ const reset=async()=>{
+  // Reset retains configuration by design. Establish a reachable command test
+  // fleet before resetting positions; do not inherit a previous large mission.
+  await missionSetting(center,'Fleet size','10');
+  await missionSetting(center,'Formation','circle');
+  await missionSetting(center,'Radio range','1000');
+  await center.getByLabel('Topology',{exact:true}).selectOption('full_mesh');
+  await expect(center.getByLabel('Topology',{exact:true})).toBeEnabled();
+  await resetMission(center);await expect(center.getByRole('button',{name:'Play mission',exact:true})).toBeEnabled();
+  await expect.poll(async()=>(await state()).nodes.length).toBe(10);
+ };
  return {center,state,metrics,headers,reset,errors};
 }
 const fleetButton=(center:Locator,n='001')=>center.getByRole('group',{name:'Fleet selection'}).getByRole('checkbox',{name:`Target UAV-${n}`,exact:true});
 
 test('frontend topology / size / formation / speed / preset matrix',async({page,request})=>{
- test.setTimeout(180000);const {center,state,reset,errors}=await setup(page,request);await reset();
- for(const count of [10,20,30,50,75,100]){
+ test.setTimeout(420000);const {center,state,reset,errors}=await setup(page,request);await reset();
+ for(const count of [10,20,30,40,50,60,70,75,80,90,100]){
   await missionSetting(center,'Fleet size',String(count));await expect.poll(async()=>(await state()).nodes.length).toBe(count);
   for(const topology of ['full_mesh','partial_mesh','star','ring','tree','cluster_mesh','grid','random_geometric','hybrid_mesh','self_healing_mesh']){
-   await center.getByLabel('Topology',{exact:true}).selectOption(topology);await expect.poll(async()=>(await state()).topology).toBe(topology);
+   const applied=page.waitForResponse(r=>r.url()===sim+'/config'&&r.request().method()==='PATCH');await center.getByLabel('Topology',{exact:true}).selectOption(topology);expect((await applied).ok()).toBeTruthy();await expect.poll(async()=>(await state()).topology,{timeout:15000}).toBe(topology);
    const s=await state();expect(s.nodes.length).toBe(count);expect(s.links.every((l:any)=>[l.a,l.b].every(n=>n==='base'||s.nodes.some((d:any)=>d.id===n)))).toBeTruthy();record(`${count} UAV / ${topology}`,'PATCH /config',{count,topology,links:s.links.length,revision:s.revision});
   }
  }
@@ -71,14 +81,16 @@ test('all 15 commands have visible outcomes and authoritative effects',async({pa
 });
 
 test('every restored attack is injectable, observed and clearable from presentation',async({page,request})=>{
- test.setTimeout(180000);const {center,state,metrics,reset,errors}=await setup(page,request);await center.getByRole('button',{name:'Presentation',exact:true}).click();
+ test.setTimeout(180000);const {center,state,metrics,headers,reset,errors}=await setup(page,request);await center.getByRole('button',{name:'Presentation',exact:true}).click();
  const profiles=[['ew','none'],...['spot','sweep','barrage','smart','reactive','adaptive','fhss','spoofing','gps_spoofing','replay','dos'].map(p=>['ew',p]),...['normal','selective_forwarding','telemetry_falsification','control_flood','replay'].map(p=>['traffic',p]),['fl','poisoned'],['fl','normal']];
  for(const [group,profile] of profiles){
+  let relayFlow:{source:string;destination:string}|undefined;
   await reset();await center.getByRole('tab',{name:'Commands',exact:true}).click();await center.getByLabel('Speed',{exact:true}).selectOption('4');await fleetButton(center).click();
   if(profile==='selective_forwarding'){
-   await missionSetting(center,'Fleet size','50');await missionSetting(center,'Formation','distributed');await resetMission(center);await expect(center.getByRole('button',{name:'Play mission',exact:true})).toBeEnabled();
+   await missionSetting(center,'Radio range','350');await missionSetting(center,'Fleet size','50');await missionSetting(center,'Formation','distributed');await center.getByLabel('Topology',{exact:true}).selectOption('partial_mesh');await expect(center.getByLabel('Topology',{exact:true})).toBeEnabled();await resetMission(center);await expect(center.getByRole('button',{name:'Play mission',exact:true})).toBeEnabled();
    const s=await state(),relays=s.flows.flatMap((f:any)=>f.hops.slice(1,-1));expect(relays.length).toBeGreaterThan(0);
    const id=relays.sort((a:string,b:string)=>relays.filter((n:string)=>n===b).length-relays.filter((n:string)=>n===a).length)[0],node=s.nodes.find((n:any)=>n.id===id);
+   relayFlow=s.flows.find((f:any)=>f.source!=='base'&&f.hops.slice(1,-1).includes(id));expect(relayFlow).toBeTruthy();
    await fleetButton(center,node.alias.slice(-3)).click();await center.getByRole('button',{name:`Inspect ${node.alias}`,exact:true}).click();
   }
   await center.getByRole('tab',{name:'Events',exact:true}).click();await center.getByLabel('Condition group').selectOption(group);await center.getByLabel('Attack profile').selectOption(profile);if(!['none','normal'].includes(profile))await center.getByLabel('Attack duration',{exact:true}).fill('30');
@@ -88,9 +100,27 @@ test('every restored attack is injectable, observed and clearable from presentat
   const id=injected.affected_targets[0];
   await expect.poll(async()=>(await state()).attacks.active.map((a:any)=>a.profile)).toContain(profile);
   if(profile==='gps_spoofing'){const n=(await state()).nodes[0];expect(n.position).toEqual(before.nodes[0].position);expect(n.reported_position).not.toEqual(n.position);}
+  let relayCursor=(await state()).packet_cursor;
+  if(relayFlow){
+   // Offer explicit mesh probes while paused, before live DQN telemetry policies
+   // can bypass the relay. Observe their real drops in the cursor-based trace;
+   // the snapshot's last 40 results can omit them in a busy 50-UAV mission.
+   await center.getByRole('button',{name:'Route probes',exact:true}).click();await center.getByLabel('Route source').selectOption(relayFlow.source);await center.getByLabel('Route destination').selectOption(relayFlow.destination);
+   for(let i=0;i<12;i++){
+    await expect(center.getByRole('button',{name:'Send probe',exact:true})).toBeEnabled({timeout:10000});const pending=page.waitForResponse(r=>r.url()===sim+'/probes'&&r.request().method()==='POST',{timeout:15000});await center.getByRole('button',{name:'Send probe',exact:true}).click();const response=await pending;
+    expect(response.ok(),await response.text()).toBeTruthy();expect((await response.json()).packet.route).toContain(id);
+    await expect(center.getByRole('button',{name:'Send probe',exact:true})).toBeEnabled();
+   }
+   await center.getByRole('button',{name:'Close Route probes',exact:true}).click();
+  }
   await center.getByRole('button',{name:'Play mission',exact:true}).click();
   let relayDrop=null;
-  if(profile==='selective_forwarding')await expect.poll(async()=>{const s=await state();relayDrop=s.packet_results.find((p:any)=>p.reason==='relay_discard'&&p.route[p.hop]===id)??relayDrop;return Boolean(relayDrop);},{timeout:15000}).toBeTruthy();
+  const relayResults:any[]=[];
+  if(profile==='selective_forwarding')await expect.poll(async()=>{
+   const response=await request.get(sim+`/packet-events?after=${relayCursor}&limit=5000`,{headers});expect(response.ok()).toBeTruthy();const trace=await response.json();expect(trace.event_gap).toBeFalsy();relayCursor=trace.cursor;
+   relayResults.push(...trace.events.filter((e:any)=>e.kind==='packet_result').map((e:any)=>e.data));fs.writeFileSync(`${dir}/relay-probe-results.json`,JSON.stringify({target:id,flow:relayFlow,results:relayResults.filter(p=>p.correlation_id==='probe'||p.reason==='relay_discard')},null,2));
+   relayDrop=trace.events.find((e:any)=>e.kind==='packet_result'&&e.data.reason==='relay_discard'&&e.data.route[e.data.hop]===id)?.data??relayDrop;return Boolean(relayDrop);
+  },{timeout:15000}).toBeTruthy();
   await expect.poll(async()=>(await state()).simulation_time,{timeout:10000}).toBeGreaterThan(profile==='sweep'?5:2.5);
   const s=await state(),observed=await metrics();const rows=observed.metrics??observed;const row=rows[id];expect(row).toBeTruthy();
   const a=s.attacks.active.find((a:any)=>a.profile===profile);
@@ -108,7 +138,7 @@ test('every restored attack is injectable, observed and clearable from presentat
   if(['spoofing','telemetry_falsification'].includes(profile))expect(row.security_evidence.reported_forwarded_packets).toBeGreaterThan(row.security_evidence.controller_rx_packets);
   if(group==='fl')expect(a.status).toBe('awaiting_participating_round');
   record(`${group}/${profile}`,'POST /attacks',{condition:a,statistics:s.statistics,observations:row,relay_drop:relayDrop,spoofed_packet_claim:spoofedClaim,detector_findings:s.nodes.find((n:any)=>n.id===id)?.security??null});
-  await center.getByRole('button',{name:'Clear all conditions',exact:true}).click();await expect.poll(async()=>(await state()).attacks.active.length).toBe(0);
+  const cleared=page.waitForResponse(r=>r.url()===sim+'/attacks/clear'&&r.request().method()==='POST');await center.getByRole('button',{name:'Clear all conditions',exact:true}).click();expect((await cleared).ok()).toBeTruthy();await expect.poll(async()=>(await state()).attacks.active.length,{timeout:15000}).toBe(0);
  }
  if((await state()).playing)await center.getByRole('button',{name:'Pause mission',exact:true}).click();
  await center.getByRole('tab',{name:'Events',exact:true}).click();await center.getByLabel('Condition group').selectOption('ew');await center.getByLabel('Attack profile').selectOption('spot');

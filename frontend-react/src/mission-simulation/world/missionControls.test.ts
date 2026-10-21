@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {publishMissionSnapshot,clearMissionSnapshot,getMissionSelection,selectMissionTarget,selectAllMissionTargets,clearMissionTargets} from '../swarm.ts';
 import type {SwarmSnapshot} from '../swarm.ts';
 import {commandParameters} from '../commandParameters.ts';
-import {MissionClient} from '../missionClient.ts';
+import {MissionClient, MissionRequestError} from '../missionClient.ts';
 const state=(session='selection',revision=1)=>({schema_version:'mission_snapshot_v1',session_id:session,revision,simulation_time:0,nodes:[{id:'one'},{id:'two'}]} as SwarmSnapshot);
 
 test('shared targets are additive, preserved while inspecting, pruned on retirement and cleared on reset',()=>{
@@ -41,5 +41,23 @@ test('an uncertain attack is never automatically retried or reported as confirme
  try{const client=new MissionClient('http://test','token',publishMissionSnapshot);
   await assert.rejects(client.mutate('/attacks',{session_id:'attack-uncertain',attack_id:'once',profile:'spot',targets:['one'],paths:['direct'],duration_s:15}),/could not be confirmed/);
   assert.equal(posts,1);
+ }finally{globalThis.fetch=original;}
+});
+
+test('an acknowledged attack retains its receipt when the follow-up snapshot fails',async()=>{
+ clearMissionSnapshot();publishMissionSnapshot(state('accepted-attack'));const original=globalThis.fetch;let posts=0;
+ const receipt={attack_id:'accepted-once',status:'active',created_at:2,expires_at:17};
+ globalThis.fetch=async(_url,options)=>{if(options?.method==='POST'){posts++;return new Response(JSON.stringify(receipt));}throw new TypeError('Snapshot unavailable');};
+ try{const client=new MissionClient('http://test','token',publishMissionSnapshot);
+  await assert.rejects(client.mutate('/attacks',{session_id:'accepted-attack',attack_id:'accepted-once'}),error=>error instanceof MissionRequestError&&error.outcome==='accepted'&&JSON.stringify(error.response)===JSON.stringify(receipt));
+  assert.equal(posts,1);
+ }finally{globalThis.fetch=original;}
+});
+
+test('an unreadable successful response is not called rejected and never repeats the mutation',async()=>{
+ clearMissionSnapshot();publishMissionSnapshot(state('receipt-unavailable'));const original=globalThis.fetch;let posts=0;
+ globalThis.fetch=async()=>{posts++;return new Response('interrupted JSON',{status:200});};
+ try{const client=new MissionClient('http://test','token',publishMissionSnapshot);
+  await assert.rejects(client.mutate('/attacks',{session_id:'receipt-unavailable',attack_id:'once'}),error=>error instanceof MissionRequestError&&error.outcome==='accepted');assert.equal(posts,1);
  }finally{globalThis.fetch=original;}
 });

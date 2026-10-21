@@ -150,18 +150,46 @@ class BiLSTMAttention(nn.Module):
 # Weight serialisation helpers used by Flower FL client/server
 # ---------------------------------------------------------------------------
 
+def _federated_state(model: nn.Module) -> dict:
+    """Canonical checkpoint order, independent of Opacus wrappers/aliases."""
+    while isinstance(getattr(model, "_module", None), nn.Module):
+        model = model._module
+    state = model.state_dict()
+    if isinstance(model, BiLSTMAttention):
+        # DPLSTM registers ih bias before hh weight and also exposes cell aliases.
+        # Both must serialize exactly like the original torch.nn.LSTM contract.
+        keys = [
+            f"lstm.{parameter}_l{layer}{direction}"
+            for layer in range(model.lstm.num_layers)
+            for direction in (("", "_reverse") if model.lstm.bidirectional else ("",))
+            for parameter in ("weight_ih", "weight_hh", "bias_ih", "bias_hh")
+        ]
+        keys.extend(key for key in state if not key.startswith("lstm."))
+        return {key: state[key] for key in keys}
+    return state
+
+
 def get_model_weights(model: nn.Module) -> list:
-    """Return model parameters as a list of numpy arrays (Flower format)."""
-    return [val.cpu().numpy() for _, val in model.state_dict().items()]
+    """Return independent arrays in the established Flower parameter order."""
+    return [value.detach().cpu().numpy().copy() for value in _federated_state(model).values()]
 
 
 def set_model_weights(model: nn.Module, weights: list) -> None:
-    """Load parameters from a list of numpy arrays into the model."""
-    import numpy as np
-    state_dict = model.state_dict()
-    params_dict = zip(state_dict.keys(), weights)
-    new_state = {k: torch.tensor(v) for k, v in params_dict}
-    model.load_state_dict(new_state, strict=True)
+    """Validate then copy canonical parameters, including shared Opacus aliases."""
+    state = _federated_state(model)
+    if len(weights) != len(state):
+        raise ValueError(f"Expected {len(state)} parameter arrays, received {len(weights)}")
+    tensors = []
+    for (key, target), value in zip(state.items(), weights):
+        tensor = torch.as_tensor(value, device=target.device, dtype=target.dtype)
+        if tensor.shape != target.shape:
+            raise ValueError(f"Parameter {key} requires shape {tuple(target.shape)}, received {tuple(tensor.shape)}")
+        tensors.append((target, tensor))
+    # state_dict tensors reference the underlying parameters. Copying each once
+    # updates DPLSTM's duplicate aliases without loading stale alias values last.
+    with torch.no_grad():
+        for target, tensor in tensors:
+            target.copy_(tensor)
 
 
 def build_model(cfg: dict) -> BiLSTMAttention:
