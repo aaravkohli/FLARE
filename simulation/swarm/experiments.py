@@ -20,7 +20,7 @@ CSV_FIELDS=['topology','seed','generated','delivered','dropped','pdr','average_l
 
 def reference_engine(records,config,request,topology,seed):
     cfg=deepcopy(config)
-    cfg.update(seed=seed,topology=topology,default_count=request.count,formation='distributed',mesh_only=True,traffic_stop_s=request.duration_s)
+    cfg.update(seed=seed,topology=topology,topology_mode='manual',default_count=request.count,formation='distributed',mesh_only=True,traffic_stop_s=request.duration_s)
     cfg['radio']['range_m']=request.range_m
     e=SwarmEngine(records,cfg,isolated=True)
     e.scenario=request.scenario
@@ -61,7 +61,7 @@ def _atomic_json(filename,value):
 def source_fingerprint():
     root=Path(__file__).resolve().parents[2]
     names=['schemas/mission.py', 'simulation/swarm/engine.py', 'simulation/swarm/network.py',
-           'simulation/swarm/topology.py', 'simulation/swarm/movement.py', 'simulation/swarm/attacks.py',
+           'simulation/swarm/topology.py', 'simulation/swarm/adaptive_topology.py', 'simulation/swarm/movement.py', 'simulation/swarm/attacks.py',
            'simulation/swarm/scenarios.py', 'simulation/swarm/terrain.py', 'simulation/swarm/experiments.py']
     digest=hashlib.sha256()
     for name in names: digest.update(name.encode()+b'\0'+(root/name).read_bytes()+b'\0')

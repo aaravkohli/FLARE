@@ -3,6 +3,24 @@ default_count: 30
 max_count: 100
 seed: 42
 topology: self_healing_mesh
+topology_mode: auto
+# Simulation-clock policy. Resource efficiency is a proxy, not calibrated energy.
+adaptive_topology:
+  evaluation_s: 1.0
+  window_s: 10.0
+  minimum_observations: 8
+  improvement: 0.08
+  consecutive_wins: 3
+  cooldown_s: 15.0
+  emergency_loss: 0.10
+  emergency_rebuilds: 2
+  emergency_interval_s: 2.0
+  blacklist_s: 30.0
+  drain_s: 1.0
+  validation_rebuilds: 2
+  headroom: 0.20
+  transition_penalty: 0.05
+  weights: {reliability: 0.35, latency: 0.25, capacity: 0.25, efficiency: 0.15}
 formation: distributed
 fixed_step_s: 0.05
 network_interval_s: 0.2

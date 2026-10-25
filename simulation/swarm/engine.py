@@ -12,6 +12,7 @@ import yaml
 
 from schemas.mission import CONTROL_TRAFFIC, FORMATIONS, ROLES, RoutePolicy, MissionCommand, MissionAttack
 from simulation.swarm.attacks import AttackConditions
+from simulation.swarm.adaptive_topology import AdaptiveTopology
 from simulation.swarm.movement import Drone, advance, formation_positions
 from simulation.swarm.network import build_adjacency, Link, PacketScheduler, radio_link, shortest_path
 from simulation.swarm.terrain import Terrain
@@ -45,6 +46,9 @@ class SwarmEngine:
         self.records={r['drone_id']:deepcopy(r) for r in records}
         self.reserved=sorted((r['drone_id'] for r in records if r['enabled']),key=lambda n:self.records[n]['index'])
         self.terrain=Terrain(); self.seed=self.cfg['seed']; self.topology=self.cfg['topology']; self.formation=self.cfg['formation']
+        self.topology_mode=self.cfg.get('topology_mode','manual')
+        if self.topology_mode not in ('auto','manual'): raise ValueError('unknown topology mode')
+        self.manual_topology=self.topology; self._configuring=False
         self.count=self.cfg['default_count']; self.pending_seed=None; self.speed=1.; self.revision=0; self.event_cursor=0
         self.events=deque(maxlen=3000); self.commands={}; self.transfers={}; self.security={}
         self.reset()
@@ -53,6 +57,7 @@ class SwarmEngine:
         self.events.append(dict(schema_version='mission_event_v1',cursor=self.event_cursor,session_id=self.session_id,
                                 simulation_time=self.scheduler.event_time if hasattr(self,'scheduler') and self.scheduler.event_time is not None else self.seconds,revision=self.revision,evidence_source='packet_simulation',correlation_id=(data or {}).get('correlation_id',(data or {}).get('command_id')),timestamp=time.time(),category=category,kind=kind,data=data or {}))
     def reset(self):
+        if self.topology_mode=='manual': self.topology=self.manual_topology
         if self.pending_seed is not None:
             self.seed=self.pending_seed; self.cfg['seed']=self.seed; self.pending_seed=None
         import os
@@ -70,6 +75,7 @@ class SwarmEngine:
         self.attacks=AttackConditions(self)
         self.runtime={'orchestrator':{'status':'waiting_for_play'},'flower':{'status':'waiting_for_play','round':0,'participants':[]}}
         self.scheduler=PacketScheduler(dict(self.cfg['packets'],seed=self.seed),self.rng,self.packet_event)
+        self.physical_links={}; self.adaptive=AdaptiveTopology(self)
         self.resize(self.count,initial=True); self.rebuild(); self.event('COMMAND','mission_reset',{'seed':self.seed})
     def _clear_routes(self):
         self._route_cache.clear(); self._adjacency_cache.clear(); self._backup_cache.clear()
@@ -112,7 +118,16 @@ class SwarmEngine:
         if not initial: self.revision+=1; self.rebuild()
     def configure(self,request):
         self.check_revision(request.expected_revision)
-        if request.topology is not None: self.topology=request.topology
+        previous_mode=self.topology_mode
+        pending_manual=bool(self.adaptive.transition and not self.adaptive.transition['automatic'])
+        self.adaptive.cancel('Configuration changed')
+        mode=request.topology_mode or ('manual' if request.topology is not None else self.topology_mode)
+        enabling_auto=mode=='auto' and self.topology_mode!='auto'
+        self.topology_mode=mode
+        if mode=='manual' and request.topology is not None: self.manual_topology=request.topology
+        elif mode=='manual' and previous_mode!='manual': self.manual_topology=self.topology
+        if enabling_auto:
+            self.adaptive.last_evaluation=None; self.adaptive.winner=None; self.adaptive.wins=0
         if request.formation is not None:
             self.formation=request.formation
             for d in self.nodes.values(): d.formation_slot=None
@@ -121,8 +136,14 @@ class SwarmEngine:
         if request.range_m is not None:
             self.cfg['radio']['range_m']=request.range_m
             for d in self.nodes.values(): d.range_m=request.range_m
-        if request.count is not None: self.resize(request.count)
-        else: self.revision+=1; self.slots=formation_positions(self.formation,self.count); self.rebuild()
+        self._configuring=True
+        try:
+            if request.count is not None: self.resize(request.count)
+            else: self.revision+=1; self.slots=formation_positions(self.formation,self.count); self.rebuild()
+        finally: self._configuring=False
+        if mode=='manual' and (request.topology is not None or previous_mode!='manual' or pending_manual):
+            self.adaptive.request(self.manual_topology,'Manual override')
+        self.rebuild()
         self.event('COMMAND','mission_configured',{'topology':self.topology,'formation':self.formation,'count':self.count,'speed':self.speed})
         return self.snapshot()
     def control(self,request):
@@ -137,7 +158,8 @@ class SwarmEngine:
     def load_scenario(self,name,revision):
         self.check_revision(revision)
         if name not in SCENARIOS: raise ValueError('unknown scenario')
-        preset=SCENARIOS[name]; self.count=preset['count']; self.topology=preset['topology']; self.formation=preset['formation']
+        preset=SCENARIOS[name]; self.count=preset['count']; self.formation=preset['formation']
+        if self.topology_mode!='manual': self.topology=preset['topology']
         self.reset(); self.scenario=name
         if preset.get('preferred_family'): self.route_preferences={identity:preset['preferred_family'] for identity in self.nodes}
         self.event('COMMAND','scenario_loaded',{'scenario':name,'attack_at_s':8,'preferred_family':preset.get('preferred_family'),'preference_is_safety_constrained':True})
@@ -215,7 +237,20 @@ class SwarmEngine:
         self.attacks.clear(request.attack_id,request.group,request.targets)
         if not self.attacks.active.get('scenario-interference'): self.jammers=[]
         self.revision+=1; self.rebuild(); return self.attacks.state()
-    def rebuild(self):
+    def permitted_physical_links(self):
+        if 'mesh' in self.failed_families: return {}
+        return {edge:impaired for edge,link in self.physical_links.items()
+                if edge not in self.blocked|self.auto_blocked
+                and (impaired:=self.attacks.impair(link,'mesh',edge)).loss<=self.cfg['radio']['max_loss']}
+
+    def rebuild(self,adapt=True):
+        try: self._rebuild(adapt)
+        except (ValueError,RuntimeError) as exc:
+            if self.adaptive.transition and self.adaptive.transition['phase']=='validating': self.adaptive.fail(str(exc))
+            else: raise
+
+    def _rebuild(self,adapt=True):
+        adapt=adapt and not self._configuring
         self._clear_routes()
         old=self.links; eligible={}; base=BASE_POSITION
         for i,a in enumerate(self.nodes.values()):
@@ -227,17 +262,30 @@ class SwarmEngine:
         physical_recovered={e for e in self.auto_blocked if e in eligible and self.attacks.impair(eligible[e],'mesh',e).loss<.15}
         for edge in physical_recovered: self.event('SDN','RESTORE',{'link':list(edge),'reason':'modeled_link_recovery'})
         self.auto_blocked.difference_update(physical_recovered)
+        base_links={}
+        if not self.cfg.get('mesh_only'):
+            for d in self.nodes.values():
+                if not d.available or d.health<=0: continue
+                link=radio_link(d.id,'base',d.position,base,dict(self.cfg['radio'],range_m=d.range_m),self.terrain,self.jammers,d.health)
+                if link: base_links[pair(d.id,'base')]=link
+        self.physical_links=dict(eligible)
+        self.physical_links.update(base_links)
+        committed=False
+        if adapt:
+            try: committed=self.adaptive.before_rebuild()
+            except (ValueError,RuntimeError) as exc:
+                self.adaptive.fail(str(exc)); return
         topology_eligible={e:l for e,l in eligible.items() if e not in self.blocked|self.auto_blocked and self.attacks.impair(l,'mesh',e).loss<=self.cfg['radio']['max_loss']} if self.topology=='self_healing_mesh' else eligible
-        edges,heads=topology_edges(self.topology,list(self.nodes.values()),topology_eligible,set(old),self.topology_state,self.seconds,self.cfg.get('discovery_timeout_s',.6))
+        previous_edges=self.adaptive.transition['prepared'].edges if committed else set(old)
+        edges,heads=topology_edges(self.topology,list(self.nodes.values()),topology_eligible,previous_edges,self.topology_state,self.seconds,self.cfg.get('discovery_timeout_s',.6))
         self.heads=heads; self.radio_links={e:eligible[e] for e in edges}
         self.links={e:self.attacks.impair(eligible[e],'mesh',e) for e in edges}
         for d in self.nodes.values():
             d.neighbors=sorted(b if a==d.id else a for a,b in edges if d.id in (a,b))
-            if d.available and d.health>0 and not self.cfg.get('mesh_only'):
-                link=radio_link(d.id,'base',d.position,base,dict(self.cfg['radio'],range_m=d.range_m),self.terrain,self.jammers,d.health)
-                if link:
-                    edge=pair(d.id,'base'); self.radio_links[edge]=link
-                    self.links[edge]=self.attacks.impair(link,'mesh',edge)
+            edge=pair(d.id,'base')
+            if edge in base_links:
+                self.radio_links[edge]=base_links[edge]
+                self.links[edge]=self.attacks.impair(base_links[edge],'mesh',edge)
         for edge in sorted(set(old)-set(self.links)):
             record=dict(old[edge].snapshot(),disconnected_at=self.seconds,status='disconnected')
             self.disconnected_links.append(record)
@@ -267,6 +315,12 @@ class SwarmEngine:
         self.auto_blocked=(self.auto_blocked-recovered)|newly_unsafe
         for flow in invalidated:
             self.ensure_route(flow['source'],flow['destination'],flow['traffic_class'],flow['family'],flow.get('decision_id'))
+        if adapt:
+            self.adaptive.after_rebuild(committed)
+            pending=self.adaptive.transition
+            # No clock advance is needed when there are no old mesh packets to drain.
+            if pending and pending['phase']=='draining' and not pending['affected'].intersection(self.scheduler.packets):
+                self.rebuild()
     def valid_route(self,hops,family,control=False):
         if family=='hold': return False
         if len(hops)<2 or len(set(hops))!=len(hops) or 'base' in hops[1:-1]: return False
@@ -491,12 +545,15 @@ class SwarmEngine:
             latest_cursor=self.packet_cursor,event_gap=after>0 and after<oldest-1,oldest_cursor=oldest)
     def send(self,source,dest,category,size=512,correlation=None,family_override=None):
         family=family_override or (self.families.get(source,'mesh') if dest=='base' and category not in CONTROL_TRAFFIC else 'mesh')
-        hops=self.ensure_route(source,dest,category,family)
+        deferred=family=='mesh' and self.adaptive.transition is not None and self.adaptive.transition['phase']=='draining'
+        hops=[] if deferred else self.ensure_route(source,dest,category,family)
         sequence=self.attacks.sequence(source,self.scheduler.serial+1)
         mac=self.records.get(source,{}).get('mac')
         if self.attacks.has(source,'spoofing'): mac='02:ff:00:00:00:01'
         packet_time=self.scheduler.event_time if self.scheduler.event_time is not None else self.seconds
-        p=self.scheduler.emit(source,dest,category,size,hops,packet_time,self.network_revision,correlation,family,sequence,mac,deepcopy(self.flow_constraints.get(f'{source}:{dest}:{category}',{})))
+        if family=='mesh' and (not self.cfg.get('mesh_only') or self.topology_mode=='auto'):
+            self.adaptive.offer(source,dest,category,size,packet_time)
+        p=self.scheduler.emit(source,dest,category,size,hops,packet_time,self.network_revision,correlation,family,sequence,mac,deepcopy(self.flow_constraints.get(f'{source}:{dest}:{category}',{})),defer=deferred)
         d=self.nodes.get(source)
         if d: d.sent+=1
         return p
@@ -725,6 +782,7 @@ class SwarmEngine:
         reachable=sum(bool(self.route(d.id,'base','mesh',True)) for d in active)
         return dict(schema_version='mission_snapshot_v1',session_id=self.session_id,revision=self.revision,network_revision=self.network_revision,
             simulation_time=self.seconds,timestamp=time.time(),playing=self.playing,speed=self.speed,seed=self.seed,pending_seed=self.pending_seed,topology=self.topology,
+            topology_selection=self.adaptive.snapshot(),
             formation=self.formation,heads=self.heads,scenario=self.scenario,controller_connected=self.controller_connected,evidence='packet_simulation',
             enforcement='simulation_logical_sdn',routing_mode='mesh_reference' if self.cfg.get('mesh_only') else 'flare',range_m=self.cfg['radio']['range_m'],terrain=self.terrain.provenance,base_position=BASE_POSITION,
             nodes=[dict(d.snapshot(),reported_position=self.attacks.position(d.id,d.position),active_attacks=[{k:a[k] for k in ('attack_id','group','profile','effective_paths','expires_at','status')} for a in self.attacks.for_node(d.id)],

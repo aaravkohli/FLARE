@@ -10,6 +10,8 @@ export interface SwarmPacket {id:string;correlation_id?:string;source?:string;de
 export interface PacketEvent {schema_version:'mission_packet_event_v1';session_id:string;cursor:number;simulation_time:number;kind:string;data:SwarmPacket & {from_node?:string;to_node?:string}}
 export interface PacketBatch {session_id:string;events:PacketEvent[];cursor:number;event_gap?:boolean}
 export interface TopologyMetadata {id:string;label:string;description:string;suggested_formation:string}
+export interface TopologyCandidate {topology:string;score:number;net_score:number;transition_penalty:number;factors:{reliability:number;latency:number;capacity:number;efficiency:number};data_pairs:number;control_routes:number;edges:number;admissible:boolean;observed_edges:number;estimated_edges:number}
+export interface TopologySelection {mode:'auto'|'manual';reason:string;evaluated_at:number|null;switched_at:number|null;transition_state:string;requested_target:string|null;transition_started_at?:number|null;drain_deadline?:number|null;cooldown_remaining_s:number;evidence:string;fallback:string|null;candidates:TopologyCandidate[];blacklisted:{topology:string;until:number}[]}
 export interface RouteInspection {session_id:string;network_revision:number;source:string;destination:string;candidate_hops:string[];installed_hops:string[];reachable:boolean;routing_source:string}
 export interface NetworkDisplay {packets:boolean;alternatives?:boolean;siteDetails?:boolean;groundLinks?:boolean;installedRoutes?:boolean;qualityColors?:boolean;linkEmphasis?:'subtle'|'standard'|'strong';inactive:boolean;ranges:boolean;hops:string[];candidate?:boolean;replay?:{packetId:string;time:number}}
 export interface NetworkCamera {x:number;z:number;span:number}
@@ -20,6 +22,7 @@ export interface SwarmEvent {cursor:number;simulation_time:number;category:strin
 export interface SwarmSnapshot {
  schema_version:'mission_snapshot_v1';session_id:string;revision:number;network_revision?:number;simulation_time:number;playing:boolean;speed:number;seed:number;pending_seed?:number|null;
  topology:string;formation:string;heads?:string[];scenario:string;controller_connected:boolean;evidence:string;base_position:number[];
+ topology_selection?:TopologySelection;
  nodes:SwarmNode[];links:SwarmLink[];packets:SwarmPacket[];flows:{source:string;destination:string;hops:string[];family:'direct'|'satellite'|'mesh'|'hold';traffic_class?:string}[];
  commands:SwarmCommand[];
  attacks?:{capabilities:{profiles:Record<string,string[]>;families:string[]};active:SwarmAttack[];history:SwarmAttack[]};

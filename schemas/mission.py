@@ -21,6 +21,7 @@ class MissionConfig(Strict):
     expected_revision: int = Field(ge=0)
     count: Optional[int] = Field(default=None, ge=10, le=100)
     topology: Optional[str] = None
+    topology_mode: Optional[Literal['auto', 'manual']] = None
     formation: Optional[str] = None
     speed: Optional[Literal[0.1, 0.25, 0.5, 1.0, 2.0, 4.0]] = None
     range_m: Optional[float] = Field(default=None, ge=50, le=1000)

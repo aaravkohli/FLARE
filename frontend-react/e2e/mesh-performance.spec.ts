@@ -7,6 +7,7 @@ const duration=Number(process.env.FLARE_PROFILE_SECONDS||60);
 // Run each view in a fresh service process when measuring renderer performance
 // independently of accumulated live-model/packet backlog: 2d, 3d or compare.
 const selectedView=process.env.FLARE_PROFILE_VIEW||'all';
+const mainTopology=process.env.FLARE_PROFILE_TOPOLOGY||'full_mesh';
 const directory=process.env.FLARE_ARTIFACT_DIR||'/private/tmp/flare-mesh-profile';
 test('100-UAV 2D, 3D and synchronized A/B rendering profile',async({page})=>{
  test.skip(!enabled,'Set FLARE_MESH_PROFILE=1 for the sustained rendering profile.');test.setTimeout(duration*3000+90000);fs.mkdirSync(directory,{recursive:true});
@@ -14,7 +15,7 @@ test('100-UAV 2D, 3D and synchronized A/B rendering profile',async({page})=>{
  await page.goto('/?profile=1#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  if(!['all','2d','3d','compare'].includes(selectedView))throw new Error('Unknown FLARE_PROFILE_VIEW');
- await resetMission(center);await missionSetting(center,'Fleet size',selectedView==='compare'?'10':'100');await center.getByLabel('Topology',{exact:true}).selectOption('full_mesh');await center.getByLabel('Speed',{exact:true}).selectOption('1');await center.getByRole('button',{name:'Presentation',exact:true}).click();if(selectedView!=='compare')await center.getByRole('button',{name:'Play mission',exact:true}).click();
+ await resetMission(center);await missionSetting(center,'Fleet size',selectedView==='compare'?'10':'100');await center.getByLabel('Topology',{exact:true}).selectOption(mainTopology);await center.getByLabel('Speed',{exact:true}).selectOption('1');await center.getByRole('button',{name:'Presentation',exact:true}).click();if(selectedView!=='compare')await center.getByRole('button',{name:'Play mission',exact:true}).click();
  const cdp=await page.context().newCDPSession(page);await cdp.send('Performance.enable');const reports:unknown[]=[];
  async function measure(view:string){
   await center.locator('canvas').first().scrollIntoViewIfNeeded();await page.waitForTimeout(3000);
@@ -28,7 +29,7 @@ test('100-UAV 2D, 3D and synchronized A/B rendering profile',async({page})=>{
   const measured=canvases.map(c=>{const frames=c.frames.filter(t=>t>0),rates=frames.map(t=>1000/t).sort((a,b)=>a-b);return {...c,average_fps:frames.length*1000/frames.reduce((a,b)=>a+b,0),fifth_percentile_fps:rates[Math.floor(rates.length*.05)]};});
   reports.push({view,duration_s:duration,clock_before:clockBefore,clock_after:clockAfter,canvases:measured,render_buffers:await center.locator('.network-inspection').evaluateAll(es=>es.map(e=>({packet_event_count:(e as HTMLElement).dataset.eventCount,packet_result_count:(e as HTMLElement).dataset.resultCount}))),retained_heap_before:before.metrics.find(m=>m.name==='JSHeapUsedSize')?.value,retained_heap_after:after.metrics.find(m=>m.name==='JSHeapUsedSize')?.value});
   await center.screenshot({path:`${directory}/${view}-100.png`});
-  fs.writeFileSync(`${directory}/performance.json`,JSON.stringify({count:100,selected_view:selectedView,browser:page.context().browser()?.version(),frontend_mode:process.env.FLARE_TEST_PRODUCTION==='1'?'production':'development',main_topology:'full_mesh',comparison_topologies:['partial_mesh','self_healing_mesh'],comparison_background:'Live mission reset to 10 UAVs and paused before the isolated 100-UAV A/B run',viewport:page.viewportSize(),headless:true,hardware:{platform:os.platform(),arch:os.arch(),cpu:os.cpus()[0]?.model},reports,errors},null,2));
+  fs.writeFileSync(`${directory}/performance.json`,JSON.stringify({count:100,selected_view:selectedView,browser:page.context().browser()?.version(),frontend_mode:process.env.FLARE_TEST_PRODUCTION==='1'?'production':'development',main_topology:mainTopology,comparison_topologies:['partial_mesh','self_healing_mesh'],comparison_background:'Live mission reset to 10 UAVs and paused before the isolated 100-UAV A/B run',viewport:page.viewportSize(),headless:true,hardware:{platform:os.platform(),arch:os.arch(),cpu:os.cpus()[0]?.model},reports,errors},null,2));
   expect(clockAfter.some((value,index)=>value!==clockBefore[index]),`${view} authoritative clock advances`).toBeTruthy();
   if(view==='compare')expect(clockAfter[0]).toBe(clockAfter[1]);
   for(const c of measured){expect(c.average_fps,`${view} average FPS`).toBeGreaterThanOrEqual(30);expect(c.fifth_percentile_fps,`${view} fifth percentile FPS`).toBeGreaterThanOrEqual(20);}

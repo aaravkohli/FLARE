@@ -5,6 +5,23 @@ import api.server as server
 import api.mission as mission
 
 
+def test_topology_mode_is_additive_authenticated_and_forwarded(monkeypatch):
+    monkeypatch.setenv('MODE','simulation');calls=[]
+    async def upstream(method,path,body=None,params=None):
+        calls.append((method,path,body));return {'topology':'ring','topology_selection':{'mode':'auto'}}
+    monkeypatch.setattr(mission,'service_request',upstream)
+    client=TestClient(server.app)
+    admin={'Authorization':'Bearer '+server._create_access_token({'sub':server.ADMIN_USERNAME})}
+    payload={'expected_revision':3,'topology_mode':'auto'}
+    assert client.patch('/mission/simulation/config',json=payload).status_code==401
+    assert client.patch('/mission/simulation/config',headers=admin,json=payload).status_code==200
+    assert calls[-1]==('PATCH','/config',payload)
+    assert client.patch('/mission/simulation/config',headers=admin,json=payload|{'topology_mode':'bogus'}).status_code==422
+    legacy={'expected_revision':3,'topology':'chain'}
+    assert client.patch('/mission/simulation/config',headers=admin,json=legacy).status_code==200
+    assert calls[-1][2]==legacy
+
+
 def test_mission_reads_allow_users_but_mutations_require_admin_and_simulation(monkeypatch):
     users=copy.deepcopy(server._USERS)
     users['swarm-viewer']={'username':'swarm-viewer','role':'viewer'}

@@ -32,10 +32,13 @@ def topology_edges(name, drones, eligible, previous=frozenset(), state=None, now
     nodes=[d for d in members if d.available and d.health>0 and d.containment!='quarantined']
     ids=[d.id for d in members]; live={d.id for d in nodes}; edges=set(); heads=[]
     for d in members: d.cluster=-1
+    nearest_cache={}
     def nearest(d,limit):
-        peers=sorted((p for p in nodes if p.id!=d.id and pair(d.id,p.id) in eligible),
-                     key=lambda p:(math.dist(d.position,p.position),p.index))
-        return [p.id for p in peers[:limit]]
+        if d.id not in nearest_cache:
+            peers=sorted((p for p in nodes if p.id!=d.id and pair(d.id,p.id) in eligible),
+                         key=lambda p:(math.dist(d.position,p.position),p.index))
+            nearest_cache[d.id]=[p.id for p in peers]
+        return nearest_cache[d.id][:limit]
     def priority(d):
         return (d.role in ('cluster_head','gateway','leader'),d.trust if d.trust is not None else .8,d.battery,-d.index)
     def elect(key,candidates):

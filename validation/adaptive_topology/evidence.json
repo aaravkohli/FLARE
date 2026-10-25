@@ -1,0 +1,1494 @@
+{
+  "scope": "Adaptive topology implementation; modeled packet simulation",
+  "generated_at": "2026-10-25T05:06:50.784996+00:00",
+  "base_commit": "9ac3fe4c60ff1ac1422c34eee2a12b239eceea9e",
+  "source_sha256": "a7083d3fa240364a66fd1d68c5a36288e7249b08957d4a7cf9566f5b2d1edd4d",
+  "files_sha256": {
+    "config/swarm_config.yaml": "906508388b7069594b960a279d810b5c611f75c9ed41a9eb4fd804655ab23aae",
+    "schemas/mission.py": "a5a19afae675f4802a41894eb5aee476e8b87ce89e293a3c2626d08a4ced6746",
+    "simulation/swarm/adaptive_topology.py": "c71de4bb760d662a422a32a7b6ca9b4e1637afff45ed56354db012968d7c83a3",
+    "simulation/swarm/engine.py": "b259c98d971555fee84c3b5a49b73df4cb65e04ea1b037375a3825af7071053f",
+    "simulation/swarm/network.py": "a44846bb72cc668c4c94c4af3e502cf092d6605caac15fe0073318b32bd018f4",
+    "simulation/swarm/topology.py": "062db7c5a31b5ad3f585ab3d006d2445541689b4ed5252e0a51c25bcce1c6dd4",
+    "simulation/swarm/experiments.py": "23bc268ae89720ca60dcf38f6b03e99e9836aa5aa5257f54316d8a769922d268",
+    "frontend-react/src/mission-simulation/TopologySelection.tsx": "486d5d1225583c72621ea0b4fe73232de7482881115cab87baa598d5b7883f1c",
+    "frontend-react/src/mission-simulation/SwarmCommandCenter.tsx": "73e61520b6e057d01eb524bd68f8f1a015cc1c6fbc50cf13620c32a547720bc0",
+    "tests/test_adaptive_topology.py": "0f7915a442a3f73d2a8386f84008ce1b7a3fe638dc079dad7a2786d3181b4790"
+  },
+  "python": "3.11.4 (v3.11.4:d2340ef257, Jun  6 2023, 19:15:51) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "full_suite_during_implementation": {
+    "tests": "937",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "492.450"
+  },
+  "final_affected_python_suite": {
+    "tests": "236",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "72.323"
+  },
+  "frontend_tests": {
+    "status": "Passed",
+    "passed": 171
+  },
+  "typecheck": {
+    "status": "Passed"
+  },
+  "lint": {
+    "status": "Passed",
+    "existing_warnings": 7
+  },
+  "production_build": {
+    "status": "Passed",
+    "existing_warning": "Large Three.js chunk"
+  },
+  "candidate_matrix": {
+    "status": "Passed",
+    "candidates": 10,
+    "sizes": [
+      10,
+      20,
+      30,
+      40,
+      50,
+      60,
+      70,
+      80,
+      90,
+      100
+    ],
+    "seeds": [
+      7,
+      42,
+      99
+    ],
+    "evaluations": 300
+  },
+  "fixed_topology_benchmark": {
+    "identical_runs": 30,
+    "count": 30,
+    "seeds": [
+      7,
+      42,
+      99
+    ],
+    "warmup_s": 5,
+    "duration_s": 60,
+    "ttl_drain_s": 20,
+    "numerical_results_identical": true,
+    "excluded_fields": [
+      "configuration_sha256"
+    ],
+    "before_wall_seconds": 160.05458095902577,
+    "after_wall_seconds": 157.98576508299448,
+    "status": "Passed",
+    "fleet_identities": "repository fleet registry; expanded deterministically to 30 UAVs",
+    "baseline_artifact": "/private/tmp/flare-adaptive-baseline-fleet-results.json",
+    "current_artifact": "/private/tmp/flare-adaptive-current-fleet-results.json",
+    "baseline_artifact_sha256": "ee6b09bd46dcc2d71d0531a00822cd8ad033947456ae3b852b025d809c3670c3",
+    "current_artifact_sha256": "4ca8ac9666839588eed10cb3f6595439fcdd3c590b2cad81b7a35b50d18781b4",
+    "results": [
+      {
+        "average_hops": 1.0,
+        "average_latency_ms": 9.84785693909385,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1587,
+        "dropped": 63,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.6812534315585937,
+        "pdr": 0.9618181818181818,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11818821818181818,
+        "topology": "full_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.017021276595744,
+        "average_latency_ms": 38.427291434059214,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1645,
+        "dropped": 5,
+        "failed_routes": 26,
+        "generated": 1650,
+        "jitter_ms": 1.6928511899713943,
+        "pdr": 0.996969696969697,
+        "recovery": [
+          {
+            "destination": "sim_uav_019",
+            "disrupted_at": 2.0500000000000007,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 2.0500000000000007,
+            "service_recovered_at": 2.096383645830384,
+            "service_recovery_ms": 46.38364583038346,
+            "source": "drone_4"
+          },
+          {
+            "destination": "drone_4",
+            "disrupted_at": 2.0500000000000007,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 2.0500000000000007,
+            "service_recovered_at": 2.098600486084195,
+            "service_recovery_ms": 48.6004860841942,
+            "source": "sim_uav_019"
+          },
+          {
+            "destination": "sim_uav_018",
+            "disrupted_at": 6.249999999999986,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.249999999999986,
+            "service_recovered_at": 7.086265928396367,
+            "service_recovery_ms": 836.2659283963811,
+            "source": "drone_3"
+          },
+          {
+            "destination": "sim_uav_024",
+            "disrupted_at": 13.250000000000053,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 13.250000000000053,
+            "service_recovered_at": 14.086528457668944,
+            "service_recovery_ms": 836.5284576688907,
+            "source": "sim_uav_009"
+          },
+          {
+            "destination": "drone_3",
+            "disrupted_at": 6.249999999999986,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.249999999999986,
+            "service_recovered_at": 7.086587387893907,
+            "service_recovery_ms": 836.5873878939212,
+            "source": "sim_uav_018"
+          },
+          {
+            "destination": "sim_uav_009",
+            "disrupted_at": 13.250000000000053,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 13.250000000000053,
+            "service_recovered_at": 14.084729377251428,
+            "service_recovery_ms": 834.7293772513744,
+            "source": "sim_uav_024"
+          },
+          {
+            "destination": "sim_uav_020",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.099945324722426,
+            "service_recovery_ms": 649.9453247224407,
+            "source": "drone_5"
+          },
+          {
+            "destination": "sim_uav_021",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.096430243411506,
+            "service_recovery_ms": 646.4302434115208,
+            "source": "sim_uav_006"
+          },
+          {
+            "destination": "sim_uav_025",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.099995048243215,
+            "service_recovery_ms": 649.9950482432295,
+            "source": "sim_uav_010"
+          },
+          {
+            "destination": "sim_uav_026",
+            "disrupted_at": 8.84999999999999,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.84999999999999,
+            "service_recovered_at": 9.098506447408152,
+            "service_recovery_ms": 248.50644740816108,
+            "source": "sim_uav_011"
+          },
+          {
+            "destination": "drone_5",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.100534870696111,
+            "service_recovery_ms": 650.5348706961263,
+            "source": "sim_uav_020"
+          },
+          {
+            "destination": "sim_uav_006",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.099123592160118,
+            "service_recovery_ms": 649.1235921601328,
+            "source": "sim_uav_021"
+          },
+          {
+            "destination": "sim_uav_010",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.097644076390684,
+            "service_recovery_ms": 647.6440763906987,
+            "source": "sim_uav_025"
+          },
+          {
+            "destination": "sim_uav_011",
+            "disrupted_at": 8.84999999999999,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.84999999999999,
+            "service_recovered_at": 9.097688152823288,
+            "service_recovery_ms": 247.68815282329726,
+            "source": "sim_uav_026"
+          },
+          {
+            "destination": "sim_uav_022",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.089355549894204,
+            "service_recovery_ms": 639.3555498942192,
+            "source": "sim_uav_007"
+          },
+          {
+            "destination": "sim_uav_023",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.097500850562527,
+            "service_recovery_ms": 647.5008505625422,
+            "source": "sim_uav_008"
+          },
+          {
+            "destination": "sim_uav_028",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.087614027976226,
+            "service_recovery_ms": 637.614027976241,
+            "source": "sim_uav_013"
+          },
+          {
+            "destination": "sim_uav_029",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.085663503824554,
+            "service_recovery_ms": 635.6635038245688,
+            "source": "sim_uav_014"
+          },
+          {
+            "destination": "sim_uav_007",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.09131582591739,
+            "service_recovery_ms": 641.3158259174044,
+            "source": "sim_uav_022"
+          },
+          {
+            "destination": "sim_uav_008",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.099093541699736,
+            "service_recovery_ms": 649.0935416997505,
+            "source": "sim_uav_023"
+          },
+          {
+            "destination": "sim_uav_013",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.088071554603717,
+            "service_recovery_ms": 638.0715546037319,
+            "source": "sim_uav_028"
+          },
+          {
+            "destination": "sim_uav_014",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.091138952175736,
+            "service_recovery_ms": 641.1389521757513,
+            "source": "sim_uav_029"
+          }
+        ],
+        "route_convergence_ms": 0.0,
+        "seed": 7,
+        "service_recovery_ms": 589.0325838924983,
+        "throughput_mbps": 0.12250763636363637,
+        "topology": "partial_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.9274193548387097,
+        "average_latency_ms": 31.972569991326107,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1488,
+        "dropped": 162,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.9829498815697705,
+        "pdr": 0.9018181818181819,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11081541818181818,
+        "topology": "star",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 15.0,
+        "average_latency_ms": 141.75183809776507,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1280,
+        "dropped": 370,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 2.5529348444030124,
+        "pdr": 0.7757575757575758,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.09532509090909091,
+        "topology": "ring",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.208679004467134,
+        "average_latency_ms": 40.96816581931201,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1567,
+        "dropped": 83,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.5647578837056946,
+        "pdr": 0.9496969696969697,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11669876363636364,
+        "topology": "tree",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 2.8024065864471184,
+        "average_latency_ms": 32.77466073090792,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1579,
+        "dropped": 71,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 2.3818592830203813,
+        "pdr": 0.9569696969696969,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11759243636363637,
+        "topology": "cluster_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 5.399636143117041,
+        "average_latency_ms": 51.53705718323424,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1649,
+        "dropped": 1,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.7848045282728984,
+        "pdr": 0.9993939393939394,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.12280552727272727,
+        "topology": "grid",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.0,
+        "average_latency_ms": 9.84785693909385,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1587,
+        "dropped": 63,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.6812534315585937,
+        "pdr": 0.9618181818181818,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11818821818181818,
+        "topology": "random_geometric",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 2.6723057644110275,
+        "average_latency_ms": 29.325185929084014,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1596,
+        "dropped": 54,
+        "failed_routes": 2,
+        "generated": 1650,
+        "jitter_ms": 2.1199532781782637,
+        "pdr": 0.9672727272727273,
+        "recovery": [
+          {
+            "destination": "sim_uav_020",
+            "disrupted_at": 6.849999999999984,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.849999999999984,
+            "service_recovered_at": 7.085874625757175,
+            "service_recovery_ms": 235.87462575719175,
+            "source": "drone_5"
+          },
+          {
+            "destination": "drone_5",
+            "disrupted_at": 6.849999999999984,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.849999999999984,
+            "service_recovered_at": 7.081504152050946,
+            "service_recovery_ms": 231.5041520509622,
+            "source": "sim_uav_020"
+          }
+        ],
+        "route_convergence_ms": 0.0,
+        "seed": 7,
+        "service_recovery_ms": 233.68938890407696,
+        "throughput_mbps": 0.11885847272727273,
+        "topology": "hybrid_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.133049817739976,
+        "average_latency_ms": 39.282721014146446,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1646,
+        "dropped": 4,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.3938976474258462,
+        "pdr": 0.9975757575757576,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 7,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.12258210909090908,
+        "topology": "self_healing_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.0,
+        "average_latency_ms": 9.837456336009842,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1584,
+        "dropped": 66,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.6763792139283931,
+        "pdr": 0.96,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11796480000000001,
+        "topology": "full_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.016990291262136,
+        "average_latency_ms": 38.50436416095196,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1648,
+        "dropped": 2,
+        "failed_routes": 26,
+        "generated": 1650,
+        "jitter_ms": 1.7178688959315658,
+        "pdr": 0.9987878787878788,
+        "recovery": [
+          {
+            "destination": "sim_uav_019",
+            "disrupted_at": 2.0500000000000007,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 2.0500000000000007,
+            "service_recovered_at": 2.0958605998261084,
+            "service_recovery_ms": 45.86059982610769,
+            "source": "drone_4"
+          },
+          {
+            "destination": "drone_4",
+            "disrupted_at": 2.0500000000000007,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 2.0500000000000007,
+            "service_recovered_at": 2.0963879133081953,
+            "service_recovery_ms": 46.387913308194584,
+            "source": "sim_uav_019"
+          },
+          {
+            "destination": "sim_uav_018",
+            "disrupted_at": 6.249999999999986,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.249999999999986,
+            "service_recovered_at": 7.087985970534699,
+            "service_recovery_ms": 837.9859705347128,
+            "source": "drone_3"
+          },
+          {
+            "destination": "sim_uav_024",
+            "disrupted_at": 13.250000000000053,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 13.250000000000053,
+            "service_recovered_at": 14.087265500110957,
+            "service_recovery_ms": 837.2655001109042,
+            "source": "sim_uav_009"
+          },
+          {
+            "destination": "drone_3",
+            "disrupted_at": 6.249999999999986,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.249999999999986,
+            "service_recovered_at": 7.08824490828294,
+            "service_recovery_ms": 838.2449082829542,
+            "source": "sim_uav_018"
+          },
+          {
+            "destination": "sim_uav_009",
+            "disrupted_at": 13.250000000000053,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 13.250000000000053,
+            "service_recovered_at": 14.088671415397382,
+            "service_recovery_ms": 838.6714153973287,
+            "source": "sim_uav_024"
+          },
+          {
+            "destination": "sim_uav_020",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.096158291656334,
+            "service_recovery_ms": 646.1582916563486,
+            "source": "drone_5"
+          },
+          {
+            "destination": "sim_uav_021",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.096549995455945,
+            "service_recovery_ms": 646.5499954559597,
+            "source": "sim_uav_006"
+          },
+          {
+            "destination": "sim_uav_025",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.098770981089481,
+            "service_recovery_ms": 648.7709810894958,
+            "source": "sim_uav_010"
+          },
+          {
+            "destination": "sim_uav_026",
+            "disrupted_at": 8.84999999999999,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.84999999999999,
+            "service_recovered_at": 9.097555625487544,
+            "service_recovery_ms": 247.5556254875535,
+            "source": "sim_uav_011"
+          },
+          {
+            "destination": "drone_5",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.0980930670427345,
+            "service_recovery_ms": 648.0930670427493,
+            "source": "sim_uav_020"
+          },
+          {
+            "destination": "sim_uav_006",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.098703908758915,
+            "service_recovery_ms": 648.7039087589297,
+            "source": "sim_uav_021"
+          },
+          {
+            "destination": "sim_uav_010",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.096820474187442,
+            "service_recovery_ms": 646.8204741874572,
+            "source": "sim_uav_025"
+          },
+          {
+            "destination": "sim_uav_011",
+            "disrupted_at": 8.84999999999999,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.84999999999999,
+            "service_recovered_at": 9.098568990305875,
+            "service_recovery_ms": 248.56899030588409,
+            "source": "sim_uav_026"
+          },
+          {
+            "destination": "sim_uav_022",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.085721294429334,
+            "service_recovery_ms": 635.7212944293486,
+            "source": "sim_uav_007"
+          },
+          {
+            "destination": "sim_uav_023",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.098589686963326,
+            "service_recovery_ms": 648.5896869633407,
+            "source": "sim_uav_008"
+          },
+          {
+            "destination": "sim_uav_028",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.089933062632731,
+            "service_recovery_ms": 639.9330626327462,
+            "source": "sim_uav_013"
+          },
+          {
+            "destination": "sim_uav_029",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.090487004846379,
+            "service_recovery_ms": 640.4870048463938,
+            "source": "sim_uav_014"
+          },
+          {
+            "destination": "sim_uav_007",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.08861673616763,
+            "service_recovery_ms": 638.616736167645,
+            "source": "sim_uav_022"
+          },
+          {
+            "destination": "sim_uav_008",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.101665344370614,
+            "service_recovery_ms": 651.6653443706293,
+            "source": "sim_uav_023"
+          },
+          {
+            "destination": "sim_uav_013",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.089066032965071,
+            "service_recovery_ms": 639.0660329650864,
+            "source": "sim_uav_028"
+          },
+          {
+            "destination": "sim_uav_014",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.089635876932434,
+            "service_recovery_ms": 639.6358769324486,
+            "source": "sim_uav_029"
+          }
+        ],
+        "route_convergence_ms": 0.0,
+        "seed": 42,
+        "service_recovery_ms": 589.0614854887373,
+        "throughput_mbps": 0.12273105454545455,
+        "topology": "partial_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.9272005294506949,
+        "average_latency_ms": 31.909400346441085,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1511,
+        "dropped": 139,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.92590283978211,
+        "pdr": 0.9157575757575758,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.1125282909090909,
+        "topology": "star",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 15.0,
+        "average_latency_ms": 141.81980713302582,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1310,
+        "dropped": 340,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 2.513554863516627,
+        "pdr": 0.793939393939394,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.09755927272727272,
+        "topology": "ring",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.203477141017386,
+        "average_latency_ms": 40.967286365715225,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1553,
+        "dropped": 97,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.5240752770729127,
+        "pdr": 0.9412121212121212,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11565614545454546,
+        "topology": "tree",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 2.801147227533461,
+        "average_latency_ms": 32.8213604325736,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1569,
+        "dropped": 81,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 2.4183413309051054,
+        "pdr": 0.9509090909090909,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.1168477090909091,
+        "topology": "cluster_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 5.400485436893204,
+        "average_latency_ms": 51.598945708177986,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1648,
+        "dropped": 2,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.8237396059831825,
+        "pdr": 0.9987878787878788,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.12273105454545455,
+        "topology": "grid",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.0,
+        "average_latency_ms": 9.837456336009842,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1584,
+        "dropped": 66,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.6763792139283931,
+        "pdr": 0.96,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11796480000000001,
+        "topology": "random_geometric",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 2.6691823899371068,
+        "average_latency_ms": 29.348932577388943,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1590,
+        "dropped": 60,
+        "failed_routes": 2,
+        "generated": 1650,
+        "jitter_ms": 2.1450609165907997,
+        "pdr": 0.9636363636363636,
+        "recovery": [
+          {
+            "destination": "sim_uav_020",
+            "disrupted_at": 6.849999999999984,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.849999999999984,
+            "service_recovered_at": 7.0845383706877945,
+            "service_recovery_ms": 234.5383706878108,
+            "source": "drone_5"
+          },
+          {
+            "destination": "drone_5",
+            "disrupted_at": 6.849999999999984,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.849999999999984,
+            "service_recovered_at": 7.081838723596982,
+            "service_recovery_ms": 231.83872359699808,
+            "source": "sim_uav_020"
+          }
+        ],
+        "route_convergence_ms": 0.0,
+        "seed": 42,
+        "service_recovery_ms": 233.18854714240445,
+        "throughput_mbps": 0.11841163636363637,
+        "topology": "hybrid_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.133495145631068,
+        "average_latency_ms": 39.303063844938194,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1648,
+        "dropped": 2,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.4681049063627567,
+        "pdr": 0.9987878787878788,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 42,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.12273105454545455,
+        "topology": "self_healing_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.0,
+        "average_latency_ms": 9.81985621618235,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1600,
+        "dropped": 50,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.6523384416033562,
+        "pdr": 0.9696969696969697,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11915636363636363,
+        "topology": "full_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.017000607164541,
+        "average_latency_ms": 38.572665080397464,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1647,
+        "dropped": 3,
+        "failed_routes": 26,
+        "generated": 1650,
+        "jitter_ms": 1.6616850381330714,
+        "pdr": 0.9981818181818182,
+        "recovery": [
+          {
+            "destination": "sim_uav_019",
+            "disrupted_at": 2.0500000000000007,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 2.0500000000000007,
+            "service_recovered_at": 2.0992094759257447,
+            "service_recovery_ms": 49.20947592574399,
+            "source": "drone_4"
+          },
+          {
+            "destination": "drone_4",
+            "disrupted_at": 2.0500000000000007,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 2.0500000000000007,
+            "service_recovered_at": 2.096154673030717,
+            "service_recovery_ms": 46.154673030716076,
+            "source": "sim_uav_019"
+          },
+          {
+            "destination": "sim_uav_018",
+            "disrupted_at": 6.249999999999986,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.249999999999986,
+            "service_recovered_at": 7.089769357179701,
+            "service_recovery_ms": 839.7693571797156,
+            "source": "drone_3"
+          },
+          {
+            "destination": "sim_uav_024",
+            "disrupted_at": 13.250000000000053,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 13.250000000000053,
+            "service_recovered_at": 14.09060832930449,
+            "service_recovery_ms": 840.6083293044376,
+            "source": "sim_uav_009"
+          },
+          {
+            "destination": "drone_3",
+            "disrupted_at": 6.249999999999986,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.249999999999986,
+            "service_recovered_at": 7.089590510675061,
+            "service_recovery_ms": 839.5905106750749,
+            "source": "sim_uav_018"
+          },
+          {
+            "destination": "sim_uav_009",
+            "disrupted_at": 13.250000000000053,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 13.250000000000053,
+            "service_recovered_at": 14.08653066376591,
+            "service_recovery_ms": 836.5306637658563,
+            "source": "sim_uav_024"
+          },
+          {
+            "destination": "sim_uav_020",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.09758058286711,
+            "service_recovery_ms": 647.5805828671248,
+            "source": "drone_5"
+          },
+          {
+            "destination": "sim_uav_021",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.0990199037903094,
+            "service_recovery_ms": 649.0199037903244,
+            "source": "sim_uav_006"
+          },
+          {
+            "destination": "sim_uav_025",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.097688558559651,
+            "service_recovery_ms": 647.6885585596657,
+            "source": "sim_uav_010"
+          },
+          {
+            "destination": "sim_uav_026",
+            "disrupted_at": 8.84999999999999,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.84999999999999,
+            "service_recovered_at": 9.09947155459975,
+            "service_recovery_ms": 249.47155459975966,
+            "source": "sim_uav_011"
+          },
+          {
+            "destination": "drone_5",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.098568587023601,
+            "service_recovery_ms": 648.5685870236156,
+            "source": "sim_uav_020"
+          },
+          {
+            "destination": "sim_uav_006",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.098309412071465,
+            "service_recovery_ms": 648.3094120714803,
+            "source": "sim_uav_021"
+          },
+          {
+            "destination": "sim_uav_010",
+            "disrupted_at": 6.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.449999999999985,
+            "service_recovered_at": 7.099961451930935,
+            "service_recovery_ms": 649.9614519309498,
+            "source": "sim_uav_025"
+          },
+          {
+            "destination": "sim_uav_011",
+            "disrupted_at": 8.84999999999999,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.84999999999999,
+            "service_recovered_at": 9.099803256340312,
+            "service_recovery_ms": 249.8032563403214,
+            "source": "sim_uav_026"
+          },
+          {
+            "destination": "sim_uav_022",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.090714740221221,
+            "service_recovery_ms": 640.7147402212363,
+            "source": "sim_uav_007"
+          },
+          {
+            "destination": "sim_uav_023",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.09903247252531,
+            "service_recovery_ms": 649.0324725253256,
+            "source": "sim_uav_008"
+          },
+          {
+            "destination": "sim_uav_028",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.086050593118054,
+            "service_recovery_ms": 636.0505931180693,
+            "source": "sim_uav_013"
+          },
+          {
+            "destination": "sim_uav_029",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.088003236087474,
+            "service_recovery_ms": 638.0032360874885,
+            "source": "sim_uav_014"
+          },
+          {
+            "destination": "sim_uav_007",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.089950324119252,
+            "service_recovery_ms": 639.9503241192672,
+            "source": "sim_uav_022"
+          },
+          {
+            "destination": "sim_uav_008",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.099041710092056,
+            "service_recovery_ms": 649.0417100920708,
+            "source": "sim_uav_023"
+          },
+          {
+            "destination": "sim_uav_013",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.08784938304419,
+            "service_recovery_ms": 637.8493830442053,
+            "source": "sim_uav_028"
+          },
+          {
+            "destination": "sim_uav_014",
+            "disrupted_at": 8.449999999999985,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 8.449999999999985,
+            "service_recovered_at": 9.087971863211347,
+            "service_recovery_ms": 637.9718632113622,
+            "source": "sim_uav_029"
+          }
+        ],
+        "route_convergence_ms": 0.0,
+        "seed": 99,
+        "service_recovery_ms": 589.5854836129005,
+        "throughput_mbps": 0.12265658181818181,
+        "topology": "partial_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.9280528052805281,
+        "average_latency_ms": 31.912424413915637,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1515,
+        "dropped": 135,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.9680672492623691,
+        "pdr": 0.9181818181818182,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11282618181818183,
+        "topology": "star",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 15.0,
+        "average_latency_ms": 141.89547582539544,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1301,
+        "dropped": 349,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 2.5558947700766574,
+        "pdr": 0.7884848484848485,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.09688901818181819,
+        "topology": "ring",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.2231457800511505,
+        "average_latency_ms": 41.12134609740109,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1564,
+        "dropped": 86,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.5381629666211614,
+        "pdr": 0.9478787878787879,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11647534545454546,
+        "topology": "tree",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 2.7994875080076875,
+        "average_latency_ms": 32.770741048194594,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1561,
+        "dropped": 89,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 2.281020045726398,
+        "pdr": 0.946060606060606,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11625192727272728,
+        "topology": "cluster_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 5.400242571255307,
+        "average_latency_ms": 51.62679327677043,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1649,
+        "dropped": 1,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.7989490391263232,
+        "pdr": 0.9993939393939394,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.12280552727272727,
+        "topology": "grid",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 1.0,
+        "average_latency_ms": 9.81985621618235,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1600,
+        "dropped": 50,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 0.6523384416033562,
+        "pdr": 0.9696969696969697,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.11915636363636363,
+        "topology": "random_geometric",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 2.6704473850031505,
+        "average_latency_ms": 29.345911595399965,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1587,
+        "dropped": 63,
+        "failed_routes": 2,
+        "generated": 1650,
+        "jitter_ms": 1.8540659522592284,
+        "pdr": 0.9618181818181818,
+        "recovery": [
+          {
+            "destination": "sim_uav_020",
+            "disrupted_at": 6.849999999999984,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.849999999999984,
+            "service_recovered_at": 7.080608818042052,
+            "service_recovery_ms": 230.608818042068,
+            "source": "drone_5"
+          },
+          {
+            "destination": "drone_5",
+            "disrupted_at": 6.849999999999984,
+            "route_convergence_ms": 0.0,
+            "route_recovered_at": 6.849999999999984,
+            "service_recovered_at": 7.081273715371724,
+            "service_recovery_ms": 231.27371537174037,
+            "source": "sim_uav_020"
+          }
+        ],
+        "route_convergence_ms": 0.0,
+        "seed": 99,
+        "service_recovery_ms": 230.94126670690417,
+        "throughput_mbps": 0.11818821818181818,
+        "topology": "hybrid_mesh",
+        "unrecovered_flows": 0
+      },
+      {
+        "average_hops": 4.133495145631068,
+        "average_latency_ms": 39.39532096720262,
+        "connected_components": 1,
+        "conservation": true,
+        "delivered": 1648,
+        "dropped": 2,
+        "failed_routes": 0,
+        "generated": 1650,
+        "jitter_ms": 1.3889855298483154,
+        "pdr": 0.9987878787878788,
+        "recovery": [],
+        "route_convergence_ms": null,
+        "seed": 99,
+        "service_recovery_ms": null,
+        "throughput_mbps": 0.12273105454545455,
+        "topology": "self_healing_mesh",
+        "unrecovered_flows": 0
+      }
+    ]
+  },
+  "render_profiles": [
+    {
+      "mode": "auto",
+      "view": "3d",
+      "seconds": 60,
+      "count": 100,
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "clock_before": [
+        "T+0.8s"
+      ],
+      "clock_after": [
+        "T+26.9s"
+      ],
+      "measurements": [
+        {
+          "average_fps": 55.10053854295963,
+          "fifth_percentile_fps": 30.030030030029046,
+          "buffer_capacity": 72000,
+          "frame_count": 3316,
+          "gpu": {
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+          }
+        }
+      ],
+      "errors": [],
+      "artifact": "/private/tmp/flare-adaptive-performance-auto/performance.json",
+      "artifact_sha256": "4f49ab5512f9464a25b4ea9a3fca515643fdcbd6954cdc9f71599991c644b619"
+    },
+    {
+      "mode": "auto",
+      "view": "2d",
+      "seconds": 60,
+      "count": 100,
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "clock_before": [
+        "T+1.7s"
+      ],
+      "clock_after": [
+        "T+37.6s"
+      ],
+      "measurements": [
+        {
+          "average_fps": 58.87090333058225,
+          "fifth_percentile_fps": 59.523809523824994,
+          "buffer_capacity": 72000,
+          "frame_count": 3538,
+          "gpu": null
+        }
+      ],
+      "errors": [],
+      "artifact": "/private/tmp/flare-adaptive-performance-2d/performance.json",
+      "artifact_sha256": "08f6f40ff24eaf1c2d52b0e15169bcb38d646d6e4045fbf835a20245eb3323f5"
+    },
+    {
+      "mode": "manual",
+      "view": "3d",
+      "seconds": 60,
+      "count": 100,
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "clock_before": [
+        "T+1.8s"
+      ],
+      "clock_after": [
+        "T+46.7s"
+      ],
+      "measurements": [
+        {
+          "average_fps": 54.03211992503022,
+          "fifth_percentile_fps": 30.030030030027405,
+          "buffer_capacity": 72000,
+          "frame_count": 3249,
+          "gpu": {
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+          }
+        }
+      ],
+      "errors": [],
+      "artifact": "/private/tmp/flare-adaptive-performance-manual/performance.json",
+      "artifact_sha256": "c989e84ea5dd11db1a9957a147b53e0cf119e9c9bd3c363de20d55088cf736fb"
+    }
+  ],
+  "cpu_comparison": {
+    "source_sha256": "1663c94a00b714030eff5c3bd5fed773fca5bca8ea3765dc16937283c5f6a5a6",
+    "count": 100,
+    "seed": 42,
+    "hardware": "macOS-26.6.2-arm64-arm-64bit",
+    "process_clock": "time.process_time",
+    "note": "Modeled packet simulation; not a real-time deadline or hardware network benchmark",
+    "runs": [
+      {
+        "mode": "manual",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 7.418596,
+        "wall_seconds": 7.612665208987892,
+        "evaluations": 0,
+        "evaluation_cpu_ms": [],
+        "selector_cpu_seconds": 0,
+        "conservation": true
+      },
+      {
+        "mode": "auto",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 11.985438000000002,
+        "wall_seconds": 13.118333542020991,
+        "evaluations": 9,
+        "evaluation_cpu_ms": [
+          339.102,
+          284.765,
+          252.916,
+          254.21,
+          253.004,
+          285.298,
+          284.531,
+          404.659,
+          259.078
+        ],
+        "selector_cpu_seconds": 2.6175629999999934,
+        "conservation": true
+      }
+    ],
+    "total_cpu_ratio": 1.6155938401282401
+  },
+  "browser": {
+    "status": "Passed",
+    "passed": 13,
+    "production": true,
+    "specifications": [
+      "adaptive-topology.spec.ts",
+      "mesh-research.spec.ts",
+      "connections-countdown.spec.ts"
+    ],
+    "artifacts": "/private/tmp/flare-adaptive-browser-final"
+  },
+  "scope_notes": [
+    "Full pytest run preceded final selector/contract refinements; final affected tests were rerun afterward.",
+    "pytest.ini excludes script-style tests/test_adversarial.py; this is not a whole-application audit.",
+    "60-second profiles were recorded in separate fresh production sessions. Renderers were unchanged by final backend guard fixes.",
+    "Fixed-topology numerical measurements match the pre-change implementation; source/configuration fingerprints are intentionally allowed to change.",
+    "Performance is rendering FPS, not a guarantee of real-time simulator progression.",
+    "Final explanatory copy for physically constrained graphs has a separate selector-only rerun; CPU/render artifacts retain their own recorded revision."
+  ],
+  "final_selector_suite": {
+    "tests": "59",
+    "failures": "0",
+    "errors": "0",
+    "skipped": "0",
+    "time": "9.994",
+    "status": "Passed"
+  },
+  "operator_artifact_isolation": {
+    "status": "Passed",
+    "note": "Protected configuration/model/state hashes match before/after; test services stopped"
+  }
+}

@@ -125,6 +125,7 @@ class PacketScheduler:
         self.transmitted=defaultdict(int); self.received=defaultdict(int); self.forwarded=defaultdict(int)
         self.completions=deque(maxlen=20000)
         self.event_time=None
+        self.deferred=set()
 
     def schedule(self,at,p,kind):
         self.order+=1; heapq.heappush(self.heap,(at,self.order,p.id,kind,p.repair_count))
@@ -142,7 +143,7 @@ class PacketScheduler:
         key=f'{seed}:{p.source}:{p.destination}:{p.sequence}:{edge}:{p.hop}:{p.attempt}:{purpose}'
         return int.from_bytes(hashlib.blake2b(key.encode(),digest_size=8).digest(),'big')/2**64
 
-    def emit(self,source,destination,category,size,route,now,revision,correlation=None,family='mesh',sequence=None,claimed_source_mac=None,restrictions=None):
+    def emit(self,source,destination,category,size,route,now,revision,correlation=None,family='mesh',sequence=None,claimed_source_mac=None,restrictions=None,defer=False):
         self.serial+=1; identity=f'p{self.serial}'; self.generated+=1
         p=Packet(identity,source,destination,category,size,route[:],now,now+self.cfg['ttl_s'],revision,
                  correlation_id=correlation,family=family,sequence=self.serial if sequence is None else sequence,
@@ -151,10 +152,28 @@ class PacketScheduler:
             self.finish(p,'dropped','capacity',now); return p
         self.packets[identity]=p
         self.event('packet_queued',p,now)
-        if len(route)<2: self.finish(p,'dropped','no_route',now)
+        if defer:
+            # Bound admission by the existing source queue limit as well as global capacity.
+            if sum(self.packets[n].source==source for n in self.deferred)>=self.cfg['queue_limit']:
+                self.finish(p,'dropped','queue_overflow',now)
+            else:
+                self.deferred.add(identity); p.status='deferred'
+                self.schedule(p.expires_at,p,'expire')
+                self.event('packet_deferred',p,now)
+        elif len(route)<2: self.finish(p,'dropped','no_route',now)
         else:
             self.schedule(now,p,'ready'); self.schedule(p.expires_at,p,'expire')
         return p
+
+    def resume_deferred(self,p,route,now,revision):
+        if p.id not in self.deferred: return
+        self.deferred.discard(p.id)
+        if now>=p.expires_at:
+            self.finish(p,'dropped','expired',p.expires_at); return
+        p.route=route[:]; p.revision=revision; p.status='queued'
+        self.event('packet_released',p,now)
+        if len(route)<2: self.finish(p,'dropped','no_route',now)
+        else: self.schedule(now,p,'ready')
 
     def release(self,p,now):
         reservation=self.reservations.pop(p.id,None)
@@ -170,6 +189,7 @@ class PacketScheduler:
 
     def finish(self,p,status,reason,now):
         if p.status in ('delivered','dropped'): return
+        self.deferred.discard(p.id)
         self.release(p,now)
         p.status=status; p.reason=reason; p.completed_at=now
         if status=='delivered':
@@ -191,6 +211,7 @@ class PacketScheduler:
         if now < self.now-1e-9: raise ValueError('packet clock cannot run backwards')
         # Validate packets at the observation boundary, including future reservations.
         for p in list(self.packets.values()):
+            if p.id in self.deferred: continue
             if p.hop>=len(p.route)-1: continue
             a,b=p.route[p.hop:p.hop+2]
             link=links(p,a,b) if callable(links) else links.get(pair(a,b))
@@ -263,6 +284,6 @@ class PacketScheduler:
 
     def retire(self,identities,now):
         for p in list(self.packets.values()):
-            if any(n in identities for n in p.route[p.hop:]): self.finish(p,'dropped','node_retired',now)
+            if any(n in identities for n in p.route[p.hop:]) or p.id in self.deferred and (p.source in identities or p.destination in identities): self.finish(p,'dropped','node_retired',now)
         for edge in list(self.busy):
             if any(n in identities for n in edge): self.busy.pop(edge,None); self.queued.pop(edge,None)

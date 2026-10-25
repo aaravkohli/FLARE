@@ -225,6 +225,19 @@
 @media(max-width:767px){.swarm-center .network-layer-key{bottom:8px;right:8px;max-width:calc(100% - 180px);font-size:10px;gap:4px 10px}}
 
 /* RF quality remains inspectable even when topology uses a uniform color. */
+.swarm-center .workspace-topology-status{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 14px;padding:6px 16px;border-bottom:1px solid var(--mission-line);font-size:12px;color:var(--mission-muted);line-height:1.5}
+.swarm-center .workspace-topology-status strong{color:var(--mission-text);font-weight:500}
+.swarm-center .topology-transition{color:#e3ba77}
+.swarm-center .topology-diagnostics{grid-column:1/-1;min-width:0;font-size:12px;line-height:1.5}
+.swarm-center .topology-diagnostics summary{min-height:44px;display:flex;align-items:center;cursor:pointer}
+.swarm-center .topology-diagnostics dl>div{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--mission-line);padding:6px 0}
+.swarm-center .topology-diagnostics dd{margin:0;font-variant-numeric:tabular-nums}
+.swarm-center .topology-score-scroll{overflow:auto;max-width:100%}
+.swarm-center .topology-diagnostics table{border-collapse:collapse;text-align:left;font-size:11px;font-variant-numeric:tabular-nums}
+.swarm-center .topology-diagnostics th,.swarm-center .topology-diagnostics td{padding:8px;border-bottom:1px solid var(--mission-line)}
+.swarm-center .topology-diagnostics small{display:block;color:var(--mission-muted);white-space:nowrap}
+.swarm-center .topology-diagnostics tr[aria-current=true]{background:#a3c7ef12}
+.swarm-center .topology-diagnostics caption{text-align:left;padding:8px 0;color:var(--mission-muted)}
 .swarm-center .network-layer-key .workspace-popover{pointer-events:auto}
 .swarm-center .network-layer-key .workspace-popover>button{min-height:44px;padding:4px 7px;color:#d3dee6;background:transparent;border:0;font-size:11px;display:flex;align-items:center;gap:6px}
 .swarm-center .network-layer-key .tool-full-label{display:none}.swarm-center .network-layer-key .tool-compact-label{display:inline}

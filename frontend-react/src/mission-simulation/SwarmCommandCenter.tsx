@@ -25,6 +25,8 @@ import WorkspaceBottomPanel from './WorkspaceBottomPanel';
 import type { BottomTab } from './WorkspaceBottomPanel';
 import ActivityPanel from './ActivityPanel';
 import AttackLab from './AttackLab';
+import { ActiveTopology, TopologyDiagnostics } from './TopologySelection';
+import { topologyControlValue } from './world/topologySelection';
 import './mission-simulation.css';
 import './swarm.css';
 
@@ -69,6 +71,7 @@ export default function SwarmCommandCenter({snapshot:initialSnapshot,api,token,e
   return ()=>{document.body.style.overflow=overflow;document.removeEventListener('keydown',keyboard);previousFocus?.focus();};
  },[presentation]);
  const stale=now>snapshot.timestamp*1000+3000;
+ const requestedTopology=snapshot.topology_selection?.requested_target??snapshot.topology;
  const drone=snapshot.nodes.find(n=>n.id===first);
  const fleet=useMemo(()=>snapshot.nodes.map((n,index)=>({drone_id:n.id,display_name:n.alias,index:index+1,enabled:true})),[snapshot.nodes]);
  const state=useMemo<MissionSimulationState>(()=>{
@@ -115,7 +118,7 @@ export default function SwarmCommandCenter({snapshot:initialSnapshot,api,token,e
    <div className="swarm-toolbar">
     <button className="mission-play" disabled={busy||stale} onClick={()=>void mutate('/control',{action:snapshot.playing?'pause':'play'})}>{snapshot.playing?<Pause size={15}/>:<Play size={15}/>} {snapshot.playing?'Pause mission':'Play mission'}</button>
     <label>Speed<select aria-label="Speed" value={snapshot.speed} disabled={busy} onChange={e=>void mutate('/config',{speed:Number(e.target.value)},'PATCH')}>{[.1,.25,.5,1,2,4].map(n=><option key={n} value={n}>{n}×</option>)}</select></label>
-    <label>Topology<select aria-label="Topology" title={topologies.find(t=>t.id===snapshot.topology)?.description} value={snapshot.topology} disabled={busy} onChange={e=>void mutate('/config',{topology:e.target.value},'PATCH')}>{!TOPOLOGIES.includes(snapshot.topology)&&<option value={snapshot.topology}>{title(snapshot.topology)} (legacy)</option>}{topologies.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
+    <label>Topology<select aria-label="Topology" title={topologies.find(t=>t.id===snapshot.topology)?.description} value={topologyControlValue(snapshot.topology,snapshot.topology_selection)} disabled={busy||stale} onChange={e=>void mutate('/config',e.target.value==='auto'?{topology_mode:'auto'}:{topology_mode:'manual',topology:e.target.value},'PATCH')}><option value="auto">Auto (balanced)</option>{!TOPOLOGIES.includes(requestedTopology)&&<option value={requestedTopology}>{title(requestedTopology)} (legacy)</option>}{topologies.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
     <div className="workspace-view-switch" aria-label="Network view"><button aria-pressed={fallback} onClick={()=>setFallback(true)}>2D network</button><button aria-pressed={!fallback} onClick={()=>setFallback(false)}>3D world</button></div>
     <ToolPopover label="Mission setup" drawer><div className="mission-setup-fields">
      <label>UAVs<select aria-label="Fleet size" value={snapshot.nodes.length} disabled={busy} onChange={e=>void mutate('/config',{count:Number(e.target.value)},'PATCH')}>{fleetSizeOptions(snapshot.nodes.length).map(n=><option key={n}>{n}</option>)}</select></label>
@@ -125,8 +128,10 @@ export default function SwarmCommandCenter({snapshot:initialSnapshot,api,token,e
      <button disabled={busy} onClick={()=>void mutate('/commands',{session_id:snapshot.session_id,command_id:crypto.randomUUID(),targets:snapshot.nodes.map(n=>n.id),action:'formation',parameters:{formation:topologies.find(t=>t.id===snapshot.topology)?.suggested_formation??'distributed'},ttl_s:10})}>Apply suggested formation</button>
      <button disabled={busy} onClick={()=>void mutate('/control',{action:'reset'})}>Reset</button>
      <p className="swarm-note">Seed {snapshot.seed}{snapshot.pending_seed!=null?` · next reset ${snapshot.pending_seed}`:''}. Topology changes preserve positions.</p>
+     <TopologyDiagnostics snapshot={snapshot}/>
     </div></ToolPopover>
    </div>
+   <ActiveTopology snapshot={snapshot} stale={stale}/>
    {(error||stale||snapshot.packet_event_gap)&&<div className="workspace-notices">{error&&<p className="swarm-error" role="alert">{error}</p>}{stale&&<p role="status">Snapshot stale · awaiting the simulation service.</p>}{snapshot.packet_event_gap&&<p role="status">Packet trace retention gap · earlier playback unavailable.</p>}</div>}
    <div className="swarm-statistics">{[['Active UAVs',`${snapshot.statistics.active} / ${snapshot.statistics.total}`],['Active links',snapshot.statistics.active_links],['Packet delivery',snapshot.statistics.delivered+snapshot.statistics.dropped?`${(snapshot.statistics.pdr*100).toFixed(1)}%`:'—'],['Latency',snapshot.statistics.delivered?`${snapshot.statistics.average_latency_ms.toFixed(1)} ms`:'—'],['Throughput',`${snapshot.statistics.throughput_mbps.toFixed(3)} Mb/s`],['Components',snapshot.statistics.connected_components??'—']].map(([label,value])=><div key={label}><span>{label}</span><strong>{value}</strong></div>)}</div>
    <div className={`swarm-layout${inspector?' has-sidebar':''}`}><div className="swarm-viewport">
