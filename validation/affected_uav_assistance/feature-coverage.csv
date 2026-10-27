@@ -1,0 +1,30 @@
+capability,outcome,evidence,classification
+"Opt-in flag, default off; both Auto policies; manual pin",Passed,tests/test_uav_assistance.py; tests/test_swarm_api.py; browser-final-features.log,Real API/browser plus unit
+Registered producer provenance and malicious category exclusion,Passed,test_category_spoofing_and_direct_traffic_cannot_nominate,Actual scheduler and unit
+Mesh-only receipt window; Direct-only impairment,Passed,accepted-batch/direct_only-*; focused tests,Twelve complete paired scenario runs
+"Eight-sample thresholds, missing receipts, five-evaluation recovery",Passed,test_evidence_thresholds_windows_recovery_and_pause; test_missing_receipts_uses_real_first_offer_and_three_confirmation_evaluations,Independent observation fixtures
+Null baseline never becomes fabricated zero delivery,Passed,test_unknown_pre_switch_quality_is_not_fabricated_as_zero_delivery,Unit regression
+Fleet size changes retire old monitor identities,Passed,test_fleet_changes_retire_old_monitor_identities_and_traffic,Unit/API-engine regression
+"Interface, quarantine, HOLD and permission states",Passed,tests/test_uav_assistance.py; total_isolation-*,Unit faults and real scheduler
+Ten candidates × sizes 10–100 × seeds 7/42/99,Passed,test_ten_candidate_assistance_scoring_is_deterministic_and_private; test_all_ten_candidates_size_seed_matrix_is_deterministic_and_isolated,300 candidate cases; private-state assertions
+Target ordering; skip infeasible target; other affected-UAV bound,Passed,test_unreachable_highest_priority_does_not_block_next_affected_target; test_ordinary_optimization_cannot_regress_an_already_affected_uav,Independent candidate fixtures
+Modeled fleet cost limits and transition penalty,Passed,test_modeled_fleet_cost_and_other_affected_bounds; recorded attempt estimates,Unit boundary assertions and six actual assisted switches
+Emergency precedence and normal hysteresis/cooldown,Passed,test_emergency_recovery_bypasses_assistance_regression_filter; tests/test_adaptive_topology.py; accepted-batch events,Unit and actual simulation-clock transitions
+"Real round trips; spacing, deadline; incumbent retained",Passed,tests/test_uav_assistance.py; independent-verification.json,Packet scheduler; six actual assisted switches
+Packet-specific staging; original-flow per-hop permission,Passed,test_config_cancellation_and_revocation_invalidate_packet_specific_probe_permission,Actual registered packets plus revoked-flow fixture
+"Asymmetric loss, timeout, rollback and backoff",Passed,test_asymmetric_response_loss_never_confirms_replacement; test_uncertain_failed_probes_timeout_backoff_and_no_false_quality; tests/test_adaptive_topology.py,"Fault-injection tests, no hardware inference"
+"Configuration cancellation, reset, scenario persistence",Passed,tests/test_uav_assistance.py; browser-final-features.log,Real API/browser and engine checks
+Autonomy off and cooperation without releasing safety latch,Passed,test_assistance_can_share_verifier_with_autonomy_without_releasing_existing_safety_hold; recoverable_mesh-*,Actual packets; flight-latch fixture
+"Simulation speeds 0.1×–4×, pause and bounded staging metadata",Passed,tests/test_uav_assistance.py; browser-final-features.log,Simulation-clock unit and browser pause checks
+Measured gain below ordinary fleet-switch threshold,Passed,test_recoverable_individual_fixture_delivers_measured_gain_below_normal_fleet_threshold; accepted-batch,Actual packet outcomes; explicit timing-impairment fixture
+"A/B, benchmark, historical studies force assistance off",Passed,test_legacy_reset_scenario_manual_and_experiment_contract; legacy-equivalence.json,Isolated reference factories and exact traces
+"Inspect, Decisions, Activity; unknown/stale/manual states",Passed,world/uavAssistance.test.ts; browser-final-features.log,Frontend unit and production browser
+Shared 2D/3D verification overlay when autonomy off,Passed,world/recoveryOverlay.test.ts; existing renderer workflow assertions,Shared authoritative adapter; assistance-specific transient overlay not separately forced in browser
+"Responsive checkbox, Escape/focus, six widths",Passed,browser-final-features.log; evidence/assistance-*.png,390/687/768/915/1024/1440px inspected
+"Forty-eight runs, input matching, conservation, repeatability",Passed,accepted-batch/state.json; repeatability.json; independent-verification.json,155592 independently reduced final packet outcomes
+Strict global chronological packet-event emission,Failed,independent-verification.json; legacy-equivalence.json,Six total-isolation Safeguarded runs; inherited before/after equality
+Traffic validation wall-time deadline under combined load,Failed,browser-regression.log; browser-traffic-recheck.log,80s deadline expired in full suite; fresh standalone passed in 29.4s; load cause not conclusively isolated
+100-UAV CPU cost and renderer targets,Passed,cpu-profile.json; rendering-profiles.json,Separate CPU and 60s per-view runs; real-time speed remains below requested
+Physical RF and aircraft-safety certification,Not Tested,Outside this modeled-simulator milestone,No hardware claim
+Hot deployment into existing operator processes,Not Tested,Operator services deliberately not restarted,Fresh isolated production services verified
+Full assistance-specific transition forced through browser,Not Tested,Actual transitions verified in backend; browser verifies controls/metadata/views,No public fixture endpoint added

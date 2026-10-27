@@ -1,0 +1,176 @@
+[
+  {
+    "capability": "Opt-in flag, default off; both Auto policies; manual pin",
+    "outcome": "Passed",
+    "evidence": "tests/test_uav_assistance.py; tests/test_swarm_api.py; browser-final-features.log",
+    "classification": "Real API/browser plus unit"
+  },
+  {
+    "capability": "Registered producer provenance and malicious category exclusion",
+    "outcome": "Passed",
+    "evidence": "test_category_spoofing_and_direct_traffic_cannot_nominate",
+    "classification": "Actual scheduler and unit"
+  },
+  {
+    "capability": "Mesh-only receipt window; Direct-only impairment",
+    "outcome": "Passed",
+    "evidence": "accepted-batch/direct_only-*; focused tests",
+    "classification": "Twelve complete paired scenario runs"
+  },
+  {
+    "capability": "Eight-sample thresholds, missing receipts, five-evaluation recovery",
+    "outcome": "Passed",
+    "evidence": "test_evidence_thresholds_windows_recovery_and_pause; test_missing_receipts_uses_real_first_offer_and_three_confirmation_evaluations",
+    "classification": "Independent observation fixtures"
+  },
+  {
+    "capability": "Null baseline never becomes fabricated zero delivery",
+    "outcome": "Passed",
+    "evidence": "test_unknown_pre_switch_quality_is_not_fabricated_as_zero_delivery",
+    "classification": "Unit regression"
+  },
+  {
+    "capability": "Fleet size changes retire old monitor identities",
+    "outcome": "Passed",
+    "evidence": "test_fleet_changes_retire_old_monitor_identities_and_traffic",
+    "classification": "Unit/API-engine regression"
+  },
+  {
+    "capability": "Interface, quarantine, HOLD and permission states",
+    "outcome": "Passed",
+    "evidence": "tests/test_uav_assistance.py; total_isolation-*",
+    "classification": "Unit faults and real scheduler"
+  },
+  {
+    "capability": "Ten candidates \u00d7 sizes 10\u2013100 \u00d7 seeds 7/42/99",
+    "outcome": "Passed",
+    "evidence": "test_ten_candidate_assistance_scoring_is_deterministic_and_private; test_all_ten_candidates_size_seed_matrix_is_deterministic_and_isolated",
+    "classification": "300 candidate cases; private-state assertions"
+  },
+  {
+    "capability": "Target ordering; skip infeasible target; other affected-UAV bound",
+    "outcome": "Passed",
+    "evidence": "test_unreachable_highest_priority_does_not_block_next_affected_target; test_ordinary_optimization_cannot_regress_an_already_affected_uav",
+    "classification": "Independent candidate fixtures"
+  },
+  {
+    "capability": "Modeled fleet cost limits and transition penalty",
+    "outcome": "Passed",
+    "evidence": "test_modeled_fleet_cost_and_other_affected_bounds; recorded attempt estimates",
+    "classification": "Unit boundary assertions and six actual assisted switches"
+  },
+  {
+    "capability": "Emergency precedence and normal hysteresis/cooldown",
+    "outcome": "Passed",
+    "evidence": "test_emergency_recovery_bypasses_assistance_regression_filter; tests/test_adaptive_topology.py; accepted-batch events",
+    "classification": "Unit and actual simulation-clock transitions"
+  },
+  {
+    "capability": "Real round trips; spacing, deadline; incumbent retained",
+    "outcome": "Passed",
+    "evidence": "tests/test_uav_assistance.py; independent-verification.json",
+    "classification": "Packet scheduler; six actual assisted switches"
+  },
+  {
+    "capability": "Packet-specific staging; original-flow per-hop permission",
+    "outcome": "Passed",
+    "evidence": "test_config_cancellation_and_revocation_invalidate_packet_specific_probe_permission",
+    "classification": "Actual registered packets plus revoked-flow fixture"
+  },
+  {
+    "capability": "Asymmetric loss, timeout, rollback and backoff",
+    "outcome": "Passed",
+    "evidence": "test_asymmetric_response_loss_never_confirms_replacement; test_uncertain_failed_probes_timeout_backoff_and_no_false_quality; tests/test_adaptive_topology.py",
+    "classification": "Fault-injection tests, no hardware inference"
+  },
+  {
+    "capability": "Configuration cancellation, reset, scenario persistence",
+    "outcome": "Passed",
+    "evidence": "tests/test_uav_assistance.py; browser-final-features.log",
+    "classification": "Real API/browser and engine checks"
+  },
+  {
+    "capability": "Autonomy off and cooperation without releasing safety latch",
+    "outcome": "Passed",
+    "evidence": "test_assistance_can_share_verifier_with_autonomy_without_releasing_existing_safety_hold; recoverable_mesh-*",
+    "classification": "Actual packets; flight-latch fixture"
+  },
+  {
+    "capability": "Simulation speeds 0.1\u00d7\u20134\u00d7, pause and bounded staging metadata",
+    "outcome": "Passed",
+    "evidence": "tests/test_uav_assistance.py; browser-final-features.log",
+    "classification": "Simulation-clock unit and browser pause checks"
+  },
+  {
+    "capability": "Measured gain below ordinary fleet-switch threshold",
+    "outcome": "Passed",
+    "evidence": "test_recoverable_individual_fixture_delivers_measured_gain_below_normal_fleet_threshold; accepted-batch",
+    "classification": "Actual packet outcomes; explicit timing-impairment fixture"
+  },
+  {
+    "capability": "A/B, benchmark, historical studies force assistance off",
+    "outcome": "Passed",
+    "evidence": "test_legacy_reset_scenario_manual_and_experiment_contract; legacy-equivalence.json",
+    "classification": "Isolated reference factories and exact traces"
+  },
+  {
+    "capability": "Inspect, Decisions, Activity; unknown/stale/manual states",
+    "outcome": "Passed",
+    "evidence": "world/uavAssistance.test.ts; browser-final-features.log",
+    "classification": "Frontend unit and production browser"
+  },
+  {
+    "capability": "Shared 2D/3D verification overlay when autonomy off",
+    "outcome": "Passed",
+    "evidence": "world/recoveryOverlay.test.ts; existing renderer workflow assertions",
+    "classification": "Shared authoritative adapter; assistance-specific transient overlay not separately forced in browser"
+  },
+  {
+    "capability": "Responsive checkbox, Escape/focus, six widths",
+    "outcome": "Passed",
+    "evidence": "browser-final-features.log; evidence/assistance-*.png",
+    "classification": "390/687/768/915/1024/1440px inspected"
+  },
+  {
+    "capability": "Forty-eight runs, input matching, conservation, repeatability",
+    "outcome": "Passed",
+    "evidence": "accepted-batch/state.json; repeatability.json; independent-verification.json",
+    "classification": "155592 independently reduced final packet outcomes"
+  },
+  {
+    "capability": "Strict global chronological packet-event emission",
+    "outcome": "Failed",
+    "evidence": "independent-verification.json; legacy-equivalence.json",
+    "classification": "Six total-isolation Safeguarded runs; inherited before/after equality"
+  },
+  {
+    "capability": "Traffic validation wall-time deadline under combined load",
+    "outcome": "Failed",
+    "evidence": "browser-regression.log; browser-traffic-recheck.log",
+    "classification": "80s deadline expired in full suite; fresh standalone passed in 29.4s; load cause not conclusively isolated"
+  },
+  {
+    "capability": "100-UAV CPU cost and renderer targets",
+    "outcome": "Passed",
+    "evidence": "cpu-profile.json; rendering-profiles.json",
+    "classification": "Separate CPU and 60s per-view runs; real-time speed remains below requested"
+  },
+  {
+    "capability": "Physical RF and aircraft-safety certification",
+    "outcome": "Not Tested",
+    "evidence": "Outside this modeled-simulator milestone",
+    "classification": "No hardware claim"
+  },
+  {
+    "capability": "Hot deployment into existing operator processes",
+    "outcome": "Not Tested",
+    "evidence": "Operator services deliberately not restarted",
+    "classification": "Fresh isolated production services verified"
+  },
+  {
+    "capability": "Full assistance-specific transition forced through browser",
+    "outcome": "Not Tested",
+    "evidence": "Actual transitions verified in backend; browser verifies controls/metadata/views",
+    "classification": "No public fixture endpoint added"
+  }
+]

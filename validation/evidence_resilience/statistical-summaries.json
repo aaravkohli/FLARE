@@ -1,0 +1,5753 @@
+[
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "average_latency_ms",
+    "mean_difference": -5.095765872694083,
+    "interval_95": [
+      -5.241142673003999,
+      -4.9536923158062365
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "jitter_ms",
+    "mean_difference": -1.0398570017062598,
+    "interval_95": [
+      -1.4079729271185506,
+      -0.7422956322275893
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "service_recovery_ms",
+    "mean_difference": -2.2137018461286098,
+    "interval_95": [
+      -2.9599563894828407,
+      -0.9357300866089417
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "ack_latency_ms",
+    "mean_difference": 2.166810855623529,
+    "interval_95": [
+      0.0,
+      3.2603918545763833
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": -6.481481481472133e-05,
+    "interval_95": [
+      -0.00011111111111095084,
+      -2.777777777773771e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": null,
+    "interval_95": null,
+    "valid_pairs": 0,
+    "missing_pairs": 3,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "balanced_control",
+    "metric": "protected_airtime_s",
+    "mean_difference": -0.000171238459310293,
+    "interval_95": [
+      -0.0004434078399704333,
+      8.53471804163064e-06
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "average_latency_ms",
+    "mean_difference": -5.095765872694083,
+    "interval_95": [
+      -5.241142673003999,
+      -4.9536923158062365
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "jitter_ms",
+    "mean_difference": -1.0398570017062598,
+    "interval_95": [
+      -1.4079729271185506,
+      -0.7422956322275893
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "service_recovery_ms",
+    "mean_difference": -2.2137018461286098,
+    "interval_95": [
+      -2.9599563894828407,
+      -0.9357300866089417
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "ack_latency_ms",
+    "mean_difference": 2.166810855623529,
+    "interval_95": [
+      0.0,
+      3.2603918545763833
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": -6.481481481472133e-05,
+    "interval_95": [
+      -0.00011111111111095084,
+      -2.777777777773771e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": null,
+    "interval_95": null,
+    "valid_pairs": 0,
+    "missing_pairs": 3,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "packet_transition",
+    "metric": "protected_airtime_s",
+    "mean_difference": -0.000171238459310293,
+    "interval_95": [
+      -0.0004434078399704333,
+      8.53471804163064e-06
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "average_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "jitter_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "service_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "ack_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": null,
+    "interval_95": null,
+    "valid_pairs": 0,
+    "missing_pairs": 3,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "normal",
+    "baseline": "observability_guard",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "average_latency_ms",
+    "mean_difference": -8.442123169135492,
+    "interval_95": [
+      -8.629730825048796,
+      -8.28904247579171
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "jitter_ms",
+    "mean_difference": -2.3461786208992756,
+    "interval_95": [
+      -2.5034440030129423,
+      -2.200883695896474
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "service_recovery_ms",
+    "mean_difference": -9.483082441911884,
+    "interval_95": [
+      -10.435692695557123,
+      -8.3730761387435
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "ack_latency_ms",
+    "mean_difference": 5.322687159356882,
+    "interval_95": [
+      3.2108998492074576,
+      7.319260757676062
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": -0.00015740740740743941,
+    "interval_95": [
+      -0.00022222222222223476,
+      -0.00011111111111106187
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "balanced_control",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.00012112488632413469,
+    "interval_95": [
+      -0.00010253609917931783,
+      0.00026951294372956625
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "average_latency_ms",
+    "mean_difference": -8.442123169135492,
+    "interval_95": [
+      -8.629730825048796,
+      -8.28904247579171
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "jitter_ms",
+    "mean_difference": -2.3461786208992756,
+    "interval_95": [
+      -2.5034440030129423,
+      -2.200883695896474
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "service_recovery_ms",
+    "mean_difference": -9.483082441911884,
+    "interval_95": [
+      -10.435692695557123,
+      -8.3730761387435
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "ack_latency_ms",
+    "mean_difference": 5.322687159356882,
+    "interval_95": [
+      3.2108998492074576,
+      7.319260757676062
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": -0.00015740740740743941,
+    "interval_95": [
+      -0.00022222222222223476,
+      -0.00011111111111106187
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "packet_transition",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.00012112488632413469,
+    "interval_95": [
+      -0.00010253609917931783,
+      0.00026951294372956625
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "average_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "jitter_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "service_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "ack_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "mobility",
+    "baseline": "observability_guard",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "pdr",
+    "mean_difference": -0.1296296296296314,
+    "interval_95": [
+      -0.38888888888889417,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "average_latency_ms",
+    "mean_difference": -20.207524287225258,
+    "interval_95": [
+      -40.77201217216173,
+      -7.840110814100143
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "jitter_ms",
+    "mean_difference": 5.299304744925007,
+    "interval_95": [
+      -18.238811062027537,
+      26.586300968377895
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "throughput_mbps",
+    "mean_difference": -0.0001592888888888866,
+    "interval_95": [
+      -0.0004778666666666598,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "average_hops",
+    "mean_difference": 0.006732829458074112,
+    "interval_95": [
+      0.002206043697689841,
+      0.011397720455909033
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "service_recovery_ms",
+    "mean_difference": -1.8076902344602293,
+    "interval_95": [
+      -2.7571104551340113,
+      -0.21127250011119258
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "protected_failures",
+    "mean_difference": 3.0,
+    "interval_95": [
+      1.0,
+      5.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "ack_latency_ms",
+    "mean_difference": -33.527782809289704,
+    "interval_95": [
+      -40.60372760952279,
+      -27.80447886978088
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.001879629629629398,
+    "interval_95": [
+      0.0006111111111108958,
+      0.002555555555555422
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0011965811965811701,
+    "interval_95": [
+      0.0,
+      0.002051282051282022
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "transition_dropped",
+    "mean_difference": 67.0,
+    "interval_95": [
+      58.0,
+      79.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "balanced_control",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.0033902899189642475,
+    "interval_95": [
+      -0.002317246880242152,
+      0.008433366144631194
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "pdr",
+    "mean_difference": -0.2962962962962982,
+    "interval_95": [
+      -0.666666666666671,
+      0.05555555555555314
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "average_latency_ms",
+    "mean_difference": -1.848305077326117,
+    "interval_95": [
+      -14.966263798652086,
+      6.657607068741022
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "jitter_ms",
+    "mean_difference": 24.22072463992789,
+    "interval_95": [
+      7.2920702102039385,
+      44.506774441806215
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "throughput_mbps",
+    "mean_difference": -0.00036408888888888696,
+    "interval_95": [
+      -0.0008191999999999922,
+      6.82666666666637e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "average_hops",
+    "mean_difference": -0.0014029927892780236,
+    "interval_95": [
+      -0.0036098262282784344,
+      0.002545902302793168
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "service_recovery_ms",
+    "mean_difference": -1.8076902344602293,
+    "interval_95": [
+      -2.7571104551340113,
+      -0.21127250011119258
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "protected_failures",
+    "mean_difference": 1.0,
+    "interval_95": [
+      -3.0,
+      4.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "ack_latency_ms",
+    "mean_difference": 15.588437154814825,
+    "interval_95": [
+      8.57740905550191,
+      23.34408319901135
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.0009629629629627212,
+    "interval_95": [
+      -0.00047222222222242927,
+      0.0024166666666662895
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "report_delivery_ratio",
+    "mean_difference": -0.00017094017094017774,
+    "interval_95": [
+      -0.002051282051282022,
+      0.0015384615384614886
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "transition_dropped",
+    "mean_difference": -116.33333333333333,
+    "interval_95": [
+      -138.0,
+      -79.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "packet_transition",
+    "metric": "protected_airtime_s",
+    "mean_difference": -0.005453810759954436,
+    "interval_95": [
+      -0.025664422041373314,
+      0.020659029705061727
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "pdr",
+    "mean_difference": 0.12962962962962768,
+    "interval_95": [
+      0.05555555555555314,
+      0.2777777777777768
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "average_latency_ms",
+    "mean_difference": -4.522351602692933,
+    "interval_95": [
+      -11.079053383747826,
+      -0.49349465138823234
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "jitter_ms",
+    "mean_difference": -0.16752865705481193,
+    "interval_95": [
+      -15.012931470374568,
+      10.82431972379355
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.00015928888888889584,
+    "interval_95": [
+      6.82666666666637e-05,
+      0.00034133333333334626
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "average_hops",
+    "mean_difference": 0.011859857160419152,
+    "interval_95": [
+      0.010626318939179313,
+      0.012499080711378063
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "service_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "protected_failures",
+    "mean_difference": 5.0,
+    "interval_95": [
+      2.0,
+      8.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "ack_latency_ms",
+    "mean_difference": -43.41173378683414,
+    "interval_95": [
+      -51.067356714659326,
+      -37.50112517562641
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.0006944444444443679,
+    "interval_95": [
+      0.00011111111111095084,
+      0.0015000000000001679
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "report_delivery_ratio",
+    "mean_difference": -0.002564102564102629,
+    "interval_95": [
+      -0.004102564102564155,
+      -0.0010256410256410664
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "transition_dropped",
+    "mean_difference": 67.0,
+    "interval_95": [
+      58.0,
+      79.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "congestion",
+    "baseline": "observability_guard",
+    "metric": "protected_airtime_s",
+    "mean_difference": -0.009263868827019905,
+    "interval_95": [
+      -0.015155384118331838,
+      -0.004233279405912782
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "average_latency_ms",
+    "mean_difference": -7.013672693077178,
+    "interval_95": [
+      -7.065422407778804,
+      -6.920532071743629
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "jitter_ms",
+    "mean_difference": -0.8111178214786912,
+    "interval_95": [
+      -0.9025707435345147,
+      -0.6461930941616667
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "service_recovery_ms",
+    "mean_difference": -3.9224768477627854,
+    "interval_95": [
+      -4.816182041877255,
+      -3.36510359530439
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "ack_latency_ms",
+    "mean_difference": 8.232109379843685,
+    "interval_95": [
+      5.096817692070104,
+      13.254950863662245
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 1.8518518518528815e-05,
+    "interval_95": [
+      -2.777777777773771e-05,
+      0.00011111111111106187
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "balanced_control",
+    "metric": "protected_airtime_s",
+    "mean_difference": -4.60765871401018e-05,
+    "interval_95": [
+      -0.00018961977131048968,
+      0.00011328103939689527
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "average_latency_ms",
+    "mean_difference": -7.013672693077178,
+    "interval_95": [
+      -7.065422407778804,
+      -6.920532071743629
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "jitter_ms",
+    "mean_difference": -0.8111178214786912,
+    "interval_95": [
+      -0.9025707435345147,
+      -0.6461930941616667
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "service_recovery_ms",
+    "mean_difference": -3.9224768477627854,
+    "interval_95": [
+      -4.816182041877255,
+      -3.36510359530439
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "ack_latency_ms",
+    "mean_difference": 8.232109379843685,
+    "interval_95": [
+      5.096817692070104,
+      13.254950863662245
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 1.8518518518528815e-05,
+    "interval_95": [
+      -2.777777777773771e-05,
+      0.00011111111111106187
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "packet_transition",
+    "metric": "protected_airtime_s",
+    "mean_difference": -4.60765871401018e-05,
+    "interval_95": [
+      -0.00018961977131048968,
+      0.00011328103939689527
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "average_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "jitter_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "service_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "ack_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "regional_jamming",
+    "baseline": "observability_guard",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "average_latency_ms",
+    "mean_difference": -5.539333779667274,
+    "interval_95": [
+      -5.609222956605443,
+      -5.465765244732296
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "jitter_ms",
+    "mean_difference": 0.5808162829462042,
+    "interval_95": [
+      0.4673637812975939,
+      0.7275833210795124
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "service_recovery_ms",
+    "mean_difference": -3.065626401863028,
+    "interval_95": [
+      -3.71362840175766,
+      -2.563166065193627
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "ack_latency_ms",
+    "mean_difference": 5.510303558920346,
+    "interval_95": [
+      4.372747625192616,
+      7.365689945580428
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": -2.7777777777811725e-05,
+    "interval_95": [
+      -0.00011111111111117289,
+      5.555555555547542e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "balanced_control",
+    "metric": "protected_airtime_s",
+    "mean_difference": -0.00017586677336289824,
+    "interval_95": [
+      -0.00025534071721722285,
+      -5.159827909118064e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "average_latency_ms",
+    "mean_difference": -5.539333779667274,
+    "interval_95": [
+      -5.609222956605443,
+      -5.465765244732296
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "jitter_ms",
+    "mean_difference": 0.5808162829462042,
+    "interval_95": [
+      0.4673637812975939,
+      0.7275833210795124
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "service_recovery_ms",
+    "mean_difference": -3.065626401863028,
+    "interval_95": [
+      -3.71362840175766,
+      -2.563166065193627
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "ack_latency_ms",
+    "mean_difference": 5.510303558920346,
+    "interval_95": [
+      4.372747625192616,
+      7.365689945580428
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": -2.7777777777811725e-05,
+    "interval_95": [
+      -0.00011111111111117289,
+      5.555555555547542e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "packet_transition",
+    "metric": "protected_airtime_s",
+    "mean_difference": -0.00017586677336289824,
+    "interval_95": [
+      -0.00025534071721722285,
+      -5.159827909118064e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "average_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "jitter_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "service_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "ack_latency_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "single_failure",
+    "baseline": "observability_guard",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "average_latency_ms",
+    "mean_difference": -0.3792628922463332,
+    "interval_95": [
+      -0.43507893816001086,
+      -0.325022889610068
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "jitter_ms",
+    "mean_difference": -0.06366416173389267,
+    "interval_95": [
+      -0.15957985436606137,
+      0.00632808974817145
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "service_recovery_ms",
+    "mean_difference": -0.020090641229520163,
+    "interval_95": [
+      -0.251109186998292,
+      0.21634446843745536
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "ack_latency_ms",
+    "mean_difference": 7.7417743523092115,
+    "interval_95": [
+      2.8136428512839444,
+      14.635922085998843
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 1.8518518518528815e-05,
+    "interval_95": [
+      0.0,
+      2.7777777777848733e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "balanced_control",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.0002666461979892176,
+    "interval_95": [
+      4.918847243651214e-05,
+      0.0005069885883681735
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "average_latency_ms",
+    "mean_difference": -0.3794116024401551,
+    "interval_95": [
+      -0.4350440358689909,
+      -0.3247370366223876
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "jitter_ms",
+    "mean_difference": -0.06569332046999632,
+    "interval_95": [
+      -0.15952988991592676,
+      0.0006856854583179306
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "service_recovery_ms",
+    "mean_difference": -0.027042151554269367,
+    "interval_95": [
+      -0.23644976702780696,
+      0.21884273318210035
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "ack_latency_ms",
+    "mean_difference": 11.01073316752663,
+    "interval_95": [
+      6.540432462094202,
+      16.91403793541201
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 1.8518518518528815e-05,
+    "interval_95": [
+      0.0,
+      2.7777777777848733e-05
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "packet_transition",
+    "metric": "protected_airtime_s",
+    "mean_difference": 2.0181265868520388e-05,
+    "interval_95": [
+      -9.499016110758873e-05,
+      0.00013727953706599294
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "pdr",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "percentage points",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "average_latency_ms",
+    "mean_difference": 0.0013991854212444348,
+    "interval_95": [
+      -1.8228795532593267e-05,
+      0.0024119996127467402
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "jitter_ms",
+    "mean_difference": 0.0020647833403727076,
+    "interval_95": [
+      -1.756225438631631e-05,
+      0.0036173912748713732
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "throughput_mbps",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "average_hops",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "delivered packets"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "connected_components",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "route_convergence_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "service_recovery_ms",
+    "mean_difference": 0.02316959892050363,
+    "interval_95": [
+      0.0031120624025788857,
+      0.05281237788040016
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered flows only; consult unrecovered_flows"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "unrecovered_flows",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "switches",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "transition_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "protected_failures",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "deadline_misses",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "command_ack_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "ack_latency_ms",
+    "mean_difference": -6.3007442875596,
+    "interval_95": [
+      -6.82559519668726,
+      -5.71335388873085
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "received acknowledgments only; consult command_ack_ratio"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "fresh_evidence_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "evidence_recovery_ms",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "recovered eligible evidence only; consult evidence_unrecovered per run"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "report_delivery_ratio",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "transition_dropped",
+    "mean_difference": 0.0,
+    "interval_95": [
+      0.0,
+      0.0
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  },
+  {
+    "scenario": "partition_reconnection",
+    "baseline": "observability_guard",
+    "metric": "protected_airtime_s",
+    "mean_difference": 0.0002501671291460876,
+    "interval_95": [
+      5.678094053962468e-05,
+      0.0003546076256402131
+    ],
+    "valid_pairs": 3,
+    "missing_pairs": 0,
+    "resamples": 10000,
+    "unit": "native metric units",
+    "comparison": "exploratory",
+    "conditioning": "run-level"
+  }
+]

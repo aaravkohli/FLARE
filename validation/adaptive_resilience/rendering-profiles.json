@@ -1,0 +1,275 @@
+[
+  {
+    "view": "2d",
+    "outcome": "Passed",
+    "duration_wall_s": 60,
+    "clock_before": [
+      "T+0.1s"
+    ],
+    "clock_after": [
+      "T+33.6s"
+    ],
+    "simulation_advance_s": 33.5,
+    "approximate_clock_speed": 0.5583333333333333,
+    "canvases": [
+      {
+        "buffer_capacity": 72000,
+        "frame_count": 3532,
+        "dpr": 1,
+        "canvas_pixels": [
+          1082,
+          505
+        ],
+        "canvas_css": [
+          1082,
+          505
+        ],
+        "gpu": null,
+        "packet_visual": "authoritative-packet-events",
+        "average_fps": 58.73851879815536,
+        "fifth_percentile_fps": 59.523809523824994
+      }
+    ],
+    "simulation_performance": {
+      "status": "running",
+      "achieved_speed": 0.5455934676791906,
+      "relative_to_requested": 0.5455934676791906,
+      "clipped_wall_time_s": 28.820246583782136,
+      "timings": {
+        "selection": {
+          "samples": 35,
+          "mean_ms": 279.60087630365575,
+          "p95_ms": 332.8588749282062,
+          "max_ms": 390.97699988633394
+        },
+        "rebuilding": {
+          "samples": 181,
+          "mean_ms": 202.11257022877547,
+          "p95_ms": 456.0952091123909,
+          "max_ms": 530.4592920001596
+        },
+        "snapshot": {
+          "samples": 74,
+          "mean_ms": 20.75942963160373,
+          "p95_ms": 28.085999889299273,
+          "max_ms": 145.77899989672005
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.6440301353432005,
+          "p95_ms": 4.477000096812844,
+          "max_ms": 129.61170892231166
+        }
+      },
+      "sample_limit": 256,
+      "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+    },
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "browser": "155.0.8059.85",
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 10.1,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-gfdjhadq/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "errors": []
+  },
+  {
+    "view": "3d",
+    "outcome": "Passed",
+    "duration_wall_s": 60,
+    "clock_before": [
+      "T+0.3s"
+    ],
+    "clock_after": [
+      "T+29.5s"
+    ],
+    "simulation_advance_s": 29.2,
+    "approximate_clock_speed": 0.48666666666666664,
+    "canvases": [
+      {
+        "buffer_capacity": 72000,
+        "frame_count": 3276,
+        "dpr": 1,
+        "canvas_pixels": [
+          919,
+          429
+        ],
+        "canvas_css": [
+          1082,
+          505
+        ],
+        "gpu": {
+          "vendor": "Google Inc. (Apple)",
+          "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+        },
+        "packet_visual": "authoritative-packet-events",
+        "site_details": "true",
+        "quality": "balanced",
+        "draw_calls": "203",
+        "geometries": "137",
+        "textures": "8",
+        "average_fps": 54.255477716500216,
+        "fifth_percentile_fps": 30.030030030027405
+      }
+    ],
+    "simulation_performance": {
+      "status": "running",
+      "achieved_speed": 0.4825685062725427,
+      "relative_to_requested": 0.4825685062725427,
+      "clipped_wall_time_s": 32.44202716858126,
+      "timings": {
+        "selection": {
+          "samples": 32,
+          "mean_ms": 354.3018112395657,
+          "p95_ms": 467.99212507903576,
+          "max_ms": 927.3606669157743
+        },
+        "rebuilding": {
+          "samples": 163,
+          "mean_ms": 234.35084329506645,
+          "p95_ms": 559.0883330442011,
+          "max_ms": 1148.3245419804007
+        },
+        "snapshot": {
+          "samples": 67,
+          "mean_ms": 21.723152298146665,
+          "p95_ms": 34.73758394829929,
+          "max_ms": 58.14824998378754
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 4.1231583836633945,
+          "p95_ms": 6.856874795630574,
+          "max_ms": 169.72999996505678
+        }
+      },
+      "sample_limit": 256,
+      "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+    },
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "browser": "155.0.8059.85",
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 9.58,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-qj3oarv8/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "errors": []
+  },
+  {
+    "view": "compare",
+    "outcome": "Passed",
+    "duration_wall_s": 60,
+    "clock_before": [
+      "T+0.5s",
+      "T+0.5s"
+    ],
+    "clock_after": [
+      "T+23.2s",
+      "T+23.2s"
+    ],
+    "simulation_advance_s": 22.7,
+    "approximate_clock_speed": 0.3783333333333333,
+    "canvases": [
+      {
+        "buffer_capacity": 72000,
+        "frame_count": 3602,
+        "dpr": 1,
+        "canvas_pixels": [
+          693,
+          420
+        ],
+        "canvas_css": [
+          693,
+          420
+        ],
+        "gpu": null,
+        "packet_visual": "authoritative-packet-events",
+        "average_fps": 59.90254610766493,
+        "fifth_percentile_fps": 59.88023952094243
+      },
+      {
+        "buffer_capacity": 72000,
+        "frame_count": 3602,
+        "dpr": 1,
+        "canvas_pixels": [
+          694,
+          420
+        ],
+        "canvas_css": [
+          694,
+          420
+        ],
+        "gpu": null,
+        "packet_visual": "authoritative-packet-events",
+        "average_fps": 59.90254610766493,
+        "fifth_percentile_fps": 59.88023952094243
+      }
+    ],
+    "simulation_performance": null,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "browser": "155.0.8059.85",
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 10.48,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-2zo3msui/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "errors": []
+  }
+]

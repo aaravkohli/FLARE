@@ -1,0 +1,609 @@
+{
+  "outcome": "Passed",
+  "source_sha256": "1f00782e9727d3e1a239fde70c4625c298aaa6dcfaf7a3b27f301054b38d4016",
+  "runs": 60,
+  "paired_groups": 30,
+  "packet_results": 3177915,
+  "checks": [
+    {
+      "scenario": "recovery_direct_jam",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9983333333333333,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_direct_jam",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 86890,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9987037037037036,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_direct_jam",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9983333333333333,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_direct_jam",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 86811,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9988888888888889,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_direct_jam",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9983333333333333,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_direct_jam",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 86832,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9987037037037036,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_dual_interference",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9983333333333333,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_dual_interference",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 86873,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9987037037037036,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_dual_interference",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9983333333333333,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_dual_interference",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 86794,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9988888888888889,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_dual_interference",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9983333333333333,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_dual_interference",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 86793,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9983333333333333,
+      "safety_events": 1
+    },
+    {
+      "scenario": "recovery_failed_recovery_landing",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.8571851851851917,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_failed_recovery_landing",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 85576,
+      "delivered_availability": 0.9674444444444497,
+      "verified_availability": 0.9672592592592644,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_failed_recovery_landing",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.8571851851851917,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_failed_recovery_landing",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 85497,
+      "delivered_availability": 0.9674444444444497,
+      "verified_availability": 0.9674444444444497,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_failed_recovery_landing",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.8570000000000064,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_failed_recovery_landing",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 85530,
+      "delivered_availability": 0.9674444444444497,
+      "verified_availability": 0.9672592592592644,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_intermittent",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9818518518518522,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_intermittent",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 86749,
+      "delivered_availability": 0.9964814814814816,
+      "verified_availability": 0.9962962962962963,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_intermittent",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9829629629629633,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_intermittent",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 86650,
+      "delivered_availability": 0.9964814814814816,
+      "verified_availability": 0.9964814814814816,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_intermittent",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9822222222222226,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_intermittent",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 86687,
+      "delivered_availability": 0.9964814814814816,
+      "verified_availability": 0.9962962962962963,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_low_battery_isolation",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9368888888888931,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_low_battery_isolation",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 85564,
+      "delivered_availability": 0.9674444444444497,
+      "verified_availability": 0.9672592592592644,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_low_battery_isolation",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9374444444444486,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_low_battery_isolation",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 85512,
+      "delivered_availability": 0.9674444444444497,
+      "verified_availability": 0.9674444444444497,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_low_battery_isolation",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9372592592592633,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_low_battery_isolation",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 85525,
+      "delivered_availability": 0.9674444444444497,
+      "verified_availability": 0.9672592592592644,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_mesh_transition_loss",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9833333333333338,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_mesh_transition_loss",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 87268,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9987037037037036,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_mesh_transition_loss",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9816666666666658,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_mesh_transition_loss",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 86911,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9988888888888889,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_mesh_transition_loss",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9831481481481485,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_mesh_transition_loss",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 87089,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9987037037037036,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_multiple_isolation",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9774074074074075,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_multiple_isolation",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 86660,
+      "delivered_availability": 0.9849999999999998,
+      "verified_availability": 0.9848148148148145,
+      "safety_events": 8
+    },
+    {
+      "scenario": "recovery_multiple_isolation",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9772222222222222,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_multiple_isolation",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 86602,
+      "delivered_availability": 0.9849999999999998,
+      "verified_availability": 0.9849999999999998,
+      "safety_events": 8
+    },
+    {
+      "scenario": "recovery_multiple_isolation",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.976851851851852,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_multiple_isolation",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 86514,
+      "delivered_availability": 0.9849999999999998,
+      "verified_availability": 0.9848148148148145,
+      "safety_events": 8
+    },
+    {
+      "scenario": "recovery_satellite_switch_failure",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9968518518518525,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_satellite_switch_failure",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 87361,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9987037037037036,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_satellite_switch_failure",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9959259259259253,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_satellite_switch_failure",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 87036,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9988888888888889,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_satellite_switch_failure",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9974074074074081,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_satellite_switch_failure",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 87188,
+      "delivered_availability": 0.9988888888888889,
+      "verified_availability": 0.9987037037037036,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_switch_instability",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9875925925925932,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_switch_instability",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 87701,
+      "delivered_availability": 0.9961111111111113,
+      "verified_availability": 0.9959259259259261,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_switch_instability",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9859259259259253,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_switch_instability",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 87302,
+      "delivered_availability": 0.9961111111111113,
+      "verified_availability": 0.9961111111111113,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_switch_instability",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.9875925925925932,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_switch_instability",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 87545,
+      "delivered_availability": 0.9961111111111113,
+      "verified_availability": 0.9959259259259261,
+      "safety_events": 2
+    },
+    {
+      "scenario": "recovery_total_loss",
+      "autonomy": "off",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.8005925925925858,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_total_loss",
+      "autonomy": "on",
+      "seed": 7,
+      "outcome": "Passed",
+      "packets": 80929,
+      "delivered_availability": 0.8416666666666739,
+      "verified_availability": 0.8414814814814887,
+      "safety_events": 8
+    },
+    {
+      "scenario": "recovery_total_loss",
+      "autonomy": "off",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.8005925925925858,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_total_loss",
+      "autonomy": "on",
+      "seed": 42,
+      "outcome": "Passed",
+      "packets": 80868,
+      "delivered_availability": 0.8416666666666739,
+      "verified_availability": 0.8416666666666739,
+      "safety_events": 8
+    },
+    {
+      "scenario": "recovery_total_loss",
+      "autonomy": "off",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 19860,
+      "delivered_availability": 0.8004074074074006,
+      "verified_availability": null,
+      "safety_events": 0
+    },
+    {
+      "scenario": "recovery_total_loss",
+      "autonomy": "on",
+      "seed": 99,
+      "outcome": "Passed",
+      "packets": 80858,
+      "delivered_availability": 0.8416666666666739,
+      "verified_availability": 0.8414814814814887,
+      "safety_events": 8
+    }
+  ]
+}

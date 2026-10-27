@@ -1,0 +1,105 @@
+[
+  {
+    "scenario": "normal",
+    "topology": "partial_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [
+      "recovery"
+    ],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {
+      "route_convergence_ms": 0.0,
+      "service_recovery_ms": 0.0
+    }
+  },
+  {
+    "scenario": "normal",
+    "topology": "self_healing_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {}
+  },
+  {
+    "scenario": "mobility",
+    "topology": "partial_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [
+      "recovery"
+    ],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {
+      "route_convergence_ms": 0.0
+    }
+  },
+  {
+    "scenario": "mobility",
+    "topology": "self_healing_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [
+      "service_recovery_ms",
+      "recovery"
+    ],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {
+      "route_convergence_ms": 0.0,
+      "service_recovery_ms": 1.1368683772161603e-13
+    }
+  },
+  {
+    "scenario": "regional_jamming",
+    "topology": "partial_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [
+      "recovery"
+    ],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {
+      "route_convergence_ms": 0.0,
+      "service_recovery_ms": 0.0
+    }
+  },
+  {
+    "scenario": "regional_jamming",
+    "topology": "self_healing_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {
+      "route_convergence_ms": 0.0,
+      "service_recovery_ms": 0.0
+    }
+  },
+  {
+    "scenario": "partition_reconnection",
+    "topology": "partial_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [
+      "recovery"
+    ],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {
+      "route_convergence_ms": 0.0,
+      "service_recovery_ms": 0.0
+    }
+  },
+  {
+    "scenario": "partition_reconnection",
+    "topology": "self_healing_mesh",
+    "outcome": "Passed",
+    "changed_serialization_fields": [],
+    "other_measurements_exact": true,
+    "per_flow_measurements_equal": true,
+    "recovery_mean_roundoff_ms": {
+      "route_convergence_ms": 0.0,
+      "service_recovery_ms": 0.0
+    }
+  }
+]

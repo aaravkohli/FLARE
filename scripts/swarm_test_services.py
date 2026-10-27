@@ -22,6 +22,10 @@ def main():
     if sys.version_info[:2]!=(3,11): raise RuntimeError('Integration services require repository venv/bin/python (Python 3.11)')
     root=Path(__file__).resolve().parents[1];directory=args.directory or Path(tempfile.mkdtemp(prefix='flare-swarm-repair-'));directory.mkdir(parents=True,exist_ok=True)
     runtime_root=runtime_copy(root,directory/'project')
+    if os.getenv('FLARE_TEST_MISSING_MODELS')=='1':
+        # Explicit fault fixture in the audit-owned copy; operator weights stay intact.
+        for model in (runtime_root/'models').rglob('*'):
+            if model.is_file() and model.suffix in ('.pth','.pt','.onnx','.pkl','.zip'): model.unlink()
     if args.audit_smoke_training:
         import yaml
         filename=runtime_root/'config/fl_config.yaml';configuration=yaml.safe_load(filename.read_text())

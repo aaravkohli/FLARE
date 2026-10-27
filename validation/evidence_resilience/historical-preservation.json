@@ -1,0 +1,27 @@
+{
+  "outcome": "Passed",
+  "historical_document_hashes": {
+    "validation/adaptive_resilience/README.md": true,
+    "validation/adaptive_resilience/candidate-preparation-profile.json": true,
+    "validation/adaptive_resilience/commands.json": true,
+    "validation/adaptive_resilience/cpu-profiles.json": true,
+    "validation/adaptive_resilience/cross-process-repeatability.json": true,
+    "validation/adaptive_resilience/execution-environment.json": true,
+    "validation/adaptive_resilience/feature-coverage.csv": true,
+    "validation/adaptive_resilience/independent-verification.json": true,
+    "validation/adaptive_resilience/isolation.json": true,
+    "validation/adaptive_resilience/paired-selector-optimization.json": true,
+    "validation/adaptive_resilience/per-run-measurements.csv": true,
+    "validation/adaptive_resilience/rendering-profiles.json": true,
+    "validation/adaptive_resilience/selector-optimization.json": true,
+    "validation/adaptive_resilience/source-input-manifest.json": true,
+    "validation/adaptive_resilience/statistical-summaries.json": true,
+    "validation/adaptive_resilience/study-summary.json": true,
+    "validation/adaptive_resilience/unaffected-fixed-baselines.json": true,
+    "validation/adaptive_resilience/verification/README.md": true
+  },
+  "historical_trace_count": 550,
+  "historical_trace_hashes_unchanged": true,
+  "failed_traces": [],
+  "historical_trace_rechecked_at_utc": "2026-10-25T17:13:40.011032+00:00"
+}

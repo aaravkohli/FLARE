@@ -16,6 +16,39 @@ def records():
 
 def engine(): return SwarmEngine(records(),isolated=True)
 
+def test_recovery_export_order_is_independent_of_network_event_insertion():
+    e=engine();request=ExperimentRequest(mode='benchmark',count=10,seeds=[7])
+    a=dict(source='a',destination='z',route_convergence_ms=0.,service_recovery_ms=12.,service_recovered_at=1.)
+    b=dict(source='b',destination='z',route_convergence_ms=0.,service_recovery_ms=None,service_recovered_at=None)
+    e.recovery={'b:z':b,'a:z':a};first=summarize(e,request,'ring',7,[])
+    e.recovery={'a:z':a,'b:z':b};second=summarize(e,request,'ring',7,[])
+    assert first==second and [r['source'] for r in first['recovery']]==['a','b']
+    assert first['unrecovered_flows']==1 and first['service_recovery_ms']==12.
+
+def test_recovery_averages_have_a_stable_floating_point_accumulation_order():
+    e=engine();request=ExperimentRequest(mode='benchmark',count=10,seeds=[7])
+    values=[dict(source=s,destination='z',route_convergence_ms=t,service_recovery_ms=t,service_recovered_at=60.) for s,t in zip(('a','b','c'),(50000.1,.1,.2))]
+    e.recovery={r['source']:r for r in values};first=summarize(e,request,'ring',7,[])
+    e.recovery={r['source']:r for r in reversed(values)};second=summarize(e,request,'ring',7,[])
+    assert first==second
+
+def test_cancelled_fixed_benchmark_publishes_closed_retained_traces(tmp_path):
+    import gzip,json
+    from queue import Empty
+    from simulation.swarm.experiments import _worker
+    class Commands:
+        def get_nowait(self):
+            state=tmp_path/'state.json'
+            if state.exists() and json.loads(state.read_text()).get('results'):return 'cancel'
+            raise Empty
+    e=engine();request=ExperimentRequest(mode='benchmark',topologies=['ring','tree'],count=10,seeds=[7],duration_s=10,warmup_s=0)
+    _worker('test',request.model_dump(),records(),e.cfg,tmp_path,Commands())
+    result=json.loads((tmp_path/'state.json').read_text())
+    assert result['status']=='cancelled' and len(result['results'])==1
+    assert len(result['trace_files'])==2 and result['incomplete_traces']==['tree-7.jsonl.gz']
+    for name in result['trace_files']:
+        with gzip.open(tmp_path/name,'rt') as stream:assert stream.read()
+
 def graph(nodes):
     return {pair(a.id,b.id):Link(a.id,b.id,1,-50,30,12,0,8) for i,a in enumerate(nodes) for b in nodes[i+1:]}
 

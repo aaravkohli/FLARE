@@ -1,0 +1,47 @@
+{
+  "records": [
+    {
+      "command": "venv/bin/python -m pytest -q tests/test_swarm_hotpath_equivalence.py",
+      "log": "results/evidence_resilience/performance-improvement-v1/hotpath-tests.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_written_at_utc": "2026-10-25T17:29:58.029585+00:00"
+    },
+    {
+      "command": "venv/bin/python -m scripts.profile_swarm_hotpaths --baseline /private/tmp/flare-resilience-hotpaths-baseline --directory results/evidence_resilience/performance-improvement-v1/matched --repeats 3 --seconds 5",
+      "log": "results/evidence_resilience/performance-improvement-v1/matched-profile.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_written_at_utc": "2026-10-25T17:35:48.819304+00:00"
+    },
+    {
+      "command": "venv/bin/python -m scripts.verify_swarm_hotpaths --input results/evidence_resilience/pilot-accepted-verified --directory results/evidence_resilience/performance-improvement-v1/scenario-equivalence",
+      "log": "results/evidence_resilience/performance-improvement-v1/scenario-verification.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_written_at_utc": "2026-10-25T17:38:27.496529+00:00"
+    },
+    {
+      "command": "venv/bin/python -m pytest -q tests/test_swarm_hotpath_equivalence.py tests/test_swarm_simulation.py tests/test_swarm_controls.py tests/test_swarm_api.py tests/test_mesh_research.py tests/test_evidence_resilience.py tests/test_adaptive_topology.py tests/test_adaptive_study.py tests/test_resilience_study.py",
+      "log": "results/evidence_resilience/performance-improvement-v1/regressions.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_written_at_utc": "2026-10-25T17:38:04.160329+00:00"
+    },
+    {
+      "command": "env FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=3d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_ARTIFACT_DIR=/private/tmp/flare-hotpath-3d-after npm --prefix frontend-react run test:browser -- mesh-performance.spec.ts",
+      "log": "results/evidence_resilience/performance-improvement-v1/browser-after.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_written_at_utc": "2026-10-25T17:42:25.131329+00:00"
+    },
+    {
+      "command": "env FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=3d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_ARTIFACT_DIR=/private/tmp/flare-hotpath-3d-before-shared-assets npm --prefix /private/tmp/flare-hotpath-browser-baseline/frontend-react run test:browser -- mesh-performance.spec.ts",
+      "log": "results/evidence_resilience/performance-improvement-v1/browser-before-shared-assets.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_written_at_utc": "2026-10-25T17:49:48.483475+00:00"
+    }
+  ],
+  "note": "Baseline private build copies the optimized production assets byte-for-byte. Fresh directories are required for reexecution."
+}

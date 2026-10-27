@@ -1,0 +1,500 @@
+{
+  "source_sha256": "bdfbe8a0c4d7d871c3f09f52d71d57113bb88dc7c5bbc1675a8e948f234927ca",
+  "hardware": {
+    "system": "Darwin",
+    "node": "Aaravs-MacBook-Air.local",
+    "release": "25.6.0",
+    "version": "Darwin Kernel Version 25.6.0: Fri Jul 31 19:18:43 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T8112",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "count": 100,
+  "seconds": 10,
+  "results": [
+    {
+      "policy": "balanced_v1",
+      "seed": 7,
+      "assistance": false,
+      "startup_cpu_s": 0.579457,
+      "cpu_s": 4.890253,
+      "wall_s": 4.895139874999586,
+      "simulation_s": 10.000000000000007,
+      "generated": 3800,
+      "delivered": 3357,
+      "dropped": 443,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 220.49300400067295,
+          "p95_ms": 236.9181660033064,
+          "max_ms": 256.20195800001966
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 83.39298957672817,
+          "p95_ms": 257.55958299851045,
+          "max_ms": 562.5909170012164
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.0746951132366576,
+          "p95_ms": 3.1864159973338246,
+          "max_ms": 93.58387500105891
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "balanced_v1",
+      "seed": 7,
+      "assistance": true,
+      "startup_cpu_s": 0.5778479999999995,
+      "cpu_s": 5.248595000000001,
+      "wall_s": 5.252964333001728,
+      "simulation_s": 10.000000000000007,
+      "generated": 3800,
+      "delivered": 3357,
+      "dropped": 443,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 232.27210430050036,
+          "p95_ms": 277.3508749996836,
+          "max_ms": 287.1001659987087
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 84.63204809658447,
+          "p95_ms": 279.9344999984896,
+          "max_ms": 559.6303749989602
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.2824570232842234,
+          "p95_ms": 3.7767499998153653,
+          "max_ms": 92.49799999815878
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "balanced_v1",
+      "seed": 42,
+      "assistance": false,
+      "startup_cpu_s": 0.581353,
+      "cpu_s": 5.018846999999999,
+      "wall_s": 5.023415916002705,
+      "simulation_s": 10.000000000000007,
+      "generated": 3800,
+      "delivered": 3360,
+      "dropped": 440,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 220.0620417996106,
+          "p95_ms": 231.90191699904972,
+          "max_ms": 248.1937079974159
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 85.35211940355882,
+          "p95_ms": 255.00395899871364,
+          "max_ms": 565.6258330018318
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.097237285141773,
+          "p95_ms": 3.1864590018813033,
+          "max_ms": 70.69749999936903
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "balanced_v1",
+      "seed": 42,
+      "assistance": true,
+      "startup_cpu_s": 0.5826519999999995,
+      "cpu_s": 5.154721000000002,
+      "wall_s": 5.157285540997691,
+      "simulation_s": 10.000000000000007,
+      "generated": 3800,
+      "delivered": 3360,
+      "dropped": 440,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 229.6551332998206,
+          "p95_ms": 241.4517920005892,
+          "max_ms": 264.80091600024025
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 85.57826276927909,
+          "p95_ms": 275.1726249989588,
+          "max_ms": 566.3083330000518
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.559460277382186,
+          "p95_ms": 3.1681249965913594,
+          "max_ms": 111.62220799815259
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "balanced_v1",
+      "seed": 99,
+      "assistance": false,
+      "startup_cpu_s": 0.6273899999999983,
+      "cpu_s": 4.949493999999998,
+      "wall_s": 4.953248333000374,
+      "simulation_s": 10.000000000000007,
+      "generated": 3800,
+      "delivered": 3357,
+      "dropped": 443,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 217.7429707997362,
+          "p95_ms": 231.33495900037815,
+          "max_ms": 245.01479099853896
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 86.32085578861174,
+          "p95_ms": 262.9261250003765,
+          "max_ms": 610.8902499981923
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.030779933704707,
+          "p95_ms": 3.1233750014507677,
+          "max_ms": 66.58608300131164
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "balanced_v1",
+      "seed": 99,
+      "assistance": true,
+      "startup_cpu_s": 0.5756870000000021,
+      "cpu_s": 5.153684999999999,
+      "wall_s": 5.155295749998913,
+      "simulation_s": 10.000000000000007,
+      "generated": 3800,
+      "delivered": 3357,
+      "dropped": 443,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 230.28592489972652,
+          "p95_ms": 246.29404099687235,
+          "max_ms": 258.42645800003083
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 85.54117144194606,
+          "p95_ms": 279.82070799771463,
+          "max_ms": 558.854833998339
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.5365514491682006,
+          "p95_ms": 3.344332999404287,
+          "max_ms": 111.15008399792714
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "evidence_resilience_v1",
+      "seed": 7,
+      "assistance": false,
+      "startup_cpu_s": 0.8188930000000028,
+      "cpu_s": 7.6857240000000004,
+      "wall_s": 7.7109517920034705,
+      "simulation_s": 10.000000000000007,
+      "generated": 4800,
+      "delivered": 4158,
+      "dropped": 642,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 340.3847709996626,
+          "p95_ms": 355.5702499979816,
+          "max_ms": 366.9855420012027
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 114.51154253812162,
+          "p95_ms": 375.20266699721105,
+          "max_ms": 802.3477499991714
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 4.756686488121886,
+          "p95_ms": 11.076874998252606,
+          "max_ms": 161.04550000090967
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "evidence_resilience_v1",
+      "seed": 7,
+      "assistance": true,
+      "startup_cpu_s": 0.8136280000000014,
+      "cpu_s": 8.013362,
+      "wall_s": 8.016161708001164,
+      "simulation_s": 10.000000000000007,
+      "generated": 4800,
+      "delivered": 4158,
+      "dropped": 642,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 356.5988958001981,
+          "p95_ms": 375.74462500197114,
+          "max_ms": 416.60304199831444
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 121.0629334802014,
+          "p95_ms": 414.7707910015015,
+          "max_ms": 797.4067909999576
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 4.35616891431323,
+          "p95_ms": 11.319125002046349,
+          "max_ms": 152.81687500100816
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "evidence_resilience_v1",
+      "seed": 42,
+      "assistance": false,
+      "startup_cpu_s": 0.7649569999999954,
+      "cpu_s": 7.630371000000004,
+      "wall_s": 7.633248834001279,
+      "simulation_s": 10.000000000000007,
+      "generated": 4800,
+      "delivered": 4145,
+      "dropped": 655,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 330.8820959995501,
+          "p95_ms": 342.64012499988894,
+          "max_ms": 370.147416000691
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 112.46380851907116,
+          "p95_ms": 371.8112499991548,
+          "max_ms": 748.3672499984095
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 4.328605992128587,
+          "p95_ms": 10.63929199881386,
+          "max_ms": 152.41995800170116
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "evidence_resilience_v1",
+      "seed": 42,
+      "assistance": true,
+      "startup_cpu_s": 0.7558020000000027,
+      "cpu_s": 8.022358000000004,
+      "wall_s": 8.09520841700214,
+      "simulation_s": 10.000000000000007,
+      "generated": 4800,
+      "delivered": 4145,
+      "dropped": 655,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 366.5261373997055,
+          "p95_ms": 429.32295799982967,
+          "max_ms": 472.5657909984875
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 119.3234295962891,
+          "p95_ms": 450.0180420000106,
+          "max_ms": 739.1642500006128
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 4.608123386589114,
+          "p95_ms": 11.099833998741815,
+          "max_ms": 161.83516699675238
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "evidence_resilience_v1",
+      "seed": 99,
+      "assistance": false,
+      "startup_cpu_s": 0.8471420000000052,
+      "cpu_s": 7.877506000000011,
+      "wall_s": 7.885028084001533,
+      "simulation_s": 10.000000000000007,
+      "generated": 4800,
+      "delivered": 4125,
+      "dropped": 675,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 341.84783340060676,
+          "p95_ms": 359.152584002004,
+          "max_ms": 390.4940840002382
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 118.17190461547747,
+          "p95_ms": 379.17291700068745,
+          "max_ms": 830.3602500018314
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 4.533301128887501,
+          "p95_ms": 11.521874999743886,
+          "max_ms": 157.89529199901153
+        }
+      },
+      "assistance_counters": {}
+    },
+    {
+      "policy": "evidence_resilience_v1",
+      "seed": 99,
+      "assistance": true,
+      "startup_cpu_s": 0.7772250000000014,
+      "cpu_s": 8.203521999999992,
+      "wall_s": 8.210178417000861,
+      "simulation_s": 10.000000000000007,
+      "generated": 4800,
+      "delivered": 4125,
+      "dropped": 675,
+      "pending": 0,
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 367.8451249998034,
+          "p95_ms": 423.8718330016127,
+          "max_ms": 435.4471669976192
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 121.73840063426793,
+          "p95_ms": 436.2414999995963,
+          "max_ms": 760.5060829991999
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 4.443610531296827,
+          "p95_ms": 11.387750000722008,
+          "max_ms": 122.5197499989008
+        }
+      },
+      "assistance_counters": {}
+    }
+  ],
+  "note": "Sequential fresh engine runs. process_time measures CPU; wall-clock batch speed is not real-time achieved speed or renderer FPS. No model inference. Primary demand and seed matched; probes/topology changes are endogenous.",
+  "summary": [
+    {
+      "policy": "balanced_v1",
+      "median_increase_percent": 4.125492424074095,
+      "pairs": [
+        {
+          "seed": 7,
+          "off_cpu_s": 4.890253,
+          "on_cpu_s": 5.248595000000001,
+          "increase_percent": 7.327678138533944,
+          "off_packets": 3800,
+          "on_packets": 3800,
+          "off_control": {},
+          "on_control": {}
+        },
+        {
+          "seed": 42,
+          "off_cpu_s": 5.018846999999999,
+          "on_cpu_s": 5.154721000000002,
+          "increase_percent": 2.7072751968729714,
+          "off_packets": 3800,
+          "on_packets": 3800,
+          "off_control": {},
+          "on_control": {}
+        },
+        {
+          "seed": 99,
+          "off_cpu_s": 4.949493999999998,
+          "on_cpu_s": 5.153684999999999,
+          "increase_percent": 4.125492424074095,
+          "off_packets": 3800,
+          "on_packets": 3800,
+          "off_control": {},
+          "on_control": {}
+        }
+      ]
+    },
+    {
+      "policy": "evidence_resilience_v1",
+      "median_increase_percent": 4.2629425672845,
+      "pairs": [
+        {
+          "seed": 7,
+          "off_cpu_s": 7.6857240000000004,
+          "on_cpu_s": 8.013362,
+          "increase_percent": 4.2629425672845,
+          "off_packets": 4800,
+          "on_packets": 4800,
+          "off_control": {},
+          "on_control": {}
+        },
+        {
+          "seed": 42,
+          "off_cpu_s": 7.630371000000004,
+          "on_cpu_s": 8.022358000000004,
+          "increase_percent": 5.137194508628751,
+          "off_packets": 4800,
+          "on_packets": 4800,
+          "off_control": {},
+          "on_control": {}
+        },
+        {
+          "seed": 99,
+          "off_cpu_s": 7.877506000000011,
+          "on_cpu_s": 8.203521999999992,
+          "increase_percent": 4.138568729747472,
+          "off_packets": 4800,
+          "on_packets": 4800,
+          "off_control": {},
+          "on_control": {}
+        }
+      ]
+    }
+  ],
+  "outcome": "Passed",
+  "interpretation": "Cost measurement, not a speed acceptance guarantee. No assisted transitions occurred in these nominal ten-second runs; the exploratory batch separately measures runs with actual probes and switches."
+}

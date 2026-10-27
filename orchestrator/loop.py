@@ -856,9 +856,24 @@ class Orchestrator:
                         cache=getattr(self,cache_name,{})
                         for identity in cache: cache[identity]=default
                     for history in self._metric_history.values(): history.clear()
+                    self._processed_report_ids={}
                     for agent in self._rl_agents.values(): agent._prev_action=None; agent._prev_reward=0.; agent._step=0
                 metrics={identity:TelemetrySnapshot.model_validate(row).model_dump() for identity,row in snapshot["metrics"].items()}
-                self._telemetry_collection_status={n:{"status":"fresh","source":"synthetic","age_s":0.,"error":None} for n in metrics}
+                observation=snapshot.get('observability')
+                policy_epoch=('delivered',observation.get('epoch')) if observation else ('direct',None)
+                if getattr(self,'_observation_policy_epoch',policy_epoch)!=policy_epoch:
+                    self._processed_report_ids={}
+                    for history in self._metric_history.values(): history.clear()
+                    if hasattr(self,'_network_analyzer'): self._network_analyzer._risk.clear()
+                    if hasattr(self,'_insider_analyzer'): self._insider_analyzer._risk.clear();self._insider_analyzer._history.clear()
+                self._observation_policy_epoch=policy_epoch
+                self._mission_observability=observation
+                if observation:
+                    self._telemetry_collection_status={r['node']:{'status':r['status'].lower(),'source':'synthetic',
+                        'age_s':r['age_s'],'error':None if r['status']=='Fresh' else 'Security report '+r['status'].lower(),
+                        'report_id':r['report_id'],'clock':'simulation'} for r in observation['nodes']}
+                else:
+                    self._telemetry_collection_status={n:{"status":"fresh","source":"synthetic","age_s":0.,"error":None} for n in metrics}
                 return metrics
             except Exception as exc:
                 logger.error("Authoritative mission telemetry unavailable: %s",exc)
@@ -1015,6 +1030,20 @@ class Orchestrator:
         ]
         if unavailable:
             await self._fail_closed_unavailable_drones(client, unavailable)
+        # Repeated polling of one delivered report must not train model history
+        # or generate fresh decisions. Still-present fresh reports avoid HOLD.
+        processed=getattr(self,'_processed_report_ids',{})
+        fresh_metrics={}
+        for identity,row in metrics_by_drone.items():
+            observation=row.get('observation') or {}
+            if observation:
+                key=(getattr(self,'_mission_session',None),observation.get('epoch'),observation.get('report_id'))
+                if processed.get(identity)==key: continue
+                processed[identity]=key
+            else: processed.pop(identity,None)
+            fresh_metrics[identity]=row
+        self._processed_report_ids={k:v for k,v in processed.items() if k in self.DRONES}
+        metrics_by_drone=fresh_metrics
         processing_drones = [
             drone_id for drone_id in self.DRONES if drone_id in metrics_by_drone
         ]
@@ -1083,6 +1112,7 @@ class Orchestrator:
                     _SECURITY_CFG.get("evidence", {}).get("max_age_s", 3.0)
                 ),
                 require_independent=MODE == "real",
+                now=(float(evidence['controller_timestamp'])+metrics.get('source_age_s',0.)) if MODE=='simulation' and (metrics.get('observation') or {}).get('clock')=='simulation' and evidence else None,
             )
             # Both traffic analyzers consume the same joined evidence. An
             # unavailable real controller observation must not be converted
@@ -1101,6 +1131,8 @@ class Orchestrator:
             evidence_freshness = (
                 insider_analysis.evidence_freshness if insider_analysis is not None else 0.0
             )
+            if metrics.get('observation'):
+                evidence_freshness=min(evidence_freshness,network_analysis.evidence_freshness)
             from sdn.containment import decide_containment
             containment = decide_containment(
                 drone_id,

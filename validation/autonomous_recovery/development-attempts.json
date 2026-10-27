@@ -1,0 +1,65 @@
+[
+  {
+    "directory": "results/autonomous_recovery/accepted-batch",
+    "status": "failed",
+    "source_sha256": "0f0b4b92512e3b0a692385c7b4a83f736cd3c1e256c12eef339d8d8dd71a3a9f",
+    "completed": 8,
+    "failures": 52,
+    "verification_outcome": "Failed",
+    "disposition": "superseded development evidence; do not combine with accepted measurements"
+  },
+  {
+    "directory": "results/autonomous_recovery/batch-final",
+    "status": "failed",
+    "source_sha256": "346321c3405b3c2c88c118028f2e419fd304557175d8470d51698f8482109f7c",
+    "completed": 39,
+    "failures": 21,
+    "verification_outcome": "Failed",
+    "disposition": "superseded development evidence; do not combine with accepted measurements"
+  },
+  {
+    "directory": "results/autonomous_recovery/batch-v1",
+    "status": "interrupted",
+    "source_sha256": "eeecff38c367ec665100929b7e222459fad64208767a5d9cc30e6ce713e33ba6",
+    "completed": 4,
+    "failures": 0,
+    "verification_outcome": "Failed",
+    "disposition": "superseded development evidence; do not combine with accepted measurements"
+  },
+  {
+    "directory": "results/autonomous_recovery/local-evidence-batch",
+    "status": "completed",
+    "source_sha256": "1f00782e9727d3e1a239fde70c4625c298aaa6dcfaf7a3b27f301054b38d4016",
+    "completed": 60,
+    "failures": 0,
+    "verification_outcome": "Passed",
+    "disposition": "accepted release measurement"
+  },
+  {
+    "directory": "results/autonomous_recovery/release-batch",
+    "status": "failed",
+    "source_sha256": "e62a2847ce4c18d53943ac61e3cdbd2db2dda76c2dc40f715c47e86b9ef953cb",
+    "completed": 6,
+    "failures": 54,
+    "verification_outcome": "Failed",
+    "disposition": "superseded development evidence; do not combine with accepted measurements"
+  },
+  {
+    "directory": "results/autonomous_recovery/transport-bound-batch",
+    "status": "failed",
+    "source_sha256": "c17f81ecd8196a12c7d58d662a460a483f37fbbb7c5c652a1de7e96633826bd3",
+    "completed": 1,
+    "failures": 60,
+    "verification_outcome": "Failed",
+    "disposition": "superseded development evidence; do not combine with accepted measurements"
+  },
+  {
+    "directory": "results/autonomous_recovery/verified-batch",
+    "status": "completed",
+    "source_sha256": "d133d646c16b0c7f66a7fd28dafa3f96dbbfa1bbd6ecd9f0a55059635ac5e524",
+    "completed": 60,
+    "failures": 0,
+    "verification_outcome": "Not Tested",
+    "disposition": "superseded development evidence; do not combine with accepted measurements"
+  }
+]

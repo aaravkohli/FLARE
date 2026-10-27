@@ -1,0 +1,12 @@
+{
+  "python": "3.11.4 (v3.11.4:d2340ef257, Jun  6 2023, 19:15:51) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "node": "v25.2.1",
+  "npm": "11.6.2",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "machine": "arm64",
+  "scope": "Local modeled simulation; no hardware flight or RF certification",
+  "browser": "155.0.8059.85",
+  "reference_cpu": "Apple M2",
+  "isolation": "Private service copies on ports 15173 / 18000 / 18080; simulation batches isolated in memory; no operator restart",
+  "model_identities": "See unchanged checkpoint/model hashes in isolation.json; no new model training in the recovery validation batch."
+}

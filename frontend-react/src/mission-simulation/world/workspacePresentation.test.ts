@@ -37,3 +37,11 @@ test('fleet settings expose all ten research sizes and preserve an authoritative
  assert.equal(fleetSizeOptions(40).filter(value=>value===40).length,1);
  assert.equal(fleetSizeOptions(101).includes(101),false);
 });
+
+
+test('recovery and safety activity keeps authoritative classifications and unsafe outcomes distinct',()=>{
+ const events:SwarmEvent[]=[{cursor:1,kind:'local_state_changed',category:'RECOVERY',simulation_time:3,data:{node:'a',state:'RECOVERY',health:'COMPLETELY_ISOLATED'}},{cursor:2,kind:'battery_exhausted',category:'SAFETY',simulation_time:4,data:{node:'a'}}];
+ const items=activityItems('session',events,[],id=>id==='a'?'UAV A':id);
+ assert.match(items[0].summary,/unsafe outcome/);assert.equal(items[0].category,'SAFETY');
+ assert.match(items[1].summary,/Completely isolated/i);assert.deepEqual(items[1].targets,['a']);
+});

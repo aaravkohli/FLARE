@@ -1,0 +1,27 @@
+[
+  {
+    "reference_cpu_s": 4.704453000000001,
+    "cohort_cpu_s": 0.12997800000000037,
+    "equal_events": 1200
+  },
+  {
+    "reference_cpu_s": 4.7764370000000005,
+    "cohort_cpu_s": 0.15405900000000017,
+    "equal_events": 1200
+  },
+  {
+    "reference_cpu_s": 4.996933,
+    "cohort_cpu_s": 0.14723199999999892,
+    "equal_events": 1200
+  },
+  {
+    "reference_cpu_s": 4.988833,
+    "cohort_cpu_s": 0.1686009999999989,
+    "equal_events": 1200
+  },
+  {
+    "reference_cpu_s": 5.126752,
+    "cohort_cpu_s": 0.13470999999999833,
+    "equal_events": 1200
+  }
+]

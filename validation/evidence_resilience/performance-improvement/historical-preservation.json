@@ -1,0 +1,8 @@
+{
+  "outcome": "Passed",
+  "prior_release_artifacts": 694,
+  "changed": [],
+  "frontend_sources_identical": true,
+  "frontend_production_assets_identical": true,
+  "note": "Initial separately built CSS comparison superseded; final baseline uses shared production assets. Historical 550-run data not modified or rerun."
+}

@@ -1,5 +1,6 @@
 import type { NetworkDisplay, SwarmSnapshot } from '../swarm';
 import { showGroundLink } from './networkLayers';
+import { recoveryOverlay } from './recoveryOverlay';
 import { samplePacketEvents } from './networkPlayback';
 import { createThreatLayer } from './ThreatLayer';
 import { threatVisual, threatPacketProgress } from './threatState';
@@ -744,6 +745,7 @@ export function createMissionScene(canvas: HTMLCanvasElement, invalidate: () => 
         const level=link.a===selectedId||link.b===selectedId?'neighbor':'background';
         networkLinks.add(level,a,b,networkLinkColor(link.status,level,display?.qualityColors===true));
       }
+      canvas.dataset.recoveryEdges='[]';if(display?.inactive){const overlay=recoveryOverlay(mission,selectedId);canvas.dataset.recoveryEdges=JSON.stringify(overlay);for(const e of overlay){const a=positions.get(e.a),b=positions.get(e.b);if(a&&b)networkLinks.add('recovery',a,b,e.kind==='verification'?'#b5a1ea':'#9ad5e4');}}
       function drawHops(hops:string[],level:NetworkLinkLevel){
         let distance=0;
         for(let i=1;i<hops.length;i++){

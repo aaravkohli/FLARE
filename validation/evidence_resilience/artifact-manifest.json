@@ -1,0 +1,3477 @@
+{
+  "generated_at_utc": "2026-10-25T17:14:07.660674+00:00",
+  "source_sha256": "85844bbaf415323189d0c2a5fa100934cfc7f5fa720c5496a84d586e40aab5da",
+  "note": "Large traces, logs and source archives remain in ignored local results paths. Artifact-manifest itself is excluded to avoid recursive hashing.",
+  "artifacts": [
+    {
+      "path": "results/evidence_resilience/accepted-cpu-profile.log",
+      "bytes": 4511,
+      "sha256": "48aef516a120a715081dbd110de729bacfbf4d128d1921dee34802d7df8b4a5b"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-profile-2d-source.tar.gz",
+      "bytes": 2910801,
+      "sha256": "8b31aec043fc53c45d3fd078d9f9f22908560d7901f0a7133a43209a657eca80"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-profile-2d.log",
+      "bytes": 404,
+      "sha256": "75d6c570d217048c19230de972532eca5935a0fb87c034108ef775893dd456be"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-profile-3d-source.tar.gz",
+      "bytes": 2910801,
+      "sha256": "76440e7a1cc8f85327273f3a6c66bcaae2ed8c29ec08b9b0171baab756ac9b99"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-profile-3d.log",
+      "bytes": 404,
+      "sha256": "b6d2adf1f5f0feb08433ab581aae06383302c5db225820f56bd9b83396661554"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-profile-compare-source.tar.gz",
+      "bytes": 2910806,
+      "sha256": "f3e8097825091107d4c0d2c7fa26921819ab19d0efd5a584ed06472ed5d21523"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-profile-compare.log",
+      "bytes": 404,
+      "sha256": "b75b262f09796fd9179ad0ec9402fd52d3e91133e4537ff831524bee7710ae06"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-regressions.log",
+      "bytes": 1074,
+      "sha256": "7ea67648cf0101f633c9093ebdcf7c794816e8e40b12211db2c3e3d42b4bb310"
+    },
+    {
+      "path": "results/evidence_resilience/accepted-results-browser.log",
+      "bytes": 445,
+      "sha256": "907cb2e7adb43d84d34a3024bf3aa33afde74b8aef391817bd389003c837d9ff"
+    },
+    {
+      "path": "results/evidence_resilience/admission-airtime-tests.log",
+      "bytes": 98,
+      "sha256": "4a6070b078e8713685bb7d423b62e85d6415f822c5c557fbcd20f48e88981629"
+    },
+    {
+      "path": "results/evidence_resilience/before-source.tar.gz",
+      "bytes": 80217,
+      "sha256": "84d43950b53f3f9ecad12515f9b0792fcfe138d6fd0f9060d74c176fd483a60e"
+    },
+    {
+      "path": "results/evidence_resilience/before.json",
+      "bytes": 4932,
+      "sha256": "c9c7cb83b5c1967306c91accb82cff26aa829bf9e888eb2e8b0a157fc95a817a"
+    },
+    {
+      "path": "results/evidence_resilience/browser-control-matrix.log",
+      "bytes": 2027,
+      "sha256": "b14deed700d401f18a3a59100333f1cd90b29fe1f8fc2b1d7d5c87080754f457"
+    },
+    {
+      "path": "results/evidence_resilience/browser-final.log",
+      "bytes": 1374,
+      "sha256": "67386dab6364ff4594a08f459bbabeab37b040fbe95a01eda6c5329d12403351"
+    },
+    {
+      "path": "results/evidence_resilience/browser-missing-models.log",
+      "bytes": 441,
+      "sha256": "9344e6a0a1c7ac1527ecc9c162af58525ec9c9e413f8f290087fb9d50253ff50"
+    },
+    {
+      "path": "results/evidence_resilience/browser-new.log",
+      "bytes": 441,
+      "sha256": "37d288ef7ac8ff1c2354f3277965db9b4b72c5d04df2564254de5ab2425ba2e3"
+    },
+    {
+      "path": "results/evidence_resilience/browser-regressions.log",
+      "bytes": 12693,
+      "sha256": "ff02653ab6e1b2c41a77e2af081f3cfa7405f1363442af7ad3a15badd80d704c"
+    },
+    {
+      "path": "results/evidence_resilience/browser-rerun.log",
+      "bytes": 1272,
+      "sha256": "20d1fa51c85a0ea0e8e18f39fb19bc1778b9490acac409f205eb3631598b675f"
+    },
+    {
+      "path": "results/evidence_resilience/browser-results.log",
+      "bytes": 445,
+      "sha256": "2e9e4a5489595ed25fc627a07de83d7828b9f093c999108fed2044f5c135cfe7"
+    },
+    {
+      "path": "results/evidence_resilience/build-final.log",
+      "bytes": 1585,
+      "sha256": "f6b9738ccd5e0442815abaf19fd365bc04dbeaa8dd90887a689962b183619826"
+    },
+    {
+      "path": "results/evidence_resilience/build-release.log",
+      "bytes": 1585,
+      "sha256": "c00911089a6d4ea08cce9d256d2420847df8a09a8a9ab9a2a2f09498ed5ddefd"
+    },
+    {
+      "path": "results/evidence_resilience/build.log",
+      "bytes": 1585,
+      "sha256": "7cae22f4e43e6547234c60a6ffc27e2b0a6edafba60badca46ce10cdba8673de"
+    },
+    {
+      "path": "results/evidence_resilience/cancel-regression-fixed.log",
+      "bytes": 98,
+      "sha256": "bfb94aa3bce5e5c9a8e413d4c0b8cbbecf5444cc553dd49310e15bc548c86a10"
+    },
+    {
+      "path": "results/evidence_resilience/cancel-regression.log",
+      "bytes": 1180,
+      "sha256": "4ab8b6c55328b9474ea4d30fdd442a022e6d55915699592b76bc6cb18baef49a"
+    },
+    {
+      "path": "results/evidence_resilience/collection.log",
+      "bytes": 105811,
+      "sha256": "ddbef98e43a30a569939e5225536a996438e96c6ebb4de35168756be07f5d726"
+    },
+    {
+      "path": "results/evidence_resilience/controller-tests.log",
+      "bytes": 114,
+      "sha256": "702f79e120bae0bfbf42a6cd9414eb48e0a6a5e21367ab011aac81ce3f331da8"
+    },
+    {
+      "path": "results/evidence_resilience/cpu-profile-development.json",
+      "bytes": 6805,
+      "sha256": "58b8d982dbb321da1ba588c49f5462fad3aad4fc70e511cad6406568c65a9770"
+    },
+    {
+      "path": "results/evidence_resilience/cpu-profile.json",
+      "bytes": 6822,
+      "sha256": "bed9c1b563245542e6977b60d45904ca58eef9dfdb2f5a7b511f5eb1a7d22132"
+    },
+    {
+      "path": "results/evidence_resilience/cpu-profile.log",
+      "bytes": 4494,
+      "sha256": "7aeab29ab4b6bccf499e798c8b514f1a6f334dc3a84daef8d3f4a34f2603ff55"
+    },
+    {
+      "path": "results/evidence_resilience/deferred-order-test.log",
+      "bytes": 98,
+      "sha256": "4e8b6c5a89da44bf05d17100903172be04033067c113a6831bdfafbd42b7da52"
+    },
+    {
+      "path": "results/evidence_resilience/deterministic-regressions.log",
+      "bytes": 1074,
+      "sha256": "f644b2eab9b0710a98fa9d087d13d955303f2b96bf33dee7bb47f4a81800dfbb"
+    },
+    {
+      "path": "results/evidence_resilience/diff-check.log",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "results/evidence_resilience/final-controller-tests.log",
+      "bytes": 100,
+      "sha256": "de0d67f1bb4f0e14ca556bbacafdcc6afe0b746504dc0a505d0786848b4564d9"
+    },
+    {
+      "path": "results/evidence_resilience/final-new-tests.log",
+      "bytes": 113,
+      "sha256": "408da64441778ef36062a3b73ee6c1e3b1cec13c0d0600b066b93da0e849e99c"
+    },
+    {
+      "path": "results/evidence_resilience/final-source-repeats/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "bfeeb6617427f64c9ff86f13dbbaa4721ab876817bab6efe8dab340c3b25bfbd"
+    },
+    {
+      "path": "results/evidence_resilience/final-source-repeats/normal-combined-7.jsonl.gz",
+      "bytes": 1843812,
+      "sha256": "057f0a3ea34b11a7e45c089ce42475da86a0bf2ec47dd77b0c66ac25e2fdda5d"
+    },
+    {
+      "path": "results/evidence_resilience/final-source-repeats/verification.json",
+      "bytes": 752,
+      "sha256": "d0644a6381fc5d239eab238909190724adbed342a2114d7fd06f3fcb53fecc9c"
+    },
+    {
+      "path": "results/evidence_resilience/final-targeted.log",
+      "bytes": 190,
+      "sha256": "0f50229f5d3df3fee49960c5a4951599ffed4fca18df4bc4f9644fbd18aa3a6d"
+    },
+    {
+      "path": "results/evidence_resilience/first-regressions.log",
+      "bytes": 2905,
+      "sha256": "8f8f535bb173124067bb1107b5d5fadb30889d5655089b51261574fa5af0ebaf"
+    },
+    {
+      "path": "results/evidence_resilience/frontend-release.log",
+      "bytes": 17064,
+      "sha256": "c8aaf42d5d67f8d576cbe45d9befd019f5ffa80f2a0dbea177e54a3b51498c1b"
+    },
+    {
+      "path": "results/evidence_resilience/frontend-units-final.log",
+      "bytes": 17054,
+      "sha256": "a86553403c6c05f578f79991138ff19ce0bf36e5cce11fa83c3e65dc34dcf3cc"
+    },
+    {
+      "path": "results/evidence_resilience/frontend-units.log",
+      "bytes": 17051,
+      "sha256": "cf3ed896ca7640aa441c77a8f5ee274ea7e3bb10cd06d91c446c8a4bc599dbe7"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/balanced_control-1/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "daac84b952ca385723da5bda96c0db34b67c0657c2239fb7a1665cd765e01d51"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/balanced_control-1/row.json",
+      "bytes": 5756,
+      "sha256": "d2006ff94318cacc362d8982e077dbf3f0dd92d4a615c67128d4a103db4f8550"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/balanced_control-99/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "d4fde61d7677165a63c2ecacbccc57025b9ee03cc5cd21f608c747aefd96c24d"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/balanced_control-99/row.json",
+      "bytes": 5756,
+      "sha256": "a8c51cae0ba8a04ccf19ad7cd149081247062c70199e73be8b365c55c2585d01"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/combined-1/congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "4f92d52fb08c71b2793db1bd241c18d0e7f5d9cd847e60b6ed0ef84f7e77b038"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/combined-1/row.json",
+      "bytes": 14639,
+      "sha256": "b0229eed88a6d35ce84543ffb3e972952001dd79b81d76d627c54cb2f81fd90a"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/combined-99/congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "faaefc024443680aff324db5425a2e6ea14e7b59a05027e9083db394a7ed4809"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/combined-99/row.json",
+      "bytes": 14639,
+      "sha256": "d0fe8baed2d092c5db2f1b2876ba56d2a9a496b8db24d22c1bf06e4a196ece96"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted/verification.json",
+      "bytes": 4297,
+      "sha256": "835b98a4644de09a931a80c23ff191825c894c585281642ca475465aaf92f70b"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-accepted.log",
+      "bytes": 36,
+      "sha256": "b01e4f4547dd81ac2db1a9bef444ed92f6cea3a0ea9d49b8a2eef4f3e27582d0"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/balanced_control-1/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "1b9d219cce1b5c181a42201ef1b892d8cc491d4f31c50ab6cddb9ad0ac7ebd0b"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/balanced_control-1/row.json",
+      "bytes": 5683,
+      "sha256": "c79a34eb560906a44169aa9801cf6d3e454d4c275525cce1acb41d801975d615"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/balanced_control-99/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "c8d90bfa65b3e40618f575c44ad99f351c54262dd1b40655ebfd09f18d4a3057"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/balanced_control-99/row.json",
+      "bytes": 5693,
+      "sha256": "a1ceb7d10267d2d3572f5a24a9c7ab567c10ae4b60bac5d364ada421aff8daa1"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/combined-1/congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "db80a26498b6b662f4f5d6879fc44f6efc784613ebcc644d0282ce0cd9d9c506"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/combined-1/row.json",
+      "bytes": 14639,
+      "sha256": "ae5303fcadd48b28fb442ba8f001688e020b63e9e0a1b2445cb10538bf0e4aa9"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/combined-99/congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "977637c7e7473b6da7dee905cd4844ae790d553d97c3acf2782cf031fec0b2ea"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/combined-99/row.json",
+      "bytes": 14638,
+      "sha256": "7c68c34325ee9842bc770f554a3db201497c32709af30c3ca1145ca45beac694"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat/verification.json",
+      "bytes": 3912,
+      "sha256": "d85390e26ada79602b1fede21ba9ad58f1ecae309896fc4b3227422128737b88"
+    },
+    {
+      "path": "results/evidence_resilience/hashseed-repeat.log",
+      "bytes": 36,
+      "sha256": "b01e4f4547dd81ac2db1a9bef444ed92f6cea3a0ea9d49b8a2eef4f3e27582d0"
+    },
+    {
+      "path": "results/evidence_resilience/legacy-baseline.json",
+      "bytes": 7352,
+      "sha256": "fbb39d6f023290553f23188aadaba7a4b6ffdc5797092ffd92babd9d07e8f197"
+    },
+    {
+      "path": "results/evidence_resilience/lint-final.log",
+      "bytes": 2324,
+      "sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6"
+    },
+    {
+      "path": "results/evidence_resilience/lint-release.log",
+      "bytes": 2324,
+      "sha256": "4c7dd95008c4ba3ba2c67103436fe51a73c796c4fb43a3b0de03569c75c50f61"
+    },
+    {
+      "path": "results/evidence_resilience/lint.log",
+      "bytes": 2324,
+      "sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6"
+    },
+    {
+      "path": "results/evidence_resilience/multiradio-scheduler-equivalence.json",
+      "bytes": 304,
+      "sha256": "69cee6828061c70f3d0cd8e1ec6c40d7f9988ebb2e7ba07b59c53d8de24d72e5"
+    },
+    {
+      "path": "results/evidence_resilience/optimized-smoke/congestion-combined-7.jsonl.gz",
+      "bytes": 2465635,
+      "sha256": "4396069918a7e1b7948f67d87cc0fb01bee4297207c22fba3385d0b05da59e47"
+    },
+    {
+      "path": "results/evidence_resilience/optimized-smoke/run.json",
+      "bytes": 14637,
+      "sha256": "eb2759dd47ecf414f5a18c766c427f9f57283943d553bbd9fd47594d09630943"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2470321,
+      "sha256": "eaae12cf293f0ca474f5a1962e7ba26ef3f6d82692adff0c708622f7ab512cd1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "a3a057740d2ce2982c46cc9d751a2635f3b6a40a1767d9a2492d2adaeec9ab1c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-balanced_control-99.jsonl.gz",
+      "bytes": 2470583,
+      "sha256": "386e833331974f80091da1a2560f524cdf464a5ce1efa45865099b329a82e872"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-combined-42.jsonl.gz",
+      "bytes": 2462959,
+      "sha256": "3e2f9b797b40727a0cda331b47a32994b29b506bbb5f042e2921af4de8cd71d7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "1c86f4e36a72ac86e9dbf6da807e3d61e0b2cb1647c1f1ac2e7908a81a8e6db9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-combined-99.jsonl.gz",
+      "bytes": 2463686,
+      "sha256": "b81154af2317d9dae62b7987523d6f22233e7c6491bda8dcd428b9facd562b27"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2448668,
+      "sha256": "79d7dd119321bfd941d89eb7e82b063a5bf7d0794fae1468e3456d53d9bfb1e8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2449539,
+      "sha256": "69e141dd2baf967fcfdda4b6bb6b010b840a9b4e1f1e368d18dfeca5f0b78c23"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-observability_guard-99.jsonl.gz",
+      "bytes": 2449055,
+      "sha256": "4dbd8e5b2a694d5e1c38ec653806d9d6450a5d788c8f4c3c378da03e6c93331e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2471700,
+      "sha256": "e9ce75f54b3cef0f639a5afdda209e9b3f89c508bfa8e470c81c5735c95399f2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2479815,
+      "sha256": "5fd5ee670c78c805d06002bcfedcb198719cd28bbbbd55e2bbf7ed620f003e3a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/congestion-packet_transition-99.jsonl.gz",
+      "bytes": 2477305,
+      "sha256": "03697d94910d23235ddd4067947aab8b0bc80eda323871330d5d84c7a9551f89"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/execution-source.json",
+      "bytes": 2588,
+      "sha256": "bf52d4d6a5bbf4db6367c97de2dfbff47726992d1d93b952a07ae7338fefe181"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/execution-source.tar.gz",
+      "bytes": 177366,
+      "sha256": "4278f2b9e6e294e1df7f8d7c159b952e32d1fff4ca080626081ca85d5a118a5e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2558782,
+      "sha256": "0dff19fb7de13e8658999cebcbe7e8625ac7d6694659fbcb77918f3429aa8948"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2557806,
+      "sha256": "cadcfd0acf885257605f40e3a0680e03505c4031bc891363658c0cded9571bae"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2543462,
+      "sha256": "ca0aeb4e119375149a1c4fc45dd87de6be9db8a0e3d0999d0aa55be66b62381f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "31c6a504c3cbf71bed7b184a431e26b87cdeb08249625b0015f6d392a09ffb4e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "42d3e19a36d0a4cbd2962c779894601063db9817a6754bd6d83adb420240d410"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-combined-99.jsonl.gz",
+      "bytes": 2428930,
+      "sha256": "632859074566fe43d93f072dccfa0cfe0858e008523a41126d56c72953f16dc7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435527,
+      "sha256": "da7274059c07ef9df50e46358a8621ade82510e85c92b12d8fe1f4c233f71bc6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433453,
+      "sha256": "89c4217fb95849b876a7762551d4260d0618d197ce0523863f98e12aa20da8da"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428461,
+      "sha256": "33d3d62f863d157479d48b3dc89fc5b87cafcb636417255b827297acb2161e30"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2559299,
+      "sha256": "76573b7de92952c9106728b9db81ec9973b131de2153e63513ec09242ace0fe8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2558326,
+      "sha256": "9a24bfbb81b2a312fbea9d97f7402dd413b617d7d94a9f01f8cdb139742db4db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2543982,
+      "sha256": "bdc605407ac4c336f0795e9e6a8a16b976504999f753997b4587894c5e094b10"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1909403,
+      "sha256": "5384bc8a224f8ac8f9248b6a9b8ca869f86bb90169c79ab210b8fb515029401a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1910810,
+      "sha256": "71702f513765aadca7355ec1d8918ad2bca64b43f7f31f5fe399dab97a9cba1b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1904955,
+      "sha256": "003d14811e97fb5774c6254eeb271ac85305019e3662b4c1913ef091d9068c40"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-combined-42.jsonl.gz",
+      "bytes": 1849187,
+      "sha256": "7446721c7e9b380cd737c2cff099efe6dca6d61e08eb46834b1ebe17fac2d8d2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-combined-7.jsonl.gz",
+      "bytes": 1843815,
+      "sha256": "482dc2d710c8f7ec94799f299c370b9642cd051daffcaecd73edc4217e8db222"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-combined-99.jsonl.gz",
+      "bytes": 1846333,
+      "sha256": "6c6b079f21052ca9d71ffc41500ccd4f67ec390e8a469d21e8011d469b795e90"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848983,
+      "sha256": "16a544cd7ff442381255189f4a486e16dcc0718d7fd757fad007cd1fab0278fe"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843609,
+      "sha256": "ea25b9898f7882abbe0a2102bdee773b155ba8e3cdcf4686d9219b82b7e89e1b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846128,
+      "sha256": "bfc7c0103fe957e8f32e298a98e76b4405871142c0b85ea282e99ea9c7af71c0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1909627,
+      "sha256": "ce410c1c62b9aad5ca4dca07879ce83d5f0a4defa9f4a92dbb7a9133d6389c82"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1911036,
+      "sha256": "0eb636c47f244eb60a05f61510a48ac31c93f4ec7034683b98f7659c8072940e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1905183,
+      "sha256": "55924390baac5fcc76ccba2c6191fe044ec2059e4f56d0eff908bb039118debd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-balanced_control-42.jsonl.gz",
+      "bytes": 2467805,
+      "sha256": "1a0033318bb11ad51a0887ec1d233d0f30682e227f55991e17c665de917f2186"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-balanced_control-7.jsonl.gz",
+      "bytes": 2471932,
+      "sha256": "b5ec5a52f3b16e84623bcb3b383f02a5d61422a00469ec08692db3a1f6561aa1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-balanced_control-99.jsonl.gz",
+      "bytes": 2427610,
+      "sha256": "db48cea1aa9af42710212e4ffba10550e73e3187c6749a2c4d4898963f1b3d89"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-combined-42.jsonl.gz",
+      "bytes": 2469013,
+      "sha256": "6e26219c4b3b80e0ceb7b516b243ee350c58eddc57a395a66d3f8b5a855ff94d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-combined-7.jsonl.gz",
+      "bytes": 2471515,
+      "sha256": "48a8d862bfec24c4f3306cfa554f40b94db63cab1d4b45baba73dfb7de9cf603"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-combined-99.jsonl.gz",
+      "bytes": 2420750,
+      "sha256": "872c1490b686f93e4cd53885a6d8c73679bc71d4d4899c92f2296ded3d9f97e3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-observability_guard-42.jsonl.gz",
+      "bytes": 2469293,
+      "sha256": "9f3f5eabeb4a87eb3b0960b57bde07f3a8f38276c6f14af46b5b014459e68a30"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-observability_guard-7.jsonl.gz",
+      "bytes": 2471407,
+      "sha256": "537f74c6cf03efb97c69e5673a2e48be4b1b1536d38d6274e424076cd9b4557b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-observability_guard-99.jsonl.gz",
+      "bytes": 2421092,
+      "sha256": "55ac8f370ffc366ead094244b567d0e052469a65555a7435ee379bd967da0b2d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-packet_transition-42.jsonl.gz",
+      "bytes": 2467217,
+      "sha256": "9f9c3244f4c9846a39107a1d4f5c6262edbaef0248599a33c016ab31e2ab718a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-packet_transition-7.jsonl.gz",
+      "bytes": 2471913,
+      "sha256": "a40d9750397f3aa3b6baa965c3e3ce684819c83a76b699194fc4e26dc39e646a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/partition_reconnection-packet_transition-99.jsonl.gz",
+      "bytes": 2427253,
+      "sha256": "ce31b3664a814e58795d437b6e2f40cc98de6b3d0e0efbffca50649735e63ee3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-balanced_control-42.jsonl.gz",
+      "bytes": 1672120,
+      "sha256": "d629a40c9b4947ac759a7aec9897cdaded43118d00aad9cf4ac90161e6dc30b6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 1663940,
+      "sha256": "32a593374b41d226b7a326292a6e97b1114ba58fe036664632517c736c7492ec"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-balanced_control-99.jsonl.gz",
+      "bytes": 1671136,
+      "sha256": "6f12b52219bdfede8b18968f3b93c883d35642e1a6ca39de7149736bf15cd399"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-combined-42.jsonl.gz",
+      "bytes": 1598459,
+      "sha256": "8ae6a7c316a7b71345a8d06e4f2a7507e4a8d32c27cee4c27d8711a8441cb5e3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-combined-7.jsonl.gz",
+      "bytes": 1591677,
+      "sha256": "fc9a3f443d83b61b7e75a3814d95a547bed9ed830d0c1431f1bfabb2c013e7fc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-combined-99.jsonl.gz",
+      "bytes": 1596191,
+      "sha256": "1b7983ae6c874882830efa510792c268d6353bcf3a93ac8802bce109ea725b67"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-observability_guard-42.jsonl.gz",
+      "bytes": 1598253,
+      "sha256": "e3749b22e7bc3d73488baa43f91cbdd07bb67516e5f5c20dcced928f335032f6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-observability_guard-7.jsonl.gz",
+      "bytes": 1591471,
+      "sha256": "22be1cbf7d65800278615e4e3bfb6a34a1d06c35dae453717dc642cc348ceb3d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-observability_guard-99.jsonl.gz",
+      "bytes": 1595986,
+      "sha256": "9283338a380cc5f79b818d678fae4196d428b664583b78dc469a1bdbe4ae26d4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-packet_transition-42.jsonl.gz",
+      "bytes": 1672344,
+      "sha256": "5678c36df2e97e7cc45fea49b7dc8aab74d9e750d1abbb0a4119ca8a850335e4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 1664165,
+      "sha256": "968921fb196e2516a36c1df90ac7000a8d4f0134e9060431e6bfbcc85bf8db30"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/regional_jamming-packet_transition-99.jsonl.gz",
+      "bytes": 1671363,
+      "sha256": "6af9792356056166b5f0a4fe0aeb2a43f4c992d9faa51888758c412fba3fdcac"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/results.csv",
+      "bytes": 30539,
+      "sha256": "93c99019d33d975292fbb23238f1b97854cac2fd360670488cd3ec8b338e917b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/results.json",
+      "bytes": 1719379,
+      "sha256": "cd571b0da5402c502022f12cc67cc523bddf57ff998a0fd878b432a6aa84bd9a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/results.manifest",
+      "bytes": 20532,
+      "sha256": "1593ccb15527d2c6589757e0a72066d347d6985ef5763055818b5661eaab713c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/results.md",
+      "bytes": 5911,
+      "sha256": "6861266e5a40d59b70a4af1ef1fe1af9cbb77cfe6a1f5f8d248e3d4d60b35e46"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-balanced_control-42.jsonl.gz",
+      "bytes": 1965514,
+      "sha256": "2ce79c678d3bcc3a17be1c386d32741bda1320aaaecca0b2f8ac69de29be418e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-balanced_control-7.jsonl.gz",
+      "bytes": 1966519,
+      "sha256": "f3cbf0c49462d61402e2b4b00d6257cb876c47a06c02de58a52b625a25095cfe"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-balanced_control-99.jsonl.gz",
+      "bytes": 1969136,
+      "sha256": "ec57590a4dda428a0e100e6547ad77331424b11a66679eda84ca07d9dc1e6383"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-combined-42.jsonl.gz",
+      "bytes": 1876132,
+      "sha256": "2c8488364619f0c6be1b0bcf589e1a960023e8c2b7e970dc8187f584c986ea54"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-combined-7.jsonl.gz",
+      "bytes": 1880665,
+      "sha256": "df7dd4d06c351775cc17c7f40a259178a224cb2e9aa7453b8053f3a47cf71f2f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-combined-99.jsonl.gz",
+      "bytes": 1878973,
+      "sha256": "2318c85a9c324458f6f51de47196e032e659add921d5f5972263368fe63cc15e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-observability_guard-42.jsonl.gz",
+      "bytes": 1875927,
+      "sha256": "28eca1dd75839b82c73dc7b040b598630bd13bc206d77e7dd483526eb9d306bc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-observability_guard-7.jsonl.gz",
+      "bytes": 1880459,
+      "sha256": "728dbaac3dea612dee5241b3cada25753bc5343dec6230350dfd7b260fd114b0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-observability_guard-99.jsonl.gz",
+      "bytes": 1878769,
+      "sha256": "edc7c260787e765544a8e3957184779896c224a24109729cc6922f4aadea6734"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-packet_transition-42.jsonl.gz",
+      "bytes": 1965737,
+      "sha256": "f6f0a7bd3a563d7e29c442191375e40e4e2632a6c4ffe2a09ec5db75680331ed"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-packet_transition-7.jsonl.gz",
+      "bytes": 1966744,
+      "sha256": "10c47d197417a88e0777a4f4834b435518377e6799d5b49d36311e53cccc4d4d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/single_failure-packet_transition-99.jsonl.gz",
+      "bytes": 1969363,
+      "sha256": "042e2f22a96bee110f416fa872900982fdeb27aab8bf22f48d9623821a5f1a87"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted/state.json",
+      "bytes": 1231725,
+      "sha256": "3076ede8727159bafde186d808a5ce1386b3ce1f80072637c07724957831ecc9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/analysis-source.tar.gz",
+      "bytes": 177365,
+      "sha256": "896c7fea2eb5e0b8efe196658af3ad56cc73c318bcb9a1010525f36057f266cf"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2470321,
+      "sha256": "eaae12cf293f0ca474f5a1962e7ba26ef3f6d82692adff0c708622f7ab512cd1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "a3a057740d2ce2982c46cc9d751a2635f3b6a40a1767d9a2492d2adaeec9ab1c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-balanced_control-99.jsonl.gz",
+      "bytes": 2470583,
+      "sha256": "386e833331974f80091da1a2560f524cdf464a5ce1efa45865099b329a82e872"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-combined-42.jsonl.gz",
+      "bytes": 2462959,
+      "sha256": "3e2f9b797b40727a0cda331b47a32994b29b506bbb5f042e2921af4de8cd71d7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "1c86f4e36a72ac86e9dbf6da807e3d61e0b2cb1647c1f1ac2e7908a81a8e6db9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-combined-99.jsonl.gz",
+      "bytes": 2463686,
+      "sha256": "b81154af2317d9dae62b7987523d6f22233e7c6491bda8dcd428b9facd562b27"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2448668,
+      "sha256": "79d7dd119321bfd941d89eb7e82b063a5bf7d0794fae1468e3456d53d9bfb1e8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2449539,
+      "sha256": "69e141dd2baf967fcfdda4b6bb6b010b840a9b4e1f1e368d18dfeca5f0b78c23"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-observability_guard-99.jsonl.gz",
+      "bytes": 2449055,
+      "sha256": "4dbd8e5b2a694d5e1c38ec653806d9d6450a5d788c8f4c3c378da03e6c93331e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2471700,
+      "sha256": "e9ce75f54b3cef0f639a5afdda209e9b3f89c508bfa8e470c81c5735c95399f2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2479815,
+      "sha256": "5fd5ee670c78c805d06002bcfedcb198719cd28bbbbd55e2bbf7ed620f003e3a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/congestion-packet_transition-99.jsonl.gz",
+      "bytes": 2477305,
+      "sha256": "03697d94910d23235ddd4067947aab8b0bc80eda323871330d5d84c7a9551f89"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/execution-source.json",
+      "bytes": 2588,
+      "sha256": "bf52d4d6a5bbf4db6367c97de2dfbff47726992d1d93b952a07ae7338fefe181"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/execution-source.tar.gz",
+      "bytes": 177366,
+      "sha256": "4278f2b9e6e294e1df7f8d7c159b952e32d1fff4ca080626081ca85d5a118a5e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/independent-verification.json",
+      "bytes": 31747,
+      "sha256": "cfdcea48b39e12a9d38cd920138dcbf4b7ff2b058101000fa2e2ad9e47e0eb98"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2558782,
+      "sha256": "0dff19fb7de13e8658999cebcbe7e8625ac7d6694659fbcb77918f3429aa8948"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2557806,
+      "sha256": "cadcfd0acf885257605f40e3a0680e03505c4031bc891363658c0cded9571bae"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2543462,
+      "sha256": "ca0aeb4e119375149a1c4fc45dd87de6be9db8a0e3d0999d0aa55be66b62381f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "31c6a504c3cbf71bed7b184a431e26b87cdeb08249625b0015f6d392a09ffb4e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "42d3e19a36d0a4cbd2962c779894601063db9817a6754bd6d83adb420240d410"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-combined-99.jsonl.gz",
+      "bytes": 2428930,
+      "sha256": "632859074566fe43d93f072dccfa0cfe0858e008523a41126d56c72953f16dc7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435527,
+      "sha256": "da7274059c07ef9df50e46358a8621ade82510e85c92b12d8fe1f4c233f71bc6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433453,
+      "sha256": "89c4217fb95849b876a7762551d4260d0618d197ce0523863f98e12aa20da8da"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428461,
+      "sha256": "33d3d62f863d157479d48b3dc89fc5b87cafcb636417255b827297acb2161e30"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2559299,
+      "sha256": "76573b7de92952c9106728b9db81ec9973b131de2153e63513ec09242ace0fe8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2558326,
+      "sha256": "9a24bfbb81b2a312fbea9d97f7402dd413b617d7d94a9f01f8cdb139742db4db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2543982,
+      "sha256": "bdc605407ac4c336f0795e9e6a8a16b976504999f753997b4587894c5e094b10"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1909403,
+      "sha256": "5384bc8a224f8ac8f9248b6a9b8ca869f86bb90169c79ab210b8fb515029401a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1910810,
+      "sha256": "71702f513765aadca7355ec1d8918ad2bca64b43f7f31f5fe399dab97a9cba1b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1904955,
+      "sha256": "003d14811e97fb5774c6254eeb271ac85305019e3662b4c1913ef091d9068c40"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-combined-42.jsonl.gz",
+      "bytes": 1849187,
+      "sha256": "7446721c7e9b380cd737c2cff099efe6dca6d61e08eb46834b1ebe17fac2d8d2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-combined-7.jsonl.gz",
+      "bytes": 1843815,
+      "sha256": "482dc2d710c8f7ec94799f299c370b9642cd051daffcaecd73edc4217e8db222"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-combined-99.jsonl.gz",
+      "bytes": 1846333,
+      "sha256": "6c6b079f21052ca9d71ffc41500ccd4f67ec390e8a469d21e8011d469b795e90"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848983,
+      "sha256": "16a544cd7ff442381255189f4a486e16dcc0718d7fd757fad007cd1fab0278fe"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843609,
+      "sha256": "ea25b9898f7882abbe0a2102bdee773b155ba8e3cdcf4686d9219b82b7e89e1b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846128,
+      "sha256": "bfc7c0103fe957e8f32e298a98e76b4405871142c0b85ea282e99ea9c7af71c0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1909627,
+      "sha256": "ce410c1c62b9aad5ca4dca07879ce83d5f0a4defa9f4a92dbb7a9133d6389c82"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1911036,
+      "sha256": "0eb636c47f244eb60a05f61510a48ac31c93f4ec7034683b98f7659c8072940e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1905183,
+      "sha256": "55924390baac5fcc76ccba2c6191fe044ec2059e4f56d0eff908bb039118debd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-balanced_control-42.jsonl.gz",
+      "bytes": 2467805,
+      "sha256": "1a0033318bb11ad51a0887ec1d233d0f30682e227f55991e17c665de917f2186"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-balanced_control-7.jsonl.gz",
+      "bytes": 2471932,
+      "sha256": "b5ec5a52f3b16e84623bcb3b383f02a5d61422a00469ec08692db3a1f6561aa1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-balanced_control-99.jsonl.gz",
+      "bytes": 2427610,
+      "sha256": "db48cea1aa9af42710212e4ffba10550e73e3187c6749a2c4d4898963f1b3d89"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-combined-42.jsonl.gz",
+      "bytes": 2469013,
+      "sha256": "6e26219c4b3b80e0ceb7b516b243ee350c58eddc57a395a66d3f8b5a855ff94d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-combined-7.jsonl.gz",
+      "bytes": 2471515,
+      "sha256": "48a8d862bfec24c4f3306cfa554f40b94db63cab1d4b45baba73dfb7de9cf603"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-combined-99.jsonl.gz",
+      "bytes": 2420750,
+      "sha256": "872c1490b686f93e4cd53885a6d8c73679bc71d4d4899c92f2296ded3d9f97e3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-observability_guard-42.jsonl.gz",
+      "bytes": 2469293,
+      "sha256": "9f3f5eabeb4a87eb3b0960b57bde07f3a8f38276c6f14af46b5b014459e68a30"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-observability_guard-7.jsonl.gz",
+      "bytes": 2471407,
+      "sha256": "537f74c6cf03efb97c69e5673a2e48be4b1b1536d38d6274e424076cd9b4557b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-observability_guard-99.jsonl.gz",
+      "bytes": 2421092,
+      "sha256": "55ac8f370ffc366ead094244b567d0e052469a65555a7435ee379bd967da0b2d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-packet_transition-42.jsonl.gz",
+      "bytes": 2467217,
+      "sha256": "9f9c3244f4c9846a39107a1d4f5c6262edbaef0248599a33c016ab31e2ab718a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-packet_transition-7.jsonl.gz",
+      "bytes": 2471913,
+      "sha256": "a40d9750397f3aa3b6baa965c3e3ce684819c83a76b699194fc4e26dc39e646a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/partition_reconnection-packet_transition-99.jsonl.gz",
+      "bytes": 2427253,
+      "sha256": "ce31b3664a814e58795d437b6e2f40cc98de6b3d0e0efbffca50649735e63ee3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-balanced_control-42.jsonl.gz",
+      "bytes": 1672120,
+      "sha256": "d629a40c9b4947ac759a7aec9897cdaded43118d00aad9cf4ac90161e6dc30b6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 1663940,
+      "sha256": "32a593374b41d226b7a326292a6e97b1114ba58fe036664632517c736c7492ec"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-balanced_control-99.jsonl.gz",
+      "bytes": 1671136,
+      "sha256": "6f12b52219bdfede8b18968f3b93c883d35642e1a6ca39de7149736bf15cd399"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-combined-42.jsonl.gz",
+      "bytes": 1598459,
+      "sha256": "8ae6a7c316a7b71345a8d06e4f2a7507e4a8d32c27cee4c27d8711a8441cb5e3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-combined-7.jsonl.gz",
+      "bytes": 1591677,
+      "sha256": "fc9a3f443d83b61b7e75a3814d95a547bed9ed830d0c1431f1bfabb2c013e7fc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-combined-99.jsonl.gz",
+      "bytes": 1596191,
+      "sha256": "1b7983ae6c874882830efa510792c268d6353bcf3a93ac8802bce109ea725b67"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-observability_guard-42.jsonl.gz",
+      "bytes": 1598253,
+      "sha256": "e3749b22e7bc3d73488baa43f91cbdd07bb67516e5f5c20dcced928f335032f6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-observability_guard-7.jsonl.gz",
+      "bytes": 1591471,
+      "sha256": "22be1cbf7d65800278615e4e3bfb6a34a1d06c35dae453717dc642cc348ceb3d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-observability_guard-99.jsonl.gz",
+      "bytes": 1595986,
+      "sha256": "9283338a380cc5f79b818d678fae4196d428b664583b78dc469a1bdbe4ae26d4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-packet_transition-42.jsonl.gz",
+      "bytes": 1672344,
+      "sha256": "5678c36df2e97e7cc45fea49b7dc8aab74d9e750d1abbb0a4119ca8a850335e4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 1664165,
+      "sha256": "968921fb196e2516a36c1df90ac7000a8d4f0134e9060431e6bfbcc85bf8db30"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/regional_jamming-packet_transition-99.jsonl.gz",
+      "bytes": 1671363,
+      "sha256": "6af9792356056166b5f0a4fe0aeb2a43f4c992d9faa51888758c412fba3fdcac"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/results.csv",
+      "bytes": 30539,
+      "sha256": "93c99019d33d975292fbb23238f1b97854cac2fd360670488cd3ec8b338e917b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/results.json",
+      "bytes": 1719767,
+      "sha256": "3e44c808f30d6499adf8deb5cdf6acd0c4f46602f00441f549f8a225c971d0ae"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/results.manifest",
+      "bytes": 20920,
+      "sha256": "66637f35c930c37e05c8d7264db1edcfff4a4174c2a14243e18f60fcc9de6c65"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/results.md",
+      "bytes": 5911,
+      "sha256": "6861266e5a40d59b70a4af1ef1fe1af9cbb77cfe6a1f5f8d248e3d4d60b35e46"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-balanced_control-42.jsonl.gz",
+      "bytes": 1965514,
+      "sha256": "2ce79c678d3bcc3a17be1c386d32741bda1320aaaecca0b2f8ac69de29be418e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-balanced_control-7.jsonl.gz",
+      "bytes": 1966519,
+      "sha256": "f3cbf0c49462d61402e2b4b00d6257cb876c47a06c02de58a52b625a25095cfe"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-balanced_control-99.jsonl.gz",
+      "bytes": 1969136,
+      "sha256": "ec57590a4dda428a0e100e6547ad77331424b11a66679eda84ca07d9dc1e6383"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-combined-42.jsonl.gz",
+      "bytes": 1876132,
+      "sha256": "2c8488364619f0c6be1b0bcf589e1a960023e8c2b7e970dc8187f584c986ea54"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-combined-7.jsonl.gz",
+      "bytes": 1880665,
+      "sha256": "df7dd4d06c351775cc17c7f40a259178a224cb2e9aa7453b8053f3a47cf71f2f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-combined-99.jsonl.gz",
+      "bytes": 1878973,
+      "sha256": "2318c85a9c324458f6f51de47196e032e659add921d5f5972263368fe63cc15e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-observability_guard-42.jsonl.gz",
+      "bytes": 1875927,
+      "sha256": "28eca1dd75839b82c73dc7b040b598630bd13bc206d77e7dd483526eb9d306bc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-observability_guard-7.jsonl.gz",
+      "bytes": 1880459,
+      "sha256": "728dbaac3dea612dee5241b3cada25753bc5343dec6230350dfd7b260fd114b0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-observability_guard-99.jsonl.gz",
+      "bytes": 1878769,
+      "sha256": "edc7c260787e765544a8e3957184779896c224a24109729cc6922f4aadea6734"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-packet_transition-42.jsonl.gz",
+      "bytes": 1965737,
+      "sha256": "f6f0a7bd3a563d7e29c442191375e40e4e2632a6c4ffe2a09ec5db75680331ed"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-packet_transition-7.jsonl.gz",
+      "bytes": 1966744,
+      "sha256": "10c47d197417a88e0777a4f4834b435518377e6799d5b49d36311e53cccc4d4d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/single_failure-packet_transition-99.jsonl.gz",
+      "bytes": 1969363,
+      "sha256": "042e2f22a96bee110f416fa872900982fdeb27aab8bf22f48d9623821a5f1a87"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted-verified/state.json",
+      "bytes": 1232105,
+      "sha256": "1a874f5047ab0c8a7353ed63e45cc58d25a81e680ed663a5253bb903f1369605"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-accepted.log",
+      "bytes": 239,
+      "sha256": "194d2b12c60bce74418ba90df0e3563ccd3050366d6b78ab159f36361ccf9916"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-continuation.log",
+      "bytes": 59,
+      "sha256": "1b707f4db3f20230056026bf93a7b24b28260755f57cf7020e36597b6bc3e0e4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2470321,
+      "sha256": "c91c2aba091ac5467bf5599062835057591ccdbe0f4e94a57da492e262449be5"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "143d004f48026edc730166d34c2e7bab19528cf04f28521d6d0abf19a1834876"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-balanced_control-99.jsonl.gz",
+      "bytes": 879815,
+      "sha256": "37bb91cf85aa5566b1b409e968bdc6937461f17ce5f0b895e8e8b85ab3bd13ef"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-combined-42.jsonl.gz",
+      "bytes": 2462959,
+      "sha256": "c6fc183f720df635f00e5a6e13ab8041a987c8de1b2d57fe6d5d748fe5643fbf"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "aabb81a32865211dd7ae469bf4aa8617f277dbfd698e5dc3310775775121f8e3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-combined-99.jsonl.gz",
+      "bytes": 218,
+      "sha256": "6f8b6e2f63b6031b760eee8b6a93c00d197e1ea1d6e145d5a30c19242102b268"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2448668,
+      "sha256": "158955164a2feb469a200896e900c0e5a7b5626eb78c07402317c7096dd8895d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2449539,
+      "sha256": "234e5dff4b7b474ea62a36849178bcdf227e5a2ce31d8235b5ea25b9e5cd9e97"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-observability_guard-99.jsonl.gz",
+      "bytes": 239,
+      "sha256": "8aec7d6e858e4f76202e2bdec3c3c6531ff3e19bc0b046f20003a870e21edbcd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2471700,
+      "sha256": "b450db0cbfc90ec557e2107179bfdd691b19ef20a36618f905b7dd6a6c11009b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2479815,
+      "sha256": "d21705155442a5bd9c2bb9b0b410e6b07b8f670af2f8d0de1f7d07fb6b01aca2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/congestion-packet_transition-99.jsonl.gz",
+      "bytes": 770644,
+      "sha256": "e55a0de2529489b69184990939236881d844cf13622d76f55f988f54f46a2b33"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/execution-source.json",
+      "bytes": 2588,
+      "sha256": "bbd886a88a5ad36abae21c54b996112067e0d20b471346661ac6655e666bb74a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/execution-source.tar.gz",
+      "bytes": 177307,
+      "sha256": "3d7a9ff02aef99bc4fb1e73ef329faec2f3521d78d908d72768a492f85665c79"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2558782,
+      "sha256": "31641f8361ecaa4e4829f2b171bc69149e47931f6883601861b9066aea1f1cf2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2557806,
+      "sha256": "e8e8762f302288a04f9dded705c805af05e4083b09a9897a1ae31cb94b23f8ac"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2543462,
+      "sha256": "319d893ef4195cc1d02f3c70b9fccddf0aedb38bdcfc2cb5b5b5ce62153f5904"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "46546b3b3534a8d75da4c0db526dff40b6ddbcdac9ff54a19c28429e17dbb411"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "23307ce15044e8aee9d9e4eab3d586396e557d2a59a21fbe6c32218e5c51c306"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-combined-99.jsonl.gz",
+      "bytes": 2428930,
+      "sha256": "72cbff4072ee804d90d44981a107f28d18e1250752e580615fbaea81b5e4dff4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435527,
+      "sha256": "6d3e927cea1a4b8d9399561964a51cdf4f83e079c106912511bfbddcf783d312"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433453,
+      "sha256": "84ff6e0df024a5e04b3650ff657d143a8c80ab5f8375c30d9f54eac55d7ae95a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428461,
+      "sha256": "5db4736983c9508fa5dabe96c4e58d5990d309c81a80153278603fb740d4a3ce"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2559299,
+      "sha256": "6851f931981e6a8e58ebdbbc4a33ac255688dd7d6e340e415630e5b0b8338ce4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2558326,
+      "sha256": "31f5736c58fe995c09f123e1aa363ab2c22b82b0ac19f9f5eb97f892cde9988e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2543982,
+      "sha256": "cc4def2c18ce6b6fd9f37dcffba5b356371ed06331b41307d01224bab897f1e9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1909403,
+      "sha256": "b8c174df22f9e09aee4c007f0ca7375e713761837d88f4aefb32c9ab849a6421"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1910810,
+      "sha256": "481ef1da3992f618f1e9deceec3797ac08bd3a0a3994633e8ad60e5c2e23c35d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1904955,
+      "sha256": "fe2c3b30eca1e8f29671f7cb2e91d07fc23347b9a74becab711d3ea666d6beb3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-combined-42.jsonl.gz",
+      "bytes": 1849187,
+      "sha256": "5aeb6ee3f244794135021330e3d59a4972c8d2d92c588926334d86ce28e24573"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-combined-7.jsonl.gz",
+      "bytes": 1843815,
+      "sha256": "1b482b9194525adf2c9358dee7c1c38a2379841d7637d13af00f29e19cdecfb3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-combined-99.jsonl.gz",
+      "bytes": 1846333,
+      "sha256": "3eb469bbb642b401993eeee1761ea69fe82e473ca32a99911f05187224b75954"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848983,
+      "sha256": "01f23d2c9e2d946c50fcf0da2ed16a3d479f958a5103007f49d8c7ff35506bbc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843609,
+      "sha256": "62d6e3c55f2c5e224db64a253b4004f0bd79c6f17bfb128abc24cc3afd34b747"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846128,
+      "sha256": "8475fd3d862dcb73d209b13ea594f8b3b7084a5c7a1c3965f506701df8f0fd91"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1909627,
+      "sha256": "0c3d36a9c6935e08f7e1e8a850c068450d709e324d76fb85b43ddfadcb2b1923"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1911036,
+      "sha256": "05013c71903975f2e437d4055c14f8683f0d8e19804b90bef1d5a593f09055a7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1905183,
+      "sha256": "3834c171e70da4ff3e07e54975f8336a27bfa0db2dcdad2d9f327d3537d43519"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 241,
+      "sha256": "6bf38031619e8cff5911c12036b5ae9056a225701a94512ad9ee4f16f72e41c6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 241,
+      "sha256": "3d2c79e70e7c8517461876161cdf9fcf41ddd02e04b310613cb408b8407018b0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/results.csv",
+      "bytes": 13131,
+      "sha256": "61b53b22af7a4f41506807483ff3f2533d3d3b1c4a807efb5e8e2603caf4c7c0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/results.json",
+      "bytes": 777067,
+      "sha256": "2757cc7c8d2a6e72271b7a0fc13a7c37d3443482cd83df062502b9461bb8660f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/results.manifest",
+      "bytes": 11616,
+      "sha256": "af7c8a90d5f28715ba29019c1f2e7a6f089925d6c808e0fb34625b6306318ec5"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/results.md",
+      "bytes": 5463,
+      "sha256": "aa17c8717cefc3f08bf037de92445a43b754ccadfe91e5ce7059386e8a324c49"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/state.json",
+      "bytes": 557589,
+      "sha256": "4d87fed445c95ba4d21b7f39e6e419417235bf63c66eb705040022cd28b6af1a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic/superseded-reason.txt",
+      "bytes": 205,
+      "sha256": "37424b87008550bba369b50b599f9dc55d263d3d672326dfd68d627ccfcd282e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-deterministic.log",
+      "bytes": 266,
+      "sha256": "68fb4571b801f0ff5442829c8e9f833dec4257e7d635fe10a7fd2c108ff3e518"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2475525,
+      "sha256": "d52bc832e57a62986f723684fc0b551c8163ef9aaa7b38fdfddc1f1ec6149641"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 1851190,
+      "sha256": "6e6cc81fb53b6ef1bb61cafa045983e3f93f06f399bf965879a92a4b61782479"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2481277,
+      "sha256": "c18f585d4d95cd4abafb7290dd24628a07a8516724966902f61a2ffdc43a4a99"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/execution-source.json",
+      "bytes": 2588,
+      "sha256": "10fe22099fae458bdda1ae0dd4982d62a6528407c1799859fc5e47896ad3256b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/execution-source.tar.gz",
+      "bytes": 177152,
+      "sha256": "054bacd4bbab502bbaa2e02fc943ba00eb9a709a36ca79d60e4f8f17bce0d989"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2558782,
+      "sha256": "67adca673d4b21f66868e288da4809fcb7c9a116fb8c528dd47d7f3191656ba8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2557806,
+      "sha256": "c3296ed70fab56644ec44ef0e38a23409ebb56bb1f3b108ae3535955e429e387"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2543462,
+      "sha256": "f36206bfac971244016f963c28f8f12b6d18cfe453b9508f86c0a86a1e8548cc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "b5f3097c365182258da5afbe912adc9d8144aabf6e492f16b25ac00c99648270"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "5abf61fdc1eebf2cdb63cc30afb2622c47932b73988eda12af320ea170086a3b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-combined-99.jsonl.gz",
+      "bytes": 2428930,
+      "sha256": "9b4e450674464f875874ce9c3366ba9fd66804e58d54fbb96592c7da0effe2db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435527,
+      "sha256": "787d7df3f65ed03ab20f290d94ef596d2bf7fffde80ddcad70425c23df9c1c37"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433453,
+      "sha256": "c1a367c6f936948ba124d3b1ffe17f793b27ad3e3d743bf374fe1fcf3583ed0a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428461,
+      "sha256": "cf3d8f6a3dd53cfa00ac9a6c3f6f74ef22ae0740e0346974b25fba4f3a4d64ce"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2559299,
+      "sha256": "6c3e47cea6734d17b2c55ec50840b8ade879545d215fd4182394baf5780a2fc7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2558326,
+      "sha256": "ac2e4110c8ba80c9a8bf219bb585e472ab272d0861b8e3ce9a531f5d3d961e86"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2543982,
+      "sha256": "4a8105ffd9b8961a376162ed56d7b41e72d030627a2b170e711cfdad7c9e2ff6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1909403,
+      "sha256": "1a850f38306f4c9ed53e7e0d587a4aa912b64a298fe7543b792f01b9ac3ae544"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1910810,
+      "sha256": "b0ac5ae3f38a33775488ca0d89a71b11640d04cb029f8c2f40df93220ce62413"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1904955,
+      "sha256": "2625405934e6f743732efa306abd70eb3d4be86132afccab58af3d00c2ac48a9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-combined-42.jsonl.gz",
+      "bytes": 1849187,
+      "sha256": "ab0a276d4c4376a45d3439104660cd4ec7ed7b2d66a810c0600984bfa46042ae"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-combined-7.jsonl.gz",
+      "bytes": 1843815,
+      "sha256": "111e52305932ecd0748ba38ddacc47e806ca6a4a9a95440a68dadbdeccc1d8f9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-combined-99.jsonl.gz",
+      "bytes": 1846333,
+      "sha256": "afb90f9d50f25d9ca08c728ef73b2f0188dc61a1860e67dee0e9228d1a4f775f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848983,
+      "sha256": "463d865f3350b1813af7b59346542882d188f01bb6c25be51ba85a9a8914d410"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843609,
+      "sha256": "b94ef899b2d2e16b884918e43a014f04f1c8aa2269ebeb5be78195cbed4a4fca"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846128,
+      "sha256": "38455629034ce55d40e795becbc4b2d60bda335c4292e93bdc26de6046e080cd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1909627,
+      "sha256": "11b0ad8fa6543f6edc98abfd66bbdd611f13c708eacff1d6c3cc664ce2b1611f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1911036,
+      "sha256": "bb91282f979f8697eb12f3eb7e6b3f1c913209b17dd321d0d3f44ec0758f951a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1905183,
+      "sha256": "42e609dccca5801a85de9c76e0fd1b2f19d138cdd1e66ad864087278bfaed686"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/results.csv",
+      "bytes": 10696,
+      "sha256": "aaac953630c16eb1f91888da37955ffb0e305434b42701e376b06847d5e14e5d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/results.json",
+      "bytes": 703332,
+      "sha256": "615862490c8ec48617f98dbea4e385bea8f717a73832039e36880e10b4b0e05c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/results.manifest",
+      "bytes": 10224,
+      "sha256": "cd995becc3478cebe0d5b1aa9157ce747227100fed4ac8ef8793fe5f8a0ec3d0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/results.md",
+      "bytes": 5254,
+      "sha256": "ff2801f779d1da1c9c2ae508a130e3d6cdf13b8e98251428003d7042d4d966c3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final/state.json",
+      "bytes": 508678,
+      "sha256": "3fcdd6acffa9607f76b022dac8c62427295694b3f13c73ee8f8a6733ede91830"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2477561,
+      "sha256": "2e90bdfdeb8548958f9ee46044ea2e0345a35cad7006d061f0f51f9b6c925326"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2475525,
+      "sha256": "d52bc832e57a62986f723684fc0b551c8163ef9aaa7b38fdfddc1f1ec6149641"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-balanced_control-99.jsonl.gz",
+      "bytes": 2477935,
+      "sha256": "2ac05db5a235e077af8b066bb0032f46db5a6c7ac66e2551973f122c686ea43f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-combined-42.jsonl.gz",
+      "bytes": 2464011,
+      "sha256": "c8ae2f255b87dacb03ae0c0714451ecbeb9dc976c06d3f7f374b36544ae4d928"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-combined-7.jsonl.gz",
+      "bytes": 2465307,
+      "sha256": "9e98622bdcb4fdd5c725441ed840e35cc8fabe7613bff22a7aa3003c2606308a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-combined-99.jsonl.gz",
+      "bytes": 2464707,
+      "sha256": "10d430430270726dc3c3980f725bbd2647b8cdf1e9227a36ee467b6c50116fb3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2454508,
+      "sha256": "c4999571e6c36eab24e0f1511275b7a7ce8d7b2fa9c02701a1da976b549016d2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2455311,
+      "sha256": "c143e1121658e2656e194cc5c26d3c467c5bb1a8660576c6b3a5426662bf4d09"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-observability_guard-99.jsonl.gz",
+      "bytes": 2454653,
+      "sha256": "d58fb98b2d241ff0ef9a2e443d4b98b60a9e414c34b0a18b05d524aebd5e10e7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2472600,
+      "sha256": "1ea95bfe49091630cb7082d8a19186b0c8de1f3fe89504f947ecb6c24907c07f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2481277,
+      "sha256": "c18f585d4d95cd4abafb7290dd24628a07a8516724966902f61a2ffdc43a4a99"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/congestion-packet_transition-99.jsonl.gz",
+      "bytes": 2478272,
+      "sha256": "161d6519d61077a989911016fba201443291cf287278af86885f9b62b3b46a44"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/execution-source.json",
+      "bytes": 2588,
+      "sha256": "10fe22099fae458bdda1ae0dd4982d62a6528407c1799859fc5e47896ad3256b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/execution-source.tar.gz",
+      "bytes": 177152,
+      "sha256": "054bacd4bbab502bbaa2e02fc943ba00eb9a709a36ca79d60e4f8f17bce0d989"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2558782,
+      "sha256": "67adca673d4b21f66868e288da4809fcb7c9a116fb8c528dd47d7f3191656ba8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2557806,
+      "sha256": "c3296ed70fab56644ec44ef0e38a23409ebb56bb1f3b108ae3535955e429e387"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2543462,
+      "sha256": "f36206bfac971244016f963c28f8f12b6d18cfe453b9508f86c0a86a1e8548cc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "b5f3097c365182258da5afbe912adc9d8144aabf6e492f16b25ac00c99648270"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "5abf61fdc1eebf2cdb63cc30afb2622c47932b73988eda12af320ea170086a3b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-combined-99.jsonl.gz",
+      "bytes": 2428930,
+      "sha256": "9b4e450674464f875874ce9c3366ba9fd66804e58d54fbb96592c7da0effe2db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435527,
+      "sha256": "787d7df3f65ed03ab20f290d94ef596d2bf7fffde80ddcad70425c23df9c1c37"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433453,
+      "sha256": "c1a367c6f936948ba124d3b1ffe17f793b27ad3e3d743bf374fe1fcf3583ed0a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428461,
+      "sha256": "cf3d8f6a3dd53cfa00ac9a6c3f6f74ef22ae0740e0346974b25fba4f3a4d64ce"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2559299,
+      "sha256": "6c3e47cea6734d17b2c55ec50840b8ade879545d215fd4182394baf5780a2fc7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2558326,
+      "sha256": "ac2e4110c8ba80c9a8bf219bb585e472ab272d0861b8e3ce9a531f5d3d961e86"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2543982,
+      "sha256": "4a8105ffd9b8961a376162ed56d7b41e72d030627a2b170e711cfdad7c9e2ff6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1909403,
+      "sha256": "1a850f38306f4c9ed53e7e0d587a4aa912b64a298fe7543b792f01b9ac3ae544"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1910810,
+      "sha256": "b0ac5ae3f38a33775488ca0d89a71b11640d04cb029f8c2f40df93220ce62413"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1904955,
+      "sha256": "2625405934e6f743732efa306abd70eb3d4be86132afccab58af3d00c2ac48a9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-combined-42.jsonl.gz",
+      "bytes": 1849187,
+      "sha256": "ab0a276d4c4376a45d3439104660cd4ec7ed7b2d66a810c0600984bfa46042ae"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-combined-7.jsonl.gz",
+      "bytes": 1843815,
+      "sha256": "111e52305932ecd0748ba38ddacc47e806ca6a4a9a95440a68dadbdeccc1d8f9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-combined-99.jsonl.gz",
+      "bytes": 1846333,
+      "sha256": "afb90f9d50f25d9ca08c728ef73b2f0188dc61a1860e67dee0e9228d1a4f775f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848983,
+      "sha256": "463d865f3350b1813af7b59346542882d188f01bb6c25be51ba85a9a8914d410"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843609,
+      "sha256": "b94ef899b2d2e16b884918e43a014f04f1c8aa2269ebeb5be78195cbed4a4fca"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846128,
+      "sha256": "38455629034ce55d40e795becbc4b2d60bda335c4292e93bdc26de6046e080cd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1909627,
+      "sha256": "11b0ad8fa6543f6edc98abfd66bbdd611f13c708eacff1d6c3cc664ce2b1611f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1911036,
+      "sha256": "bb91282f979f8697eb12f3eb7e6b3f1c913209b17dd321d0d3f44ec0758f951a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1905183,
+      "sha256": "42e609dccca5801a85de9c76e0fd1b2f19d138cdd1e66ad864087278bfaed686"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-balanced_control-42.jsonl.gz",
+      "bytes": 2467805,
+      "sha256": "fc6f3540529df10506e20a24fd1ecdf712b185138eec20f3c0112093dd31a772"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-balanced_control-7.jsonl.gz",
+      "bytes": 2471932,
+      "sha256": "66d438530f07a8db2704cc82d5e9d36406959c6c79b3dde40f35de4d5a00f698"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-balanced_control-99.jsonl.gz",
+      "bytes": 2427610,
+      "sha256": "1b6fb12866a1061321aa5bbb08aac351cb11da634f6cd7481e6fd1b2063b61a4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-combined-42.jsonl.gz",
+      "bytes": 2469013,
+      "sha256": "2ab27e49acff053ee9d5d4f3798d883032fe51f2406c950834b3e851488173b3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-combined-7.jsonl.gz",
+      "bytes": 2471515,
+      "sha256": "bc8c3941e7f5d3ca38f6e70285f589a21d921626f7b16111b83fa36ae4e4c468"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-combined-99.jsonl.gz",
+      "bytes": 2420750,
+      "sha256": "6c3785a5e9e903e73624191d2d9aa2078e07006e4e413fb0d1c0f41ebc2a874a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-observability_guard-42.jsonl.gz",
+      "bytes": 2469293,
+      "sha256": "977ceff9801f13ee852cf69197f622f713ced5cf31e9717297dfc1c2292f9c20"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-observability_guard-7.jsonl.gz",
+      "bytes": 2471407,
+      "sha256": "02e5c748c163a176ac3c28dd7439f0c6efd46adbfbf95cb1e7da4c0772e13883"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-observability_guard-99.jsonl.gz",
+      "bytes": 2421092,
+      "sha256": "83712bf2180f82cb8b9ee95a865baa2a9a246e09e799aafdfaf64ec975738def"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-packet_transition-42.jsonl.gz",
+      "bytes": 2467217,
+      "sha256": "66bc74ef62ac8745589e3d04d86da29acf9bc9d97678e1e8b534caa7852705fc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-packet_transition-7.jsonl.gz",
+      "bytes": 2471913,
+      "sha256": "7a4bf7bb01ba5052278c617ea19cf9358fc11446673bde345fde0ee2ebf37a1e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/partition_reconnection-packet_transition-99.jsonl.gz",
+      "bytes": 2427253,
+      "sha256": "bbbd69d65e3b1ac9bf2ef300b5a6925eec12a5517aca1d66abbe422bb4c93c45"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-balanced_control-42.jsonl.gz",
+      "bytes": 1672120,
+      "sha256": "17d9701ee9e15434bd0cb82a0d7bfd5496c6dd32c2b3938224ee51ed8ebada68"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 1663940,
+      "sha256": "fe4688a26b4f9df2fb68d52d4ddb9a9f97b0c2d5d6750c60d25c44c8c3ddd426"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-balanced_control-99.jsonl.gz",
+      "bytes": 1671136,
+      "sha256": "3615404909c760cdf71b1feee6c7985a7d07e2f5bf643b1dcb18fdc05eccd70d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-combined-42.jsonl.gz",
+      "bytes": 1598459,
+      "sha256": "5ac4c65e775d9d6af63e7efd780da5e6c9f088fc4236ddc93eef09fd480248e0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-combined-7.jsonl.gz",
+      "bytes": 1591677,
+      "sha256": "29308567a75f25ef576b34403e2b4a374668ea99737316727a581c3f2b358594"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-combined-99.jsonl.gz",
+      "bytes": 1596191,
+      "sha256": "6124294ffae5cb57568b82c2a02d31945464f678d9720cb511f07970f71e3ef8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-observability_guard-42.jsonl.gz",
+      "bytes": 1598253,
+      "sha256": "ec0e9da261ec48379b8a14d819afce65efe5ebff7a19b155ec86eac6b8cc8277"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-observability_guard-7.jsonl.gz",
+      "bytes": 1591471,
+      "sha256": "a28f6a4551a46f19350bde2816b1d528cd391eac1d200cb92ae1535e66f27025"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-observability_guard-99.jsonl.gz",
+      "bytes": 1595986,
+      "sha256": "798ad4da1222cdcd292101b8a9d3a18cac81187353b5dc99cdb5477046409b83"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-packet_transition-42.jsonl.gz",
+      "bytes": 1672344,
+      "sha256": "04cd47d52bbbb8dd216ec84fc2b5a3f40fd4691ff0cc3876addd5fc26c4f0330"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 1664165,
+      "sha256": "b83958534664a0917db4040e4a0796fffe8c0a818077d33a8d898c8637d66073"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/regional_jamming-packet_transition-99.jsonl.gz",
+      "bytes": 1671363,
+      "sha256": "0f4c71877e80a357d02e4b7cc631fdfd62867ee1ce841933e889039537dc18c2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/results.csv",
+      "bytes": 30007,
+      "sha256": "bf9c488d6cb55b280739d5f312a455a46040364c25835aa17f261704aee9bac7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/results.json",
+      "bytes": 1717669,
+      "sha256": "607bab9ca606f179eb39dc0b7dd018de23a38ddfc2164de291186dccb3b4bbbc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/results.manifest",
+      "bytes": 21438,
+      "sha256": "c69ce35aa7f70f5b211dc6d49a9846605980b145e03dcfebb03c5174ed3c0315"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/results.md",
+      "bytes": 5913,
+      "sha256": "b596c9698bf5df46845a7eea54e032ba6a16329b95e896ad247d77dcc42d07cc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-balanced_control-42.jsonl.gz",
+      "bytes": 1965514,
+      "sha256": "d015dfffa8ad9e6023bc5cc2887671bf210998424952cd731132bcfbe2434abb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-balanced_control-7.jsonl.gz",
+      "bytes": 1966519,
+      "sha256": "77ab5b6cad04d7df9c3b5bed45fe6f8575322431140d16d7e233ebeed8301a14"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-balanced_control-99.jsonl.gz",
+      "bytes": 1969136,
+      "sha256": "8a9ac49bf3c1c0a5f11ce7286fbc1bc65ba84b1ab9871401ceec4f757703b38a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-combined-42.jsonl.gz",
+      "bytes": 1876132,
+      "sha256": "6cf091b42b10558bea105a14338cb547b8820659b849887e264dae87a23b3cce"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-combined-7.jsonl.gz",
+      "bytes": 1880665,
+      "sha256": "5ab64cdc0cbdbf9b2ad0c3ec2173e742550311b829e7dcc9396d87d1f4007ea5"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-combined-99.jsonl.gz",
+      "bytes": 1878973,
+      "sha256": "3353f7c6630756c034dd30295588442c317f86d081d7370eb0b15d7d910107c6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-observability_guard-42.jsonl.gz",
+      "bytes": 1875927,
+      "sha256": "1b645ae5ad85e882ebf2e8d718cb59e5f41c9c1b38b19ec6364bef67d19551af"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-observability_guard-7.jsonl.gz",
+      "bytes": 1880459,
+      "sha256": "5d864dd259455701419841a3120011bf0262d7ad207924cf7b904f306142e1db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-observability_guard-99.jsonl.gz",
+      "bytes": 1878769,
+      "sha256": "06b21b2ea50f9473271d1a6763fb46258b945d2123bb7ca3fa4ddd0f55e83122"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-packet_transition-42.jsonl.gz",
+      "bytes": 1965737,
+      "sha256": "cf7ee190ea25075c999f6bc2637e359d9b13cfa6f492acfb3bd239b2757ba0c8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-packet_transition-7.jsonl.gz",
+      "bytes": 1966744,
+      "sha256": "5bfdb1fce547c2c89f9a9cffc7265b0c1ef06993021e2c50990a1e32effdf55e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/single_failure-packet_transition-99.jsonl.gz",
+      "bytes": 1969363,
+      "sha256": "677e67b412324aebbaabb3785abe558e7fdd977e3e695297500549422c26559e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final-complete/state.json",
+      "bytes": 1230149,
+      "sha256": "7073e696fe259c1253aeefabd0cbade57d02958972494d8b3492e48d062442c4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-final.log",
+      "bytes": 362,
+      "sha256": "f888fb29cb3acd8f21bee367e1df26ec476da74a5565b80d8f55d881466b740d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/analysis-source.tar.gz",
+      "bytes": 177151,
+      "sha256": "5286091c10b83cf9209fea6f07edaefd4a71e25a3e1d6800ec8a341891f92152"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2477561,
+      "sha256": "2e90bdfdeb8548958f9ee46044ea2e0345a35cad7006d061f0f51f9b6c925326"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2475525,
+      "sha256": "d52bc832e57a62986f723684fc0b551c8163ef9aaa7b38fdfddc1f1ec6149641"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-balanced_control-99.jsonl.gz",
+      "bytes": 2477935,
+      "sha256": "2ac05db5a235e077af8b066bb0032f46db5a6c7ac66e2551973f122c686ea43f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-combined-42.jsonl.gz",
+      "bytes": 2464011,
+      "sha256": "c8ae2f255b87dacb03ae0c0714451ecbeb9dc976c06d3f7f374b36544ae4d928"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-combined-7.jsonl.gz",
+      "bytes": 2465307,
+      "sha256": "9e98622bdcb4fdd5c725441ed840e35cc8fabe7613bff22a7aa3003c2606308a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-combined-99.jsonl.gz",
+      "bytes": 2464707,
+      "sha256": "10d430430270726dc3c3980f725bbd2647b8cdf1e9227a36ee467b6c50116fb3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2454508,
+      "sha256": "c4999571e6c36eab24e0f1511275b7a7ce8d7b2fa9c02701a1da976b549016d2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2455311,
+      "sha256": "c143e1121658e2656e194cc5c26d3c467c5bb1a8660576c6b3a5426662bf4d09"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-observability_guard-99.jsonl.gz",
+      "bytes": 2454653,
+      "sha256": "d58fb98b2d241ff0ef9a2e443d4b98b60a9e414c34b0a18b05d524aebd5e10e7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2472600,
+      "sha256": "1ea95bfe49091630cb7082d8a19186b0c8de1f3fe89504f947ecb6c24907c07f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2481277,
+      "sha256": "c18f585d4d95cd4abafb7290dd24628a07a8516724966902f61a2ffdc43a4a99"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/congestion-packet_transition-99.jsonl.gz",
+      "bytes": 2478272,
+      "sha256": "161d6519d61077a989911016fba201443291cf287278af86885f9b62b3b46a44"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/execution-source.json",
+      "bytes": 2588,
+      "sha256": "10fe22099fae458bdda1ae0dd4982d62a6528407c1799859fc5e47896ad3256b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/execution-source.tar.gz",
+      "bytes": 177152,
+      "sha256": "054bacd4bbab502bbaa2e02fc943ba00eb9a709a36ca79d60e4f8f17bce0d989"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/independent-verification.json",
+      "bytes": 31758,
+      "sha256": "760bc26009e7c5eca36e6c921ef0429bcb7451abccaa12ce31652c6ef0cdf7ce"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2558782,
+      "sha256": "67adca673d4b21f66868e288da4809fcb7c9a116fb8c528dd47d7f3191656ba8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2557806,
+      "sha256": "c3296ed70fab56644ec44ef0e38a23409ebb56bb1f3b108ae3535955e429e387"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2543462,
+      "sha256": "f36206bfac971244016f963c28f8f12b6d18cfe453b9508f86c0a86a1e8548cc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "b5f3097c365182258da5afbe912adc9d8144aabf6e492f16b25ac00c99648270"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "5abf61fdc1eebf2cdb63cc30afb2622c47932b73988eda12af320ea170086a3b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-combined-99.jsonl.gz",
+      "bytes": 2428930,
+      "sha256": "9b4e450674464f875874ce9c3366ba9fd66804e58d54fbb96592c7da0effe2db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435527,
+      "sha256": "787d7df3f65ed03ab20f290d94ef596d2bf7fffde80ddcad70425c23df9c1c37"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433453,
+      "sha256": "c1a367c6f936948ba124d3b1ffe17f793b27ad3e3d743bf374fe1fcf3583ed0a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428461,
+      "sha256": "cf3d8f6a3dd53cfa00ac9a6c3f6f74ef22ae0740e0346974b25fba4f3a4d64ce"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2559299,
+      "sha256": "6c3e47cea6734d17b2c55ec50840b8ade879545d215fd4182394baf5780a2fc7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2558326,
+      "sha256": "ac2e4110c8ba80c9a8bf219bb585e472ab272d0861b8e3ce9a531f5d3d961e86"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2543982,
+      "sha256": "4a8105ffd9b8961a376162ed56d7b41e72d030627a2b170e711cfdad7c9e2ff6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1909403,
+      "sha256": "1a850f38306f4c9ed53e7e0d587a4aa912b64a298fe7543b792f01b9ac3ae544"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1910810,
+      "sha256": "b0ac5ae3f38a33775488ca0d89a71b11640d04cb029f8c2f40df93220ce62413"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1904955,
+      "sha256": "2625405934e6f743732efa306abd70eb3d4be86132afccab58af3d00c2ac48a9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-combined-42.jsonl.gz",
+      "bytes": 1849187,
+      "sha256": "ab0a276d4c4376a45d3439104660cd4ec7ed7b2d66a810c0600984bfa46042ae"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-combined-7.jsonl.gz",
+      "bytes": 1843815,
+      "sha256": "111e52305932ecd0748ba38ddacc47e806ca6a4a9a95440a68dadbdeccc1d8f9"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-combined-99.jsonl.gz",
+      "bytes": 1846333,
+      "sha256": "afb90f9d50f25d9ca08c728ef73b2f0188dc61a1860e67dee0e9228d1a4f775f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848983,
+      "sha256": "463d865f3350b1813af7b59346542882d188f01bb6c25be51ba85a9a8914d410"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843609,
+      "sha256": "b94ef899b2d2e16b884918e43a014f04f1c8aa2269ebeb5be78195cbed4a4fca"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846128,
+      "sha256": "38455629034ce55d40e795becbc4b2d60bda335c4292e93bdc26de6046e080cd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1909627,
+      "sha256": "11b0ad8fa6543f6edc98abfd66bbdd611f13c708eacff1d6c3cc664ce2b1611f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1911036,
+      "sha256": "bb91282f979f8697eb12f3eb7e6b3f1c913209b17dd321d0d3f44ec0758f951a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1905183,
+      "sha256": "42e609dccca5801a85de9c76e0fd1b2f19d138cdd1e66ad864087278bfaed686"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-balanced_control-42.jsonl.gz",
+      "bytes": 2467805,
+      "sha256": "fc6f3540529df10506e20a24fd1ecdf712b185138eec20f3c0112093dd31a772"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-balanced_control-7.jsonl.gz",
+      "bytes": 2471932,
+      "sha256": "66d438530f07a8db2704cc82d5e9d36406959c6c79b3dde40f35de4d5a00f698"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-balanced_control-99.jsonl.gz",
+      "bytes": 2427610,
+      "sha256": "1b6fb12866a1061321aa5bbb08aac351cb11da634f6cd7481e6fd1b2063b61a4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-combined-42.jsonl.gz",
+      "bytes": 2469013,
+      "sha256": "2ab27e49acff053ee9d5d4f3798d883032fe51f2406c950834b3e851488173b3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-combined-7.jsonl.gz",
+      "bytes": 2471515,
+      "sha256": "bc8c3941e7f5d3ca38f6e70285f589a21d921626f7b16111b83fa36ae4e4c468"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-combined-99.jsonl.gz",
+      "bytes": 2420750,
+      "sha256": "6c3785a5e9e903e73624191d2d9aa2078e07006e4e413fb0d1c0f41ebc2a874a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-observability_guard-42.jsonl.gz",
+      "bytes": 2469293,
+      "sha256": "977ceff9801f13ee852cf69197f622f713ced5cf31e9717297dfc1c2292f9c20"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-observability_guard-7.jsonl.gz",
+      "bytes": 2471407,
+      "sha256": "02e5c748c163a176ac3c28dd7439f0c6efd46adbfbf95cb1e7da4c0772e13883"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-observability_guard-99.jsonl.gz",
+      "bytes": 2421092,
+      "sha256": "83712bf2180f82cb8b9ee95a865baa2a9a246e09e799aafdfaf64ec975738def"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-packet_transition-42.jsonl.gz",
+      "bytes": 2467217,
+      "sha256": "66bc74ef62ac8745589e3d04d86da29acf9bc9d97678e1e8b534caa7852705fc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-packet_transition-7.jsonl.gz",
+      "bytes": 2471913,
+      "sha256": "7a4bf7bb01ba5052278c617ea19cf9358fc11446673bde345fde0ee2ebf37a1e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/partition_reconnection-packet_transition-99.jsonl.gz",
+      "bytes": 2427253,
+      "sha256": "bbbd69d65e3b1ac9bf2ef300b5a6925eec12a5517aca1d66abbe422bb4c93c45"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-balanced_control-42.jsonl.gz",
+      "bytes": 1672120,
+      "sha256": "17d9701ee9e15434bd0cb82a0d7bfd5496c6dd32c2b3938224ee51ed8ebada68"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 1663940,
+      "sha256": "fe4688a26b4f9df2fb68d52d4ddb9a9f97b0c2d5d6750c60d25c44c8c3ddd426"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-balanced_control-99.jsonl.gz",
+      "bytes": 1671136,
+      "sha256": "3615404909c760cdf71b1feee6c7985a7d07e2f5bf643b1dcb18fdc05eccd70d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-combined-42.jsonl.gz",
+      "bytes": 1598459,
+      "sha256": "5ac4c65e775d9d6af63e7efd780da5e6c9f088fc4236ddc93eef09fd480248e0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-combined-7.jsonl.gz",
+      "bytes": 1591677,
+      "sha256": "29308567a75f25ef576b34403e2b4a374668ea99737316727a581c3f2b358594"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-combined-99.jsonl.gz",
+      "bytes": 1596191,
+      "sha256": "6124294ffae5cb57568b82c2a02d31945464f678d9720cb511f07970f71e3ef8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-observability_guard-42.jsonl.gz",
+      "bytes": 1598253,
+      "sha256": "ec0e9da261ec48379b8a14d819afce65efe5ebff7a19b155ec86eac6b8cc8277"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-observability_guard-7.jsonl.gz",
+      "bytes": 1591471,
+      "sha256": "a28f6a4551a46f19350bde2816b1d528cd391eac1d200cb92ae1535e66f27025"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-observability_guard-99.jsonl.gz",
+      "bytes": 1595986,
+      "sha256": "798ad4da1222cdcd292101b8a9d3a18cac81187353b5dc99cdb5477046409b83"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-packet_transition-42.jsonl.gz",
+      "bytes": 1672344,
+      "sha256": "04cd47d52bbbb8dd216ec84fc2b5a3f40fd4691ff0cc3876addd5fc26c4f0330"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 1664165,
+      "sha256": "b83958534664a0917db4040e4a0796fffe8c0a818077d33a8d898c8637d66073"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/regional_jamming-packet_transition-99.jsonl.gz",
+      "bytes": 1671363,
+      "sha256": "0f4c71877e80a357d02e4b7cc631fdfd62867ee1ce841933e889039537dc18c2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/results.csv",
+      "bytes": 30007,
+      "sha256": "bf9c488d6cb55b280739d5f312a455a46040364c25835aa17f261704aee9bac7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/results.json",
+      "bytes": 1718057,
+      "sha256": "21f06f9b0a5be2e029616e8210ccb1ea60ff53affac14cdb95d078847801fc6e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/results.manifest",
+      "bytes": 21826,
+      "sha256": "5c13f63d64a2057af654021dcf16f442fe28805d9c24ffca09f19351030a5323"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/results.md",
+      "bytes": 6056,
+      "sha256": "ecd006b298e63d3e3159276329a601ecdf3da7aab2703ba0c727e24a9b558b8c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-balanced_control-42.jsonl.gz",
+      "bytes": 1965514,
+      "sha256": "d015dfffa8ad9e6023bc5cc2887671bf210998424952cd731132bcfbe2434abb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-balanced_control-7.jsonl.gz",
+      "bytes": 1966519,
+      "sha256": "77ab5b6cad04d7df9c3b5bed45fe6f8575322431140d16d7e233ebeed8301a14"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-balanced_control-99.jsonl.gz",
+      "bytes": 1969136,
+      "sha256": "8a9ac49bf3c1c0a5f11ce7286fbc1bc65ba84b1ab9871401ceec4f757703b38a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-combined-42.jsonl.gz",
+      "bytes": 1876132,
+      "sha256": "6cf091b42b10558bea105a14338cb547b8820659b849887e264dae87a23b3cce"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-combined-7.jsonl.gz",
+      "bytes": 1880665,
+      "sha256": "5ab64cdc0cbdbf9b2ad0c3ec2173e742550311b829e7dcc9396d87d1f4007ea5"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-combined-99.jsonl.gz",
+      "bytes": 1878973,
+      "sha256": "3353f7c6630756c034dd30295588442c317f86d081d7370eb0b15d7d910107c6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-observability_guard-42.jsonl.gz",
+      "bytes": 1875927,
+      "sha256": "1b645ae5ad85e882ebf2e8d718cb59e5f41c9c1b38b19ec6364bef67d19551af"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-observability_guard-7.jsonl.gz",
+      "bytes": 1880459,
+      "sha256": "5d864dd259455701419841a3120011bf0262d7ad207924cf7b904f306142e1db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-observability_guard-99.jsonl.gz",
+      "bytes": 1878769,
+      "sha256": "06b21b2ea50f9473271d1a6763fb46258b945d2123bb7ca3fa4ddd0f55e83122"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-packet_transition-42.jsonl.gz",
+      "bytes": 1965737,
+      "sha256": "cf7ee190ea25075c999f6bc2637e359d9b13cfa6f492acfb3bd239b2757ba0c8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-packet_transition-7.jsonl.gz",
+      "bytes": 1966744,
+      "sha256": "5bfdb1fce547c2c89f9a9cffc7265b0c1ef06993021e2c50990a1e32effdf55e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/single_failure-packet_transition-99.jsonl.gz",
+      "bytes": 1969363,
+      "sha256": "677e67b412324aebbaabb3785abe558e7fdd977e3e695297500549422c26559e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-release/state.json",
+      "bytes": 1230529,
+      "sha256": "ac4b474548c3d469e0acc7a8c0aef0f6679155be87633e86d28fddf90d2b043c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2454770,
+      "sha256": "7321781272df0b7d77a0f878f8544a50eb88fde899b5af2e8eb08f5cc92775b1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2454988,
+      "sha256": "e3956073e78b1fb071c37ac3ed7f1a6563dfe8baaa69988cc4a8cd4fb0247c26"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-balanced_control-99.jsonl.gz",
+      "bytes": 2454971,
+      "sha256": "b9d49373979bd0f3a45bb56cb31ce099025e7b0908f48050547dc232b6e41aff"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-combined-42.jsonl.gz",
+      "bytes": 2464050,
+      "sha256": "c37233dcf3c96d313f4f4f998e89d9f8b4b44511d693e838edc78d1245cc0658"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-combined-7.jsonl.gz",
+      "bytes": 2465416,
+      "sha256": "60311c8cf499ea5b8bc736e662fc4330d64806774c99972b5d20d160ddd42fef"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-combined-99.jsonl.gz",
+      "bytes": 2464843,
+      "sha256": "86296255806aabe48b544095b010b6b57fdfffc9880e621cd8379791406e79cd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2454777,
+      "sha256": "1387b3f254baa0f6411cf505bd517d437ae611b5ec204ea3435e5ac14c2c8386"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2454996,
+      "sha256": "d6f5d0effb4f7776b177727eb0e15d3fde8ea781ed595410a2b720a047b77c05"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-observability_guard-99.jsonl.gz",
+      "bytes": 2454979,
+      "sha256": "0f9048357906066702d1aa20b408aee3429d6d8e08438970c51254b01a2f5ad6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2464061,
+      "sha256": "a4d137a20e593a2a20110bce98a85c2e516fcc5d92ea85a7a972c155c05b95ed"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2465428,
+      "sha256": "c98baf4c213730c5919720983fd6fd6e1459e876fd37b48100c63f20549395c0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/congestion-packet_transition-99.jsonl.gz",
+      "bytes": 2464854,
+      "sha256": "8d911460c74efb65483d6969b681fb1fc45194a19cc203d6230706765670ac26"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/execution-source.json",
+      "bytes": 2332,
+      "sha256": "97e88d5859f087d682eef55b6983f19de83973aee3cf5a2d4aa36078e154802b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/execution-source.tar.gz",
+      "bytes": 67860,
+      "sha256": "43a82fff7f0be791396f127248669606beea5f7cf73227ff535eb9aac1181cfa"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2435523,
+      "sha256": "79e729000f54ecef6d38271c5a8d7355986fcc5d87e180b3774640969e9009c4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2433449,
+      "sha256": "641c311c7da3cc8b2122664e4bcbca932048acaf5dc39b3e2aea48bb06ffcc18"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2428458,
+      "sha256": "c9c9d34fe03d063a1d8547338c84e0cd908cecffb730a3409eaa9671fea4882f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "649cd73f750fdc9b032e73bfa87da87749650621148a9d5ad5eafa2249e4d466"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "92f7e299fac0b8ebd0023b0299f973e8bd21e59752005fb84259dd096db0a68f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-combined-99.jsonl.gz",
+      "bytes": 2428932,
+      "sha256": "f187be43441162da34da218f38fc4e1477a63fa54b09d78d5e6499c24c2d4886"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435528,
+      "sha256": "a698de35ed718efd80759a01eb013c49db847020791c8a6adf938c8767b368bb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433454,
+      "sha256": "8002d03babbd3f3349e45e46c2485ca9d28286e7e41c72107b578fc17c032d62"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428463,
+      "sha256": "4fb5204292a8e0b87bac9439fa790db06b7847ebcc20fb1c666b5094bd83ba46"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2436007,
+      "sha256": "a22bf11c47f9f14ce8058ec3d08d9cf730639a03e133e9176c5fecf6097a4fdb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2433941,
+      "sha256": "2b9ad4229b589c314fe050a3b1037115235767cdfeb3c7778324aa61ba54e7c3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2428943,
+      "sha256": "f3c12b59079404a80f46dc16dbce7ccab1a9efcfdcb8d0f19f8b7489ea81f2c5"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1848972,
+      "sha256": "c2697deb8dc660dccc166cc61a3525e5c725f5d420839b3f430855f2d26027a2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1843600,
+      "sha256": "9cb39e5416875a362b0aece3036fe4204ed0777f06dba32c61ab28b2e1932282"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1846118,
+      "sha256": "8b45f045abb365ead6878e6bdebb20ceadfde62f4ef29197f26cf234ef557059"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-combined-42.jsonl.gz",
+      "bytes": 1849185,
+      "sha256": "b415e8ec803727939e963b5cf5d0fd407e2cb765a176d49cf1b4ff0dd2fa240f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-combined-7.jsonl.gz",
+      "bytes": 1843812,
+      "sha256": "58c1610d31453e3226c7aa7c56f04f26da4e6d69da8bbc966809d8c12cf253c6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-combined-99.jsonl.gz",
+      "bytes": 1846332,
+      "sha256": "14621f66011e783ff31733e44e2746cf2f273ecf991f761e7c35120c5cdb95a8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848980,
+      "sha256": "fee01ec9d30785e2ca014138c6e45323cff2207e93a72a937f51c6354314c2e4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843608,
+      "sha256": "4532dc993a737409902121fb782dd1c483fc3877e024364166acfc27277b0d19"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846127,
+      "sha256": "1c993e69b95ab5d11c1bd914e7b1a0682d8136777834c2c5aedcff5f965225d1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1849196,
+      "sha256": "b956c44d80535dd2525a077ff77ab50621503c919a42ae8984813b70da460c09"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1843824,
+      "sha256": "666667edd11b68e8fa68d8e363f47a72240651d28e3c8a7d04ddd4bbf19c0581"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1846342,
+      "sha256": "5548ec3cedd55f57ba0c2e03161b7e8412be62d2096502988037a0d2420c2380"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-balanced_control-42.jsonl.gz",
+      "bytes": 2469284,
+      "sha256": "fed58d56aa00c7b28f3119b1e9b672f79a4e7d8e1a3249f9b6e0ee30a8aecd5f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-balanced_control-7.jsonl.gz",
+      "bytes": 2471401,
+      "sha256": "6522d6bd73f289187efc1024c5c590008ad0011053ce621b5ed6dbe58e0ea9fb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-balanced_control-99.jsonl.gz",
+      "bytes": 2421086,
+      "sha256": "0ef620f6ca84a22171b5b8bad12ead5c880b7dfc58e2ece1599329a5ae94bc6e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-combined-42.jsonl.gz",
+      "bytes": 2469013,
+      "sha256": "5193135d7ff85bd3c19941d254d069fda51df86e68d6f5d9d8910676790e6bfd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-combined-7.jsonl.gz",
+      "bytes": 2471516,
+      "sha256": "05bcd82d98a9faf0e93dc8d01592aa92ec9f4c8fd8f5e49f02f073a2d9dd825a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-combined-99.jsonl.gz",
+      "bytes": 2420751,
+      "sha256": "9f3c1dc139ec720a18afb5c8a813a8ff1b6c78b87e61d2fd6ee4ad9637734147"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-observability_guard-42.jsonl.gz",
+      "bytes": 2469292,
+      "sha256": "44c176bc8c0a4d8685af97c1b626d73d8174376ef223d9ef5e30e32cee2a5a0c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-observability_guard-7.jsonl.gz",
+      "bytes": 2471409,
+      "sha256": "ba2662594753776d71d0b4968c2b1f296ba7fe3ebd97d972216c8a27e6356492"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-observability_guard-99.jsonl.gz",
+      "bytes": 2421093,
+      "sha256": "d52bfa3d8486f1016f2b440ce1ac1b1633de771e94d35c0a59ea853f3c3b6f80"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-packet_transition-42.jsonl.gz",
+      "bytes": 2469019,
+      "sha256": "b96f70609d40d167b230e01d8f5da0aaea0d1930f32e1e2d676c1c456f29af8d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-packet_transition-7.jsonl.gz",
+      "bytes": 2471523,
+      "sha256": "1b68df9c976f5d887397dbb4de7cdf23527f0dd615f32539502f6606fd8be994"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/partition_reconnection-packet_transition-99.jsonl.gz",
+      "bytes": 2420757,
+      "sha256": "7804b46479e9475f9a82d8b1adc8964450596b2dafd40ecfeb9502e13c90fac1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-balanced_control-42.jsonl.gz",
+      "bytes": 1598244,
+      "sha256": "d56754e5d39d6e7dfbc0cbc715ec4f88f10e9ee3b2a97921638a4fb39ccb667c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 1591463,
+      "sha256": "8c54fa899fb83ada2a358e465703500d513c2595bd2d9df5f8d963c72f8f558a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-balanced_control-99.jsonl.gz",
+      "bytes": 1595980,
+      "sha256": "406b3aec13a37f7066e3e185d851c3cde8375982f952ef485737de788972948e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-combined-42.jsonl.gz",
+      "bytes": 1598456,
+      "sha256": "178c8e4924fa205f87ce20bdc7203013e8fbbb761f988f81d49e1b27e27e21a7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-combined-7.jsonl.gz",
+      "bytes": 1591676,
+      "sha256": "20cd4e3d4de45ffa6126c286fde7619833f77b2957c2a97987b12cafd29ce090"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-combined-99.jsonl.gz",
+      "bytes": 1596191,
+      "sha256": "dd123349a61b60984acc739121848bd435764f550c3d59021019f2ecf767b932"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-observability_guard-42.jsonl.gz",
+      "bytes": 1598252,
+      "sha256": "fff9643e9c6ec00431569baee2273c0452f0039398852243e75124f51ebeabe0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-observability_guard-7.jsonl.gz",
+      "bytes": 1591470,
+      "sha256": "9cb028043732abd1c1c01c907bdae6ae4b1985943e95e4136be6f659007030d0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-observability_guard-99.jsonl.gz",
+      "bytes": 1595987,
+      "sha256": "c5a9b9428b1fae1b9217d6e148116b5dd43c0ed4a448278710b7e3cb4bee5355"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-packet_transition-42.jsonl.gz",
+      "bytes": 1598466,
+      "sha256": "9d1b6a3d65ec419246500b1ce42d5a93e0053e2a147082ab29b0c713999e9b80"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 1591686,
+      "sha256": "fc015955a2cc37b1d4ff793dacd4edd23c8ce2eb1b88f13b0a97cea23041b2f6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/regional_jamming-packet_transition-99.jsonl.gz",
+      "bytes": 1596202,
+      "sha256": "6621c87710cdc1ad2bf2f5f7fbee461c5ab42224f467bac3aa5e947e7a47a36f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/results.csv",
+      "bytes": 28292,
+      "sha256": "56dfc73c8663e086f89c9b853b871d2906810b6de61b57cdf3269c8a6c28dcd4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/results.json",
+      "bytes": 1692100,
+      "sha256": "389e5c191623d13a271cb5e112f8d5b569470087015b85732f74b9c00eed2c63"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/results.manifest",
+      "bytes": 20339,
+      "sha256": "732c15d1a59ddfeb5c9380110cb71afcc21fb01d99855ef210b7166c8a738a4d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/results.md",
+      "bytes": 5260,
+      "sha256": "b244b173d94ff91248dabfb9c2c68ca7a94b172d1d2818a765e3c8106edeb6db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-balanced_control-42.jsonl.gz",
+      "bytes": 1875917,
+      "sha256": "ab6d414f883fe898b6448ac491d87dfb77aef433eaf7ca964cad1bb17670eb4e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-balanced_control-7.jsonl.gz",
+      "bytes": 1880452,
+      "sha256": "49cc8b5cb2162b1d58918a6a9637db4f453fcb456575d00dfbd8a17661a28215"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-balanced_control-99.jsonl.gz",
+      "bytes": 1878761,
+      "sha256": "b23ed6e1e46d5c399f35ebd27569820e103785ab8ce4e76856ebe44505528bac"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-combined-42.jsonl.gz",
+      "bytes": 1876129,
+      "sha256": "9b106c2fb52baa18e9a2d119983667309e275a508dd743059bf0a9efa48165e2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-combined-7.jsonl.gz",
+      "bytes": 1880665,
+      "sha256": "95112bc8ccee0c5071cae2952195d910c4c37d86719820a7079b6e0ac0a34b09"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-combined-99.jsonl.gz",
+      "bytes": 1878973,
+      "sha256": "f0b63eb074dad948c58816ef78adb28811ccfb70261b850678a06dbc28472e45"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-observability_guard-42.jsonl.gz",
+      "bytes": 1875924,
+      "sha256": "78cd18ca8d1884388616dc76b938128e273dc710c00f1bda4f004ba34763ba59"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-observability_guard-7.jsonl.gz",
+      "bytes": 1880459,
+      "sha256": "a74e11f9dc74b69b4ff3fa78c2b7fb0e4231e648e5250f66e885920fe4608575"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-observability_guard-99.jsonl.gz",
+      "bytes": 1878769,
+      "sha256": "96407a4c2eb3b97ff74ba0a30dc7c2d475b060ff546abf721719ee89973668ed"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-packet_transition-42.jsonl.gz",
+      "bytes": 1876139,
+      "sha256": "04f8724b3d46bba5d7deaa53dc9fd9255389888e17888495bd562469472fde47"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-packet_transition-7.jsonl.gz",
+      "bytes": 1880675,
+      "sha256": "e5935f5286f1716a1bed40693e86372fb38d38b90e2fa17c0e3400edf9036b27"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/single_failure-packet_transition-99.jsonl.gz",
+      "bytes": 1878984,
+      "sha256": "820fe4f7fe1855865098209311b19c302565c9e598191a80858c47056e12bde3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1/state.json",
+      "bytes": 1209840,
+      "sha256": "1b9c719acc074b3bb1d7b971382ff4bf87b5368a5b4f5a9c64421eaca2b5fdcc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/analysis-source.tar.gz",
+      "bytes": 176983,
+      "sha256": "cd82e65b37a0f970dd8e8f2c5cb25f065f13337c982cf4fe9b6878bda97c4247"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2454770,
+      "sha256": "7321781272df0b7d77a0f878f8544a50eb88fde899b5af2e8eb08f5cc92775b1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2454988,
+      "sha256": "e3956073e78b1fb071c37ac3ed7f1a6563dfe8baaa69988cc4a8cd4fb0247c26"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-balanced_control-99.jsonl.gz",
+      "bytes": 2454971,
+      "sha256": "b9d49373979bd0f3a45bb56cb31ce099025e7b0908f48050547dc232b6e41aff"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-combined-42.jsonl.gz",
+      "bytes": 2464050,
+      "sha256": "c37233dcf3c96d313f4f4f998e89d9f8b4b44511d693e838edc78d1245cc0658"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-combined-7.jsonl.gz",
+      "bytes": 2465416,
+      "sha256": "60311c8cf499ea5b8bc736e662fc4330d64806774c99972b5d20d160ddd42fef"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-combined-99.jsonl.gz",
+      "bytes": 2464843,
+      "sha256": "86296255806aabe48b544095b010b6b57fdfffc9880e621cd8379791406e79cd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2454777,
+      "sha256": "1387b3f254baa0f6411cf505bd517d437ae611b5ec204ea3435e5ac14c2c8386"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2454996,
+      "sha256": "d6f5d0effb4f7776b177727eb0e15d3fde8ea781ed595410a2b720a047b77c05"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-observability_guard-99.jsonl.gz",
+      "bytes": 2454979,
+      "sha256": "0f9048357906066702d1aa20b408aee3429d6d8e08438970c51254b01a2f5ad6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2464061,
+      "sha256": "a4d137a20e593a2a20110bce98a85c2e516fcc5d92ea85a7a972c155c05b95ed"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2465428,
+      "sha256": "c98baf4c213730c5919720983fd6fd6e1459e876fd37b48100c63f20549395c0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/congestion-packet_transition-99.jsonl.gz",
+      "bytes": 2464854,
+      "sha256": "8d911460c74efb65483d6969b681fb1fc45194a19cc203d6230706765670ac26"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/execution-source.json",
+      "bytes": 2332,
+      "sha256": "97e88d5859f087d682eef55b6983f19de83973aee3cf5a2d4aa36078e154802b"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/execution-source.tar.gz",
+      "bytes": 67860,
+      "sha256": "43a82fff7f0be791396f127248669606beea5f7cf73227ff535eb9aac1181cfa"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/independent-verification.json",
+      "bytes": 39214,
+      "sha256": "8e04d33e24a9d119ed0ae9c62917c6a1e7dcd72dfec4474cf118276342e3c742"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2435523,
+      "sha256": "79e729000f54ecef6d38271c5a8d7355986fcc5d87e180b3774640969e9009c4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2433449,
+      "sha256": "641c311c7da3cc8b2122664e4bcbca932048acaf5dc39b3e2aea48bb06ffcc18"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2428458,
+      "sha256": "c9c9d34fe03d063a1d8547338c84e0cd908cecffb730a3409eaa9671fea4882f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "649cd73f750fdc9b032e73bfa87da87749650621148a9d5ad5eafa2249e4d466"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "92f7e299fac0b8ebd0023b0299f973e8bd21e59752005fb84259dd096db0a68f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-combined-99.jsonl.gz",
+      "bytes": 2428932,
+      "sha256": "f187be43441162da34da218f38fc4e1477a63fa54b09d78d5e6499c24c2d4886"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435528,
+      "sha256": "a698de35ed718efd80759a01eb013c49db847020791c8a6adf938c8767b368bb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433454,
+      "sha256": "8002d03babbd3f3349e45e46c2485ca9d28286e7e41c72107b578fc17c032d62"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428463,
+      "sha256": "4fb5204292a8e0b87bac9439fa790db06b7847ebcc20fb1c666b5094bd83ba46"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2436007,
+      "sha256": "a22bf11c47f9f14ce8058ec3d08d9cf730639a03e133e9176c5fecf6097a4fdb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2433941,
+      "sha256": "2b9ad4229b589c314fe050a3b1037115235767cdfeb3c7778324aa61ba54e7c3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2428943,
+      "sha256": "f3c12b59079404a80f46dc16dbce7ccab1a9efcfdcb8d0f19f8b7489ea81f2c5"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-balanced_control-42.jsonl.gz",
+      "bytes": 1848972,
+      "sha256": "c2697deb8dc660dccc166cc61a3525e5c725f5d420839b3f430855f2d26027a2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-balanced_control-7.jsonl.gz",
+      "bytes": 1843600,
+      "sha256": "9cb39e5416875a362b0aece3036fe4204ed0777f06dba32c61ab28b2e1932282"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-balanced_control-99.jsonl.gz",
+      "bytes": 1846118,
+      "sha256": "8b45f045abb365ead6878e6bdebb20ceadfde62f4ef29197f26cf234ef557059"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-combined-42.jsonl.gz",
+      "bytes": 1849185,
+      "sha256": "b415e8ec803727939e963b5cf5d0fd407e2cb765a176d49cf1b4ff0dd2fa240f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-combined-7.jsonl.gz",
+      "bytes": 1843812,
+      "sha256": "58c1610d31453e3226c7aa7c56f04f26da4e6d69da8bbc966809d8c12cf253c6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-combined-99.jsonl.gz",
+      "bytes": 1846332,
+      "sha256": "14621f66011e783ff31733e44e2746cf2f273ecf991f761e7c35120c5cdb95a8"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848980,
+      "sha256": "fee01ec9d30785e2ca014138c6e45323cff2207e93a72a937f51c6354314c2e4"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843608,
+      "sha256": "4532dc993a737409902121fb782dd1c483fc3877e024364166acfc27277b0d19"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846127,
+      "sha256": "1c993e69b95ab5d11c1bd914e7b1a0682d8136777834c2c5aedcff5f965225d1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-packet_transition-42.jsonl.gz",
+      "bytes": 1849196,
+      "sha256": "b956c44d80535dd2525a077ff77ab50621503c919a42ae8984813b70da460c09"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-packet_transition-7.jsonl.gz",
+      "bytes": 1843824,
+      "sha256": "666667edd11b68e8fa68d8e363f47a72240651d28e3c8a7d04ddd4bbf19c0581"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/normal-packet_transition-99.jsonl.gz",
+      "bytes": 1846342,
+      "sha256": "5548ec3cedd55f57ba0c2e03161b7e8412be62d2096502988037a0d2420c2380"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-balanced_control-42.jsonl.gz",
+      "bytes": 2469284,
+      "sha256": "fed58d56aa00c7b28f3119b1e9b672f79a4e7d8e1a3249f9b6e0ee30a8aecd5f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-balanced_control-7.jsonl.gz",
+      "bytes": 2471401,
+      "sha256": "6522d6bd73f289187efc1024c5c590008ad0011053ce621b5ed6dbe58e0ea9fb"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-balanced_control-99.jsonl.gz",
+      "bytes": 2421086,
+      "sha256": "0ef620f6ca84a22171b5b8bad12ead5c880b7dfc58e2ece1599329a5ae94bc6e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-combined-42.jsonl.gz",
+      "bytes": 2469013,
+      "sha256": "5193135d7ff85bd3c19941d254d069fda51df86e68d6f5d9d8910676790e6bfd"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-combined-7.jsonl.gz",
+      "bytes": 2471516,
+      "sha256": "05bcd82d98a9faf0e93dc8d01592aa92ec9f4c8fd8f5e49f02f073a2d9dd825a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-combined-99.jsonl.gz",
+      "bytes": 2420751,
+      "sha256": "9f3c1dc139ec720a18afb5c8a813a8ff1b6c78b87e61d2fd6ee4ad9637734147"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-observability_guard-42.jsonl.gz",
+      "bytes": 2469292,
+      "sha256": "44c176bc8c0a4d8685af97c1b626d73d8174376ef223d9ef5e30e32cee2a5a0c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-observability_guard-7.jsonl.gz",
+      "bytes": 2471409,
+      "sha256": "ba2662594753776d71d0b4968c2b1f296ba7fe3ebd97d972216c8a27e6356492"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-observability_guard-99.jsonl.gz",
+      "bytes": 2421093,
+      "sha256": "d52bfa3d8486f1016f2b440ce1ac1b1633de771e94d35c0a59ea853f3c3b6f80"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-packet_transition-42.jsonl.gz",
+      "bytes": 2469019,
+      "sha256": "b96f70609d40d167b230e01d8f5da0aaea0d1930f32e1e2d676c1c456f29af8d"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-packet_transition-7.jsonl.gz",
+      "bytes": 2471523,
+      "sha256": "1b68df9c976f5d887397dbb4de7cdf23527f0dd615f32539502f6606fd8be994"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/partition_reconnection-packet_transition-99.jsonl.gz",
+      "bytes": 2420757,
+      "sha256": "7804b46479e9475f9a82d8b1adc8964450596b2dafd40ecfeb9502e13c90fac1"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-balanced_control-42.jsonl.gz",
+      "bytes": 1598244,
+      "sha256": "d56754e5d39d6e7dfbc0cbc715ec4f88f10e9ee3b2a97921638a4fb39ccb667c"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 1591463,
+      "sha256": "8c54fa899fb83ada2a358e465703500d513c2595bd2d9df5f8d963c72f8f558a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-balanced_control-99.jsonl.gz",
+      "bytes": 1595980,
+      "sha256": "406b3aec13a37f7066e3e185d851c3cde8375982f952ef485737de788972948e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-combined-42.jsonl.gz",
+      "bytes": 1598456,
+      "sha256": "178c8e4924fa205f87ce20bdc7203013e8fbbb761f988f81d49e1b27e27e21a7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-combined-7.jsonl.gz",
+      "bytes": 1591676,
+      "sha256": "20cd4e3d4de45ffa6126c286fde7619833f77b2957c2a97987b12cafd29ce090"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-combined-99.jsonl.gz",
+      "bytes": 1596191,
+      "sha256": "dd123349a61b60984acc739121848bd435764f550c3d59021019f2ecf767b932"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-observability_guard-42.jsonl.gz",
+      "bytes": 1598252,
+      "sha256": "fff9643e9c6ec00431569baee2273c0452f0039398852243e75124f51ebeabe0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-observability_guard-7.jsonl.gz",
+      "bytes": 1591470,
+      "sha256": "9cb028043732abd1c1c01c907bdae6ae4b1985943e95e4136be6f659007030d0"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-observability_guard-99.jsonl.gz",
+      "bytes": 1595987,
+      "sha256": "c5a9b9428b1fae1b9217d6e148116b5dd43c0ed4a448278710b7e3cb4bee5355"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-packet_transition-42.jsonl.gz",
+      "bytes": 1598466,
+      "sha256": "9d1b6a3d65ec419246500b1ce42d5a93e0053e2a147082ab29b0c713999e9b80"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 1591686,
+      "sha256": "fc015955a2cc37b1d4ff793dacd4edd23c8ce2eb1b88f13b0a97cea23041b2f6"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/regional_jamming-packet_transition-99.jsonl.gz",
+      "bytes": 1596202,
+      "sha256": "6621c87710cdc1ad2bf2f5f7fbee461c5ab42224f467bac3aa5e947e7a47a36f"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/results.csv",
+      "bytes": 28028,
+      "sha256": "fe9327b5079924784cc6910e999ca244fd83604268f874bba4ce13596b82d3c3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/results.json",
+      "bytes": 1699706,
+      "sha256": "05b20c365e80ab4e051595897cba1b46f505a7fc5f903c85e700aa51c23cf53a"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/results.manifest",
+      "bytes": 28218,
+      "sha256": "7c97c137e19887f2d23cf0d5f048b23f6b8171d8724e4fbd704d6389b98d85bc"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/results.md",
+      "bytes": 5260,
+      "sha256": "b244b173d94ff91248dabfb9c2c68ca7a94b172d1d2818a765e3c8106edeb6db"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-balanced_control-42.jsonl.gz",
+      "bytes": 1875917,
+      "sha256": "ab6d414f883fe898b6448ac491d87dfb77aef433eaf7ca964cad1bb17670eb4e"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-balanced_control-7.jsonl.gz",
+      "bytes": 1880452,
+      "sha256": "49cc8b5cb2162b1d58918a6a9637db4f453fcb456575d00dfbd8a17661a28215"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-balanced_control-99.jsonl.gz",
+      "bytes": 1878761,
+      "sha256": "b23ed6e1e46d5c399f35ebd27569820e103785ab8ce4e76856ebe44505528bac"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-combined-42.jsonl.gz",
+      "bytes": 1876129,
+      "sha256": "9b106c2fb52baa18e9a2d119983667309e275a508dd743059bf0a9efa48165e2"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-combined-7.jsonl.gz",
+      "bytes": 1880665,
+      "sha256": "95112bc8ccee0c5071cae2952195d910c4c37d86719820a7079b6e0ac0a34b09"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-combined-99.jsonl.gz",
+      "bytes": 1878973,
+      "sha256": "f0b63eb074dad948c58816ef78adb28811ccfb70261b850678a06dbc28472e45"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-observability_guard-42.jsonl.gz",
+      "bytes": 1875924,
+      "sha256": "78cd18ca8d1884388616dc76b938128e273dc710c00f1bda4f004ba34763ba59"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-observability_guard-7.jsonl.gz",
+      "bytes": 1880459,
+      "sha256": "a74e11f9dc74b69b4ff3fa78c2b7fb0e4231e648e5250f66e885920fe4608575"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-observability_guard-99.jsonl.gz",
+      "bytes": 1878769,
+      "sha256": "96407a4c2eb3b97ff74ba0a30dc7c2d475b060ff546abf721719ee89973668ed"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-packet_transition-42.jsonl.gz",
+      "bytes": 1876139,
+      "sha256": "04f8724b3d46bba5d7deaa53dc9fd9255389888e17888495bd562469472fde47"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-packet_transition-7.jsonl.gz",
+      "bytes": 1880675,
+      "sha256": "e5935f5286f1716a1bed40693e86372fb38d38b90e2fa17c0e3400edf9036b27"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/single_failure-packet_transition-99.jsonl.gz",
+      "bytes": 1878984,
+      "sha256": "820fe4f7fe1855865098209311b19c302565c9e598191a80858c47056e12bde3"
+    },
+    {
+      "path": "results/evidence_resilience/pilot-v1-release/state.json",
+      "bytes": 1215574,
+      "sha256": "047be133c418f1073d2876a98c2ce49b3a1b6db2c9af2eed566fd14219c6dcd7"
+    },
+    {
+      "path": "results/evidence_resilience/pilot.log",
+      "bytes": 239,
+      "sha256": "e8da00851e05f6f79756101a3abd1fe7908e0f5a95345b52426967520a518444"
+    },
+    {
+      "path": "results/evidence_resilience/post-repair-tests.log",
+      "bytes": 1004,
+      "sha256": "bbd36ef07fcf2f0c789e5922f2f85aec65effc1a2da850479c1572f8277010af"
+    },
+    {
+      "path": "results/evidence_resilience/profile-2d-source.tar.gz",
+      "bytes": 388488,
+      "sha256": "77ee2856c5ecc966605b34f8135bf8d98ec6e3ea32a123024c2b0c3556f5f285"
+    },
+    {
+      "path": "results/evidence_resilience/profile-2d.log",
+      "bytes": 404,
+      "sha256": "4b81b6d22a13d013d6b9db25265557c59642b8c6029cd2cdd5947b1da4d21ed1"
+    },
+    {
+      "path": "results/evidence_resilience/profile-3d-source.tar.gz",
+      "bytes": 388530,
+      "sha256": "2f29c2f1df9741ee47a56c5076099a9f11a243d81517c8cca458e75b13e1e82a"
+    },
+    {
+      "path": "results/evidence_resilience/profile-3d.log",
+      "bytes": 404,
+      "sha256": "b8ee1963faf514275185fdbd989428dee9193f130d349f12061c9e430a06d9f7"
+    },
+    {
+      "path": "results/evidence_resilience/profile-compare-source.tar.gz",
+      "bytes": 388590,
+      "sha256": "6306f4110aab6f894a5d94f1157316ec3f721afc7dc7388e08657c721526f7d6"
+    },
+    {
+      "path": "results/evidence_resilience/profile-compare.log",
+      "bytes": 404,
+      "sha256": "3e140dc113eea88c9b7056a86495b9a82ee416bc846b3c920e37056eefdf54a4"
+    },
+    {
+      "path": "results/evidence_resilience/python-accepted-full.log",
+      "bytes": 3314,
+      "sha256": "92898f3a2005403278d94d682a68af9d2fe123c6cee309e6c1284e9fe28baadd"
+    },
+    {
+      "path": "results/evidence_resilience/python-final.log",
+      "bytes": 4406,
+      "sha256": "9361973277721d6e0fe9efb9ecccc4ac530b0904a3d4a305ed9f5fd20da51ed5"
+    },
+    {
+      "path": "results/evidence_resilience/python-full.log",
+      "bytes": 3233,
+      "sha256": "ef43ac912db9a6ed23a1f019fffb0174ffb89d8293db1c070d3ee900494c950b"
+    },
+    {
+      "path": "results/evidence_resilience/python-integration.log",
+      "bytes": 994,
+      "sha256": "36eeb4d4f254a9a5ff052eeff869ed8264c9e7cde3c2ffabd77b3be5cf12ef5e"
+    },
+    {
+      "path": "results/evidence_resilience/release-source.tar.gz",
+      "bytes": 722841,
+      "sha256": "b6829620984c485e0d04289a4250457feb2cea49088ffb437169dba640184857"
+    },
+    {
+      "path": "results/evidence_resilience/repeat-final/congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2475488,
+      "sha256": "2f55796e57a689528745320d3eb3de959a73c2186a95db7a48d722b9a0ce222a"
+    },
+    {
+      "path": "results/evidence_resilience/repeat-final/verification.json",
+      "bytes": 2091,
+      "sha256": "f1d1a22081214cdb7c2fbb35d15d4d1909fec6ea9790042cb8c68b663d8f5ed5"
+    },
+    {
+      "path": "results/evidence_resilience/repeat-final.log",
+      "bytes": 272,
+      "sha256": "6722b96555942248564647f06cf1207e1cf428e8ef23b7744d37e85e9f33aebe"
+    },
+    {
+      "path": "results/evidence_resilience/scheduler-profile.json",
+      "bytes": 560,
+      "sha256": "631375bf948d9e4174a1e0465df6bf0e2f95b145e4ffa10757dd997f62bbdeb8"
+    },
+    {
+      "path": "results/evidence_resilience/scheduler-profile.log",
+      "bytes": 561,
+      "sha256": "cda39958ebe869f378168087d7d712dccae38087d1e53b44e2d82bdc17774aea"
+    },
+    {
+      "path": "results/evidence_resilience/service-tests.log",
+      "bytes": 912,
+      "sha256": "11cd479b66f1bb11ffba8a558c68e1fce7718a552975f000ad663d3f8172670d"
+    },
+    {
+      "path": "results/evidence_resilience/smoke/congestion-combined-7.jsonl.gz",
+      "bytes": 2475604,
+      "sha256": "e2fb994623c43514c8759c18b06ae00aab320ec8677b1ed4d1bbf1a9083163ed"
+    },
+    {
+      "path": "results/evidence_resilience/smoke/run.json",
+      "bytes": 14636,
+      "sha256": "1ef3b704e463bb4c4dba26dce304e726c0d5a0c3d117fe6ee1f06b2b3a9eff72"
+    },
+    {
+      "path": "results/evidence_resilience/typecheck-release.log",
+      "bytes": 44,
+      "sha256": "373b6abd1702072c02436a7dda84d3996d43e72c96042734e7cd9c714859a0c7"
+    },
+    {
+      "path": "results/evidence_resilience/typecheck.log",
+      "bytes": 44,
+      "sha256": "373b6abd1702072c02436a7dda84d3996d43e72c96042734e7cd9c714859a0c7"
+    },
+    {
+      "path": "results/evidence_resilience/verification-accepted.log",
+      "bytes": 173,
+      "sha256": "10c22a86b80a0707b54af1dbeddd61b2d902fb46cf0158cc1c41b32415a5a0b2"
+    },
+    {
+      "path": "results/evidence_resilience/verification-final.log",
+      "bytes": 173,
+      "sha256": "669697dff8ffdb4f95ee0edd65b066b58b37a9137f799c15e00a042e32a4fd5b"
+    },
+    {
+      "path": "results/evidence_resilience/verification.log",
+      "bytes": 174,
+      "sha256": "75210307f1f09ff1c0f6dce2d96610d3497068069b66a03877f3001c7803f880"
+    },
+    {
+      "path": "validation/evidence_resilience/README.md",
+      "bytes": 11471,
+      "sha256": "1a005978cea4443f23904153c295e4b50ed557fc0de880c6a091ba4283ba28f7"
+    },
+    {
+      "path": "validation/evidence_resilience/ablation-topology-sequences.json",
+      "bytes": 498,
+      "sha256": "2c34cbae742003cd083b1ea58388cdeac705b55f0a6e9970d820540a4fba007d"
+    },
+    {
+      "path": "validation/evidence_resilience/commands.json",
+      "bytes": 11640,
+      "sha256": "9016358154cdaa5ed0ba3c6a3a440efabb80b4711973d871585f0bf2a2106668"
+    },
+    {
+      "path": "validation/evidence_resilience/cpu-profile.json",
+      "bytes": 6822,
+      "sha256": "bed9c1b563245542e6977b60d45904ca58eef9dfdb2f5a7b511f5eb1a7d22132"
+    },
+    {
+      "path": "validation/evidence_resilience/environment.json",
+      "bytes": 518,
+      "sha256": "c6c80fdf2f07d817f96cb7ca068c0ef6ff9945ec20cc584afaa5d230e7425716"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/2d-100.png",
+      "bytes": 330583,
+      "sha256": "b70538b39fe74bbc007ff480c48c626bc90fd54b531cb2560df7c58fd5637f4b"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/3d-100.png",
+      "bytes": 676814,
+      "sha256": "dfd6f327eb389c1ce4b784ff7efee1a805e578eff3ebb5c00e20c9b699560cd6"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/compare-100.png",
+      "bytes": 300306,
+      "sha256": "c49850a71a35a126d84ae35d01befbca3a1412b590f880a496aa195a075e234c"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/completed-resilience-pilot.png",
+      "bytes": 132366,
+      "sha256": "aef25b2eb89112d1a0576cee1c4b8edd7705a2c018ec282d3c43b3f9cbc492ec"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/models-unavailable.png",
+      "bytes": 191436,
+      "sha256": "e603d212b7d3591ae2123ae916e8059ccac88badbde6f849e412db815fc03ee0"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/paired-pilot.png",
+      "bytes": 96157,
+      "sha256": "11aea910ab17e0ab5bdb5c04402146d29d5aeae1a95af431529b5cfc052f7e91"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/report-diagnostics.png",
+      "bytes": 183474,
+      "sha256": "5c250e65966376faea3f2eb3999f4bbb5770b75f6c022b01920aee32ebe6cb9f"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/safeguarded-1024.png",
+      "bytes": 87089,
+      "sha256": "c92bc656c68ca7b8f5755c09a22b34a66c6bcc66b4d744068ef2d8ef1869244e"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/safeguarded-1440.png",
+      "bytes": 137332,
+      "sha256": "ce63f844bbba8a5cf7ab872229b9c58d3967d23dceca03ac2d6d853317a733f2"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/safeguarded-390.png",
+      "bytes": 65028,
+      "sha256": "97a6e304c16abd8f16fb7658c6faabeba187655f4c017655997f692260973f4b"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/safeguarded-687.png",
+      "bytes": 70639,
+      "sha256": "9bcee1a6c2d99b6e4b376c8b10776964c4ca08df237b1afaf62201d1a4087d8f"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/safeguarded-768.png",
+      "bytes": 78862,
+      "sha256": "7a520769ae1427e035bbd950cdb70c5fe83f10de3aaa906f402be30eb2f1f62f"
+    },
+    {
+      "path": "validation/evidence_resilience/evidence/safeguarded-915.png",
+      "bytes": 84652,
+      "sha256": "83ec4ca66c0efea8dda93fa612b94b10096d42b44c853355f7d230620b9066ca"
+    },
+    {
+      "path": "validation/evidence_resilience/feature-coverage.csv",
+      "bytes": 4968,
+      "sha256": "ff09c20a495de027d1ea4874169df587cb18191f46db15ec2f234a1294e05a02"
+    },
+    {
+      "path": "validation/evidence_resilience/feature-coverage.json",
+      "bytes": 7379,
+      "sha256": "01afe7cb3f730b58a7e9cb7f9a610bb33ba739422422ec82bbd0efe5f1e2269a"
+    },
+    {
+      "path": "validation/evidence_resilience/historical-preservation.json",
+      "bytes": 1473,
+      "sha256": "51393392361242a5131d00cf7e8cd43ce8555a580aa2a5aaaa1aaf8ce5a9084e"
+    },
+    {
+      "path": "validation/evidence_resilience/independent-verification.json",
+      "bytes": 31747,
+      "sha256": "cfdcea48b39e12a9d38cd920138dcbf4b7ff2b058101000fa2e2ad9e47e0eb98"
+    },
+    {
+      "path": "validation/evidence_resilience/isolation.json",
+      "bytes": 9892,
+      "sha256": "97dcd9b0e4686372851acc5dbb1f9f37845a923b8c688f92ec320da4c51bab9f"
+    },
+    {
+      "path": "validation/evidence_resilience/legacy-baseline.json",
+      "bytes": 7352,
+      "sha256": "fbb39d6f023290553f23188aadaba7a4b6ffdc5797092ffd92babd9d07e8f197"
+    },
+    {
+      "path": "validation/evidence_resilience/multiradio-scheduler-equivalence.json",
+      "bytes": 304,
+      "sha256": "69cee6828061c70f3d0cd8e1ec6c40d7f9988ebb2e7ba07b59c53d8de24d72e5"
+    },
+    {
+      "path": "validation/evidence_resilience/per-run-measurements.csv",
+      "bytes": 30539,
+      "sha256": "93c99019d33d975292fbb23238f1b97854cac2fd360670488cd3ec8b338e917b"
+    },
+    {
+      "path": "validation/evidence_resilience/release-source-manifest.json",
+      "bytes": 35635,
+      "sha256": "130f4b3794963328421d01541e3167ee9d2654ef53dccb231a03e71bc4eb93d7"
+    },
+    {
+      "path": "validation/evidence_resilience/rendering-profiles.json",
+      "bytes": 10110,
+      "sha256": "d4a201360c090569d8f11849f927fa2aa75ca26f77f9842f091fe842547f1d82"
+    },
+    {
+      "path": "validation/evidence_resilience/rendering-source-manifests.json",
+      "bytes": 14899,
+      "sha256": "164b037133890d12e30304212f5280d0f0d7c3891dc42daafd67c8ae7ea1bbfb"
+    },
+    {
+      "path": "validation/evidence_resilience/repeatability.json",
+      "bytes": 8294,
+      "sha256": "3c45035e3a12f89e4c57798c5db7d02489d7eaee2a6179691b207d1900ae0550"
+    },
+    {
+      "path": "validation/evidence_resilience/scheduler-profile.json",
+      "bytes": 560,
+      "sha256": "631375bf948d9e4174a1e0465df6bf0e2f95b145e4ffa10757dd997f62bbdeb8"
+    },
+    {
+      "path": "validation/evidence_resilience/statistical-summaries.json",
+      "bytes": 137876,
+      "sha256": "80bceea968cef3da89f0d57162f2642e89bbe79a1229fcc2d82b80dc5389c0d2"
+    },
+    {
+      "path": "validation/evidence_resilience/study-manifest.json",
+      "bytes": 20920,
+      "sha256": "66637f35c930c37e05c8d7264db1edcfff4a4174c2a14243e18f60fcc9de6c65"
+    },
+    {
+      "path": "validation/evidence_resilience/study-summary.json",
+      "bytes": 4056,
+      "sha256": "46151db0edfceb1c984c1a44886746109c472a1e5ec42532d7f6af7ce1d895c4"
+    },
+    {
+      "path": "validation/evidence_resilience/verification-report.md",
+      "bytes": 19702,
+      "sha256": "6217fe4b27f9e365819fbbab1a32e6c80449f5d817a05da12e7d6b27610da322"
+    }
+  ]
+}

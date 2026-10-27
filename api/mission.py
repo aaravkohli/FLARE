@@ -2,7 +2,7 @@
 import os
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.mission import MissionConfig, MissionControl, MissionCommand, MissionAttack, ClearMissionAttacks, MissionProbe, ExperimentRequest, ExperimentControl
+from schemas.mission import MissionConfig, MissionControl, MissionCommand, MissionAttack, ClearMissionAttacks, MissionProbe, ExperimentJobRequest, ExperimentControl
 
 
 def service_url():
@@ -29,7 +29,12 @@ def mission_router(current_user, admin, runtime_mode):
     @router.get('')
     async def snapshot(after: int=0): return await service_request('GET','/state',params={'after':after})
     @router.patch('/config',dependencies=writes)
-    async def config(request: MissionConfig): return await service_request('PATCH','/config',request.model_dump(exclude_none=True))
+    async def config(request: MissionConfig):
+        # Omit absent top-level options, but preserve explicit unknown sensor
+        # values inside a safety profile. Recursive exclude_none would silently
+        # turn unavailable navigation/interface inputs back into defaults.
+        body={key:value for key,value in request.model_dump().items() if value is not None}
+        return await service_request('PATCH','/config',body)
     @router.post('/control',dependencies=writes)
     async def control(request: MissionControl): return await service_request('POST','/control',request.model_dump())
     @router.post('/commands',dependencies=writes)
@@ -45,7 +50,7 @@ def mission_router(current_user, admin, runtime_mode):
     @router.post('/probes',dependencies=writes)
     async def probe(request: MissionProbe): return await service_request('POST','/probes',request.model_dump())
     @router.post('/experiments',dependencies=writes)
-    async def create_experiment(request: ExperimentRequest): return await service_request('POST','/experiments',request.model_dump())
+    async def create_experiment(request: ExperimentJobRequest): return await service_request('POST','/experiments',request.model_dump())
     @router.get('/experiments/{identity}')
     async def experiment(identity: str): return await service_request('GET','/experiments/'+identity)
     @router.post('/experiments/{identity}/control',dependencies=writes)
@@ -54,15 +59,12 @@ def mission_router(current_user, admin, runtime_mode):
     @router.get('/experiments/{identity}/export')
     async def experiment_export(identity: str,format: str='json'):
         from fastapi.responses import Response
-        if format not in ('json','csv'): raise HTTPException(422,'Unsupported export format')
+        if format not in ('json','csv','md','manifest'): raise HTTPException(422,'Unsupported export format')
         state=await service_request('GET','/experiments/'+identity)
-        import json, csv, io
-        if format=='json': content=json.dumps(state,indent=2)
-        else:
-            from simulation.swarm.experiments import CSV_FIELDS
-            fields=CSV_FIELDS
-            output=io.StringIO(); writer=csv.DictWriter(output,fieldnames=fields,extrasaction='ignore'); writer.writeheader(); writer.writerows(state.get('results',[])); content=output.getvalue()
-        return Response(content,media_type='application/json' if format=='json' else 'text/csv',
+        from simulation.swarm.experiments import export_state
+        try: content=export_state(state,format)
+        except ValueError as exc: raise HTTPException(422,str(exc)) from exc
+        return Response(content,media_type={'json':'application/json','csv':'text/csv','md':'text/markdown','manifest':'application/json'}[format],
             headers={'Content-Disposition':f'attachment; filename="flare-{identity}.{format}"'})
     @router.get('/experiments/{identity}/traces/{filename}')
     async def experiment_trace(identity: str,filename: str):

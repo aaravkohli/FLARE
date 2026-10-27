@@ -6,7 +6,7 @@ Candidate evaluation owns copies of topology state and never draws randomness.
 from __future__ import annotations
 
 from collections import defaultdict, deque
-from copy import deepcopy
+from copy import copy, deepcopy
 from dataclasses import dataclass, field
 import heapq
 import math
@@ -59,17 +59,22 @@ class Candidate:
     observed_edges: int = 0
     modeled_edges: int = 0
     admissible: bool = True
+    resilience: dict | None = None
+    service_admissible: bool = True
+    services: dict = field(default_factory=dict)
 
     @property
     def connectivity(self):
         return len(self.data_pairs) + len(self.control_nodes)
 
     def diagnostic(self):
-        return dict(topology=self.topology, score=self.score, net_score=self.score-self.penalty,
+        result=dict(topology=self.topology, score=self.score, net_score=self.score-self.penalty,
                     transition_penalty=self.penalty, factors=self.factors,
                     data_pairs=len(self.data_pairs), control_routes=len(self.control_nodes),
                     edges=len(self.edges), admissible=self.admissible,
                     observed_edges=self.observed_edges, estimated_edges=self.modeled_edges)
+        if self.resilience is not None: result.update(resilience=self.resilience,service_admissible=self.service_admissible)
+        return result
 
 
 def paths_from(adjacency, source, targets=None):
@@ -205,6 +210,13 @@ class AdaptiveTopology:
         self.offered[-1][1][source,destination,category]+=size
 
     def demands(self):
+        rates,evidence=self.base_demands()
+        if self.engine.observability.enabled:
+            rates=dict(rates)
+            for key,value in self.engine.observability.demands().items(): rates.setdefault(key,value)
+        return rates,evidence
+
+    def base_demands(self):
         e=self.engine; cutoff=e.seconds-self.policy.window_s
         while self.offered and self.offered[0][0]<cutoff: self.offered.popleft()
         if self.offered:
@@ -213,6 +225,10 @@ class AdaptiveTopology:
             for _,offers in self.offered:
                 for key,size in offers.items(): rates[key]+=size/duration
             return rates, 'offered_mesh_traffic'
+        if e.cfg.get('reference_nominal_demand'):
+            if e.seconds>=e.cfg.get('traffic_stop_s',float('inf')): return {}, 'no_offered_reference_traffic'
+            from simulation.swarm.reference_workload import nominal_demands
+            return nominal_demands(e), 'nominal_reference_schedule_estimate'
         rates=defaultdict(float); ids=list(e.nodes)
         # Long-run rates of the existing mission traffic schedule, not new traffic.
         for i,n in enumerate(ids):
@@ -228,14 +244,21 @@ class AdaptiveTopology:
                 rates[n,peers[0],'routing']+=96/7
         return rates, 'nominal_schedule_estimate'
 
-    def candidate(self, name, physical, rates, measurements):
+    def candidate(self, name, physical, rates, measurements, impaired=None):
         e=self.engine
         rates=dict(rates)
+        assist=e.assistance.enabled and any(n['degraded'] for n in e.assistance.nodes.values())
+        if assist:
+            for flow in e.assistance.flows:rates.setdefault(flow,0.)
+            for n,state in e.assistance.nodes.items():
+                if state['degraded']:rates.setdefault((n,'base','heartbeat'),0.)
         # Idle installed policies still constrain connectivity, without adding
         # invented offered traffic or biasing the traffic-weighted score.
         for flow in e.flows.values():
             if flow['family']=='mesh': rates.setdefault((flow['source'],flow['destination'],flow['traffic_class']),0.)
-        clones=deepcopy(list(e.nodes.values()))
+        # Topology generation writes only the scalar cluster field. Nested flight
+        # state is read-only here; a private shallow node preserves that contract.
+        clones=[copy(node) for node in e.nodes.values()]
         previous,state=self.hypotheses.get(name,(set(),{}))
         if name==e.topology: previous,state=set(e.links),e.topology_state
         state=deepcopy(state)
@@ -244,8 +267,9 @@ class AdaptiveTopology:
         raw=e.physical_links
         permitted={edge:link for edge,link in (physical if name=='self_healing_mesh' else raw).items() if 'base' not in edge}
         edges,heads=topology_edges(name,clones,permitted,previous,state,e.seconds,e.cfg.get('discovery_timeout_s',.6))
-        links={edge:e.attacks.impair(raw[edge],'mesh',edge) for edge in edges}
-        links.update({edge:e.attacks.impair(link,'mesh',edge) for edge,link in raw.items() if 'base' in edge})
+        impaired=impaired if impaired is not None else {edge:e.attacks.impair(link,'mesh',edge) for edge,link in raw.items()}
+        links={edge:impaired[edge] for edge in edges}
+        links.update({edge:link for edge,link in impaired.items() if 'base' in edge})
         if 'mesh' in e.failed_families: links={}
         c=Candidate(name,edges,heads,state,{n.id:n.cluster for n in clones},links)
         # Evaluation state is private. It supports stable hypothetical head discovery.
@@ -271,6 +295,9 @@ class AdaptiveTopology:
             if excluded.intersection(route) or any(pair(a,b) in blocked for a,b in zip(route,route[1:])):
                 route=shortest_path({edge:l for edge,l in links.items() if not excluded.intersection(edge)},source,dest,nodes,e.blocked|e.auto_blocked|blocked,control=is_control)
             if category not in constraints.get('allowed_traffic_classes',[category]): route=[]
+            if assist and route and (e.autonomy.enabled or e.autonomy.interfaces) and not e.autonomy.permitted(route,'mesh',constraints):
+                permitted={edge:link for edge,link in links.items() if e.autonomy.permitted(list(edge),'mesh') and not excluded.intersection(edge)}
+                route=shortest_path(permitted,source,dest,nodes,e.blocked|e.auto_blocked|blocked,control=is_control)
             if len(route)<2 or 'mesh' in e.failed_families: continue
             c.required.add((source,dest,category))
             demand_routes[source,dest,category]=route
@@ -292,6 +319,7 @@ class AdaptiveTopology:
                     estimated.add(edge)
             components=(control_redundant if is_control else base_redundant) if 'base' in (source,dest) else (control_peer if is_control else redundant)
             alternative=source in components and components.get(source)==components.get(dest)
+            if assist:c.services[source,dest,category]=dict(delivery=delivery,reliability=delivery*(.8+.2*alternative),delay_ms=delay,route=route[:],capacity=0.)
             utilities['reliability']+=rate*delivery*(.8+.2*alternative)/total
             utilities['latency']+=rate/(1+delay/50)/total
         capacity=0.
@@ -299,7 +327,9 @@ class AdaptiveTopology:
             if key not in c.required: continue
             route=demand_routes[key]
             load=max((radios[n] for n in route),default=0.)
-            capacity+=rate*min(1.,(1-self.policy.headroom)/max(1e-12,load))/total
+            utility=min(1.,(1-self.policy.headroom)/max(1e-12,load))
+            if assist:c.services[key]['capacity']=utility
+            capacity+=rate*utility/total
         available=sum(n.available and n.health>0 and n.containment!='quarantined' for n in clones)
         maintenance=min(1.,len(edges)/max(1,8*available))
         burden=min(1.,max((use/max(.01,nodes[n].battery) for n,use in transit.items() if n in nodes),default=0.))
@@ -313,21 +343,37 @@ class AdaptiveTopology:
     def evaluate(self, force=False):
         e=self.engine; now=e.seconds
         if not force and self.last_evaluation is not None and now-self.last_evaluation<self.policy.evaluation_s-1e-9: return
+        with e.performance.measure('selection'): return self._evaluate(now)
+    def _evaluate(self,now):
+        e=self.engine
         self.last_evaluation=now
+        e.assistance.update(now)
         rates,self.demand_evidence=self.demands(); measurements=defaultdict(list)
         for at,family,edge,ok,latency in e.scheduler.channel_observations:
             if family=='mesh' and now-self.policy.window_s<=at<=now: measurements[edge].append((ok,latency))
         physical=e.permitted_physical_links()
         names=list(TOPOLOGIES)+([e.topology] if e.topology not in TOPOLOGIES else [])
-        self.candidates={name:self.candidate(name,physical,rates,measurements) for name in names}
+        impaired={edge:e.attacks.impair(link,'mesh',edge) for edge,link in e.physical_links.items()}
+        self.candidates={name:self.candidate(name,physical,rates,measurements,impaired) for name in names}
         incumbent=self.candidates[e.topology]
         for c in self.candidates.values():
             c.admissible=incumbent.data_pairs<=c.data_pairs and incumbent.control_nodes<=c.control_nodes and incumbent.required<=c.required
+        if e.resilience.enabled:
+            assessments={name:e.resilience.assess(c) for name,c in self.candidates.items()}
+            current=assessments[e.topology]
+            for name,c in self.candidates.items():
+                assessment=assessments[name]
+                c.service_admissible=(not e.resilience.packet_aware or assessment['missed_packets']<=current['missed_packets']) and (not e.resilience.observation_guard or current['feasible_reports']<=assessment['feasible_reports'])
+                c.resilience=e.resilience.public_assessment(assessment)
+        e.assistance.choose(self.candidates,incumbent)
         return self.best()
 
-    def best(self):
+    def best(self,emergency=False):
         e=self.engine
-        choices=[c for c in self.candidates.values() if c.admissible and c.topology in TOPOLOGIES and self.blacklist.get(c.topology,-1)<=e.seconds]
+        permitted=self.candidates.values() if emergency else e.assistance.ordinary_allowed(self.candidates,self.candidates[e.topology])
+        choices=[c for c in permitted if c.admissible and (c.service_admissible or emergency) and c.topology in TOPOLOGIES and self.blacklist.get(c.topology,-1)<=e.seconds]
+        if emergency and e.resilience.enabled:
+            return max(choices,key=lambda c:(c.connectivity,-(c.resilience or {}).get('missed_packet_count',0),len((c.resilience or {}).get('feasible_reports',[])),c.score-c.penalty,c.topology==e.topology,-TOPOLOGIES.index(c.topology)),default=None)
         return max(choices,key=lambda c:(c.connectivity,c.score-c.penalty,c.topology==e.topology,-TOPOLOGIES.index(c.topology)),default=None)
 
     def request(self, target, reason, automatic=False):
@@ -335,24 +381,48 @@ class AdaptiveTopology:
         if target==e.topology:
             self.reason=reason; return
         if self.transition: self.cancel('Superseded by a new topology request')
+        guarded=None
+        assisted=bool(e.assistance.proposal and e.assistance.proposal['target']==target and automatic and reason.startswith('Affected UAV'))
+        if e.autonomy.enabled or assisted:
+            guarded=self.candidate(target,e.permitted_physical_links(),self.demands()[0],{})
+            try:e.autonomy.start_guard(target,guarded,e.assistance.flows_to_verify(guarded) if assisted else None)
+            except ValueError as exc:
+                if not automatic:raise
+                self.last_transition='rejected';self.reason=str(exc);self.blacklist[target]=e.seconds+self.policy.blacklist_s
+                e.autonomy.counters['prevented_transitions']+=1
+                e.event('RECOVERY','automatic_transition_rejected',dict(target=target,reason=str(exc)));return
         self.transition=dict(target=target,previous=e.topology,previous_state=deepcopy(e.topology_state),
                              phase='draining',started=e.seconds,deadline=e.seconds+self.policy.drain_s,
                              affected={p.id for p in e.scheduler.packets.values() if p.family=='mesh'},
-                             checks=0,reason=reason,automatic=automatic,prepared=None)
+                             checks=0,reason=reason,automatic=automatic,prepared=None,assisted=assisted)
+        if assisted:e.assistance.requested()
         self.last_transition='draining'; self.reason=reason; e.revision+=1
         e.event('NETWORK','topology_transition_started',dict(target=target,previous=e.topology,reason=reason,deadline=self.transition['deadline']))
-        try: self.transition['prepared']=self.candidate(target,e.permitted_physical_links(),self.demands()[0],{})
+        try:
+            self.transition['prepared']=guarded or self.candidate(target,e.permitted_physical_links(),self.demands()[0],{})
+            if guarded:
+                self.transition['phase']='verifying';self.last_transition='verifying'
+            elif e.resilience.packet_aware:
+                e.resilience.prepare(self.transition,self.transition['prepared']); self.last_transition='preparing'
         except (ValueError,RuntimeError) as exc: self.fail(str(exc))
 
     def cancel(self, reason):
         if not self.transition: return
+        if self.transition.get('assisted'):self.engine.assistance.completed(False,reason,cancelled=True)
+        self.engine.resilience.complete('cancelled')
+        self.engine.autonomy.guard=None
         self.transition=None; self.last_transition='cancelled'; self.winner=None; self.wins=0
         self.engine.event('NETWORK','topology_transition_cancelled',{'reason':reason})
         self.release_deferred()
 
     def release_deferred(self):
         e=self.engine
-        for identity in list(e.scheduler.deferred):
+        identities=list(e.scheduler.deferred)
+        # Set iteration depends on process hash randomization. Admission order
+        # affects shared-radio contention, so use stable original offer order.
+        # Apply to both policies: the control must be reproducible as well.
+        identities.sort(key=lambda identity:(e.scheduler.packets[identity].created_at,int(identity[1:])) if identity in e.scheduler.packets else (float('inf'),0))
+        for identity in identities:
             p=e.scheduler.packets.get(identity)
             if not p: continue
             try: route=e.ensure_route(p.source,p.destination,p.category,p.family)
@@ -361,6 +431,50 @@ class AdaptiveTopology:
 
     def before_rebuild(self):
         t=self.transition; e=self.engine
+        if t and t['phase']=='verifying':
+            outcome=e.autonomy.guard_step()
+            if outcome=='failed':raise RuntimeError('Replacement path round trips were not confirmed before deadline')
+            if outcome!='ready':return False
+            t['verified_paths']=[r[-1]['path'][:] for r in e.autonomy.guard['receipts'].values() if r]
+            g=e.autonomy.guard
+            t['verified_flows']=[((*g['flows'][key],g.get('categories',{}).get(key,'routing')),r[-1]['path'][:]) for key,r in g['receipts'].items() if r]
+            if t.get('assisted') and e.assistance.attempt:
+                e.assistance.attempt.update(verified_at=e.seconds,verified_routes=len(g['required']),minimum_probe_spacing_s=min((rows[1]['sent_at']-rows[0]['sent_at'] for rows in g['receipts'].values() if len(rows)>=2),default=None))
+            t['deadline']=e.seconds+self.policy.drain_s
+            e.resilience.prepare(t,t['prepared']);e.autonomy.guard=None;self.last_transition='preparing'
+        if t and t.get('enhanced'):
+            if t['phase']=='overlap':
+                if e.seconds>=t['deadline']-1e-9 or not set(e.resilience.leases).intersection(e.scheduler.packets):
+                    e.resilience.retire(t); t['committed_at']=e.seconds
+                    self.last_switch=e.seconds; self.last_transition='validating'; e.revision+=1
+                    return True
+                return False
+            if t['phase']=='preparing':
+                c=self.candidate(t['target'],e.permitted_physical_links(),self.demands()[0],{})
+                if (e.autonomy.enabled or t.get('assisted')) and any(not e.autonomy.permitted(path,'mesh') or any(pair(a,b) not in c.links for a,b in zip(path,path[1:])) for path in t.get('verified_paths',[])):
+                    raise RuntimeError('Verified replacement changed before forwarding commit')
+                if t.get('assisted') and any(not e.autonomy.verifier.flow_permitted(flow,path) for flow,path in t.get('verified_flows',[])):
+                    raise RuntimeError('Verified flow permission changed before forwarding commit')
+                if t.get('assisted'):
+                    incumbent=self.candidate(e.topology,e.permitted_physical_links(),self.demands()[0],{})
+                    old,new=e.assistance.metrics(incumbent),e.assistance.metrics(c)
+                    affected=[n for n,s in e.assistance.nodes.items() if s['degraded']]
+                    if e.assistance.bound(c,incumbent,new,old,affected):raise RuntimeError('Assisted cost limits changed before commit')
+                    node=e.assistance.attempt['node']
+                    if new['utilities'].get(node,0)-old['utilities'].get(node,0)<.10+c.penalty-1e-12:raise RuntimeError('Assisted target improvement no longer exceeds transition margin')
+                if t['automatic']:
+                    incumbent=self.candidate(e.topology,e.permitted_physical_links(),self.demands()[0],{})
+                    if not (incumbent.data_pairs<=c.data_pairs and incumbent.control_nodes<=c.control_nodes and incumbent.required<=c.required):
+                        raise RuntimeError('Prepared topology no longer preserves permitted connectivity')
+                    new,old=e.resilience.assess(c),e.resilience.assess(incumbent)
+                    safe=(not e.resilience.packet_aware or new['missed_packets']<=old['missed_packets']) and (not e.resilience.observation_guard or old['feasible_reports']<=new['feasible_reports'])
+                    if not safe and not t.get('emergency'):
+                        raise RuntimeError('Prepared transition no longer preserves modeled service budgets')
+                t['prepared']=c; e.resilience.begin(t,c); e.revision+=1
+                self.last_transition=t['phase']
+                if t['phase']=='validating': self.last_switch=e.seconds; t['committed_at']=e.seconds
+                return True
+            return False
         if not t or t['phase']!='draining': return False
         if t['affected'].intersection(e.scheduler.packets) and e.seconds<t['deadline']-1e-9: return False
         # Re-prepare against current physical conditions, never a stale saved graph.
@@ -376,7 +490,8 @@ class AdaptiveTopology:
 
     def after_rebuild(self, committed=False):
         e=self.engine; t=self.transition
-        if t and t['phase']=='validating':
+        e.assistance.update(e.seconds)
+        if t and t['phase'] in ('validating','overlap'):
             try:
                 # Reinstall mesh routes together; no packet history or counters are restored.
                 failed=False
@@ -401,13 +516,18 @@ class AdaptiveTopology:
                 if failed: raise RuntimeError('Forwarding installation was not confirmed')
             except (ValueError, RuntimeError) as exc:
                 self.fail(str(exc)); return
+            if t['phase']=='overlap':
+                self.release_deferred()
+                return
             if committed:
                 e.event('NETWORK','topology_transition_committed',dict(topology=e.topology,previous=t['previous']))
                 self.release_deferred()
             else: t['checks']+=1
             if t['checks']>=self.policy.validation_rebuilds:
+                if t.get('assisted'):e.assistance.completed(True)
                 self.last_transition='idle'; self.transition=None
                 self.reason=t['reason']; self.winner=None; self.wins=0; self.fallback=None
+                e.resilience.complete('completed')
                 e.event('NETWORK','topology_transition_completed',dict(topology=e.topology,reason=self.reason))
             return
         if e.topology_mode!='auto': return
@@ -422,18 +542,34 @@ class AdaptiveTopology:
         if emergency: self.last_emergency=e.seconds
         first=self.last_evaluation is None
         best=self.evaluate(force=first or emergency)
+        if emergency and (e.resilience.enabled or e.assistance.enabled):
+            best=self.best(emergency=True)
         if not best or self.transition: return
         current=self.candidates[e.topology]
-        if best.topology==e.topology:
+        if best.topology==e.topology and not e.assistance.proposal:
             self.winner=None; self.wins=0
             self.reason=f'{len(e.nodes)} UAVs · {len(current.edges)} links; best balance of delivery, delay and relay load' if not (loss or constrained) else 'Physical or policy constraints limit connectivity; retaining permitted graph'
+            if e.resilience.enabled and any(not c.service_admissible for c in self.candidates.values()):
+                self.reason+=' · alternatives would worsen modeled deadlines or evidence coverage'
             return
         if first and e.seconds==0 and not e.scheduler.generated:
             self.request(best.topology,f'Initial balance for {len(e.nodes)} UAVs · {len(best.edges)} links · nominal traffic estimates',True)
         elif first and e.topology not in TOPOLOGIES:
             self.request(best.topology,'Auto initialized from legacy topology · best permitted primary candidate',True)
         elif emergency and best.connectivity>current.connectivity:
-            self.request(best.topology,f'Emergency recovery · restores {len(best.data_pairs-current.data_pairs)} peer pairs and {len(best.control_nodes-current.control_nodes)} control routes',True)
+            reason=f'Emergency recovery · restores {len(best.data_pairs-current.data_pairs)} peer pairs and {len(best.control_nodes-current.control_nodes)} control routes'
+            if e.resilience.enabled and not best.service_admissible:
+                reason+=' · modeled service budgets remain unmet; least harmful connectivity recovery'
+            self.request(best.topology,reason,True)
+            if self.transition: self.transition['emergency']=True
+        elif e.assistance.enabled and e.assistance.proposal:
+            a=e.assistance;target=a.proposal['target'];token=(a.proposal['node'],target)
+            a.wins=a.wins+1 if a.winner==token else 1;a.winner=token
+            a.reason=f'Assistance {a.wins}/3 evaluations; cooldown {self.cooldown_remaining():.1f}s'
+            if a.wins>=3 and self.cooldown_remaining()<=1e-9:
+                self.request(target,f'Affected UAV {a.proposal["node"]} · estimated Mesh service improvement',True)
+                a.winner=None;a.wins=0
+            else:self.reason=a.reason
         elif best.score-best.penalty-current.score>=self.policy.improvement-1e-12:
             self.wins=self.wins+1 if self.winner==best.topology else 1; self.winner=best.topology
             if self.wins>=self.policy.consecutive_wins and self.cooldown_remaining()<=1e-9:
@@ -446,7 +582,10 @@ class AdaptiveTopology:
     def fail(self, reason):
         e=self.engine; t=self.transition
         if not t: return
+        if t.get('assisted'):e.assistance.completed(False,reason)
         self.blacklist[t['target']]=e.seconds+self.policy.blacklist_s
+        e.resilience.complete('failed')
+        e.autonomy.guard=None
         self.transition=None; self.last_transition='failed'; self.fallback=reason
         self.reason=f'Transition failed; restored {t["previous"].replace("_"," ")}'
         e.topology=t['previous']; e.topology_state=deepcopy(t['previous_state']); e.revision+=1
@@ -470,10 +609,12 @@ class AdaptiveTopology:
 
     def snapshot(self):
         t=self.transition
-        return dict(mode=self.engine.topology_mode,reason=self.reason,evaluated_at=self.last_evaluation,
+        return dict(mode=self.engine.topology_mode,policy_id=self.engine.cfg.get('adaptive_policy','balanced_v1'),reason=self.reason,evaluated_at=self.last_evaluation,
                     switched_at=self.last_switch,transition_state=t['phase'] if t else self.last_transition,
                     requested_target=t['target'] if t else None,transition_started_at=t['started'] if t else None,
                     drain_deadline=t['deadline'] if t else None,cooldown_remaining_s=self.cooldown_remaining(),
                     evidence=getattr(self,'demand_evidence','nominal_schedule_estimate'),fallback=self.fallback,
                     candidates=[self.candidates[n].diagnostic() for n in TOPOLOGIES if n in self.candidates],
+                    assistance=self.engine.assistance.snapshot(),
+                    resilience=self.engine.resilience.snapshot() if self.engine.resilience.enabled else None,
                     blacklisted=[dict(topology=n,until=at) for n,at in sorted(self.blacklist.items()) if at>self.engine.seconds])

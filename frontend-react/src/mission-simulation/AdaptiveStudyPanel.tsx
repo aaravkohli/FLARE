@@ -1,0 +1,42 @@
+import {memo,useEffect,useState} from 'react';
+import type {MissionClient} from './missionClient';
+import type {TopologyMetadata} from './swarm';
+import {title} from './swarm';
+import {pairedValue,STUDY_SCENARIOS,studyResultView} from './study';
+import type {StudyState} from './study';
+import ExperimentResults from './ExperimentResults';
+import {RESULT_METRICS} from './world/workspacePresentation';
+
+function AdaptiveStudyPanel({client,topologies,protocolId='adaptive_resilience_v1'}:{client:MissionClient;topologies:TopologyMetadata[];protocolId?:'adaptive_resilience_v1'|'evidence_resilience_pilot_v1'}){
+ const resilience=protocolId==='evidence_resilience_pilot_v1';
+ const [preset,setPreset]=useState<'pilot'|'evidence'>('pilot'),[job,setJob]=useState<StudyState|null>(null),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const [scenario,setScenario]=useState('normal'),[baseline,setBaseline]=useState('self_healing_mesh');
+ const active=!!job&&!['completed','failed','cancelled'].includes(job.status);
+ useEffect(()=>{
+  if(!job?.id||!active)return;
+  let disposed=false,running=false;
+  async function poll(){if(running)return;running=true;try{const next=await client.experiment('/'+job!.id);if(!disposed){setJob(next);setError('');}}catch(e){if(!disposed)setError(e instanceof Error?e.message:'Study unavailable');}finally{running=false;}}
+  const timer=setInterval(()=>void poll(),1500);void poll();return()=>{disposed=true;clearInterval(timer);};
+ },[client,job?.id,active]);
+ async function run(){setBusy(true);setError('');try{setJob(await client.experiment('',{mode:'adaptive_study',protocol_id:protocolId,preset:resilience?'pilot':preset}));}catch(e){setError(`Study request failed or could not be confirmed: ${e instanceof Error?e.message:'connection unavailable'}. The request is not automatically repeated.`);}finally{setBusy(false);}}
+ async function cancel(){if(!job)return;setBusy(true);try{await client.experiment('/'+job.id+'/control',{action:'cancel'});setJob(await client.experiment('/'+job.id));}catch(e){setError(e instanceof Error?e.message:'Cancellation unavailable');}finally{setBusy(false);}}
+ async function download(format:string){if(!job)return;try{await client.download(`/${job.id}/export?format=${format}`,`flare-adaptive-study-${job.id}.${format==='manifest'?'manifest.json':format}`);}catch(e){setError(e instanceof Error?e.message:'Export unavailable');}}
+ const view=job?studyResultView(job,scenario):null,total=job?.protocol?.total_runs??(resilience?72:preset==='pilot'?165:550);
+ const labels=resilience?[['balanced_control','Balanced control'],['packet_transition','Packet transitions'],['observability_guard','Observability guard'],['combined','Combined safeguards']].map(([id,label])=>({id,label,description:'Exploratory ablation',suggested_formation:'distributed'})):[{id:'auto',label:'Auto (balanced)',description:'Adaptive topology policy',suggested_formation:'distributed'},...topologies];
+ const stats=job?.statistics?.filter(r=>r.scenario===scenario&&r.baseline===(resilience&&baseline==='self_healing_mesh'?'balanced_control':baseline))??[];
+ return <section className="network-experiment adaptive-study" aria-label="Adaptive resilience study">
+  <div className="experiment-configuration"><label>Study preset<select aria-label="Study preset" disabled={active} value={resilience?'pilot':preset} onChange={e=>setPreset(e.target.value as 'pilot'|'evidence')}><option value="pilot">Exploratory pilot · seeds 7, 42, 99</option>{!resilience&&<option value="evidence">Held-out evidence · seeds 1001–1010</option>}</select></label><span className="configuration-summary">{protocolId} · 30 UAVs · {resilience?'6 scenarios · 4 ablations':'5 scenarios · 11 policies'} · {total} runs</span></div>
+  <div className="experiment-action-toolbar"><button className="swarm-primary" disabled={active||busy} onClick={()=>void run()}>Run adaptive study</button>{active&&<button disabled={busy} onClick={()=>void cancel()}>Cancel study</button>}{job&&<><span>{error?'Last reported: ':''}{title(job.status)} · {job.status==='completed'?'Final':'Partial retained'} results</span><progress aria-label="Study progress" value={job.progress} max="1"/><output>{job.results.length} / {total} runs · {(job.progress*100).toFixed(1)}%</output>{active&&<span>{title(job.current_scenario??'Preparing')} · {title(job.current_policy??'—')} · seed {job.current_seed??'—'}</span>}</>}</div>
+  {(error||job?.error)&&<p role="alert" className="swarm-error">{error||job?.error}</p>}
+  <p className="swarm-note">{resilience?'Four ablations with identical report capture schedules. Protected scheduling is enabled only in the observability and combined arms.':'Auto versus ten fixed Manual policies.'} 5s warmup, 60 measured traffic seconds, then {job?.protocol?.ttl_drain_s??20}s TTL drain. Mesh-only reference routing; FL/DQN inference and satellite excluded. {resilience?'Exploratory pilot; model inference excluded.':'Evidence: 550 runs. Use the pilot for exploration, never evidence seeds for tuning.'}</p>
+  {job&&<><div className="experiment-result-heading"><label>Result scenario<select aria-label="Study result scenario" value={scenario} onChange={e=>setScenario(e.target.value)}>{(resilience?[...STUDY_SCENARIOS,'single_failure']:STUDY_SCENARIOS).map(s=><option key={s} value={s}>{title(s)}</option>)}</select></label><div>{(['json','csv','md','manifest'] as const).map(f=><button key={f} onClick={()=>void download(f)}>Export {f==='md'?'report':f.toUpperCase()}</button>)}</div></div>
+   {view&&<ExperimentResults key={job.id} job={view} topologies={labels} client={client} onError={setError} study={job}/>}
+   <details className="experiment-methodology"><summary>Statistical summary · {resilience?'Combined − ablation':'Auto − fixed policy'}</summary><label>Baseline<select aria-label="Study statistical baseline" value={resilience&&baseline==='self_healing_mesh'?'balanced_control':baseline} onChange={e=>setBaseline(e.target.value)}>{(resilience?labels.filter(l=>l.id!=='combined'):topologies).map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label><p>{resilience?'All comparisons are exploratory; three seeds do not establish general superiority.':'Primary: delivery versus Self-healing Mesh. Other comparisons are exploratory.'} 10,000 paired seed-level percentile-bootstrap resamples. Intervals require at least two valid pairs.</p>
+   <div className="experiment-table-scroll"><table><thead><tr><th>Metric</th><th>Valid pairs</th><th>Mean difference</th><th>95% interval</th><th>Conditioning</th></tr></thead><tbody>{stats.map(r=><tr key={r.metric}><th>{RESULT_METRICS.find(m=>m.key===r.metric)?.label??title(r.metric)}{r.metric==='pdr'?' (pp)':RESULT_METRICS.find(m=>m.key===r.metric)?.unit?' ('+RESULT_METRICS.find(m=>m.key===r.metric)!.unit+')':''}</th><td>{r.valid_pairs}</td><td>{pairedValue(r.mean_difference,r.metric==='throughput_mbps'?6:3)}</td><td>{r.interval_95?r.interval_95.map(v=>pairedValue(v,r.metric==='throughput_mbps'?6:3)).join(' to '):'Unavailable'}</td><td>{r.conditioning}</td></tr>)}</tbody></table>{!stats.length&&<p>Summaries become available when the batch completes or is cancelled. Missing pairs and measurements remain unavailable.</p>}</div></details>
+   {!!job.trace_files?.length&&<details className="experiment-traces"><summary>Compressed run traces ({job.trace_files.length})</summary>{job.trace_files.map(file=><button key={file} onClick={()=>void client.download(`/${job.id}/traces/${file}`,file).catch((e:Error)=>setError(e.message))}>{file}</button>)}</details>}
+  </>}
+  <details className="experiment-methodology"><summary>Study methodology and limitations</summary><p>Individual seed observations; no chart aggregation. Arms share identities, motion, peer offers, radio and scenario schedules with keyed channel draws. Partition cuts links by policy. Congestion v3 adds five 100-packet/s peer flows of 4096 bytes during [8,25)s; background load is excluded from the primary cohort.</p><p>Latency and hops describe delivered packets; recovery describes recovered flows. Unrecovered flows remain explicit. Resource cost is an uncalibrated proxy. Startup demand is estimated. Legacy v2 Base-directed congestion did not load the mesh-only scheduler; historical artifacts remain unchanged. Wall-clock timings are excluded from scientific hashes.</p>{job?.source_sha256&&<p>Source: <code>{job.source_sha256}</code></p>}</details>
+ </section>;
+}
+
+export default memo(AdaptiveStudyPanel);

@@ -1,0 +1,47 @@
+{
+  "note": "Fresh private sources, shared compiled frontend assets and current model files. Command log timestamps are write/completion times.",
+  "records": [
+    {
+      "command": "venv/bin/python -m pytest -q tests/test_swarm_radio_bounds.py tests/test_swarm_hotpath_equivalence.py",
+      "log": "results/evidence_resilience/performance-improvement-v2/focused-tests.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "written_at_utc": "2026-10-25T18:06:51.479438+00:00"
+    },
+    {
+      "command": "venv/bin/python -m scripts.profile_swarm_hotpaths --baseline /private/tmp/flare-resilience-hotpaths-baseline-v2 --directory results/evidence_resilience/performance-improvement-v2/matched --repeats 3 --seconds 5",
+      "log": "results/evidence_resilience/performance-improvement-v2/matched-profile.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "written_at_utc": "2026-10-25T18:11:21.529532+00:00"
+    },
+    {
+      "command": "venv/bin/python -m scripts.verify_swarm_hotpaths --input results/evidence_resilience/pilot-accepted-verified --directory results/evidence_resilience/performance-improvement-v2/scenario-equivalence",
+      "log": "results/evidence_resilience/performance-improvement-v2/scenario-verification.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "written_at_utc": "2026-10-25T18:13:45.516974+00:00"
+    },
+    {
+      "command": "venv/bin/python -m pytest -q --basetemp=/private/tmp/flare-radio-bound-regressions",
+      "log": "results/evidence_resilience/performance-improvement-v2/python-full.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "written_at_utc": "2026-10-25T18:18:06.742147+00:00"
+    },
+    {
+      "command": "env FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=3d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_ARTIFACT_DIR=/private/tmp/flare-radio-profile-before npm --prefix /private/tmp/flare-radio-browser-before/frontend-react run test:browser -- mesh-performance.spec.ts",
+      "log": "results/evidence_resilience/performance-improvement-v2/browser-before.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "written_at_utc": "2026-10-25T18:19:51.091742+00:00"
+    },
+    {
+      "command": "env FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=3d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_ARTIFACT_DIR=/private/tmp/flare-radio-profile-after npm --prefix /private/tmp/flare-radio-browser-after/frontend-react run test:browser -- mesh-performance.spec.ts",
+      "log": "results/evidence_resilience/performance-improvement-v2/browser-after.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "written_at_utc": "2026-10-25T18:21:19.601337+00:00"
+    }
+  ]
+}

@@ -44,3 +44,16 @@ packets:
 fl:
   client_pool_size: 5
   transfer_timeout_s: 90.0
+# Opt-in only. Fixed experiments explicitly pin balanced_v1.
+adaptive_policy: balanced_v1
+resilience:
+  freshness_s: 3.0
+  fragment_bytes: 4096
+  max_report_bytes: 65536
+  protected_airtime_share: 0.10
+  packet_transitions: true
+  observation_guard: true
+  protected_scheduling: true
+
+# Individual Mesh service assistance is independent of flight autonomy.
+affected_uav_assist: false

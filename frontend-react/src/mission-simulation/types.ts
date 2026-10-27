@@ -127,6 +127,8 @@ export interface MissionTelemetryPayload {
   metrics: {
     drone_id: string;
     timestamp: number;
+    source_age_s?:number|null;
+    observation?:{report_id:string;epoch:number;clock:'simulation';captured_at:number;received_at:number;simulation_time:number;freshness_s:number}|null;
     source: 'synthetic' | 'live' | 'cached_live' | 'synthetic_fallback' | 'legacy_api_fallback';
     paths: MissionPathMetric[];
     gps?: MissionGpsInfo;

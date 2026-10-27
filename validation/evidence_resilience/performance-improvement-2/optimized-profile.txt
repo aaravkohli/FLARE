@@ -1,0 +1,58 @@
+         32282051 function calls (31141287 primitive calls) in 8.851 seconds
+
+   Ordered by: cumulative time
+   List reduced from 369 to 50 due to restriction <50>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      100    0.000    0.000    8.530    0.085 engine.py:186(tick)
+      100    0.002    0.000    8.530    0.085 engine.py:193(_tick)
+       25    0.000    0.000    4.691    0.188 engine.py:272(rebuild)
+       25    0.001    0.000    4.691    0.188 engine.py:277(_timed_rebuild)
+       25    0.167    0.007    4.690    0.188 engine.py:283(_rebuild)
+       25    0.007    0.000    3.227    0.129 adaptive_topology.py:439(after_rebuild)
+       23    0.001    0.000    2.881    0.125 adaptive_topology.py:331(evaluate)
+        4    0.015    0.004    2.880    0.720 adaptive_topology.py:335(_evaluate)
+      200    0.000    0.000    2.731    0.014 engine.py:86(timed_step)
+      200    0.430    0.002    2.730    0.014 network.py:268(step)
+        4    0.008    0.002    2.006    0.502 adaptive_topology.py:344(<dictcomp>)
+       40    0.247    0.006    1.999    0.050 adaptive_topology.py:246(candidate)
+    10947    0.915    0.000    1.164    0.000 network.py:62(shortest_path)
+       40    0.005    0.000    0.966    0.024 adaptive_topology.py:121(demand_paths)
+    19998    0.102    0.000    0.941    0.000 {built-in method builtins.sorted}
+       40    0.006    0.000    0.914    0.023 adaptive_topology.py:125(<dictcomp>)
+     4000    0.747    0.000    0.908    0.000 adaptive_topology.py:79(paths_from)
+        4    0.000    0.000    0.843    0.211 adaptive_topology.py:349(<dictcomp>)
+       40    0.001    0.000    0.843    0.021 resilience_control.py:62(assess)
+       40    0.023    0.001    0.842    0.021 observability.py:132(predict)
+   133149    0.101    0.000    0.753    0.000 network.py:250(pop_event)
+1136330/560251    0.289    0.000    0.635    0.000 {built-in method builtins.sum}
+   140171    0.120    0.000    0.605    0.000 engine.py:546(packet_allowed)
+574773/130107    0.347    0.000    0.604    0.000 copy.py:128(deepcopy)
+   133149    0.076    0.000    0.580    0.000 network.py:256(key)
+    15062    0.014    0.000    0.574    0.000 network.py:156(event)
+   191427    0.460    0.000    0.566    0.000 engine.py:363(valid_route)
+    10379    0.013    0.000    0.560    0.000 engine.py:403(ensure_route)
+    16083    0.028    0.000    0.537    0.000 network.py:111(snapshot)
+   126250    0.291    0.000    0.531    0.000 network.py:26(radio_link)
+    73093    0.164    0.000    0.493    0.000 network.py:239(protected_due)
+    35843    0.035    0.000    0.475    0.000 engine.py:379(route)
+       25    0.000    0.000    0.470    0.019 engine.py:847(snapshot)
+       25    0.002    0.000    0.469    0.019 engine.py:852(_snapshot)
+      100    0.214    0.002    0.468    0.005 movement.py:62(advance)
+      370    0.277    0.001    0.462    0.001 network.py:47(build_adjacency)
+44094/40494    0.064    0.000    0.447    0.000 copy.py:227(_deepcopy_dict)
+    13343    0.021    0.000    0.428    0.000 engine.py:391(policy_route)
+      100    0.002    0.000    0.423    0.004 observability.py:36(step)
+       65    0.010    0.000    0.389    0.006 topology.py:24(topology_edges)
+    36495    0.043    0.000    0.371    0.000 copy.py:201(_deepcopy_list)
+  7965959    0.346    0.000    0.346    0.000 {method 'get' of 'dict' objects}
+    32120    0.007    0.000    0.273    0.000 topology.py:36(nearest)
+       25    0.004    0.000    0.262    0.010 engine.py:862(<listcomp>)
+     2400    0.010    0.000    0.254    0.000 engine.py:596(send)
+     2500    0.001    0.000    0.250    0.000 movement.py:37(snapshot)
+        5    0.014    0.003    0.250    0.050 engine.py:786(raw_metrics)
+     2500    0.001    0.000    0.250    0.000 dataclasses.py:1263(asdict)
+109082/2500    0.105    0.000    0.248    0.000 dataclasses.py:1287(_asdict_inner)
+        5    0.001    0.000    0.213    0.043 engine.py:624(generate_traffic)
+
+

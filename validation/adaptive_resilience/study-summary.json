@@ -1,0 +1,479 @@
+{
+  "protocol": {
+    "id": "adaptive_resilience_v1",
+    "preset": "evidence",
+    "exploratory": false,
+    "count": 30,
+    "seeds": [
+      1001,
+      1002,
+      1003,
+      1004,
+      1005,
+      1006,
+      1007,
+      1008,
+      1009,
+      1010
+    ],
+    "scenarios": [
+      "normal",
+      "mobility",
+      "regional_jamming",
+      "congestion",
+      "partition_reconnection"
+    ],
+    "policies": [
+      "auto",
+      "full_mesh",
+      "partial_mesh",
+      "star",
+      "ring",
+      "tree",
+      "cluster_mesh",
+      "grid",
+      "random_geometric",
+      "hybrid_mesh",
+      "self_healing_mesh"
+    ],
+    "range_m": 350.0,
+    "warmup_s": 5.0,
+    "measured_traffic_s": 60.0,
+    "traffic_stop_s": 65.0,
+    "ttl_drain_s": 20.0,
+    "total_simulation_s": 85.0,
+    "total_runs": 550,
+    "reference_workload": "mesh_peer_reference_v3",
+    "partition_mechanism": "policy-imposed link cut, not physical movement",
+    "primary_comparison": "Auto minus fixed Self-healing Mesh delivery ratio",
+    "bootstrap_resamples": 10000,
+    "reference_policy": "mesh_only_trust_aware_shortest_path",
+    "model_inference": "excluded",
+    "nominal_demand": "512 bytes per UAV per second to opposite-index peer; estimates before offers",
+    "congestion": "five peer flows, 100 packets/s each, 4096 bytes, [8,25) simulation seconds"
+  },
+  "study_outcome": "Passed",
+  "completed_runs": 550,
+  "total_offered_packets": 2007500,
+  "measured_primary_packets": 990000,
+  "compressed_trace_bytes": 1120155823,
+  "execution_source_sha256": "2aa38e615d4e03e9933b8e8328da93e4b2eab8d3d99ff702b44ed80cdf62e136",
+  "serialization_source_sha256": "01b2ba0c508d784f0fa5ff1dd189a0a08827281f5bed716ec9480cf4ff9ec826",
+  "application_source_sha256": "a804b8e7a1fa62f451fad3b1b0e237c45a37940caa061f888f47b5c8ad691759",
+  "raw_results_sha256": "e09eb2028bf528745af07823da186182726fd0cb95439618503811f5692e5b8e",
+  "canonical_results_sha256": "fcfdfb134ebdecd202efeb28c75b526e9ce9b98f57e557e5ce1475a95e1ed9e0",
+  "recovery_roundoff_changes": 133,
+  "maximum_recovery_roundoff_ms": 1.0913936421275139e-11,
+  "primary_comparisons": [
+    {
+      "scenario": "normal",
+      "baseline": "self_healing_mesh",
+      "metric": "pdr",
+      "mean_difference": -2.9111111111111105,
+      "interval_95": [
+        -3.122222222222224,
+        -2.6722222222222216
+      ],
+      "valid_pairs": 10,
+      "missing_pairs": 0,
+      "resamples": 10000,
+      "unit": "percentage points",
+      "comparison": "primary",
+      "conditioning": "run-level"
+    },
+    {
+      "scenario": "mobility",
+      "baseline": "self_healing_mesh",
+      "metric": "pdr",
+      "mean_difference": 1.6111111111111112,
+      "interval_95": [
+        0.7999999999999996,
+        2.4111111111111123
+      ],
+      "valid_pairs": 10,
+      "missing_pairs": 0,
+      "resamples": 10000,
+      "unit": "percentage points",
+      "comparison": "primary",
+      "conditioning": "run-level"
+    },
+    {
+      "scenario": "regional_jamming",
+      "baseline": "self_healing_mesh",
+      "metric": "pdr",
+      "mean_difference": -1.9722222222222197,
+      "interval_95": [
+        -2.211111111111107,
+        -1.6944444444444429
+      ],
+      "valid_pairs": 10,
+      "missing_pairs": 0,
+      "resamples": 10000,
+      "unit": "percentage points",
+      "comparison": "primary",
+      "conditioning": "run-level"
+    },
+    {
+      "scenario": "congestion",
+      "baseline": "self_healing_mesh",
+      "metric": "pdr",
+      "mean_difference": -3.2444444444444445,
+      "interval_95": [
+        -3.5444444444444443,
+        -2.8777777777777747
+      ],
+      "valid_pairs": 10,
+      "missing_pairs": 0,
+      "resamples": 10000,
+      "unit": "percentage points",
+      "comparison": "primary",
+      "conditioning": "run-level"
+    },
+    {
+      "scenario": "partition_reconnection",
+      "baseline": "self_healing_mesh",
+      "metric": "pdr",
+      "mean_difference": -1.7888888888888865,
+      "interval_95": [
+        -2.022222222222221,
+        -1.5333333333333299
+      ],
+      "valid_pairs": 10,
+      "missing_pairs": 0,
+      "resamples": 10000,
+      "unit": "percentage points",
+      "comparison": "primary",
+      "conditioning": "run-level"
+    }
+  ],
+  "prior_interruptions": [
+    {
+      "id": "565d62ffece44073a65bc2c00acce2b7",
+      "status": "failed",
+      "error": "Insufficient study storage: 2.76 GiB free; 2.78 GiB projected including reserve. Retained results are available.",
+      "failed_runs": [
+        {
+          "scenario": "regional_jamming",
+          "seed": 1007,
+          "policy": "tree",
+          "error": "Insufficient study storage: 2.76 GiB free; 2.78 GiB projected including reserve. Retained results are available."
+        }
+      ],
+      "incomplete_traces": [
+        "regional_jamming-ring-1007.jsonl.gz",
+        "regional_jamming-grid-1007.jsonl.gz",
+        "regional_jamming-auto-1008.jsonl.gz",
+        "regional_jamming-cluster_mesh-1007.jsonl.gz",
+        "regional_jamming-self_healing_mesh-1007.jsonl.gz",
+        "regional_jamming-hybrid_mesh-1007.jsonl.gz",
+        "regional_jamming-tree-1007.jsonl.gz",
+        "regional_jamming-random_geometric-1007.jsonl.gz"
+      ]
+    },
+    {
+      "id": "8c9f0e163a1449988ff1aae85ac723ed",
+      "status": "failed",
+      "error": "Insufficient study storage: 5.16 GiB free; 5.96 GiB projected including reserve. Retained results are available.",
+      "failed_runs": [
+        {
+          "scenario": "congestion",
+          "seed": 1001,
+          "policy": "random_geometric",
+          "error": "Insufficient study storage: 5.16 GiB free; 5.96 GiB projected including reserve. Retained results are available."
+        }
+      ],
+      "incomplete_traces": [
+        "congestion-random_geometric-1001.jsonl.gz",
+        "congestion-auto-1002.jsonl.gz",
+        "congestion-full_mesh-1002.jsonl.gz",
+        "congestion-self_healing_mesh-1001.jsonl.gz",
+        "congestion-hybrid_mesh-1001.jsonl.gz",
+        "congestion-grid-1001.jsonl.gz"
+      ]
+    }
+  ],
+  "rendering": [
+    {
+      "view": "2d",
+      "outcome": "Passed",
+      "duration_wall_s": 60,
+      "clock_before": [
+        "T+0.1s"
+      ],
+      "clock_after": [
+        "T+33.6s"
+      ],
+      "simulation_advance_s": 33.5,
+      "approximate_clock_speed": 0.5583333333333333,
+      "canvases": [
+        {
+          "buffer_capacity": 72000,
+          "frame_count": 3532,
+          "dpr": 1,
+          "canvas_pixels": [
+            1082,
+            505
+          ],
+          "canvas_css": [
+            1082,
+            505
+          ],
+          "gpu": null,
+          "packet_visual": "authoritative-packet-events",
+          "average_fps": 58.73851879815536,
+          "fifth_percentile_fps": 59.523809523824994
+        }
+      ],
+      "simulation_performance": {
+        "status": "running",
+        "achieved_speed": 0.5455934676791906,
+        "relative_to_requested": 0.5455934676791906,
+        "clipped_wall_time_s": 28.820246583782136,
+        "timings": {
+          "selection": {
+            "samples": 35,
+            "mean_ms": 279.60087630365575,
+            "p95_ms": 332.8588749282062,
+            "max_ms": 390.97699988633394
+          },
+          "rebuilding": {
+            "samples": 181,
+            "mean_ms": 202.11257022877547,
+            "p95_ms": 456.0952091123909,
+            "max_ms": 530.4592920001596
+          },
+          "snapshot": {
+            "samples": 74,
+            "mean_ms": 20.75942963160373,
+            "p95_ms": 28.085999889299273,
+            "max_ms": 145.77899989672005
+          },
+          "scheduling": {
+            "samples": 256,
+            "mean_ms": 2.6440301353432005,
+            "p95_ms": 4.477000096812844,
+            "max_ms": 129.61170892231166
+          }
+        },
+        "sample_limit": 256,
+        "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+      },
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "model_services": {
+        "status": "ok",
+        "rl_loaded": true,
+        "fl_loaded": true,
+        "uptime_s": 10.1,
+        "mode": "simulation",
+        "sdn_controller": "mock",
+        "fl_client_manager": "unavailable",
+        "active_fl_clients": 0,
+        "deployment": {
+          "active_generation": 0,
+          "failed_generation": null,
+          "last_error": null,
+          "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-gfdjhadq/project/models/deployment_manifest.json",
+          "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+          "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+          "routing_contract": "routing_state_v3"
+        },
+        "version": "2.0.0"
+      },
+      "errors": []
+    },
+    {
+      "view": "3d",
+      "outcome": "Passed",
+      "duration_wall_s": 60,
+      "clock_before": [
+        "T+0.3s"
+      ],
+      "clock_after": [
+        "T+29.5s"
+      ],
+      "simulation_advance_s": 29.2,
+      "approximate_clock_speed": 0.48666666666666664,
+      "canvases": [
+        {
+          "buffer_capacity": 72000,
+          "frame_count": 3276,
+          "dpr": 1,
+          "canvas_pixels": [
+            919,
+            429
+          ],
+          "canvas_css": [
+            1082,
+            505
+          ],
+          "gpu": {
+            "vendor": "Google Inc. (Apple)",
+            "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+          },
+          "packet_visual": "authoritative-packet-events",
+          "site_details": "true",
+          "quality": "balanced",
+          "draw_calls": "203",
+          "geometries": "137",
+          "textures": "8",
+          "average_fps": 54.255477716500216,
+          "fifth_percentile_fps": 30.030030030027405
+        }
+      ],
+      "simulation_performance": {
+        "status": "running",
+        "achieved_speed": 0.4825685062725427,
+        "relative_to_requested": 0.4825685062725427,
+        "clipped_wall_time_s": 32.44202716858126,
+        "timings": {
+          "selection": {
+            "samples": 32,
+            "mean_ms": 354.3018112395657,
+            "p95_ms": 467.99212507903576,
+            "max_ms": 927.3606669157743
+          },
+          "rebuilding": {
+            "samples": 163,
+            "mean_ms": 234.35084329506645,
+            "p95_ms": 559.0883330442011,
+            "max_ms": 1148.3245419804007
+          },
+          "snapshot": {
+            "samples": 67,
+            "mean_ms": 21.723152298146665,
+            "p95_ms": 34.73758394829929,
+            "max_ms": 58.14824998378754
+          },
+          "scheduling": {
+            "samples": 256,
+            "mean_ms": 4.1231583836633945,
+            "p95_ms": 6.856874795630574,
+            "max_ms": 169.72999996505678
+          }
+        },
+        "sample_limit": 256,
+        "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+      },
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "model_services": {
+        "status": "ok",
+        "rl_loaded": true,
+        "fl_loaded": true,
+        "uptime_s": 9.58,
+        "mode": "simulation",
+        "sdn_controller": "mock",
+        "fl_client_manager": "unavailable",
+        "active_fl_clients": 0,
+        "deployment": {
+          "active_generation": 0,
+          "failed_generation": null,
+          "last_error": null,
+          "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-qj3oarv8/project/models/deployment_manifest.json",
+          "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+          "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+          "routing_contract": "routing_state_v3"
+        },
+        "version": "2.0.0"
+      },
+      "errors": []
+    },
+    {
+      "view": "compare",
+      "outcome": "Passed",
+      "duration_wall_s": 60,
+      "clock_before": [
+        "T+0.5s",
+        "T+0.5s"
+      ],
+      "clock_after": [
+        "T+23.2s",
+        "T+23.2s"
+      ],
+      "simulation_advance_s": 22.7,
+      "approximate_clock_speed": 0.3783333333333333,
+      "canvases": [
+        {
+          "buffer_capacity": 72000,
+          "frame_count": 3602,
+          "dpr": 1,
+          "canvas_pixels": [
+            693,
+            420
+          ],
+          "canvas_css": [
+            693,
+            420
+          ],
+          "gpu": null,
+          "packet_visual": "authoritative-packet-events",
+          "average_fps": 59.90254610766493,
+          "fifth_percentile_fps": 59.88023952094243
+        },
+        {
+          "buffer_capacity": 72000,
+          "frame_count": 3602,
+          "dpr": 1,
+          "canvas_pixels": [
+            694,
+            420
+          ],
+          "canvas_css": [
+            694,
+            420
+          ],
+          "gpu": null,
+          "packet_visual": "authoritative-packet-events",
+          "average_fps": 59.90254610766493,
+          "fifth_percentile_fps": 59.88023952094243
+        }
+      ],
+      "simulation_performance": null,
+      "hardware": {
+        "platform": "darwin",
+        "arch": "arm64",
+        "cpu": "Apple M2"
+      },
+      "browser": "155.0.8059.85",
+      "model_services": {
+        "status": "ok",
+        "rl_loaded": true,
+        "fl_loaded": true,
+        "uptime_s": 10.48,
+        "mode": "simulation",
+        "sdn_controller": "mock",
+        "fl_client_manager": "unavailable",
+        "active_fl_clients": 0,
+        "deployment": {
+          "active_generation": 0,
+          "failed_generation": null,
+          "last_error": null,
+          "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-2zo3msui/project/models/deployment_manifest.json",
+          "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+          "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+          "routing_contract": "routing_state_v3"
+        },
+        "version": "2.0.0"
+      },
+      "errors": []
+    }
+  ],
+  "cpu_ratios": [
+    1.3982647800847592,
+    1.3689730429844178,
+    1.3641348912298636
+  ],
+  "remote_ci_outcome": "Not Tested",
+  "hardware_rf_outcome": "Not Tested",
+  "raw_directory": "results/adaptive_resilience/evidence-v1-final",
+  "canonical_directory": "results/adaptive_resilience/evidence-v1-release"
+}

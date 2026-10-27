@@ -1,0 +1,431 @@
+{
+  "source_sha256": "bdfbe8a0c4d7d871c3f09f52d71d57113bb88dc7c5bbc1675a8e948f234927ca",
+  "protocol": "affected_uav_assist_exploratory_v1",
+  "note": "Three paired seed-level observations per cell. Pool designated flows inside a run, then average runs. Latency is delivered-packet conditioned. Exploratory; no universal-winner or convergence claim.",
+  "summaries": [
+    {
+      "scenario": "competing_affected",
+      "policy": "balanced_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 158.52688981172142,
+          "affected_latency_on_ms": 38.12000135316764,
+          "affected_latency_difference_ms": -120.40688845855378,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": -47.353608055399135,
+          "assisted_switches": 1,
+          "verification_failures": 0,
+          "added_control_packets": 12
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 158.64169551037168,
+          "affected_latency_on_ms": 38.20337298530664,
+          "affected_latency_difference_ms": -120.43832252506503,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": -47.35758357503578,
+          "assisted_switches": 1,
+          "verification_failures": 0,
+          "added_control_packets": 12
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 158.56421472611774,
+          "affected_latency_on_ms": 38.17676621469858,
+          "affected_latency_difference_ms": -120.38744851141917,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": -47.351603215260866,
+          "assisted_switches": 1,
+          "verification_failures": 0,
+          "added_control_packets": 12
+        }
+      ],
+      "mean_affected_delivery_off": 1.0,
+      "mean_affected_delivery_on": 1.0,
+      "mean_affected_latency_off_ms": 158.57760001607028,
+      "mean_affected_latency_on_ms": 38.16671351772429,
+      "assisted_switches": 3,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": -47.35426494856526
+    },
+    {
+      "scenario": "competing_affected",
+      "policy": "evidence_resilience_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 158.8166839383568,
+          "affected_latency_on_ms": 158.8166839383568,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 158.92618525176806,
+          "affected_latency_on_ms": 158.92618525176806,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 158.84489449361567,
+          "affected_latency_on_ms": 158.84489449361567,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        }
+      ],
+      "mean_affected_delivery_off": 1.0,
+      "mean_affected_delivery_on": 1.0,
+      "mean_affected_latency_off_ms": 158.86258789458017,
+      "mean_affected_latency_on_ms": 158.86258789458017,
+      "assisted_switches": 0,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": 0.0
+    },
+    {
+      "scenario": "direct_only",
+      "policy": "balanced_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 77.82760647863076,
+          "affected_latency_on_ms": 77.82760647863076,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 77.96340135066106,
+          "affected_latency_on_ms": 77.96340135066106,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 77.88639823289053,
+          "affected_latency_on_ms": 77.88639823289053,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        }
+      ],
+      "mean_affected_delivery_off": 1.0,
+      "mean_affected_delivery_on": 1.0,
+      "mean_affected_latency_off_ms": 77.89246868739411,
+      "mean_affected_latency_on_ms": 77.89246868739411,
+      "assisted_switches": 0,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": 0.0
+    },
+    {
+      "scenario": "direct_only",
+      "policy": "evidence_resilience_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 77.82884925490153,
+          "affected_latency_on_ms": 77.82884925490153,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 77.96340135066106,
+          "affected_latency_on_ms": 77.96340135066106,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 77.88712320431976,
+          "affected_latency_on_ms": 77.88712320431976,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        }
+      ],
+      "mean_affected_delivery_off": 1.0,
+      "mean_affected_delivery_on": 1.0,
+      "mean_affected_latency_off_ms": 77.89312460329411,
+      "mean_affected_latency_on_ms": 77.89312460329411,
+      "assisted_switches": 0,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": 0.0
+    },
+    {
+      "scenario": "recoverable_mesh",
+      "policy": "balanced_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 229.54704005477302,
+          "affected_latency_on_ms": 51.71289769247844,
+          "affected_latency_difference_ms": -177.83414236229459,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": -40.436361399173656,
+          "assisted_switches": 1,
+          "verification_failures": 0,
+          "added_control_packets": 12
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 229.68322357288707,
+          "affected_latency_on_ms": 51.73702912542899,
+          "affected_latency_difference_ms": -177.94619444745808,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": -40.44893288040258,
+          "assisted_switches": 1,
+          "verification_failures": 0,
+          "added_control_packets": 12
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 229.60619924628938,
+          "affected_latency_on_ms": 51.757653023448675,
+          "affected_latency_difference_ms": -177.8485462228407,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": -40.44269571481699,
+          "assisted_switches": 1,
+          "verification_failures": 0,
+          "added_control_packets": 12
+        }
+      ],
+      "mean_affected_delivery_off": 1.0,
+      "mean_affected_delivery_on": 1.0,
+      "mean_affected_latency_off_ms": 229.6121542913165,
+      "mean_affected_latency_on_ms": 51.735859947118705,
+      "assisted_switches": 3,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": -40.44266333146441
+    },
+    {
+      "scenario": "recoverable_mesh",
+      "policy": "evidence_resilience_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 230.11970672144108,
+          "affected_latency_on_ms": 230.11970672144108,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 230.25582357288832,
+          "affected_latency_on_ms": 230.25582357288832,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 1.0,
+          "affected_delivery_on": 1.0,
+          "affected_latency_off_ms": 230.1786881351796,
+          "affected_latency_on_ms": 230.1786881351796,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        }
+      ],
+      "mean_affected_delivery_off": 1.0,
+      "mean_affected_delivery_on": 1.0,
+      "mean_affected_latency_off_ms": 230.184739476503,
+      "mean_affected_latency_on_ms": 230.184739476503,
+      "assisted_switches": 0,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": 0.0
+    },
+    {
+      "scenario": "total_isolation",
+      "policy": "balanced_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 0.13333333333333333,
+          "affected_delivery_on": 0.13333333333333333,
+          "affected_latency_off_ms": 76.7300790713943,
+          "affected_latency_on_ms": 76.7300790713943,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 0.13333333333333333,
+          "affected_delivery_on": 0.13333333333333333,
+          "affected_latency_off_ms": 76.93850273351956,
+          "affected_latency_on_ms": 76.93850273351956,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 0.13333333333333333,
+          "affected_delivery_on": 0.13333333333333333,
+          "affected_latency_off_ms": 76.8242444353457,
+          "affected_latency_on_ms": 76.8242444353457,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        }
+      ],
+      "mean_affected_delivery_off": 0.13333333333333333,
+      "mean_affected_delivery_on": 0.13333333333333333,
+      "mean_affected_latency_off_ms": 76.83094208008652,
+      "mean_affected_latency_on_ms": 76.83094208008652,
+      "assisted_switches": 0,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": 0.0
+    },
+    {
+      "scenario": "total_isolation",
+      "policy": "evidence_resilience_v1",
+      "valid_pairs": 3,
+      "pairs": [
+        {
+          "seed": 7,
+          "affected_delivery_off": 0.13333333333333333,
+          "affected_delivery_on": 0.13333333333333333,
+          "affected_latency_off_ms": 77.30516240472762,
+          "affected_latency_on_ms": 77.30516240472762,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 42,
+          "affected_delivery_off": 0.13333333333333333,
+          "affected_delivery_on": 0.13333333333333333,
+          "affected_latency_off_ms": 77.5138360668529,
+          "affected_latency_on_ms": 77.5138360668529,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        },
+        {
+          "seed": 99,
+          "affected_delivery_off": 0.13333333333333333,
+          "affected_delivery_on": 0.13333333333333333,
+          "affected_latency_off_ms": 77.3992444353457,
+          "affected_latency_on_ms": 77.3992444353457,
+          "affected_latency_difference_ms": 0.0,
+          "fleet_delivery_difference_pp": 0.0,
+          "fleet_latency_difference_ms": 0.0,
+          "assisted_switches": 0,
+          "verification_failures": 0,
+          "added_control_packets": 0
+        }
+      ],
+      "mean_affected_delivery_off": 0.13333333333333333,
+      "mean_affected_delivery_on": 0.13333333333333333,
+      "mean_affected_latency_off_ms": 77.4060809689754,
+      "mean_affected_latency_on_ms": 77.4060809689754,
+      "assisted_switches": 0,
+      "mean_fleet_delivery_difference_pp": 0.0,
+      "mean_fleet_latency_difference_ms": 0.0
+    }
+  ]
+}

@@ -14,22 +14,21 @@ import uuid
 from schemas.mission import TOPOLOGIES, ExperimentRequest
 from simulation.swarm.engine import SwarmEngine
 from simulation.swarm.scenarios import DEMO_PRESETS, schedule
+from simulation.swarm.reference_workload import install, REFERENCE_WORKLOAD, LEGACY_LIMITATION
 
 SIMULATOR_VERSION='flare_mesh_v2'
 CSV_FIELDS=['topology','seed','generated','delivered','dropped','pdr','average_latency_ms','jitter_ms','throughput_mbps','average_hops','connected_components','failed_routes','route_convergence_ms','service_recovery_ms','unrecovered_flows','conservation']
 
-def reference_engine(records,config,request,topology,seed):
+def reference_engine(records,config,request,topology,seed,automatic=False):
     cfg=deepcopy(config)
-    cfg.update(seed=seed,topology=topology,topology_mode='manual',default_count=request.count,formation='distributed',mesh_only=True,traffic_stop_s=request.duration_s)
+    cfg.pop('autonomy_mode',None);cfg.pop('safety_profile',None);cfg.pop('affected_uav_assist',None)
+    cfg.update(seed=seed,topology=topology,topology_mode='auto' if automatic else 'manual',adaptive_policy='balanced_v1',default_count=request.count,formation='distributed',mesh_only=True,traffic_stop_s=request.duration_s)
+    cfg.pop('observation_base_endpoint',None); cfg.pop('logical_channel_keys',None)
+    if automatic: cfg['reference_nominal_demand']=True
     cfg['radio']['range_m']=request.range_m
     e=SwarmEngine(records,cfg,isolated=True)
     e.scenario=request.scenario
-    ids=list(e.nodes)
-    def offered():
-        if e.seconds>=request.duration_s: return
-        for i,source in enumerate(ids):
-            e.send(source,ids[(i+len(ids)//2)%len(ids)],'sensor',512,'reference',family_override='mesh')
-    e.generate_traffic=offered
+    install(e,request.duration_s)
     return e
 
 def summarize(e,request,topology,seed,cohort):
@@ -41,8 +40,9 @@ def summarize(e,request,topology,seed,cohort):
         key=(p['source'],p['destination'])
         if key in by_flow: jitter.append(abs(latency-by_flow[key]))
         by_flow[key]=latency
-    route_times=[r['route_convergence_ms'] for r in e.recovery.values() if r.get('route_convergence_ms') is not None]
-    service_times=[r['service_recovery_ms'] for r in e.recovery.values() if r.get('service_recovery_ms') is not None]
+    recoveries=sorted(e.recovery.values(),key=lambda r:(r.get('source',''),r.get('destination','')))
+    route_times=[r['route_convergence_ms'] for r in recoveries if r.get('route_convergence_ms') is not None]
+    service_times=[r['service_recovery_ms'] for r in recoveries if r.get('service_recovery_ms') is not None]
     config_digest=hashlib.sha256(json.dumps(e.cfg,sort_keys=True,separators=(',',':')).encode()).hexdigest()
     return dict(configuration_sha256=config_digest,route_convergence_ms=sum(route_times)/len(route_times) if route_times else None,
         service_recovery_ms=sum(service_times)/len(service_times) if service_times else None,
@@ -52,7 +52,8 @@ def summarize(e,request,topology,seed,cohort):
         jitter_ms=sum(jitter)/len(jitter) if jitter else None,
         throughput_mbps=sum(p['size_bytes'] for p in delivered)*8/(request.duration_s-request.warmup_s)/1e6,
         average_hops=sum(p['hop'] for p in delivered)/len(delivered) if delivered else None,
-        connected_components=e.connected_components(),failed_routes=e.failed_routes,recovery=list(e.recovery.values()),
+        connected_components=e.connected_components(),failed_routes=e.failed_routes,
+        recovery=recoveries,
         conservation=e.scheduler.generated==e.scheduler.delivered+e.scheduler.dropped+len(e.scheduler.packets))
 
 def _atomic_json(filename,value):
@@ -62,16 +63,28 @@ def source_fingerprint():
     root=Path(__file__).resolve().parents[2]
     names=['schemas/mission.py', 'simulation/swarm/engine.py', 'simulation/swarm/network.py',
            'simulation/swarm/topology.py', 'simulation/swarm/adaptive_topology.py', 'simulation/swarm/movement.py', 'simulation/swarm/attacks.py',
-           'simulation/swarm/scenarios.py', 'simulation/swarm/terrain.py', 'simulation/swarm/experiments.py']
+           'simulation/swarm/scenarios.py', 'simulation/swarm/terrain.py', 'simulation/swarm/experiments.py',
+           'simulation/swarm/reference_workload.py', 'simulation/swarm/adaptive_study.py',
+           'simulation/swarm/study_statistics.py', 'simulation/swarm/performance.py',
+           'simulation/swarm/resilience_control.py', 'simulation/swarm/observability.py', 'simulation/swarm/resilience_study.py',
+           'simulation/swarm/resilience_analysis.py', 'schemas/autonomy.py',
+           'simulation/swarm/autonomy.py', 'simulation/swarm/flight_safety.py', 'simulation/swarm/recovery_scenarios.py', 'simulation/swarm/uav_assistance.py', 'simulation/swarm/route_verification.py']
     digest=hashlib.sha256()
     for name in names: digest.update(name.encode()+b'\0'+(root/name).read_bytes()+b'\0')
     return digest.hexdigest()
 
 def _worker(identity,payload,records,config,directory,commands):
+    if payload['mode']=='adaptive_study':
+        if payload['protocol_id']=='evidence_resilience_pilot_v1':
+            from simulation.swarm.resilience_study import study_worker
+            return study_worker(identity,payload,records,config,directory,commands)
+        from simulation.swarm.adaptive_study import study_worker
+        return study_worker(identity,payload,records,config,directory,commands)
     request=ExperimentRequest.model_validate(payload); directory=Path(directory)
     base=dict(id=identity,mode=request.mode,configuration=payload,simulation_config=deepcopy(config),fleet_records=deepcopy(records),
         source_sha256=source_fingerprint(),simulator_version=SIMULATOR_VERSION,
         routing_policy='mesh_only_trust_aware_shortest_path',evidence='packet_simulation',
+        reference_workload=REFERENCE_WORKLOAD,legacy_congestion_limitation=LEGACY_LIMITATION,
         scenario_schedule=schedule(request.scenario),model_inference='not_run_reference_policy',results=[],status='paused',progress=0.)
     filename=directory/'state.json'
     engines=[]; traces=[]; cohorts=[]
@@ -87,7 +100,10 @@ def _worker(identity,payload,records,config,directory,commands):
                 if event['kind']=='packet_result' and data.get('correlation_id')=='reference': cohort.append(data)
             e.trace_sink=sink; engines.append(e)
         base['terrain_provenance']=deepcopy(engines[0].terrain.provenance)
-    def publish(include_runs=False):
+    def publish(include_runs=False,finished=False):
+        # Do not let a terminal response race ahead of closed trace files. The
+        # frontend correctly stops polling once it receives a terminal state.
+        if base['status'] in ('completed','cancelled','failed') and not finished: return
         state=dict(base)
         if include_runs: state['runs']=[e.snapshot(include_flows=True) for e in engines]
         _atomic_json(filename,state)
@@ -143,12 +159,20 @@ def _worker(identity,payload,records,config,directory,commands):
         base.update(status='failed',error=str(exc)); publish()
     finally:
         for trace in traces: trace.close()
+        base['trace_files']=[p.name for p in sorted(directory.glob('*.jsonl.gz'))]
+        completed={f"{r['topology']}-{r['seed']}.jsonl.gz" for r in base['results']}
+        base['incomplete_traces']=[name for name in base['trace_files'] if name not in completed]
+        base['results_sha256']=hashlib.sha256(json.dumps(base['results'],sort_keys=True,separators=(',',':')).encode()).hexdigest()
+        publish(request.mode=='compare',finished=True)
 
 class ExperimentManager:
     def __init__(self,directory):
         self.directory=Path(directory); self.directory.mkdir(parents=True,exist_ok=True); self.jobs={}
     def create(self,request,engine):
-        if request.scenario not in DEMO_PRESETS: raise ValueError('unknown demonstration scenario')
+        if request.mode=='adaptive_study':
+            from simulation.swarm.adaptive_study import protocol
+            protocol(request.preset,engine.cfg['packets']['ttl_s'])
+        if request.mode!='adaptive_study' and request.scenario not in DEMO_PRESETS: raise ValueError('unknown demonstration scenario')
         if sum(job['process'].is_alive() for job in self.jobs.values())>=2:
             raise ValueError('two experiments are already active; cancel or finish one first')
         if request.mode=='benchmark': request=request.model_copy(update={'topologies':list(TOPOLOGIES)})
@@ -174,16 +198,25 @@ class ExperimentManager:
     def control(self,identity,action):
         state=self.state(identity)
         if state['status'] in ('completed','cancelled','failed'): raise ValueError('experiment has finished')
-        if state['mode']=='benchmark' and action!='cancel': raise ValueError('benchmarks support cancellation only')
+        if state['mode'] in ('benchmark','adaptive_study') and action!='cancel': raise ValueError('batch experiments support cancellation only')
         self.jobs[identity]['commands'].put(action)
         return dict(id=identity,accepted=True,action=action)
     def export(self,identity,format):
         state=self.state(identity)
-        if format=='json': return json.dumps(state,indent=2)
-        if format!='csv': raise ValueError('unsupported export format')
-        fields=CSV_FIELDS
-        output=io.StringIO(); writer=csv.DictWriter(output,fieldnames=fields,extrasaction='ignore'); writer.writeheader(); writer.writerows(state.get('results',[])); return output.getvalue()
+        return export_state(state,format)
     def close(self):
         for job in self.jobs.values():
             if job['process'].is_alive(): job['process'].terminate()
             job['process'].join(timeout=2); job['commands'].close()
+
+def export_state(state,format):
+        if state['mode']=='adaptive_study':
+            if state.get('protocol',{}).get('id')=='evidence_resilience_pilot_v1':
+                from simulation.swarm.resilience_study import export_study
+                return export_study(state,format)
+            from simulation.swarm.adaptive_study import export_study
+            return export_study(state,format)
+        if format=='json': return json.dumps(state,indent=2)
+        if format!='csv': raise ValueError('unsupported export format')
+        fields=CSV_FIELDS
+        output=io.StringIO(); writer=csv.DictWriter(output,fieldnames=fields,extrasaction='ignore'); writer.writeheader(); writer.writerows(state.get('results',[])); return output.getvalue()

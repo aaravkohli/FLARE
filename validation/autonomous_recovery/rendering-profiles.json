@@ -1,0 +1,245 @@
+[
+  {
+    "view": "2d",
+    "outcome": "Passed",
+    "exit_code": 0,
+    "requested_profile_autonomy": true,
+    "live_policy": "Auto safeguarded",
+    "count": 100,
+    "duration_s": 60,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "clocks": [
+      [
+        "T+0.3s"
+      ],
+      [
+        "T+19.1s"
+      ]
+    ],
+    "simulation_performance": {
+      "status": "running",
+      "achieved_speed": 0.30403923451723797,
+      "relative_to_requested": 0.30403923451723797,
+      "clipped_wall_time_s": 43.684193791000325,
+      "timings": {
+        "selection": {
+          "samples": 22,
+          "mean_ms": 712.8270738636191,
+          "p95_ms": 916.5754999994533,
+          "max_ms": 1079.9494590000904
+        },
+        "rebuilding": {
+          "samples": 108,
+          "mean_ms": 215.26724114821465,
+          "p95_ms": 956.1316250001255,
+          "max_ms": 1113.5981659999743
+        },
+        "snapshot": {
+          "samples": 59,
+          "mean_ms": 20.232048711832096,
+          "p95_ms": 32.18404200015357,
+          "max_ms": 39.769166999576555
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 18.63388118355047,
+          "p95_ms": 124.71979099973396,
+          "max_ms": 346.42183300002216
+        },
+        "flight_safety": {
+          "samples": 256,
+          "mean_ms": 2.1187583124948617,
+          "p95_ms": 2.7175420000276063,
+          "max_ms": 4.176665999693796
+        },
+        "autonomous_recovery": {
+          "samples": 256,
+          "mean_ms": 6.005638851576123,
+          "p95_ms": 12.496792000092682,
+          "max_ms": 168.40466700068646
+        }
+      },
+      "sample_limit": 256,
+      "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+    },
+    "heap_before": 31217432,
+    "heap_after": 48660676,
+    "canvases": [
+      {
+        "average_fps": 58.27331431345557,
+        "fifth_percentile_fps": 59.523809523824994,
+        "frames": 3505,
+        "capacity": 72000,
+        "dpr": 1,
+        "gpu": null,
+        "draw_calls": null,
+        "geometries": null
+      }
+    ],
+    "errors": [],
+    "raw": "/private/tmp/flare-autonomy-profile-2d/performance.json",
+    "note": "Configured autonomy on; both recovery and safety CPU timing phases were recorded. Achieved speed is distinct from rendering FPS."
+  },
+  {
+    "view": "3d",
+    "outcome": "Passed",
+    "exit_code": 0,
+    "requested_profile_autonomy": true,
+    "live_policy": "Auto safeguarded",
+    "count": 100,
+    "duration_s": 60,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "clocks": [
+      [
+        "T+0.3s"
+      ],
+      [
+        "T+17.4s"
+      ]
+    ],
+    "simulation_performance": {
+      "status": "running",
+      "achieved_speed": 0.286542549494589,
+      "relative_to_requested": 0.286542549494589,
+      "clipped_wall_time_s": 46.791270332999375,
+      "timings": {
+        "selection": {
+          "samples": 20,
+          "mean_ms": 861.7240084500281,
+          "p95_ms": 1165.3881250003906,
+          "max_ms": 1269.6139170002425
+        },
+        "rebuilding": {
+          "samples": 104,
+          "mean_ms": 217.23985544228805,
+          "p95_ms": 1108.4312920002048,
+          "max_ms": 1325.8514999997715
+        },
+        "snapshot": {
+          "samples": 57,
+          "mean_ms": 25.661907859677356,
+          "p95_ms": 41.79791600017779,
+          "max_ms": 208.7085000002844
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 19.705325359403503,
+          "p95_ms": 68.16120900020906,
+          "max_ms": 535.1151670001855
+        },
+        "flight_safety": {
+          "samples": 256,
+          "mean_ms": 2.159299628893052,
+          "p95_ms": 2.717959000619885,
+          "max_ms": 3.747499999917636
+        },
+        "autonomous_recovery": {
+          "samples": 256,
+          "mean_ms": 5.5471707734504605,
+          "p95_ms": 13.934333000179322,
+          "max_ms": 35.85674999976618
+        }
+      },
+      "sample_limit": 256,
+      "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+    },
+    "heap_before": 34251292,
+    "heap_after": 52086176,
+    "canvases": [
+      {
+        "average_fps": 55.51474132457508,
+        "fifth_percentile_fps": 30.030030030030687,
+        "frames": 3340,
+        "capacity": 72000,
+        "dpr": 1,
+        "gpu": {
+          "vendor": "Google Inc. (Apple)",
+          "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+        },
+        "draw_calls": "205",
+        "geometries": "138"
+      }
+    ],
+    "errors": [],
+    "raw": "/private/tmp/flare-autonomy-profile-3d/performance.json",
+    "note": "Configured autonomy on; both recovery and safety CPU timing phases were recorded. Achieved speed is distinct from rendering FPS."
+  },
+  {
+    "view": "compare",
+    "outcome": "Passed",
+    "exit_code": 0,
+    "requested_profile_autonomy": true,
+    "live_policy": "Auto safeguarded",
+    "count": 100,
+    "duration_s": 60,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "clocks": [
+      [
+        "T+1.9s",
+        "T+1.9s"
+      ],
+      [
+        "T+53.2s",
+        "T+53.2s"
+      ]
+    ],
+    "simulation_performance": null,
+    "heap_before": 26018288,
+    "heap_after": 26925744,
+    "canvases": [
+      {
+        "average_fps": 59.93582225859737,
+        "fifth_percentile_fps": 59.88023952094243,
+        "frames": 3603,
+        "capacity": 72000,
+        "dpr": 1,
+        "gpu": null,
+        "draw_calls": null,
+        "geometries": null
+      },
+      {
+        "average_fps": 59.93582225859737,
+        "fifth_percentile_fps": 59.88023952094243,
+        "frames": 3603,
+        "capacity": 72000,
+        "dpr": 1,
+        "gpu": null,
+        "draw_calls": null,
+        "geometries": null
+      }
+    ],
+    "errors": [],
+    "raw": "/private/tmp/flare-autonomy-profile-compare/performance.json",
+    "note": "A/B reference engines remain autonomy-off; its paused live background is a separate ten-UAV mission."
+  }
+]

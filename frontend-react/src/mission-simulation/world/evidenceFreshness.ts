@@ -45,8 +45,9 @@ export function missionEvidenceStatus(input: MissionEvidenceInput): MissionEvide
     return { kind: 'unknown-age', label: 'Telemetry age unreported', ageSeconds: null,
       evidenceCurrent: false, lastSnapshot: true };
   }
-  const ageSeconds = serverAge + Math.max(0, input.nowMs - input.receivedAtMs) / 1000;
-  if (ageSeconds > MISSION_FRESHNESS_LIMIT_S) {
+  const observation=input.payload!.metrics.observation;
+  const ageSeconds = serverAge + (observation?.clock==='simulation'?0:Math.max(0, input.nowMs - input.receivedAtMs) / 1000);
+  if (observation?.clock==='simulation'?ageSeconds>=observation.freshness_s:ageSeconds > MISSION_FRESHNESS_LIMIT_S) {
     return { kind: 'stale', label: `Stale ${ageSeconds.toFixed(1)} s`, ageSeconds,
       evidenceCurrent: false, lastSnapshot: true };
   }

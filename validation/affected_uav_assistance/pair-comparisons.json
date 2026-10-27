@@ -1,0 +1,218 @@
+[
+  {
+    "scenario": "recoverable_mesh",
+    "policy": "balanced_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": -40.436361399173656
+  },
+  {
+    "scenario": "recoverable_mesh",
+    "policy": "balanced_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": -40.44893288040258
+  },
+  {
+    "scenario": "recoverable_mesh",
+    "policy": "balanced_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": -40.44269571481699
+  },
+  {
+    "scenario": "recoverable_mesh",
+    "policy": "evidence_resilience_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "recoverable_mesh",
+    "policy": "evidence_resilience_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "recoverable_mesh",
+    "policy": "evidence_resilience_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "direct_only",
+    "policy": "balanced_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "direct_only",
+    "policy": "balanced_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "direct_only",
+    "policy": "balanced_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "direct_only",
+    "policy": "evidence_resilience_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "direct_only",
+    "policy": "evidence_resilience_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "direct_only",
+    "policy": "evidence_resilience_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "total_isolation",
+    "policy": "balanced_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "total_isolation",
+    "policy": "balanced_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "total_isolation",
+    "policy": "balanced_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "total_isolation",
+    "policy": "evidence_resilience_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "total_isolation",
+    "policy": "evidence_resilience_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "total_isolation",
+    "policy": "evidence_resilience_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "competing_affected",
+    "policy": "balanced_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": -47.353608055399135
+  },
+  {
+    "scenario": "competing_affected",
+    "policy": "balanced_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": -47.35758357503578
+  },
+  {
+    "scenario": "competing_affected",
+    "policy": "balanced_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": -47.351603215260866
+  },
+  {
+    "scenario": "competing_affected",
+    "policy": "evidence_resilience_v1",
+    "seed": 7,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "competing_affected",
+    "policy": "evidence_resilience_v1",
+    "seed": 42,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  },
+  {
+    "scenario": "competing_affected",
+    "policy": "evidence_resilience_v1",
+    "seed": 99,
+    "inputs_match": true,
+    "conservation": true,
+    "fleet_delivery_difference_pp": 0.0,
+    "fleet_latency_difference_ms": 0.0
+  }
+]

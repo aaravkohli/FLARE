@@ -5,7 +5,7 @@ import os
 from pathlib import Path
 import time
 from fastapi import APIRouter, Depends, HTTPException
-from schemas.mission import MissionConfig, MissionControl, MissionCommand, FLTransfer, RoutePolicy, MissionAttack, ClearMissionAttacks, MissionProbe, ExperimentRequest, ExperimentControl
+from schemas.mission import MissionConfig, MissionControl, MissionCommand, FLTransfer, RoutePolicy, MissionAttack, ClearMissionAttacks, MissionProbe, ExperimentJobRequest, ExperimentControl
 from simulation.swarm.engine import SwarmEngine, RevisionConflict, SCENARIOS
 from sdn.enforcement import SimulationSDNAdapter
 from fleet.registry import list_drones
@@ -57,7 +57,8 @@ def attach_simulation(app, authenticate):
     async def session():
         e=engine()
         return {'session_id':e.session_id,'seed':e.seed,'revision':e.revision,'simulation_time':e.seconds,'playing':e.playing,
-            'eligible_clients':[n.id for n in e.nodes.values() if n.available and n.health>0 and n.containment=='normal']}
+            'eligible_clients':[n.id for n in e.nodes.values() if n.available and n.health>0 and n.containment=='normal'],
+            'adaptive_policy':e.cfg.get('adaptive_policy','balanced_v1'),'observation_epoch':e.observability.epoch}
     @router.get('/state')
     async def state(after: int = 0): return engine().snapshot(after)
     @router.get('/topologies')
@@ -75,7 +76,7 @@ def attach_simulation(app, authenticate):
         engine()
         return app.state.experiments
     @router.post('/experiments')
-    async def create_experiment(request: ExperimentRequest):
+    async def create_experiment(request: ExperimentJobRequest):
         return mutate(lambda:experiments().create(request,engine()))
     @router.get('/experiments/{identity}')
     async def experiment(identity: str): return mutate(lambda:experiments().state(identity))
@@ -85,7 +86,7 @@ def attach_simulation(app, authenticate):
     @router.get('/experiments/{identity}/export')
     async def experiment_export(identity: str,format: str='json'):
         content=mutate(lambda:experiments().export(identity,format))
-        return Response(content,media_type='application/json' if format=='json' else 'text/csv',
+        return Response(content,media_type={'json':'application/json','csv':'text/csv','md':'text/markdown','manifest':'application/json'}.get(format,'text/plain'),
             headers={'Content-Disposition':f'attachment; filename="flare-{identity}.{format}"'})
     @router.get('/experiments/{identity}/traces/{filename}')
     async def experiment_trace(identity: str,filename: str):
@@ -95,7 +96,8 @@ def attach_simulation(app, authenticate):
     @router.get('/metrics')
     async def metrics():
         e=engine()
-        return {'session_id':e.session_id,'simulation_time':e.seconds,'playing':e.playing,'metrics':e.metrics()}
+        return {'session_id':e.session_id,'simulation_time':e.seconds,'playing':e.playing,'metrics':e.metrics(),
+                'observability':e.observability.snapshot()}
     @router.get('/attacks')
     async def attacks(): return engine().attacks.state()
     @router.post('/attacks')

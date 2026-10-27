@@ -1,0 +1,185 @@
+{
+  "at_utc": "2026-10-25T22:41:50.632789+00:00",
+  "source_sha256": "1f00782e9727d3e1a239fde70c4625c298aaa6dcfaf7a3b27f301054b38d4016",
+  "records": [
+    {
+      "command": "venv/bin/python -m pytest -q --basetemp=/private/tmp/flare-autonomy-local-evidence-tests",
+      "log": "results/autonomous_recovery/python-local-evidence.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T21:24:04.844363+00:00",
+      "note": "1123 passed, five warnings. Configured pytest ignores script-style test_adversarial.py."
+    },
+    {
+      "command": "venv/bin/python -m pytest -q tests/test_autonomy_measurements.py tests/test_autonomy_edge_safety.py",
+      "log": "results/autonomous_recovery/supplemental-verified.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T22:33:56.178881+00:00",
+      "note": "24 passed; overlaps the complete suite and adds final measurement/descent/speed/manual-mutation assertions."
+    },
+    {
+      "command": "venv/bin/python -m scripts.run_autonomous_recovery --directory results/autonomous_recovery/local-evidence-batch --workers 2",
+      "log": "results/autonomous_recovery/local-evidence-batch.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T21:41:33.108857+00:00",
+      "note": ""
+    },
+    {
+      "command": "venv/bin/python -m scripts.verify_autonomous_recovery --directory results/autonomous_recovery/local-evidence-batch --watch",
+      "log": "results/autonomous_recovery/verification-local-evidence.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T21:41:37.156810+00:00",
+      "note": ""
+    },
+    {
+      "command": "venv/bin/python -m scripts.summarize_autonomous_recovery --directory results/autonomous_recovery/local-evidence-batch --output validation/autonomous_recovery",
+      "log": "results/autonomous_recovery/summary-final.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T22:15:54.390404+00:00",
+      "note": "CSV structured columns subsequently normalized to JSON strings; numerical values unchanged and round-trip checked."
+    },
+    {
+      "command": "venv/bin/python -m scripts.repeat_autonomous_recovery --batch results/autonomous_recovery/local-evidence-batch --directory results/autonomous_recovery/repeatability",
+      "log": "results/autonomous_recovery/repeatability.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T21:33:46.169442+00:00",
+      "note": ""
+    },
+    {
+      "command": "venv/bin/python -m scripts.verify_swarm_hotpaths --input results/evidence_resilience/pilot-accepted-verified --directory results/autonomous_recovery/legacy-local-evidence",
+      "log": "results/autonomous_recovery/legacy-local-evidence.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T21:23:51.017485+00:00",
+      "note": ""
+    },
+    {
+      "command": "venv/bin/python -m scripts.profile_autonomy_cpu --directory results/autonomous_recovery/cpu-profile",
+      "log": "results/autonomous_recovery/cpu-profile.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T22:16:54.901358+00:00",
+      "note": ""
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_ARTIFACT_DIR=/private/tmp/flare-autonomy-browser-complete npm --prefix frontend-react run test:browser",
+      "log": "results/autonomous_recovery/browser-complete.log",
+      "exit_code": 1,
+      "outcome": "Failed",
+      "log_modified_utc": "2026-10-25T21:30:53.898068+00:00",
+      "note": "52 passed, one test race failed, three gated skips. Corrected failed spec passed in browser-gates.log and browser-missing-final.log; gated checks executed separately."
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_STUDY_RESULT_FIXTURE=/Users/aaravkohli/.codex/worktrees/efb1/Capstone/results/adaptive_resilience/evidence-v1-canonical/state.json FLARE_RESILIENCE_RESULT_FIXTURE=/Users/aaravkohli/.codex/worktrees/efb1/Capstone/results/evidence_resilience/pilot-accepted-verified/state.json FLARE_ARTIFACT_DIR=/private/tmp/flare-autonomy-browser-fixtures npm --prefix frontend-react run test:browser -- resilience-controller.spec.ts adaptive-study-results.spec.ts resilience-results.spec.ts",
+      "log": "results/autonomous_recovery/browser-gates.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T21:32:40.967014+00:00",
+      "note": "Three passed; the two retained-result views are explicitly transport fixtures, not another study execution."
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_TEST_MISSING_MODELS=1 npm --prefix frontend-react run test:browser -- autonomous-recovery.spec.ts resilience-controller.spec.ts",
+      "log": "results/autonomous_recovery/browser-missing-final.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T21:39:46.508401+00:00",
+      "note": "Three passed; model weights removed only in disposable copies. Pause retries require a confirmed 409 rejection; uncertain requests are never replayed."
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=2d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_PROFILE_AUTONOMY=1 FLARE_ARTIFACT_DIR=/private/tmp/flare-autonomy-profile-2d npm --prefix frontend-react run test:browser -- mesh-performance.spec.ts",
+      "log": "results/autonomous_recovery/profile-2d.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T22:19:21.689802+00:00",
+      "note": ""
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=3d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_PROFILE_AUTONOMY=1 FLARE_ARTIFACT_DIR=/private/tmp/flare-autonomy-profile-3d npm --prefix frontend-react run test:browser -- mesh-performance.spec.ts",
+      "log": "results/autonomous_recovery/profile-3d.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T22:20:46.972243+00:00",
+      "note": ""
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=compare FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_PROFILE_AUTONOMY=1 FLARE_ARTIFACT_DIR=/private/tmp/flare-autonomy-profile-compare npm --prefix frontend-react run test:browser -- mesh-performance.spec.ts",
+      "log": "results/autonomous_recovery/profile-compare.log",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "log_modified_utc": "2026-10-25T22:22:04.940814+00:00",
+      "note": ""
+    },
+    {
+      "command": [
+        "npm",
+        "--prefix",
+        "frontend-react",
+        "test"
+      ],
+      "started_at_utc": "2026-10-25T22:23:15.620565+00:00",
+      "wall_s": 4.046736375000364,
+      "exit_code": 0,
+      "log": "results/autonomous_recovery/frontend-units-final.log",
+      "outcome": "Passed"
+    },
+    {
+      "command": [
+        "npm",
+        "--prefix",
+        "frontend-react",
+        "run",
+        "typecheck"
+      ],
+      "started_at_utc": "2026-10-25T22:23:19.667397+00:00",
+      "wall_s": 3.367304917000183,
+      "exit_code": 0,
+      "log": "results/autonomous_recovery/typecheck-final.log",
+      "outcome": "Passed"
+    },
+    {
+      "command": [
+        "npm",
+        "--prefix",
+        "frontend-react",
+        "run",
+        "lint"
+      ],
+      "started_at_utc": "2026-10-25T22:23:23.034786+00:00",
+      "wall_s": 0.28486883400000806,
+      "exit_code": 0,
+      "log": "results/autonomous_recovery/lint-final.log",
+      "outcome": "Passed"
+    },
+    {
+      "command": [
+        "npm",
+        "--prefix",
+        "frontend-react",
+        "run",
+        "build"
+      ],
+      "started_at_utc": "2026-10-25T22:23:23.319739+00:00",
+      "wall_s": 3.804685000000063,
+      "exit_code": 0,
+      "log": "results/autonomous_recovery/build-final.log",
+      "outcome": "Passed"
+    },
+    {
+      "command": [
+        "git",
+        "diff",
+        "--check"
+      ],
+      "started_at_utc": "2026-10-25T22:23:27.124485+00:00",
+      "wall_s": 0.02938295800049673,
+      "exit_code": 0,
+      "log": "results/autonomous_recovery/diff-final.log",
+      "outcome": "Passed"
+    }
+  ]
+}

@@ -10,7 +10,7 @@ type Point = {x: number; y: number; z: number};
 export function createNetworkLinkLayer() {
   const root = new THREE.Group(), color = new THREE.Color();
   const palette = new Map(['#dc8e7e','#e4b77c','#94a3ae','#88b4c4','#9ad5e4','#91e1c1','#b5a1ea'].map(hex => [hex, new THREE.Color(hex)]));
-  const levels: NetworkLinkLevel[] = ['background', 'neighbor', 'route', 'candidate'];
+  const levels: NetworkLinkLevel[] = ['background', 'neighbor', 'route', 'candidate','recovery'];
   const batches = levels.map((level, index) => {
     const capacity = level === 'background' ? 10000 : 256;
     const positions = new Float32Array(capacity * 6), colors = new Float32Array(capacity * 6);
@@ -26,7 +26,7 @@ export function createNetworkLinkLayer() {
     const foreground = level === 'route' || level === 'candidate';
     const material = new LineMaterial({vertexColors: true, linewidth: NETWORK_LINK_WIDTHS[level], transparent: true,
       opacity: foreground ? .98 : .88, depthWrite: false, depthTest: !foreground, toneMapped: false,
-      dashed: level === 'candidate', dashSize: 9, gapSize: 6});
+      dashed: level === 'candidate'||level==='recovery', dashSize: 9, gapSize: 6});
     const line = new LineSegments2(geometry, material);
     line.frustumCulled = false; line.renderOrder = foreground ? 5 + index : 1 + index; root.add(line);
     let outline: LineSegments2 | undefined;

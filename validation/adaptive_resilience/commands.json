@@ -1,0 +1,146 @@
+[
+  {
+    "name": "python-regressions",
+    "command": "venv/bin/python -m pytest -q --ignore=tests/test_audit_simulator_matrix.py",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/python-final.log",
+    "evidence_sha256": "8d9bca0d0f7f34b73cc725cb1d9cbb230ac512ac81bd2a87753ff5e46532efbe",
+    "evidence_modified_utc": "2026-10-25T11:40:48.467852+00:00"
+  },
+  {
+    "name": "simulator-matrix",
+    "command": "venv/bin/python -m pytest -q tests/test_audit_simulator_matrix.py",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/matrix-final.log",
+    "evidence_sha256": "eb7ab4d0998a50734c0f368c9054e80d1ecde56898d1b38d04aaaa552b3738f6",
+    "evidence_modified_utc": "2026-10-25T10:04:19.243057+00:00"
+  },
+  {
+    "name": "serialization-regressions",
+    "command": "venv/bin/python -m pytest -q tests/test_mesh_research.py tests/test_adaptive_study.py tests/test_adaptive_study_recovery.py tests/test_swarm_api.py",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/serialization-regressions-final.log",
+    "evidence_sha256": "8d4f15b215b083b4c562d2b3cf59c98a2637b2a926057b642126f7427f9843bb",
+    "evidence_modified_utc": "2026-10-25T11:02:28.245414+00:00"
+  },
+  {
+    "name": "cancel-trace-regression",
+    "command": "venv/bin/python -m pytest -q tests/test_mesh_research.py tests/test_swarm_api.py",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/cancellation-regression.log",
+    "evidence_sha256": "8a0bb176b126092b74d2484dcdaff3ed9d3e9ca172fe41306ba9c3fda310475a",
+    "evidence_modified_utc": "2026-10-25T11:53:38.950852+00:00"
+  },
+  {
+    "name": "frontend-unit",
+    "command": "npm --prefix frontend-react test",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/frontend-tests-final.log",
+    "evidence_sha256": "74a13f3983c56ff71e0887337568bd1264e2f22dd5b4f44e76a71c5a8531d276",
+    "evidence_modified_utc": "2026-10-25T12:06:02.268478+00:00"
+  },
+  {
+    "name": "frontend-lint",
+    "command": "npm --prefix frontend-react run lint",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/lint-final.log",
+    "evidence_sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6",
+    "evidence_modified_utc": "2026-10-25T12:06:06.165133+00:00"
+  },
+  {
+    "name": "frontend-build",
+    "command": "npm --prefix frontend-react run build",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/build-final.log",
+    "evidence_sha256": "2e1cec312e09acafb87985eaa3b6bb3dff578fce7790ad5a4363fc0857268002",
+    "evidence_modified_utc": "2026-10-25T12:06:10.444833+00:00"
+  },
+  {
+    "name": "browser-study",
+    "command": "FLARE_TEST_PRODUCTION=1 FLARE_TEST_MISSING_MODELS=1 FLARE_STUDY_RESULT_FIXTURE=<completed-state.json> npm --prefix frontend-react run test:browser -- adaptive-study.spec.ts adaptive-study-results.spec.ts",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/browser-release.log",
+    "evidence_sha256": "423956a30aad3f5bb1f5f92e9f3ffa9a6a1025d7d478602eb7af7652ee9f681c",
+    "evidence_modified_utc": "2026-10-25T11:37:59.254625+00:00"
+  },
+  {
+    "name": "browser-matrix",
+    "command": "FLARE_TEST_PRODUCTION=1 npm --prefix frontend-react run test:browser -- control-matrix.spec.ts --grep \"frontend topology matrix|frontend formation / speed\"",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/browser-matrix-final.log",
+    "evidence_sha256": "e80be1b98675ff3f031c53920442ff211fce344e3094c81f8b08a316e521a6be",
+    "evidence_modified_utc": "2026-10-25T11:17:45.343104+00:00"
+  },
+  {
+    "name": "browser-traces",
+    "command": "FLARE_TEST_PRODUCTION=1 npm --prefix frontend-react run test:browser -- workspace-attacks.spec.ts mesh-research.spec.ts --grep \"cancelled benchmark|isolated synchronized comparison\"",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/browser-traces-final.log",
+    "evidence_sha256": "dd9775c25e1336b7d9bc95c38e8b495bdbf678c2649d1e95d45c2da790d84946",
+    "evidence_modified_utc": "2026-10-25T11:58:12.138572+00:00"
+  },
+  {
+    "name": "browser-existing-mission",
+    "command": "FLARE_TEST_PRODUCTION=1 npm --prefix frontend-react run test:browser -- connections-countdown.spec.ts workspace-attacks.spec.ts application.spec.ts control-matrix.spec.ts",
+    "exit_code": 1,
+    "outcome": "Failed",
+    "evidence": "results/adaptive_resilience/browser-mission-regressions.log",
+    "evidence_sha256": "7471ee7eec0b2e9b3251e3602c8f7b9c5d9d1f498e886491951c0072cfba5a87",
+    "evidence_modified_utc": "2026-10-25T10:09:23.077189+00:00"
+  },
+  {
+    "name": "browser-continuous-matrix",
+    "command": "FLARE_TEST_PRODUCTION=1 npm --prefix frontend-react run test:browser -- control-matrix.spec.ts --grep \"frontend topology / size\"",
+    "exit_code": 1,
+    "outcome": "Failed",
+    "evidence": "results/adaptive_resilience/browser-idle-matrix.log",
+    "evidence_sha256": "874e2c641978addbad43780131b6c270fcb28c85e4e047722d40d133738cefb7",
+    "evidence_modified_utc": "2026-10-25T11:09:26.040015+00:00"
+  },
+  {
+    "name": "study-initial",
+    "command": "venv/bin/python -m scripts.run_adaptive_study --preset evidence --workers 3 --pilot-state <source-matched-pilot-state> --directory results/adaptive_resilience/evidence-v1",
+    "exit_code": 1,
+    "outcome": "Failed",
+    "evidence": "results/adaptive_resilience/evidence-run.log",
+    "evidence_sha256": "e400d7a773d7f3f2c782c9a288308aea392d69770067bdbc98b36fe1684b3bfd",
+    "evidence_modified_utc": "2026-10-25T10:05:43.324323+00:00"
+  },
+  {
+    "name": "study-continuation-initial",
+    "command": "venv/bin/python -m scripts.resume_adaptive_study results/adaptive_resilience/evidence-v1 results/adaptive_resilience/evidence-v1-complete --workers 2",
+    "exit_code": 1,
+    "outcome": "Failed",
+    "evidence": "results/adaptive_resilience/evidence-continuation.log",
+    "evidence_sha256": "4b5a487ec144bd82ded75a21effcd9a954cb46e0ce9239604575540d5f6e76fc",
+    "evidence_modified_utc": "2026-10-25T10:19:14.824629+00:00"
+  },
+  {
+    "name": "study-continuation-final",
+    "command": "venv/bin/python -m scripts.resume_adaptive_study results/adaptive_resilience/evidence-v1-complete results/adaptive_resilience/evidence-v1-final --workers 2",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/evidence-final.log",
+    "evidence_sha256": "3d5516d528a81735d8a85efcdc73a01b4d6bc57d187f2a99980cc633097a291b",
+    "evidence_modified_utc": "2026-10-25T10:53:13.385509+00:00"
+  },
+  {
+    "name": "independent-verification",
+    "command": "venv/bin/python -m scripts.verify_adaptive_study results/adaptive_resilience/evidence-v1-release",
+    "exit_code": 0,
+    "outcome": "Passed",
+    "evidence": "results/adaptive_resilience/independent-verification-final.log",
+    "evidence_sha256": "69173ade0249bcfb23c1f089e735bc9ff3f9d82ebc3b7ff52a64a6b11b6d584a",
+    "evidence_modified_utc": "2026-10-25T11:02:19.660748+00:00"
+  }
+]

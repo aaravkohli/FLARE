@@ -1,1 +1,2 @@
 export const DEMONSTRATIONS=['normal','high_density','mobility','single_failure','link_failures','regional_jamming','compromised','self_healing','congestion','partition_reconnection'];
+export const RECOVERY_SCENARIOS=['direct_jam','satellite_switch_failure','dual_interference','mesh_transition_loss','total_loss','intermittent','switch_instability','multiple_isolation','low_battery_isolation','failed_recovery_landing'].map(name=>`recovery_${name}`);

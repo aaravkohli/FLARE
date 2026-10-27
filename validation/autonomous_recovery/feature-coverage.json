@@ -1,0 +1,250 @@
+[
+  {
+    "capability": "Opt-in default; independent topology/resilience mode; preserved configuration through reset",
+    "implementation": "schemas/mission.py; simulation/swarm/engine.py",
+    "surface": "Mission Setup",
+    "outcome": "Passed",
+    "evidence": "test_opt_in_and_existing_experiment_isolation; test_safety_profile_validation_and_revision_boundaries",
+    "limits": ""
+  },
+  {
+    "capability": "Local controller cannot read graph/attack identities; received policy knowledge only",
+    "implementation": "simulation/swarm/autonomy.py:LocalNetworkController",
+    "surface": "Inspect / Decisions",
+    "outcome": "Passed",
+    "evidence": "test_local_controller_has_no_engine_graph_or_injection_inputs; test_local_switching_knowledge_requires_a_delivered_policy_message",
+    "limits": ""
+  },
+  {
+    "capability": "Liveness receipt timeout, local isolation, stable recovery and controller-service loss",
+    "implementation": "simulation/swarm/autonomy.py",
+    "surface": "Inspect / Activity",
+    "outcome": "Passed",
+    "evidence": "test_real_scheduler_receipts_and_controller_loss_without_false_recovery; 60-run traces",
+    "limits": ""
+  },
+  {
+    "capability": "Bounded peer roster, advertisements, sequence/loop/expiry/duplicate checks",
+    "implementation": "simulation/swarm/autonomy.py",
+    "surface": "Inspect",
+    "outcome": "Passed",
+    "evidence": "test_stale_advertisements_loops_duplicates_and_scope",
+    "limits": ""
+  },
+  {
+    "capability": "Packet-specific control permission and current origin/relay revocation",
+    "implementation": "simulation/swarm/autonomy.py",
+    "surface": "Layers / Inspect",
+    "outcome": "Passed",
+    "evidence": "test_registered_overlay_cannot_authorize_other_packets_or_ignore_revocation; test_origin_revocation_still_applies_after_completed_recovery_hop",
+    "limits": ""
+  },
+  {
+    "capability": "Independent transport channel keys and unrelated flow independence",
+    "implementation": "simulation/swarm/autonomy.py",
+    "surface": "Internal scheduler",
+    "outcome": "Passed",
+    "evidence": "test_other_transport_response_cannot_shift_satellite_channel_draw; test_unrelated_control_offers_do_not_shift_challenge_channel_keys",
+    "limits": ""
+  },
+  {
+    "capability": "Topology verification: incumbent retained, two receipts, deadline, current target edges",
+    "implementation": "simulation/swarm/adaptive_topology.py; simulation/swarm/autonomy.py",
+    "surface": "Topology / Decisions",
+    "outcome": "Passed",
+    "evidence": "test_verified_transition_keeps_incumbent_until_two_delivered_round_trips; test_lost_transition_receipts_do_not_retire_incumbent_and_rollback; test_guard_receipts_do_not_verify_edges_removed_from_the_prepared_target",
+    "limits": ""
+  },
+  {
+    "capability": "Manual last-path guard; rejected auto request does not crash or change revision",
+    "implementation": "simulation/swarm/engine.py; simulation/swarm/autonomy.py",
+    "surface": "Topology",
+    "outcome": "Passed",
+    "evidence": "test_manual_guard_rejection_preserves_management_revision_and_active_topology; test_automatic_guard_rejection_is_an_explained_decision_not_simulator_crash",
+    "limits": ""
+  },
+  {
+    "capability": "Captured ordinary recovery forwarding snapshot and control-only privileges",
+    "implementation": "simulation/swarm/autonomy.py",
+    "surface": "2D / 3D / Inspect",
+    "outcome": "Passed",
+    "evidence": "test_snapshot_supports_captured_ordinary_recovery_forwarding; test_registered_overlay_cannot_authorize_other_packets_or_ignore_revocation",
+    "limits": ""
+  },
+  {
+    "capability": "Ten candidates \u00d7 ten sizes \u00d7 three seeds; private deterministic evaluation",
+    "implementation": "simulation/swarm/adaptive_topology.py",
+    "surface": "Topology",
+    "outcome": "Passed",
+    "evidence": "test_all_ten_candidates_with_autonomy_are_deterministic_and_private (30 parametrized cases; ten candidates each)",
+    "limits": ""
+  },
+  {
+    "capability": "Explicit safety profile; null inputs preserved across authenticated API",
+    "implementation": "schemas/autonomy.py; api/mission.py",
+    "surface": "Mission Setup",
+    "outcome": "Passed",
+    "evidence": "test_safety_profile_validation_and_revision_boundaries; null-proxy-regression; autonomous-recovery.spec.ts",
+    "limits": ""
+  },
+  {
+    "capability": "Mission-initial home and pre-mutation scenario/geofence validation",
+    "implementation": "simulation/swarm/flight_safety.py; simulation/swarm/engine.py",
+    "surface": "Mission Setup",
+    "outcome": "Passed",
+    "evidence": "test_home_is_mission_initial_position_even_when_autonomy_enabled_later; test_scenario_profile_validation_precedes_reset_and_does_not_mutate_session",
+    "limits": ""
+  },
+  {
+    "capability": "Safety hold, return, declared landing footprints, obstacles and occupancy",
+    "implementation": "simulation/swarm/flight_safety.py; simulation/swarm/movement.py",
+    "surface": "Inspect / Decisions",
+    "outcome": "Passed",
+    "evidence": "test_supervisor_prioritizes_obstacles_geofence_and_unavailable_sites; test_low_battery_isolation_lands_and_never_automatically_relaunches",
+    "limits": ""
+  },
+  {
+    "capability": "Controlled landing \u22641 m/s; exhaustion/contact never a successful landing",
+    "implementation": "simulation/swarm/movement.py; simulation/swarm/flight_safety.py",
+    "surface": "Inspect / Activity",
+    "outcome": "Passed",
+    "evidence": "test_low_battery_isolation_lands_and_never_automatically_relaunches; test_missing_safety_inputs_never_manufacture_safe_landing_and_disable_keeps_latch",
+    "limits": ""
+  },
+  {
+    "capability": "Caution/critical/emergency battery states and unavailable navigation restrictions",
+    "implementation": "simulation/swarm/flight_safety.py; simulation/swarm/engine.py",
+    "surface": "Inspect / Commands",
+    "outcome": "Passed",
+    "evidence": "test_battery_caution_and_emergency_are_explicit_runtime_states; test_unavailable_navigation_rejects_spatial_command_even_before_link_loss",
+    "limits": ""
+  },
+  {
+    "capability": "Delivered operator Resume; no latch release on reconnection/disable; no relaunch",
+    "implementation": "simulation/swarm/flight_safety.py; simulation/swarm/engine.py",
+    "surface": "Commands",
+    "outcome": "Passed",
+    "evidence": "test_real_scheduler_receipts_and_controller_loss_without_false_recovery; test_failsafe_freshness_and_delivered_resume_constraints_are_independent; test_missing_safety_inputs_never_manufacture_safe_landing_and_disable_keeps_latch",
+    "limits": ""
+  },
+  {
+    "capability": "Rejected safety commands do not claim execution",
+    "implementation": "simulation/swarm/engine.py",
+    "surface": "Commands / Activity",
+    "outcome": "Passed",
+    "evidence": "test_unsafe_delivered_command_is_rejected_without_claiming_execution",
+    "limits": ""
+  },
+  {
+    "capability": "Profile changes take effect onboard on delivery; enable only before loss",
+    "implementation": "simulation/swarm/autonomy.py; simulation/swarm/engine.py",
+    "surface": "Mission Setup",
+    "outcome": "Passed",
+    "evidence": "test_profile_changes_wait_for_packet_delivery; test_enabling_after_total_loss_is_not_silent_remote_provisioning; test_reenable_does_not_treat_time_spent_off_as_instant_isolation",
+    "limits": ""
+  },
+  {
+    "capability": "Confidence-scored local diagnosis, eight-observation threshold, ambiguous jamming",
+    "implementation": "simulation/swarm/autonomy.py",
+    "surface": "Inspect / Decisions",
+    "outcome": "Passed",
+    "evidence": "test_diagnostic_confidence_never_identifies_jamming_from_loss_alone",
+    "limits": ""
+  },
+  {
+    "capability": "Pause and all supported speeds; same simulation-time thresholds",
+    "implementation": "simulation/swarm/engine.py",
+    "surface": "Mission toolbar",
+    "outcome": "Passed",
+    "evidence": "test_simulation_time_and_pause_freeze_recovery (six speeds); autonomous-recovery.spec.ts",
+    "limits": ""
+  },
+  {
+    "capability": "Direct, Satellite and Mesh impairment remain distinct; real Mesh receipts after dual-family loss",
+    "implementation": "simulation/swarm/autonomy.py; simulation/swarm/recovery_scenarios.py",
+    "surface": "Events / Inspect",
+    "outcome": "Passed",
+    "evidence": "test_dual_family_interference_retains_delivered_mesh_contact; test_physical_faults_block_ordinary_and_recovery_traffic_and_restore",
+    "limits": ""
+  },
+  {
+    "capability": "2D/3D control overlay uses identical bounded authoritative edges",
+    "implementation": "frontend-react/src/mission-simulation/world/recoveryOverlay.ts",
+    "surface": "Layers / canvas",
+    "outcome": "Passed",
+    "evidence": "recoveryOverlay.test.ts; autonomous-recovery.spec.ts; networkLinkLayer.test.ts",
+    "limits": ""
+  },
+  {
+    "capability": "Readable recovery/safety events preserve classifications and unsafe outcomes",
+    "implementation": "frontend-react/src/mission-simulation/world/workspacePresentation.ts",
+    "surface": "Activity",
+    "outcome": "Passed",
+    "evidence": "workspacePresentation.test.ts: recovery and safety activity",
+    "limits": ""
+  },
+  {
+    "capability": "Historical study and fixed experiment autonomy pinning",
+    "implementation": "simulation/swarm/experiments.py; simulation/swarm/resilience_study.py",
+    "surface": "A/B / Benchmark / studies",
+    "outcome": "Passed",
+    "evidence": "test_opt_in_and_existing_experiment_isolation; legacy exact-trace verification",
+    "limits": ""
+  },
+  {
+    "capability": "Ten accessible recovery presets and real fault schedules",
+    "implementation": "simulation/swarm/recovery_scenarios.py; frontend-react/src/mission-simulation/scenarioMetadata.ts",
+    "surface": "Mission Setup / Scenario",
+    "outcome": "Passed",
+    "evidence": "60-run paired validation; autonomous-recovery.spec.ts preset loop",
+    "limits": ""
+  },
+  {
+    "capability": "60-run conservation, paired inputs, independent receipt/safety measurements",
+    "implementation": "scripts/run_autonomous_recovery.py; scripts/verify_autonomous_recovery.py",
+    "surface": "CLI / research",
+    "outcome": "Passed",
+    "evidence": "local-evidence-batch (verification in report)",
+    "limits": "See verification report for measured runtime lag, negative findings and distinct FPS versus simulation-speed gates."
+  },
+  {
+    "capability": "100-UAV 2D/3D/A-B performance targets",
+    "implementation": "frontend-react/e2e/mesh-performance.spec.ts",
+    "surface": "Research performance gate",
+    "outcome": "Passed",
+    "evidence": "Separate fresh 60-second profiles recorded in report",
+    "limits": "See verification report for measured runtime lag, negative findings and distinct FPS versus simulation-speed gates."
+  },
+  {
+    "capability": "Physical flight, real RF and hardware safety certification",
+    "implementation": "simulation/swarm/flight_safety.py",
+    "surface": "Outside this modeled milestone",
+    "outcome": "Not Tested",
+    "evidence": "No physical hardware execution",
+    "limits": "Fixture inputs and uncalibrated energy proxy are not physical validation."
+  },
+  {
+    "capability": "100-UAV requested real-time simulation tracking and fresh live playback",
+    "implementation": "simulation/swarm/performance.py; snapshot/packet stream",
+    "surface": "Live Mission",
+    "outcome": "Failed",
+    "evidence": "rendering-profiles.json; evidence/3d-100.png",
+    "limits": "Achieved 0.304\u00d7 / 0.287\u00d7 at requested 1\u00d7, with visible stale snapshot and retention-gap notices. Rendering FPS passed."
+  },
+  {
+    "capability": "No safety hold outside the scripted failsafe expectation",
+    "implementation": "scripts/run_autonomous_recovery.py",
+    "surface": "Research oracle",
+    "outcome": "Failed",
+    "evidence": "unexpected-hold-evidence.json",
+    "limits": "One additional hold in dual interference seed 99 followed an actual 3.089s receipt gap; this is not a false detector conclusion."
+  },
+  {
+    "capability": "Multi-hour retained-memory and energy plateau",
+    "implementation": "frontend-react/e2e/mesh-performance.spec.ts",
+    "surface": "Research performance",
+    "outcome": "Not Tested",
+    "evidence": "Only 60-second rendering profiles and 180+20-second validation runs executed.",
+    "limits": "Longer-duration profiling required; bounded buffers do not alone establish a memory plateau."
+  }
+]

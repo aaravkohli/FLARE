@@ -1,0 +1,150 @@
+{
+  "at_utc": "2026-10-26T07:06:18.199771+00:00",
+  "source_sha256": "bdfbe8a0c4d7d871c3f09f52d71d57113bb88dc7c5bbc1675a8e948f234927ca",
+  "records": [
+    {
+      "command": "venv/bin/python -m pytest -q --basetemp=/private/tmp/flare-assist-final-regression",
+      "log": "results/affected_uav_assistance/python-final-regression.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T05:00:31.423598+00:00",
+      "note": "1190 passed on the preceding implementation revision. Final observation/lifecycle edge fixes are covered by the final-source 270-test run; this is not described as a full-suite run against the last source.",
+      "log_sha256": "c698f8ddaf4b0859fe51fb7b26654b482a45300ee7f3422f15976f0d702d879d"
+    },
+    {
+      "command": "venv/bin/python -m pytest -q tests/test_uav_assistance.py tests/test_adaptive_topology.py tests/test_autonomous_recovery.py tests/test_autonomy_edge_safety.py tests/test_evidence_resilience.py tests/test_swarm_api.py",
+      "log": "results/affected_uav_assistance/accepted-source-tests.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T05:15:42.657419+00:00",
+      "note": "270 passed against final scientific source; includes 58 assistance cases and API authorization/revision checks.",
+      "log_sha256": "b7065dee58f46310a614673a6da257d84a61e4a3ff3e5888c56aafb40e2436ba"
+    },
+    {
+      "command": "npm --prefix frontend-react run test",
+      "log": "results/affected_uav_assistance/frontend-release-unit.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:50:24.720831+00:00",
+      "note": "",
+      "log_sha256": "2a5135111dd9820fb80fe037640fd4e9461d1625580fea32e7c43edb779021ae"
+    },
+    {
+      "command": "npm --prefix frontend-react run typecheck",
+      "log": "results/affected_uav_assistance/frontend-release-typecheck.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:50:24.832446+00:00",
+      "note": "",
+      "log_sha256": "373b6abd1702072c02436a7dda84d3996d43e72c96042734e7cd9c714859a0c7"
+    },
+    {
+      "command": "npm --prefix frontend-react run lint",
+      "log": "results/affected_uav_assistance/frontend-release-lint.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:50:28.121933+00:00",
+      "note": "Existing warnings retained; no lint error.",
+      "log_sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6"
+    },
+    {
+      "command": "npm --prefix frontend-react run build",
+      "log": "results/affected_uav_assistance/frontend-release-build.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:50:31.799646+00:00",
+      "note": "",
+      "log_sha256": "47a8e7702b8da192e26a732345150ada80b4068a4340a15d565d9cddeb07672e"
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 npx playwright test",
+      "log": "results/affected_uav_assistance/browser-regression.log",
+      "outcome": "Failed",
+      "exit_code": 1,
+      "log_modified_utc": "2026-10-26T04:54:16.764440+00:00",
+      "note": "53 passed, one failed, three gated tests skipped. Every gate was subsequently run explicitly. This full-suite result remains Failed.",
+      "log_sha256": "c70b25959826bad6011c5569fb8b4a94258f9d28af524c569ddd50fbdfc989c8"
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 npx playwright test e2e/application.spec.ts -g 'traffic validation captures'",
+      "log": "results/affected_uav_assistance/browser-traffic-recheck.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T04:56:07.458377+00:00",
+      "note": "Fresh isolated recheck passed; does not erase the original timeout.",
+      "log_sha256": "5b6f96e5df5d7a0c59a2c9542ee61a2b1c720535dc5aa26f8a5d93bf51f95397"
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_TEST_MISSING_MODELS=1 FLARE_STUDY_RESULT_FIXTURE=<550-run-state> FLARE_RESILIENCE_RESULT_FIXTURE=<72-run-state> npx playwright test e2e/uav-assistance.spec.ts e2e/adaptive-study-results.spec.ts e2e/resilience-results.spec.ts",
+      "log": "results/affected_uav_assistance/browser-final-features.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T05:14:41.624068+00:00",
+      "note": "Three passed. Two study views use real retained artifacts as transport fixtures, not new backend study executions. Models deliberately absent in the isolated copy.",
+      "log_sha256": "0c03f9f1dd01ec9d3d9c310ae6401df665d6f1582dc40dfe21b18953b09918d6"
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=2d FLARE_PROFILE_TOPOLOGY=auto FLARE_PROFILE_ASSISTANCE=1 npx playwright test e2e/mesh-performance.spec.ts",
+      "log": "results/affected_uav_assistance/render-2d.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:38:32.140653+00:00",
+      "note": "",
+      "log_sha256": "007d53eff084cc927d96ceec5e059a14d187ef13e7ae427abe257aa33e382e43"
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=3d FLARE_PROFILE_TOPOLOGY=auto FLARE_PROFILE_ASSISTANCE=1 npx playwright test e2e/mesh-performance.spec.ts",
+      "log": "results/affected_uav_assistance/render-3d.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:44:34.199921+00:00",
+      "note": "",
+      "log_sha256": "73974a1e5b5bccdfeb46aaf4e8c8d821026528c6908d79ab34892107b145f959"
+    },
+    {
+      "command": "FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=compare FLARE_PROFILE_TOPOLOGY=auto FLARE_PROFILE_ASSISTANCE=1 npx playwright test e2e/mesh-performance.spec.ts",
+      "log": "results/affected_uav_assistance/render-compare.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:46:12.143583+00:00",
+      "note": "",
+      "log_sha256": "a2c06b111ce1bfaea313ba472da5eaf2996a3fa29d9c070825c9773f46f4444a"
+    },
+    {
+      "command": "venv/bin/python -m scripts.run_uav_assistance --directory results/affected_uav_assistance/accepted-batch --workers 2",
+      "log": "results/affected_uav_assistance/accepted-batch.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T05:14:08.844399+00:00",
+      "note": "48/48 complete; outcome read from state.json, no failures.",
+      "log_sha256": "0982f12e19555deb5b4260027fdd3d8151a55a22ec975f775f173855e4b61063"
+    },
+    {
+      "command": "venv/bin/python -m scripts.verify_uav_assistance --batch results/affected_uav_assistance/accepted-batch --directory validation/affected_uav_assistance",
+      "log": "results/affected_uav_assistance/accepted-independent.log",
+      "outcome": "Failed",
+      "exit_code": 1,
+      "log_modified_utc": "2026-10-26T07:01:44.351101+00:00",
+      "note": "Cohorts, conservation, immutable hops and assisted proof/cost checks passed; strict global timestamp ordering failed in six inherited cases. Verifier CLI exits nonzero for the retained ordering failure; consumers can also inspect individual JSON checks.",
+      "log_sha256": "4fcd9cc29c3a6be427f0d8994ac088ca59feccd2cb9438f41bebc5fd37786612"
+    },
+    {
+      "command": "venv/bin/python -m scripts.repeat_uav_assistance --batch results/affected_uav_assistance/accepted-batch --directory results/affected_uav_assistance/repeatability",
+      "log": "results/affected_uav_assistance/repeatability.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T05:16:27.869989+00:00",
+      "note": "Exact results under fresh PYTHONHASHSEED=1 and 99 processes.",
+      "log_sha256": "5dd3b2947c719be5f0abaab543450a69d4bf18604afff3ecd5920c62ee727b9b"
+    },
+    {
+      "command": "venv/bin/python -m scripts.profile_uav_assistance_cpu --directory results/affected_uav_assistance/cpu-profile",
+      "log": "results/affected_uav_assistance/cpu-profile.log",
+      "outcome": "Passed",
+      "exit_code": 0,
+      "log_modified_utc": "2026-10-26T06:35:47.930987+00:00",
+      "note": "",
+      "log_sha256": "a53be0ad928549e65ca79db1cf2e35246a84f7b02738c38fb25e011c830e0447"
+    }
+  ]
+}

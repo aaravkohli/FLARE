@@ -1,0 +1,15 @@
+{
+  "python": "3.11.4 (v3.11.4:d2340ef257, Jun  6 2023, 19:15:51) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "platform": {
+    "system": "Darwin",
+    "node": "Aaravs-MacBook-Air.local",
+    "release": "25.6.0",
+    "version": "Darwin Kernel Version 25.6.0: Fri Jul 31 19:18:43 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T8112",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "node": "v25.2.1",
+  "npm": "11.6.2",
+  "cwd": "/Users/aaravkohli/.codex/worktrees/efb1/Capstone",
+  "date": "2026-10-25T16:30:55Z"
+}

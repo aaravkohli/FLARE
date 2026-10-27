@@ -2655,6 +2655,11 @@ async def telemetry_broadcaster():
             if _ws_clients:
                 await _broadcast_mission_events()
                 events = await _latest_decision_events()
+                report_session=None
+                if os.getenv('FLARE_SWARM_ENABLED')=='1' and any((e.get('telemetry') or {}).get('observation') for e in events.values()):
+                    from api.mission import service_request
+                    try: report_session=await service_request('GET','/session')
+                    except Exception: pass
                 legacy_summaries = await _latest_run_summaries()
                 missing = _sync_api_fleet() - events.keys()
                 fallback_metrics: dict[str, dict] = {}
@@ -2787,13 +2792,17 @@ async def telemetry_broadcaster():
                         )
                     else:
                         routing_explanation = routing_cached[1]
+                    report_observation=metrics.get('observation')
+                    report_age=None
+                    if report_observation and report_session and mission_session==report_session['session_id'] and report_observation.get('epoch')==report_session.get('observation_epoch'):
+                        report_age=max(0.,report_session['simulation_time']-report_observation['captured_at'])
                     await _broadcast_to_ws({
                         "type": "telemetry",
                         "timestamp": message_timestamp,
                         "decision": decision,
                         "metrics": metrics,
                         "event": event,
-                        "telemetry_age_s": max(0.0, time.time() - message_timestamp),
+                        "telemetry_age_s": report_age if report_observation else max(0.0, time.time() - message_timestamp),
                         "explanation": explanation,
                         "routing_explanation": routing_explanation,
                         "byzantine": byzantine_status,

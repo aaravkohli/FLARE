@@ -1,0 +1,37 @@
+{
+  "source_sha256": "2aa38e615d4e03e9933b8e8328da93e4b2eab8d3d99ff702b44ed80cdf62e136",
+  "git_commit": "2b24104aa69694a1eb102c7319aad157fb01e7fc",
+  "files": {
+    "config/swarm_config.yaml": "906508388b7069594b960a279d810b5c611f75c9ed41a9eb4fd804655ab23aae",
+    "schemas/mission.py": "aec6fec8c62ea3db935bebe363cc324b940059c3ffbb1e930c115fa9c96c9d3d",
+    "simulation/swarm/engine.py": "a7177e29445317764050f03c4a0d100e206351c340e23a2d85b1559eff528d20",
+    "simulation/swarm/network.py": "a44846bb72cc668c4c94c4af3e502cf092d6605caac15fe0073318b32bd018f4",
+    "simulation/swarm/topology.py": "062db7c5a31b5ad3f585ab3d006d2445541689b4ed5252e0a51c25bcce1c6dd4",
+    "simulation/swarm/adaptive_topology.py": "44e206eaeb159a72a916965b0a7cd015166658ccc3a99d551d4a391428f71146",
+    "simulation/swarm/movement.py": "15faea5ab28924c52871653b6fa9c2bb175d0eb8526b3761a3829fb8e3944d03",
+    "simulation/swarm/attacks.py": "d6da9dbb19a2f42b7b133579ee5c4ce2c1da3cf043c10fb3057a989eb0b0a737",
+    "simulation/swarm/scenarios.py": "de0edff835d9afb999ad0f98c0a3a08c6da3d8da881a1d92f12298c254423899",
+    "simulation/swarm/terrain.py": "b592e0aef3f714873824f94038308d7036ded147e4e74fc3f216c5dfd25436ba",
+    "simulation/swarm/experiments.py": "135a9e7e18db16006e1d2fcb4c1956d72322df1e34fd8c204cb8cc0d01333390",
+    "simulation/swarm/reference_workload.py": "7de822a97009281fa8007c4ee97e6585f59fe6aea6eb65b4ae67a00baf2cc3ee",
+    "simulation/swarm/adaptive_study.py": "03e7aa50967890dfe133eaa77cfbb207ec5e10a118c9979778d359d1fb6a877d",
+    "simulation/swarm/study_statistics.py": "8d55b9a3a2c1a7a9ae00299b4245acef985b26ba0b6cdcb5a981e2a0dd459ee6",
+    "simulation/swarm/performance.py": "8e13f1d876b432f7dae18a757fc2e70caf7869570aabf8213aa831e354b1b174",
+    "scripts/run_adaptive_study.py": "8ddb77d0932ef1d1ba8a38709632f4a07660042c132ff93cf074c42bc58ec312",
+    "frontend-react/src/mission-simulation/assets/terrain/heightmap.ts": "e7656fe3e939f83eaf470c8df331fc1262881fd4ab2a3f806b60b593f86c41a8"
+  },
+  "terrain": {
+    "source": "usgs-3dep-local-simulation",
+    "fallback": false,
+    "extension": "representative_outside_patch",
+    "checksum": "640a089c"
+  },
+  "python": "3.11.4",
+  "dependencies": {
+    "numpy": "2.4.6",
+    "pydantic": "2.13.4",
+    "PyYAML": "6.0.3",
+    "fastapi": "0.138.2"
+  },
+  "note": "Exact numerical source and terrain inputs archived while evidence workers execute; operator inputs remain untouched."
+}

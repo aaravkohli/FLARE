@@ -1,0 +1,170 @@
+[
+  {
+    "capability": "Balanced default, manual pin, reset and scenario persistence",
+    "outcome": "Passed",
+    "evidence": "tests/test_evidence_resilience.py; resilience-controller.spec.ts",
+    "limitations": "No live operator reset"
+  },
+  {
+    "capability": "Ten candidates \u00d7 sizes 10\u2013100 \u00d7 seeds 7/42/99",
+    "outcome": "Passed",
+    "evidence": "test_enhanced_ten_candidate_matrix; test_adaptive_topology.py",
+    "limitations": "300 enhanced candidate evaluations plus baseline matrix"
+  },
+  {
+    "capability": "Packet-specific overlap, completed-hop immutability and lease expiry",
+    "outcome": "Passed",
+    "evidence": "test_transition_leases_only_captured_packets_and_bound_duration; test_expiring_binding_does_not_erase_an_earlier_precise_arrival",
+    "limitations": "Deterministic modeled scheduler"
+  },
+  {
+    "capability": "Containment, excluded flows and new-packet isolation",
+    "outcome": "Passed",
+    "evidence": "test_containment_overrides_retained_forwarding_and_rollback_never_rewinds; test_new_policies_cannot_use_retained_edges",
+    "limitations": "Current security restrictions override leases"
+  },
+  {
+    "capability": "Installation failure and rollback",
+    "outcome": "Passed",
+    "evidence": "test_enhanced_installation_failure_rolls_back_current_state",
+    "limitations": "Explicit installation fault fixture"
+  },
+  {
+    "capability": "Registered service and non-preemptive airtime",
+    "outcome": "Passed",
+    "evidence": "test_registration_not_category_grants_protected_service; test_priority_reservation_is_work_conserving_and_nonpreemptive",
+    "limitations": "Controlled lossless timing expectation"
+  },
+  {
+    "capability": "Fragment completeness, losses, duplicates, out-of-order receipts",
+    "outcome": "Passed",
+    "evidence": "test_reports_require_complete_receipts_and_frozen_samples; test_duplicate_lost_and_out_of_order_fragments_and_epoch_invalidation",
+    "limitations": "Real scheduler plus explicit receipt-order fixture"
+  },
+  {
+    "capability": "Pause and simulation-clock age at 0.1\u00d7 through 4\u00d7",
+    "outcome": "Passed",
+    "evidence": "test_report_age_uses_simulation_clock_at_every_speed; resilience-controller.spec.ts",
+    "limitations": "No wall-clock extrapolation"
+  },
+  {
+    "capability": "Report once-only orchestrator processing and missing evidence",
+    "outcome": "Passed",
+    "evidence": "test_orchestrator_processes_a_report_once_and_holds_when_unavailable",
+    "limitations": "Model integration fixture; unavailable-model browser run"
+  },
+  {
+    "capability": "API authentication, revisions, policy values and pilot preset",
+    "outcome": "Passed",
+    "evidence": "tests/test_swarm_api.py; tests/test_evidence_resilience.py",
+    "limitations": "Existing authenticated endpoints"
+  },
+  {
+    "capability": "Fixed workloads retain numerical measurements",
+    "outcome": "Passed",
+    "evidence": "test_fresh_prechange_fixed_workload_numerical_baselines",
+    "limitations": "Four fresh pre-change fixed-workload golden cases; configuration fingerprint excluded"
+  },
+  {
+    "capability": "Public control matrix and existing mission workflows",
+    "outcome": "Passed",
+    "evidence": "browser-control-matrix.log; browser-final.log; browser-rerun.log",
+    "limitations": "17 matrix cases and 8 final browser cases; fixture cases labeled in specs"
+  },
+  {
+    "capability": "Pilot create/cancel, exports, navigation and isolation",
+    "outcome": "Passed",
+    "evidence": "resilience-controller.spec.ts; browser-new.log; browser-missing-models.log; browser-final.log",
+    "limitations": "Actual isolated jobs, partial results and downloads"
+  },
+  {
+    "capability": "Responsive 390/687/768/915/1024/1440 and keyboard access",
+    "outcome": "Passed",
+    "evidence": "resilience-controller.spec.ts; sign-in.spec.ts; audit-surfaces.spec.ts",
+    "limitations": "Screenshots plus overflow/focus assertions"
+  },
+  {
+    "capability": "100-UAV 2D/3D/A/B rendering targets",
+    "outcome": "Passed",
+    "evidence": "rendering-profiles.json; rendering-source-manifests.json",
+    "limitations": "Separate fresh 60-second profiles on Apple M2"
+  },
+  {
+    "capability": "100-UAV achieved 1\u00d7 live simulation speed",
+    "outcome": "Failed",
+    "evidence": "rendering-profiles.json",
+    "limitations": "Final source: 0.474\u00d7 in 2D and 0.453\u00d7 in 3D; requested 1\u00d7. Rendering passes do not imply real-time simulation."
+  },
+  {
+    "capability": "Protected scheduler optimization event equivalence",
+    "outcome": "Passed",
+    "evidence": "scheduler-profile.json; multiradio-scheduler-equivalence.json; tests/test_evidence_resilience.py",
+    "limitations": "Independent reference order; component gain only"
+  },
+  {
+    "capability": "Linux CI execution",
+    "outcome": "Not Tested",
+    "evidence": ".github/workflows/ci.yml",
+    "limitations": "Workflow updated; this local run is macOS"
+  },
+  {
+    "capability": "Physical RF and real multi-hop SDN enforcement",
+    "outcome": "Not Tested",
+    "evidence": "README.md",
+    "limitations": "Outside milestone; simulator evidence is not hardware validation"
+  },
+  {
+    "capability": "New detector training, convergence or detection-quality claims",
+    "outcome": "Not Tested",
+    "evidence": "README.md",
+    "limitations": "No new training; existing model contracts preserved"
+  },
+  {
+    "capability": "Patent novelty or exhaustive prior-art opinion",
+    "outcome": "Not Tested",
+    "evidence": "README.md",
+    "limitations": "Technical hypothesis and three nearby primary references only"
+  },
+  {
+    "capability": "Activation in operator running services",
+    "outcome": "Not Tested",
+    "evidence": "README.md",
+    "limitations": "Intentionally preserved operator mission; normal restart required"
+  },
+  {
+    "capability": "Final four-arm 72-run pilot and shared external inputs",
+    "outcome": "Passed",
+    "evidence": "study-summary.json; independent-verification.json; per-run-measurements.csv",
+    "limitations": "Three exploratory seeds; all arms selected identical topology sequences"
+  },
+  {
+    "capability": "Fresh subprocess scientific reproducibility",
+    "outcome": "Passed",
+    "evidence": "repeatability.json",
+    "limitations": "Congestion seed 7, two arms, hash seeds 1/99; CPU/wall timing excluded"
+  },
+  {
+    "capability": "Unreserved and protected radio occupancy accounting",
+    "outcome": "Passed",
+    "evidence": "admission-airtime-tests.log; accepted-regressions.log",
+    "limitations": "Sum of endpoint occupancy, not global channel time"
+  },
+  {
+    "capability": "Completed accepted pilot presentation and paired intervals",
+    "outcome": "Passed",
+    "evidence": "accepted-results-browser.log; evidence/completed-resilience-pilot.png",
+    "limitations": "Real accepted data through explicit HTTP transport fixture"
+  },
+  {
+    "capability": "Matched final-source Auto/Manual CPU measurement",
+    "outcome": "Passed",
+    "evidence": "cpu-profile.json",
+    "limitations": "100 UAVs; three seeds; ten simulation seconds; no whole-application real-time claim"
+  },
+  {
+    "capability": "Final full Python regression suite",
+    "outcome": "Passed",
+    "evidence": "python-accepted-full.log",
+    "limitations": "1038 passed, 5 warnings; pytest configuration excludes tests/test_adversarial.py"
+  }
+]

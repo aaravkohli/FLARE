@@ -1,0 +1,222 @@
+{
+  "recorded_at_utc": "2026-10-25T17:14:06.745256+00:00",
+  "note": "Reproduction commands describe executed checks; shell redirections and optional artifact locations may differ. Null commands mean the original compound invocation was not retained; logs/specifications remain available. File modification timestamps identify log write completion, not inferred start times.",
+  "records": [
+    {
+      "log": "results/evidence_resilience/python-full.log",
+      "reproduction_command": "venv/bin/python -m pytest -q",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Initial complete-source regression; 995 tests.",
+      "log_written_at_utc": "2026-10-25T14:28:50.932283+00:00",
+      "sha256": "ef43ac912db9a6ed23a1f019fffb0174ffb89d8293db1c070d3ee900494c950b"
+    },
+    {
+      "log": "results/evidence_resilience/python-final.log",
+      "reproduction_command": "venv/bin/python -m pytest -q",
+      "exit_code": 1,
+      "outcome": "Failed",
+      "scope": "1031 passed; real disk guard prevented cancellation fixture.",
+      "log_written_at_utc": "2026-10-25T16:27:28.216538+00:00",
+      "sha256": "9361973277721d6e0fe9efb9ecccc4ac530b0904a3d4a305ed9f5fd20da51ed5"
+    },
+    {
+      "log": "results/evidence_resilience/accepted-regressions.log",
+      "reproduction_command": "venv/bin/python -m pytest -q tests/test_evidence_resilience.py tests/test_resilience_study.py tests/test_adaptive_topology.py tests/test_swarm_api.py tests/test_mesh_research.py",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "167 affected final-source regressions.",
+      "log_written_at_utc": "2026-10-25T16:43:51.432213+00:00",
+      "sha256": "7ea67648cf0101f633c9093ebdcf7c794816e8e40b12211db2c3e3d42b4bb310"
+    },
+    {
+      "log": "results/evidence_resilience/frontend-release.log",
+      "reproduction_command": "npm --prefix frontend-react test",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "175 tests.",
+      "log_written_at_utc": "2026-10-25T16:17:23.463920+00:00",
+      "sha256": "c8aaf42d5d67f8d576cbe45d9befd019f5ffa80f2a0dbea177e54a3b51498c1b"
+    },
+    {
+      "log": "results/evidence_resilience/typecheck-release.log",
+      "reproduction_command": "npm --prefix frontend-react run typecheck",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "TypeScript.",
+      "log_written_at_utc": "2026-10-25T16:17:15.965619+00:00",
+      "sha256": "373b6abd1702072c02436a7dda84d3996d43e72c96042734e7cd9c714859a0c7"
+    },
+    {
+      "log": "results/evidence_resilience/lint-release.log",
+      "reproduction_command": "npm --prefix frontend-react run lint",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Seven retained warnings.",
+      "log_written_at_utc": "2026-10-25T16:17:23.755011+00:00",
+      "sha256": "4c7dd95008c4ba3ba2c67103436fe51a73c796c4fb43a3b0de03569c75c50f61"
+    },
+    {
+      "log": "results/evidence_resilience/build-release.log",
+      "reproduction_command": "npm --prefix frontend-react run build",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Production build; existing chunk-size warning.",
+      "log_written_at_utc": "2026-10-25T16:17:27.680427+00:00",
+      "sha256": "c00911089a6d4ea08cce9d256d2420847df8a09a8a9ab9a2a2f09498ed5ddefd"
+    },
+    {
+      "log": "results/evidence_resilience/browser-new.log",
+      "reproduction_command": "FLARE_TEST_PRODUCTION=1 npm --prefix frontend-react run test:browser -- resilience-controller.spec.ts",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Actual disposable services.",
+      "log_written_at_utc": "2026-10-25T14:23:24.369077+00:00",
+      "sha256": "37d288ef7ac8ff1c2354f3277965db9b4b72c5d04df2564254de5ab2425ba2e3"
+    },
+    {
+      "log": "results/evidence_resilience/browser-missing-models.log",
+      "reproduction_command": null,
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Controller spec with explicitly missing models; see Playwright harness flags.",
+      "log_written_at_utc": "2026-10-25T14:42:42.716744+00:00",
+      "sha256": "9344e6a0a1c7ac1527ecc9c162af58525ec9c9e413f8f290087fb9d50253ff50"
+    },
+    {
+      "log": "results/evidence_resilience/browser-regressions.log",
+      "reproduction_command": null,
+      "exit_code": 1,
+      "outcome": "Failed",
+      "scope": "24 passed; stale option assertion and loaded-run traffic-validation timeout.",
+      "log_written_at_utc": "2026-10-25T14:29:22.002491+00:00",
+      "sha256": "ff02653ab6e1b2c41a77e2af081f3cfa7405f1363442af7ad3a15badd80d704c"
+    },
+    {
+      "log": "results/evidence_resilience/browser-rerun.log",
+      "reproduction_command": null,
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "7 affected browser cases passed in fresh services.",
+      "log_written_at_utc": "2026-10-25T14:31:19.421150+00:00",
+      "sha256": "20d1fa51c85a0ea0e8e18f39fb19bc1778b9490acac409f205eb3631598b675f"
+    },
+    {
+      "log": "results/evidence_resilience/browser-final.log",
+      "reproduction_command": null,
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "8 controller/auth/navigation/swarm cases.",
+      "log_written_at_utc": "2026-10-25T16:19:23.788501+00:00",
+      "sha256": "67386dab6364ff4594a08f459bbabeab37b040fbe95a01eda6c5329d12403351"
+    },
+    {
+      "log": "results/evidence_resilience/browser-control-matrix.log",
+      "reproduction_command": "FLARE_TEST_PRODUCTION=1 npm --prefix frontend-react run test:browser -- control-matrix.spec.ts",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "17 control matrix cases.",
+      "log_written_at_utc": "2026-10-25T16:25:14.370779+00:00",
+      "sha256": "b14deed700d401f18a3a59100333f1cd90b29fe1f8fc2b1d7d5c87080754f457"
+    },
+    {
+      "log": "results/evidence_resilience/accepted-results-browser.log",
+      "reproduction_command": "env FLARE_TEST_PRODUCTION=1 FLARE_RESILIENCE_RESULT_FIXTURE=/Users/aaravkohli/.codex/worktrees/efb1/Capstone/results/evidence_resilience/pilot-accepted-verified/state.json FLARE_ARTIFACT_DIR=/private/tmp/flare-resilience-accepted-results npm --prefix frontend-react run test:browser -- resilience-results.spec.ts",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Final accepted 72-row results; explicit HTTP transport fixture.",
+      "log_written_at_utc": "2026-10-25T17:04:38.326478+00:00",
+      "sha256": "907cb2e7adb43d84d34a3024bf3aa33afde74b8aef391817bd389003c837d9ff"
+    },
+    {
+      "log": "results/evidence_resilience/pilot-accepted.log",
+      "reproduction_command": "venv/bin/python -m scripts.run_resilience_pilot --directory results/evidence_resilience/pilot-accepted --workers 2",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "72 final runs; new directory required for reproduction.",
+      "log_written_at_utc": "2026-10-25T16:51:00.831761+00:00",
+      "sha256": "194d2b12c60bce74418ba90df0e3563ccd3050366d6b78ab159f36361ccf9916"
+    },
+    {
+      "log": "results/evidence_resilience/verification-accepted.log",
+      "reproduction_command": "venv/bin/python -m scripts.verify_resilience_pilot --input results/evidence_resilience/pilot-accepted --directory results/evidence_resilience/pilot-accepted-verified",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Independent trace reduction; new output directory required.",
+      "log_written_at_utc": "2026-10-25T16:51:41.296438+00:00",
+      "sha256": "10c22a86b80a0707b54af1dbeddd61b2d902fb46cf0158cc1c41b32415a5a0b2"
+    },
+    {
+      "log": "results/evidence_resilience/hashseed-accepted.log",
+      "reproduction_command": "venv/bin/python -m scripts.check_resilience_repeatability --directory results/evidence_resilience/hashseed-accepted",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Four fresh-process repetitions; new directory required.",
+      "log_written_at_utc": "2026-10-25T16:48:01.025301+00:00",
+      "sha256": "b01e4f4547dd81ac2db1a9bef444ed92f6cea3a0ea9d49b8a2eef4f3e27582d0"
+    },
+    {
+      "log": "results/evidence_resilience/accepted-cpu-profile.log",
+      "reproduction_command": "venv/bin/python -m scripts.profile_resilience_cpu",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Six matched 100-UAV CPU observations; no browser overlap.",
+      "log_written_at_utc": "2026-10-25T17:01:55.536535+00:00",
+      "sha256": "48aef516a120a715081dbd110de729bacfbf4d128d1921dee34802d7df8b4a5b"
+    },
+    {
+      "log": "results/evidence_resilience/scheduler-profile.log",
+      "reproduction_command": "venv/bin/python -m scripts.profile_resilience_scheduler",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Five exact event-equivalent component observations.",
+      "log_written_at_utc": "2026-10-25T14:27:33.605023+00:00",
+      "sha256": "cda39958ebe869f378168087d7d712dccae38087d1e53b44e2d82bdc17774aea"
+    },
+    {
+      "log": "results/evidence_resilience/diff-check.log",
+      "reproduction_command": "git diff --check",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Whitespace check.",
+      "log_written_at_utc": "2026-10-25T17:13:40.029369+00:00",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "log": "results/evidence_resilience/accepted-profile-2d.log",
+      "reproduction_command": "env FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=2d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_ARTIFACT_DIR=/private/tmp/flare-resilience-accepted-2d npm --prefix frontend-react run test:browser -- mesh-performance.spec.ts",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Separate fresh 60-second profile; FPS acceptance only.",
+      "log_written_at_utc": "2026-10-25T16:53:01.546399+00:00",
+      "sha256": "75d6c570d217048c19230de972532eca5935a0fb87c034108ef775893dd456be"
+    },
+    {
+      "log": "results/evidence_resilience/accepted-profile-3d.log",
+      "reproduction_command": "env FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=3d FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_ARTIFACT_DIR=/private/tmp/flare-resilience-accepted-3d npm --prefix frontend-react run test:browser -- mesh-performance.spec.ts",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Separate fresh 60-second profile; FPS acceptance only.",
+      "log_written_at_utc": "2026-10-25T16:55:06.397298+00:00",
+      "sha256": "b6d2adf1f5f0feb08433ab581aae06383302c5db225820f56bd9b83396661554"
+    },
+    {
+      "log": "results/evidence_resilience/accepted-profile-compare.log",
+      "reproduction_command": "env FLARE_TEST_PRODUCTION=1 FLARE_MESH_PROFILE=1 FLARE_PROFILE_SECONDS=60 FLARE_PROFILE_VIEW=compare FLARE_PROFILE_TOPOLOGY=safeguarded FLARE_ARTIFACT_DIR=/private/tmp/flare-resilience-accepted-compare npm --prefix frontend-react run test:browser -- mesh-performance.spec.ts",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Separate fresh 60-second profile; FPS acceptance only.",
+      "log_written_at_utc": "2026-10-25T16:57:13.170197+00:00",
+      "sha256": "b75b262f09796fd9179ad0ec9402fd52d3e91133e4537ff831524bee7710ae06"
+    },
+    {
+      "log": "results/evidence_resilience/python-accepted-full.log",
+      "reproduction_command": "venv/bin/python -m pytest -q --basetemp=/private/tmp/flare-resilience-accepted-pytest",
+      "exit_code": 0,
+      "outcome": "Passed",
+      "scope": "Final full-source regression.",
+      "log_written_at_utc": "2026-10-25T17:12:59.773851+00:00",
+      "sha256": "92898f3a2005403278d94d682a68af9d2fe123c6cee309e6c1284e9fe28baadd"
+    }
+  ]
+}

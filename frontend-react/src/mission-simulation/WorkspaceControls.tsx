@@ -37,9 +37,8 @@ export function ToolPopover({label,children,drawer=false,compactLabel}:{label:st
     if(event.shiftKey&&index<=0){event.preventDefault();list.at(-1)?.focus();}else if(!event.shiftKey&&(index<0||index===list.length-1)){event.preventDefault();list[0]?.focus();}
    }
   };
-  document.addEventListener('pointerdown',close);host.current?.addEventListener('keydown',keys);
-  const node=host.current;
-  return ()=>{document.removeEventListener('pointerdown',close);node?.removeEventListener('keydown',keys);if(drawer&&previous?.isConnected)previous.focus();};
+  document.addEventListener('pointerdown',close);document.addEventListener('keydown',keys,true);
+  return ()=>{document.removeEventListener('pointerdown',close);document.removeEventListener('keydown',keys,true);if(drawer&&previous?.isConnected)previous.focus();};
  },[open,drawer]);
  return <div ref={host} className={`workspace-popover${drawer?' workspace-drawer':''}`}>
   <button ref={trigger} aria-label={label} aria-expanded={open} aria-controls={id} onClick={()=>setOpen(!open)}>{compactLabel?<><span className="tool-full-label">{label}</span><span className="tool-compact-label">{compactLabel}</span></>:label}<ChevronDown size={13}/></button>

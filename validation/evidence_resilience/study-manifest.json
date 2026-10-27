@@ -1,0 +1,590 @@
+{
+  "id": "e3263adc51474f01a7b9e1734e39e284",
+  "mode": "adaptive_study",
+  "configuration": {
+    "mode": "adaptive_study",
+    "protocol_id": "evidence_resilience_pilot_v1",
+    "preset": "pilot"
+  },
+  "protocol": {
+    "id": "evidence_resilience_pilot_v1",
+    "preset": "pilot",
+    "exploratory": true,
+    "count": 30,
+    "seeds": [
+      7,
+      42,
+      99
+    ],
+    "scenarios": [
+      "normal",
+      "mobility",
+      "congestion",
+      "regional_jamming",
+      "single_failure",
+      "partition_reconnection"
+    ],
+    "policies": [
+      "balanced_control",
+      "packet_transition",
+      "observability_guard",
+      "combined"
+    ],
+    "total_runs": 72,
+    "warmup_s": 5.0,
+    "measured_traffic_s": 60.0,
+    "traffic_stop_s": 65.0,
+    "ttl_drain_s": 20.0,
+    "total_simulation_s": 85.0,
+    "reference_workload": "mesh_peer_reference_v3",
+    "model_inference": "excluded",
+    "observation_transport": "registered mesh reports in all arms; 10% protected service only in observability and combined arms",
+    "comparison": "Combined minus each ablation; exploratory seed-level paired intervals",
+    "command_schedule": "role=standard to one round-robin UAV at seconds 6,11,...,61; TTL 10 seconds",
+    "report_interval_s": 1.0,
+    "freshness_s": 3.0,
+    "partition_mechanism": "policy-imposed link cut",
+    "feature_arms": {
+      "balanced_control": {
+        "packet_transitions": false,
+        "observation_guard": false,
+        "protected_scheduling": false
+      },
+      "packet_transition": {
+        "packet_transitions": true,
+        "observation_guard": false,
+        "protected_scheduling": false
+      },
+      "observability_guard": {
+        "packet_transitions": false,
+        "observation_guard": true,
+        "protected_scheduling": true
+      },
+      "combined": {
+        "packet_transitions": true,
+        "observation_guard": true,
+        "protected_scheduling": true
+      }
+    }
+  },
+  "status": "completed",
+  "progress": 1.0,
+  "source_sha256": "85844bbaf415323189d0c2a5fa100934cfc7f5fa720c5496a84d586e40aab5da",
+  "simulator_version": "flare_mesh_v2",
+  "simulation_config": {
+    "default_count": 30,
+    "max_count": 100,
+    "seed": 42,
+    "topology": "self_healing_mesh",
+    "topology_mode": "auto",
+    "adaptive_topology": {
+      "evaluation_s": 1.0,
+      "window_s": 10.0,
+      "minimum_observations": 8,
+      "improvement": 0.08,
+      "consecutive_wins": 3,
+      "cooldown_s": 15.0,
+      "emergency_loss": 0.1,
+      "emergency_rebuilds": 2,
+      "emergency_interval_s": 2.0,
+      "blacklist_s": 30.0,
+      "drain_s": 1.0,
+      "validation_rebuilds": 2,
+      "headroom": 0.2,
+      "transition_penalty": 0.05,
+      "weights": {
+        "reliability": 0.35,
+        "latency": 0.25,
+        "capacity": 0.25,
+        "efficiency": 0.15
+      }
+    },
+    "formation": "distributed",
+    "fixed_step_s": 0.05,
+    "network_interval_s": 0.2,
+    "discovery_timeout_s": 0.6,
+    "radio": {
+      "range_m": 350.0,
+      "reference_rssi_dbm": -36.0,
+      "path_loss_exponent": 2.2,
+      "noise_dbm": -100.0,
+      "bandwidth_mbps": 12.0,
+      "minimum_sinr_db": 4.0,
+      "max_loss": 0.35,
+      "propagation_ms": 8.0
+    },
+    "packets": {
+      "queue_limit": 64,
+      "capacity": 10000,
+      "ttl_s": 20.0,
+      "retries": 3,
+      "jitter_ms": 2.0,
+      "retry_backoff_ms": 2.0
+    },
+    "fl": {
+      "client_pool_size": 5,
+      "transfer_timeout_s": 90.0
+    },
+    "adaptive_policy": "balanced_v1",
+    "resilience": {
+      "freshness_s": 3.0,
+      "fragment_bytes": 4096,
+      "max_report_bytes": 65536,
+      "protected_airtime_share": 0.1,
+      "packet_transitions": true,
+      "observation_guard": true,
+      "protected_scheduling": true
+    }
+  },
+  "fleet_records": [],
+  "trace_files": [
+    "normal-balanced_control-7.jsonl.gz",
+    "normal-packet_transition-7.jsonl.gz",
+    "normal-observability_guard-7.jsonl.gz",
+    "normal-combined-7.jsonl.gz",
+    "normal-balanced_control-42.jsonl.gz",
+    "normal-packet_transition-42.jsonl.gz",
+    "normal-observability_guard-42.jsonl.gz",
+    "normal-combined-42.jsonl.gz",
+    "normal-balanced_control-99.jsonl.gz",
+    "normal-packet_transition-99.jsonl.gz",
+    "normal-observability_guard-99.jsonl.gz",
+    "normal-combined-99.jsonl.gz",
+    "mobility-balanced_control-7.jsonl.gz",
+    "mobility-packet_transition-7.jsonl.gz",
+    "mobility-observability_guard-7.jsonl.gz",
+    "mobility-combined-7.jsonl.gz",
+    "mobility-balanced_control-42.jsonl.gz",
+    "mobility-packet_transition-42.jsonl.gz",
+    "mobility-observability_guard-42.jsonl.gz",
+    "mobility-combined-42.jsonl.gz",
+    "mobility-balanced_control-99.jsonl.gz",
+    "mobility-packet_transition-99.jsonl.gz",
+    "mobility-observability_guard-99.jsonl.gz",
+    "mobility-combined-99.jsonl.gz",
+    "congestion-balanced_control-7.jsonl.gz",
+    "congestion-packet_transition-7.jsonl.gz",
+    "congestion-observability_guard-7.jsonl.gz",
+    "congestion-combined-7.jsonl.gz",
+    "congestion-balanced_control-42.jsonl.gz",
+    "congestion-packet_transition-42.jsonl.gz",
+    "congestion-observability_guard-42.jsonl.gz",
+    "congestion-combined-42.jsonl.gz",
+    "congestion-balanced_control-99.jsonl.gz",
+    "congestion-packet_transition-99.jsonl.gz",
+    "congestion-observability_guard-99.jsonl.gz",
+    "congestion-combined-99.jsonl.gz",
+    "regional_jamming-balanced_control-7.jsonl.gz",
+    "regional_jamming-packet_transition-7.jsonl.gz",
+    "regional_jamming-observability_guard-7.jsonl.gz",
+    "regional_jamming-combined-7.jsonl.gz",
+    "regional_jamming-balanced_control-42.jsonl.gz",
+    "regional_jamming-packet_transition-42.jsonl.gz",
+    "regional_jamming-observability_guard-42.jsonl.gz",
+    "regional_jamming-combined-42.jsonl.gz",
+    "regional_jamming-balanced_control-99.jsonl.gz",
+    "regional_jamming-packet_transition-99.jsonl.gz",
+    "regional_jamming-observability_guard-99.jsonl.gz",
+    "regional_jamming-combined-99.jsonl.gz",
+    "single_failure-balanced_control-7.jsonl.gz",
+    "single_failure-packet_transition-7.jsonl.gz",
+    "single_failure-observability_guard-7.jsonl.gz",
+    "single_failure-combined-7.jsonl.gz",
+    "single_failure-balanced_control-42.jsonl.gz",
+    "single_failure-packet_transition-42.jsonl.gz",
+    "single_failure-observability_guard-42.jsonl.gz",
+    "single_failure-combined-42.jsonl.gz",
+    "single_failure-balanced_control-99.jsonl.gz",
+    "single_failure-packet_transition-99.jsonl.gz",
+    "single_failure-observability_guard-99.jsonl.gz",
+    "single_failure-combined-99.jsonl.gz",
+    "partition_reconnection-balanced_control-7.jsonl.gz",
+    "partition_reconnection-packet_transition-7.jsonl.gz",
+    "partition_reconnection-observability_guard-7.jsonl.gz",
+    "partition_reconnection-combined-7.jsonl.gz",
+    "partition_reconnection-balanced_control-42.jsonl.gz",
+    "partition_reconnection-packet_transition-42.jsonl.gz",
+    "partition_reconnection-observability_guard-42.jsonl.gz",
+    "partition_reconnection-combined-42.jsonl.gz",
+    "partition_reconnection-balanced_control-99.jsonl.gz",
+    "partition_reconnection-packet_transition-99.jsonl.gz",
+    "partition_reconnection-observability_guard-99.jsonl.gz",
+    "partition_reconnection-combined-99.jsonl.gz"
+  ],
+  "artifact_manifest": [
+    {
+      "file": "normal-balanced_control-7.jsonl.gz",
+      "bytes": 1910810,
+      "sha256": "71702f513765aadca7355ec1d8918ad2bca64b43f7f31f5fe399dab97a9cba1b"
+    },
+    {
+      "file": "normal-packet_transition-7.jsonl.gz",
+      "bytes": 1911036,
+      "sha256": "0eb636c47f244eb60a05f61510a48ac31c93f4ec7034683b98f7659c8072940e"
+    },
+    {
+      "file": "normal-observability_guard-7.jsonl.gz",
+      "bytes": 1843609,
+      "sha256": "ea25b9898f7882abbe0a2102bdee773b155ba8e3cdcf4686d9219b82b7e89e1b"
+    },
+    {
+      "file": "normal-combined-7.jsonl.gz",
+      "bytes": 1843815,
+      "sha256": "482dc2d710c8f7ec94799f299c370b9642cd051daffcaecd73edc4217e8db222"
+    },
+    {
+      "file": "normal-balanced_control-42.jsonl.gz",
+      "bytes": 1909403,
+      "sha256": "5384bc8a224f8ac8f9248b6a9b8ca869f86bb90169c79ab210b8fb515029401a"
+    },
+    {
+      "file": "normal-packet_transition-42.jsonl.gz",
+      "bytes": 1909627,
+      "sha256": "ce410c1c62b9aad5ca4dca07879ce83d5f0a4defa9f4a92dbb7a9133d6389c82"
+    },
+    {
+      "file": "normal-observability_guard-42.jsonl.gz",
+      "bytes": 1848983,
+      "sha256": "16a544cd7ff442381255189f4a486e16dcc0718d7fd757fad007cd1fab0278fe"
+    },
+    {
+      "file": "normal-combined-42.jsonl.gz",
+      "bytes": 1849187,
+      "sha256": "7446721c7e9b380cd737c2cff099efe6dca6d61e08eb46834b1ebe17fac2d8d2"
+    },
+    {
+      "file": "normal-balanced_control-99.jsonl.gz",
+      "bytes": 1904955,
+      "sha256": "003d14811e97fb5774c6254eeb271ac85305019e3662b4c1913ef091d9068c40"
+    },
+    {
+      "file": "normal-packet_transition-99.jsonl.gz",
+      "bytes": 1905183,
+      "sha256": "55924390baac5fcc76ccba2c6191fe044ec2059e4f56d0eff908bb039118debd"
+    },
+    {
+      "file": "normal-observability_guard-99.jsonl.gz",
+      "bytes": 1846128,
+      "sha256": "bfc7c0103fe957e8f32e298a98e76b4405871142c0b85ea282e99ea9c7af71c0"
+    },
+    {
+      "file": "normal-combined-99.jsonl.gz",
+      "bytes": 1846333,
+      "sha256": "6c6b079f21052ca9d71ffc41500ccd4f67ec390e8a469d21e8011d469b795e90"
+    },
+    {
+      "file": "mobility-balanced_control-7.jsonl.gz",
+      "bytes": 2557806,
+      "sha256": "cadcfd0acf885257605f40e3a0680e03505c4031bc891363658c0cded9571bae"
+    },
+    {
+      "file": "mobility-packet_transition-7.jsonl.gz",
+      "bytes": 2558326,
+      "sha256": "9a24bfbb81b2a312fbea9d97f7402dd413b617d7d94a9f01f8cdb139742db4db"
+    },
+    {
+      "file": "mobility-observability_guard-7.jsonl.gz",
+      "bytes": 2433453,
+      "sha256": "89c4217fb95849b876a7762551d4260d0618d197ce0523863f98e12aa20da8da"
+    },
+    {
+      "file": "mobility-combined-7.jsonl.gz",
+      "bytes": 2433930,
+      "sha256": "42d3e19a36d0a4cbd2962c779894601063db9817a6754bd6d83adb420240d410"
+    },
+    {
+      "file": "mobility-balanced_control-42.jsonl.gz",
+      "bytes": 2558782,
+      "sha256": "0dff19fb7de13e8658999cebcbe7e8625ac7d6694659fbcb77918f3429aa8948"
+    },
+    {
+      "file": "mobility-packet_transition-42.jsonl.gz",
+      "bytes": 2559299,
+      "sha256": "76573b7de92952c9106728b9db81ec9973b131de2153e63513ec09242ace0fe8"
+    },
+    {
+      "file": "mobility-observability_guard-42.jsonl.gz",
+      "bytes": 2435527,
+      "sha256": "da7274059c07ef9df50e46358a8621ade82510e85c92b12d8fe1f4c233f71bc6"
+    },
+    {
+      "file": "mobility-combined-42.jsonl.gz",
+      "bytes": 2435995,
+      "sha256": "31c6a504c3cbf71bed7b184a431e26b87cdeb08249625b0015f6d392a09ffb4e"
+    },
+    {
+      "file": "mobility-balanced_control-99.jsonl.gz",
+      "bytes": 2543462,
+      "sha256": "ca0aeb4e119375149a1c4fc45dd87de6be9db8a0e3d0999d0aa55be66b62381f"
+    },
+    {
+      "file": "mobility-packet_transition-99.jsonl.gz",
+      "bytes": 2543982,
+      "sha256": "bdc605407ac4c336f0795e9e6a8a16b976504999f753997b4587894c5e094b10"
+    },
+    {
+      "file": "mobility-observability_guard-99.jsonl.gz",
+      "bytes": 2428461,
+      "sha256": "33d3d62f863d157479d48b3dc89fc5b87cafcb636417255b827297acb2161e30"
+    },
+    {
+      "file": "mobility-combined-99.jsonl.gz",
+      "bytes": 2428930,
+      "sha256": "632859074566fe43d93f072dccfa0cfe0858e008523a41126d56c72953f16dc7"
+    },
+    {
+      "file": "congestion-balanced_control-7.jsonl.gz",
+      "bytes": 2468098,
+      "sha256": "a3a057740d2ce2982c46cc9d751a2635f3b6a40a1767d9a2492d2adaeec9ab1c"
+    },
+    {
+      "file": "congestion-packet_transition-7.jsonl.gz",
+      "bytes": 2479815,
+      "sha256": "5fd5ee670c78c805d06002bcfedcb198719cd28bbbbd55e2bbf7ed620f003e3a"
+    },
+    {
+      "file": "congestion-observability_guard-7.jsonl.gz",
+      "bytes": 2449539,
+      "sha256": "69e141dd2baf967fcfdda4b6bb6b010b840a9b4e1f1e368d18dfeca5f0b78c23"
+    },
+    {
+      "file": "congestion-combined-7.jsonl.gz",
+      "bytes": 2464244,
+      "sha256": "1c86f4e36a72ac86e9dbf6da807e3d61e0b2cb1647c1f1ac2e7908a81a8e6db9"
+    },
+    {
+      "file": "congestion-balanced_control-42.jsonl.gz",
+      "bytes": 2470321,
+      "sha256": "eaae12cf293f0ca474f5a1962e7ba26ef3f6d82692adff0c708622f7ab512cd1"
+    },
+    {
+      "file": "congestion-packet_transition-42.jsonl.gz",
+      "bytes": 2471700,
+      "sha256": "e9ce75f54b3cef0f639a5afdda209e9b3f89c508bfa8e470c81c5735c95399f2"
+    },
+    {
+      "file": "congestion-observability_guard-42.jsonl.gz",
+      "bytes": 2448668,
+      "sha256": "79d7dd119321bfd941d89eb7e82b063a5bf7d0794fae1468e3456d53d9bfb1e8"
+    },
+    {
+      "file": "congestion-combined-42.jsonl.gz",
+      "bytes": 2462959,
+      "sha256": "3e2f9b797b40727a0cda331b47a32994b29b506bbb5f042e2921af4de8cd71d7"
+    },
+    {
+      "file": "congestion-balanced_control-99.jsonl.gz",
+      "bytes": 2470583,
+      "sha256": "386e833331974f80091da1a2560f524cdf464a5ce1efa45865099b329a82e872"
+    },
+    {
+      "file": "congestion-packet_transition-99.jsonl.gz",
+      "bytes": 2477305,
+      "sha256": "03697d94910d23235ddd4067947aab8b0bc80eda323871330d5d84c7a9551f89"
+    },
+    {
+      "file": "congestion-observability_guard-99.jsonl.gz",
+      "bytes": 2449055,
+      "sha256": "4dbd8e5b2a694d5e1c38ec653806d9d6450a5d788c8f4c3c378da03e6c93331e"
+    },
+    {
+      "file": "congestion-combined-99.jsonl.gz",
+      "bytes": 2463686,
+      "sha256": "b81154af2317d9dae62b7987523d6f22233e7c6491bda8dcd428b9facd562b27"
+    },
+    {
+      "file": "regional_jamming-balanced_control-7.jsonl.gz",
+      "bytes": 1663940,
+      "sha256": "32a593374b41d226b7a326292a6e97b1114ba58fe036664632517c736c7492ec"
+    },
+    {
+      "file": "regional_jamming-packet_transition-7.jsonl.gz",
+      "bytes": 1664165,
+      "sha256": "968921fb196e2516a36c1df90ac7000a8d4f0134e9060431e6bfbcc85bf8db30"
+    },
+    {
+      "file": "regional_jamming-observability_guard-7.jsonl.gz",
+      "bytes": 1591471,
+      "sha256": "22be1cbf7d65800278615e4e3bfb6a34a1d06c35dae453717dc642cc348ceb3d"
+    },
+    {
+      "file": "regional_jamming-combined-7.jsonl.gz",
+      "bytes": 1591677,
+      "sha256": "fc9a3f443d83b61b7e75a3814d95a547bed9ed830d0c1431f1bfabb2c013e7fc"
+    },
+    {
+      "file": "regional_jamming-balanced_control-42.jsonl.gz",
+      "bytes": 1672120,
+      "sha256": "d629a40c9b4947ac759a7aec9897cdaded43118d00aad9cf4ac90161e6dc30b6"
+    },
+    {
+      "file": "regional_jamming-packet_transition-42.jsonl.gz",
+      "bytes": 1672344,
+      "sha256": "5678c36df2e97e7cc45fea49b7dc8aab74d9e750d1abbb0a4119ca8a850335e4"
+    },
+    {
+      "file": "regional_jamming-observability_guard-42.jsonl.gz",
+      "bytes": 1598253,
+      "sha256": "e3749b22e7bc3d73488baa43f91cbdd07bb67516e5f5c20dcced928f335032f6"
+    },
+    {
+      "file": "regional_jamming-combined-42.jsonl.gz",
+      "bytes": 1598459,
+      "sha256": "8ae6a7c316a7b71345a8d06e4f2a7507e4a8d32c27cee4c27d8711a8441cb5e3"
+    },
+    {
+      "file": "regional_jamming-balanced_control-99.jsonl.gz",
+      "bytes": 1671136,
+      "sha256": "6f12b52219bdfede8b18968f3b93c883d35642e1a6ca39de7149736bf15cd399"
+    },
+    {
+      "file": "regional_jamming-packet_transition-99.jsonl.gz",
+      "bytes": 1671363,
+      "sha256": "6af9792356056166b5f0a4fe0aeb2a43f4c992d9faa51888758c412fba3fdcac"
+    },
+    {
+      "file": "regional_jamming-observability_guard-99.jsonl.gz",
+      "bytes": 1595986,
+      "sha256": "9283338a380cc5f79b818d678fae4196d428b664583b78dc469a1bdbe4ae26d4"
+    },
+    {
+      "file": "regional_jamming-combined-99.jsonl.gz",
+      "bytes": 1596191,
+      "sha256": "1b7983ae6c874882830efa510792c268d6353bcf3a93ac8802bce109ea725b67"
+    },
+    {
+      "file": "single_failure-balanced_control-7.jsonl.gz",
+      "bytes": 1966519,
+      "sha256": "f3cbf0c49462d61402e2b4b00d6257cb876c47a06c02de58a52b625a25095cfe"
+    },
+    {
+      "file": "single_failure-packet_transition-7.jsonl.gz",
+      "bytes": 1966744,
+      "sha256": "10c47d197417a88e0777a4f4834b435518377e6799d5b49d36311e53cccc4d4d"
+    },
+    {
+      "file": "single_failure-observability_guard-7.jsonl.gz",
+      "bytes": 1880459,
+      "sha256": "728dbaac3dea612dee5241b3cada25753bc5343dec6230350dfd7b260fd114b0"
+    },
+    {
+      "file": "single_failure-combined-7.jsonl.gz",
+      "bytes": 1880665,
+      "sha256": "df7dd4d06c351775cc17c7f40a259178a224cb2e9aa7453b8053f3a47cf71f2f"
+    },
+    {
+      "file": "single_failure-balanced_control-42.jsonl.gz",
+      "bytes": 1965514,
+      "sha256": "2ce79c678d3bcc3a17be1c386d32741bda1320aaaecca0b2f8ac69de29be418e"
+    },
+    {
+      "file": "single_failure-packet_transition-42.jsonl.gz",
+      "bytes": 1965737,
+      "sha256": "f6f0a7bd3a563d7e29c442191375e40e4e2632a6c4ffe2a09ec5db75680331ed"
+    },
+    {
+      "file": "single_failure-observability_guard-42.jsonl.gz",
+      "bytes": 1875927,
+      "sha256": "28eca1dd75839b82c73dc7b040b598630bd13bc206d77e7dd483526eb9d306bc"
+    },
+    {
+      "file": "single_failure-combined-42.jsonl.gz",
+      "bytes": 1876132,
+      "sha256": "2c8488364619f0c6be1b0bcf589e1a960023e8c2b7e970dc8187f584c986ea54"
+    },
+    {
+      "file": "single_failure-balanced_control-99.jsonl.gz",
+      "bytes": 1969136,
+      "sha256": "ec57590a4dda428a0e100e6547ad77331424b11a66679eda84ca07d9dc1e6383"
+    },
+    {
+      "file": "single_failure-packet_transition-99.jsonl.gz",
+      "bytes": 1969363,
+      "sha256": "042e2f22a96bee110f416fa872900982fdeb27aab8bf22f48d9623821a5f1a87"
+    },
+    {
+      "file": "single_failure-observability_guard-99.jsonl.gz",
+      "bytes": 1878769,
+      "sha256": "edc7c260787e765544a8e3957184779896c224a24109729cc6922f4aadea6734"
+    },
+    {
+      "file": "single_failure-combined-99.jsonl.gz",
+      "bytes": 1878973,
+      "sha256": "2318c85a9c324458f6f51de47196e032e659add921d5f5972263368fe63cc15e"
+    },
+    {
+      "file": "partition_reconnection-balanced_control-7.jsonl.gz",
+      "bytes": 2471932,
+      "sha256": "b5ec5a52f3b16e84623bcb3b383f02a5d61422a00469ec08692db3a1f6561aa1"
+    },
+    {
+      "file": "partition_reconnection-packet_transition-7.jsonl.gz",
+      "bytes": 2471913,
+      "sha256": "a40d9750397f3aa3b6baa965c3e3ce684819c83a76b699194fc4e26dc39e646a"
+    },
+    {
+      "file": "partition_reconnection-observability_guard-7.jsonl.gz",
+      "bytes": 2471407,
+      "sha256": "537f74c6cf03efb97c69e5673a2e48be4b1b1536d38d6274e424076cd9b4557b"
+    },
+    {
+      "file": "partition_reconnection-combined-7.jsonl.gz",
+      "bytes": 2471515,
+      "sha256": "48a8d862bfec24c4f3306cfa554f40b94db63cab1d4b45baba73dfb7de9cf603"
+    },
+    {
+      "file": "partition_reconnection-balanced_control-42.jsonl.gz",
+      "bytes": 2467805,
+      "sha256": "1a0033318bb11ad51a0887ec1d233d0f30682e227f55991e17c665de917f2186"
+    },
+    {
+      "file": "partition_reconnection-packet_transition-42.jsonl.gz",
+      "bytes": 2467217,
+      "sha256": "9f9c3244f4c9846a39107a1d4f5c6262edbaef0248599a33c016ab31e2ab718a"
+    },
+    {
+      "file": "partition_reconnection-observability_guard-42.jsonl.gz",
+      "bytes": 2469293,
+      "sha256": "9f3f5eabeb4a87eb3b0960b57bde07f3a8f38276c6f14af46b5b014459e68a30"
+    },
+    {
+      "file": "partition_reconnection-combined-42.jsonl.gz",
+      "bytes": 2469013,
+      "sha256": "6e26219c4b3b80e0ceb7b516b243ee350c58eddc57a395a66d3f8b5a855ff94d"
+    },
+    {
+      "file": "partition_reconnection-balanced_control-99.jsonl.gz",
+      "bytes": 2427610,
+      "sha256": "db48cea1aa9af42710212e4ffba10550e73e3187c6749a2c4d4898963f1b3d89"
+    },
+    {
+      "file": "partition_reconnection-packet_transition-99.jsonl.gz",
+      "bytes": 2427253,
+      "sha256": "ce31b3664a814e58795d437b6e2f40cc98de6b3d0e0efbffca50649735e63ee3"
+    },
+    {
+      "file": "partition_reconnection-observability_guard-99.jsonl.gz",
+      "bytes": 2421092,
+      "sha256": "55ac8f370ffc366ead094244b567d0e052469a65555a7435ee379bd967da0b2d"
+    },
+    {
+      "file": "partition_reconnection-combined-99.jsonl.gz",
+      "bytes": 2420750,
+      "sha256": "872c1490b686f93e4cd53885a6d8c73679bc71d4d4899c92f2296ded3d9f97e3"
+    }
+  ],
+  "failed_runs": [],
+  "evidence": "packet_simulation",
+  "started_at": 1792946582.000951,
+  "offline_workers": 2,
+  "current_scenario": "partition_reconnection",
+  "current_seed": 99,
+  "current_policy": "combined",
+  "results_sha256": "9eccf753748c97e8d54a6279f6c3f70b8699c562ea311b6859d36c6d33b69282",
+  "finished_at": 1792947060.783942,
+  "incomplete_traces": [],
+  "analysis_source_sha256": "85844bbaf415323189d0c2a5fa100934cfc7f5fa720c5496a84d586e40aab5da",
+  "execution_source_sha256": "85844bbaf415323189d0c2a5fa100934cfc7f5fa720c5496a84d586e40aab5da",
+  "measurement_corrections": [],
+  "analysis": "Receipt reconstruction: no recovery anchor in normal; loss must precede condition end; deferred counters from events. Packet outcomes untouched."
+}

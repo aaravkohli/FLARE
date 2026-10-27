@@ -1,0 +1,47 @@
+[
+  {
+    "scenario": "normal",
+    "policy": "auto",
+    "seed": 7,
+    "hash_seeds": [
+      7,
+      99
+    ],
+    "outcome": "Passed",
+    "differences": [],
+    "outcome_sha256": [
+      "edc8e56ba8630940fa4af781255527f7b51b361dae0f2c6ba784871c53ad4072",
+      "edc8e56ba8630940fa4af781255527f7b51b361dae0f2c6ba784871c53ad4072"
+    ]
+  },
+  {
+    "scenario": "normal",
+    "policy": "ring",
+    "seed": 7,
+    "hash_seeds": [
+      7,
+      99
+    ],
+    "outcome": "Passed",
+    "differences": [],
+    "outcome_sha256": [
+      "828a17f21b3c6ad74b2a9ec6a75bf3056469cfca32ff5d1e0a8e067946e6369a",
+      "828a17f21b3c6ad74b2a9ec6a75bf3056469cfca32ff5d1e0a8e067946e6369a"
+    ]
+  },
+  {
+    "scenario": "regional_jamming",
+    "policy": "partial_mesh",
+    "seed": 7,
+    "hash_seeds": [
+      7,
+      99
+    ],
+    "outcome": "Passed",
+    "differences": [],
+    "outcome_sha256": [
+      "153c69adf16fd3bb791cb1a517d82d7f893bdb371a03a25ecdb3eca9b4ff6085",
+      "153c69adf16fd3bb791cb1a517d82d7f893bdb371a03a25ecdb3eca9b4ff6085"
+    ]
+  }
+]

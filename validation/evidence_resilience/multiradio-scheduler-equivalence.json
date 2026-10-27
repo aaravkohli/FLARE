@@ -1,0 +1,20 @@
+[
+  {
+    "seed": 7,
+    "equal": true,
+    "reference_events": 518,
+    "optimized_events": 518
+  },
+  {
+    "seed": 42,
+    "equal": true,
+    "reference_events": 518,
+    "optimized_events": 518
+  },
+  {
+    "seed": 99,
+    "equal": true,
+    "reference_events": 520,
+    "optimized_events": 520
+  }
+]

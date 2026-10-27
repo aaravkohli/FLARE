@@ -1,0 +1,26 @@
+[
+  {
+    "scenario": "normal",
+    "identical_topology_sequences": true
+  },
+  {
+    "scenario": "mobility",
+    "identical_topology_sequences": true
+  },
+  {
+    "scenario": "congestion",
+    "identical_topology_sequences": true
+  },
+  {
+    "scenario": "regional_jamming",
+    "identical_topology_sequences": true
+  },
+  {
+    "scenario": "single_failure",
+    "identical_topology_sequences": true
+  },
+  {
+    "scenario": "partition_reconnection",
+    "identical_topology_sequences": true
+  }
+]

@@ -102,6 +102,13 @@
 .swarm-center .swarm-runtime {display:grid;gap:8px;padding:8px 0;font-size:12px;color:var(--mission-muted)}
 .swarm-center.swarm-presentation {position:fixed;inset:8px;z-index:100;margin:0;height:calc(100dvh - 16px)}
 .swarm-center .network-experiment {padding:16px;flex:1;min-height:0;overflow:auto;scrollbar-width:thin;background:var(--mission-bg)}
+.swarm-center .adaptive-study {min-width:0}
+.swarm-center .adaptive-study :is(button,select,summary),.swarm-center .experiment-action-toolbar [role=tab] {min-height:44px}
+.swarm-center .benchmark-mode-panel:not([hidden]) {display:flex;flex:1;flex-direction:column;min-width:0;min-height:0}
+.swarm-center .experiment-action-toolbar [role=tab][aria-selected=true] {background:#293648;border-color:#51657f;color:#e2ecfa}
+.swarm-center .adaptive-study code {overflow-wrap:anywhere}
+.swarm-center .adaptive-study .experiment-result-heading {flex-wrap:wrap;gap:12px}
+.swarm-center .adaptive-study .experiment-result-heading>div {display:flex;flex-wrap:wrap;gap:8px}
 .swarm-center .experiment-configuration,.swarm-center .experiment-shared-fields {display:flex;flex-wrap:wrap;align-items:end;gap:12px}.swarm-center .experiment-configuration>label {min-width:190px}.swarm-center .experiment-shared-fields label {flex:1;min-width:110px}.swarm-center .experiment-shared-fields input {width:140px}
 .swarm-center .configuration-summary {margin-left:auto;color:var(--mission-muted);padding-bottom:10px;font-size:12px}
 .swarm-center .experiment-action-toolbar {display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 0;margin:12px 0;border-block:1px solid var(--mission-line)}
@@ -258,3 +265,18 @@
  .flare-application .swarm-center:not(.swarm-presentation) .workspace-drawer .workspace-popover-content{top:68px;max-height:calc(100dvh - 76px)}
  .flare-application .swarm-center:not(.swarm-presentation) .workspace-scrim{top:60px}
 }
+/* Recovery controls reuse the workspace's restrained, contextual disclosures. */
+.swarm-center .autonomy-setup{border-top:1px solid var(--border,#2b3540);padding-top:12px;display:grid;gap:10px;min-width:0}
+.swarm-center .autonomy-setup>label,.swarm-center .autonomy-profile-fields>label{display:grid;gap:6px;min-width:0}
+.swarm-center .autonomy-profile-fields{display:grid;gap:12px}
+.swarm-center .autonomy-profile-fields textarea{width:100%;min-height:88px;resize:vertical;font:12px/1.5 monospace;background:#141d26;color:#cbd5df;border:1px solid #405061;padding:10px;border-radius:5px;box-sizing:border-box}
+.swarm-center .autonomy-profile-fields input,.swarm-center .autonomy-profile-fields select{min-height:44px;max-width:100%}
+.swarm-center .autonomy-profile-fields input[type=checkbox]{min-height:auto;width:18px;height:18px}
+.swarm-center .autonomy-status{padding:12px 0;border-bottom:1px solid #2b3540;font-size:12px;min-width:0}
+.swarm-center .autonomy-status h4{font-size:13px;margin:0 0 10px;font-weight:600}
+.swarm-center .autonomy-status dd{overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
+.swarm-center .autonomy-status summary{min-height:44px;align-content:center;cursor:pointer}
+.swarm-center .autonomy-status p{overflow-wrap:anywhere}
+.swarm-center .assistance-setup{grid-column:1/-1;border-top:1px solid var(--mission-line);padding-top:10px;min-width:0;font-size:13px}
+.swarm-center .assistance-setup .swarm-check{min-height:44px;display:flex;gap:10px;align-items:center}
+.swarm-center .assistance-setup input[type=checkbox]{width:18px;height:18px;flex:none}

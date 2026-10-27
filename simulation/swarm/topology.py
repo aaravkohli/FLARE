@@ -19,7 +19,7 @@ def topology_metadata():
         description=DESCRIPTIONS[t], suggested_formation=SUGGESTED_FORMATIONS[t]) for t in TOPOLOGIES]
 
 def pair(a: str, b: str) -> tuple[str, str]:
-    return tuple(sorted((a,b)))
+    return (b,a) if b<a else (a,b)
 
 def topology_edges(name, drones, eligible, previous=frozenset(), state=None, now=0., discovery_timeout=.6):
     if name not in TOPOLOGIES + LEGACY_TOPOLOGIES:

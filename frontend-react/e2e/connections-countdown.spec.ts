@@ -91,7 +91,7 @@ test('3D wide connections and active timers remain readable across layouts and D
  test.setTimeout(120000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
  const center=await openMission(page),attack=center.getByRole('region',{name:'Simulation event'});await missionSetting(center,'Radio range','1000');
  await attack.getByTestId('attack-apply').click();await center.getByRole('button',{name:'3D world',exact:true}).click();const canvas=center.locator('canvas.mission-world-canvas');
- await expect(canvas).toHaveAttribute('data-link-widths',JSON.stringify({background:1.5,neighbor:2.2,route:3.2,candidate:3.2}));
+ await expect(canvas).toHaveAttribute('data-link-widths',JSON.stringify({background:1.5,neighbor:2.2,route:3.2,candidate:3.2,recovery:2.2}));
  await expect.poll(async()=>JSON.parse((await canvas.getAttribute('data-link-counts'))??'{}').neighbor).toBeGreaterThan(0);
  const before=await canvas.getAttribute('data-geometries');
  for(const width of [1440,915,687,390]){

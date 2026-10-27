@@ -1,0 +1,270 @@
+{
+  "source_sha256": "1f00782e9727d3e1a239fde70c4625c298aaa6dcfaf7a3b27f301054b38d4016",
+  "hardware": {
+    "system": "Darwin",
+    "node": "Aaravs-MacBook-Air.local",
+    "release": "25.6.0",
+    "version": "Darwin Kernel Version 25.6.0: Fri Jul 31 19:18:43 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T8112",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "count": 100,
+  "description": "Sequential isolated 10-sim-second batch runs, three seeds; no model inference or real-time pacing. Added control traffic and resulting topology choices are endogenous costs. CPU timings are excluded from scientific hashes.",
+  "results": [
+    {
+      "seed": 7,
+      "autonomy": "off",
+      "positions_sha256": "2e110d67009ef90161504ef7b2de35919d70d559b8a5af300b72e2ad10aaf156",
+      "startup_cpu_s": 0.57867,
+      "cpu_s": 4.786052,
+      "wall_s": 4.788131416999931,
+      "simulation_s": 10.000000000000007,
+      "maximum_batch_speed": 2.088497396812396,
+      "generated": 3800,
+      "pending": 0,
+      "control_traffic": {},
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 214.2052624997632,
+          "p95_ms": 226.46870799962926,
+          "max_ms": 230.88470899983804
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 81.84312098072812,
+          "p95_ms": 253.82400000034977,
+          "max_ms": 561.4618749996225
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.0264291757534636,
+          "p95_ms": 3.1301250000979053,
+          "max_ms": 94.98458300004131
+        }
+      }
+    },
+    {
+      "seed": 7,
+      "autonomy": "recovery_v1",
+      "positions_sha256": "2e110d67009ef90161504ef7b2de35919d70d559b8a5af300b72e2ad10aaf156",
+      "startup_cpu_s": 0.3421789999999998,
+      "cpu_s": 14.204069999999998,
+      "wall_s": 14.25370041699989,
+      "simulation_s": 10.000000000000007,
+      "maximum_batch_speed": 0.70157220282765,
+      "generated": 15877,
+      "pending": 0,
+      "control_traffic": {
+        "guard_started": 1,
+        "guard_verified": 1,
+        "offered": 12077,
+        "bytes": 2422368,
+        "dropped": 2485,
+        "delivered": 9592
+      },
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 425.57459189993097,
+          "p95_ms": 579.1549169998689,
+          "max_ms": 707.6484170002004
+        },
+        "rebuilding": {
+          "samples": 51,
+          "mean_ms": 123.20139141170597,
+          "p95_ms": 553.0138750000333,
+          "max_ms": 731.8806670000413
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 15.35276823834053,
+          "p95_ms": 88.83958300066297,
+          "max_ms": 394.69650000046386
+        },
+        "flight_safety": {
+          "samples": 256,
+          "mean_ms": 1.85823714845057,
+          "p95_ms": 2.1152500003154273,
+          "max_ms": 2.853582999705395
+        },
+        "autonomous_recovery": {
+          "samples": 200,
+          "mean_ms": 2.9876371250247757,
+          "p95_ms": 7.109541999852809,
+          "max_ms": 98.78845900038868
+        }
+      }
+    },
+    {
+      "seed": 42,
+      "autonomy": "off",
+      "positions_sha256": "2e110d67009ef90161504ef7b2de35919d70d559b8a5af300b72e2ad10aaf156",
+      "startup_cpu_s": 0.5749700000000004,
+      "cpu_s": 4.96969,
+      "wall_s": 4.970934832999774,
+      "simulation_s": 10.000000000000007,
+      "maximum_batch_speed": 2.011694044672354,
+      "generated": 3800,
+      "pending": 0,
+      "control_traffic": {},
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 215.9791209001014,
+          "p95_ms": 226.97675000017625,
+          "max_ms": 249.84145800044644
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 80.03314419231454,
+          "p95_ms": 249.60841599931882,
+          "max_ms": 557.769083000494
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.0118605312617888,
+          "p95_ms": 3.121166000710218,
+          "max_ms": 79.4062919994758
+        }
+      }
+    },
+    {
+      "seed": 42,
+      "autonomy": "recovery_v1",
+      "positions_sha256": "2e110d67009ef90161504ef7b2de35919d70d559b8a5af300b72e2ad10aaf156",
+      "startup_cpu_s": 0.33998800000000173,
+      "cpu_s": 14.093989000000004,
+      "wall_s": 14.098345249999511,
+      "simulation_s": 10.000000000000007,
+      "maximum_batch_speed": 0.7093031006600121,
+      "generated": 15865,
+      "pending": 0,
+      "control_traffic": {
+        "guard_started": 1,
+        "guard_verified": 1,
+        "offered": 12065,
+        "bytes": 2420576,
+        "dropped": 2480,
+        "delivered": 9585
+      },
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 412.8192207000211,
+          "p95_ms": 588.2594160002554,
+          "max_ms": 612.9078339999978
+        },
+        "rebuilding": {
+          "samples": 51,
+          "mean_ms": 119.01302290195471,
+          "p95_ms": 553.371832999801,
+          "max_ms": 636.9368330006182
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 15.3358012382796,
+          "p95_ms": 91.08837499934452,
+          "max_ms": 401.4003749998665
+        },
+        "flight_safety": {
+          "samples": 256,
+          "mean_ms": 1.8765348242126834,
+          "p95_ms": 2.104624999446969,
+          "max_ms": 5.451084000014816
+        },
+        "autonomous_recovery": {
+          "samples": 200,
+          "mean_ms": 3.2671566850240197,
+          "p95_ms": 7.382292000329471,
+          "max_ms": 104.43491699970764
+        }
+      }
+    },
+    {
+      "seed": 99,
+      "autonomy": "off",
+      "positions_sha256": "2e110d67009ef90161504ef7b2de35919d70d559b8a5af300b72e2ad10aaf156",
+      "startup_cpu_s": 0.670496,
+      "cpu_s": 4.977772999999999,
+      "wall_s": 4.979407249999895,
+      "simulation_s": 10.000000000000007,
+      "maximum_batch_speed": 2.008271165207509,
+      "generated": 3800,
+      "pending": 0,
+      "control_traffic": {},
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 223.4509207998599,
+          "p95_ms": 234.0373750002982,
+          "max_ms": 247.79824999950506
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 86.26383726916104,
+          "p95_ms": 251.5938330006975,
+          "max_ms": 653.8155409998581
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.020308433568374,
+          "p95_ms": 3.1107080003494048,
+          "max_ms": 80.51675000024261
+        }
+      }
+    },
+    {
+      "seed": 99,
+      "autonomy": "recovery_v1",
+      "positions_sha256": "2e110d67009ef90161504ef7b2de35919d70d559b8a5af300b72e2ad10aaf156",
+      "startup_cpu_s": 0.33939300000000117,
+      "cpu_s": 14.120646,
+      "wall_s": 14.17540958399968,
+      "simulation_s": 10.000000000000007,
+      "maximum_batch_speed": 0.7054469883739645,
+      "generated": 15850,
+      "pending": 0,
+      "control_traffic": {
+        "guard_started": 1,
+        "guard_verified": 1,
+        "offered": 12050,
+        "bytes": 2415776,
+        "dropped": 2466,
+        "delivered": 9584
+      },
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 413.89802490002694,
+          "p95_ms": 585.5685409997022,
+          "max_ms": 620.7316670006549
+        },
+        "rebuilding": {
+          "samples": 51,
+          "mean_ms": 123.12394276471548,
+          "p95_ms": 552.8858750003565,
+          "max_ms": 644.9690409999675
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 14.852058109408262,
+          "p95_ms": 87.17395800067607,
+          "max_ms": 378.7680410005123
+        },
+        "flight_safety": {
+          "samples": 256,
+          "mean_ms": 1.8588129922036956,
+          "p95_ms": 2.1163339997656294,
+          "max_ms": 2.682125000319502
+        },
+        "autonomous_recovery": {
+          "samples": 200,
+          "mean_ms": 2.8889344249955684,
+          "p95_ms": 6.97395899987896,
+          "max_ms": 50.62087500027701
+        }
+      }
+    }
+  ]
+}

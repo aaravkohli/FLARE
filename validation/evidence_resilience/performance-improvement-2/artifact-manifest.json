@@ -1,0 +1,161 @@
+{
+  "captured_at_utc": "2026-10-25T18:26:52.032863+00:00",
+  "source_sha256": "42aa7adc3d916db6019f6399a5f85665b7b5885923908861e1e18c3631b74564",
+  "artifacts": [
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/baseline-profile.txt",
+      "bytes": 7284,
+      "sha256": "97ed70471e4292210038df9f0e98823b566292ba03825e872a59394586a37ff7"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/baseline.prof",
+      "bytes": 53532,
+      "sha256": "a04bb1e6cb0af872c5f258d28aaf726a37c0633cc177c4c0a30bb60980806427"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/browser-after.log",
+      "bytes": 404,
+      "sha256": "717d295cfe28f99c48cd86bebcfe73cb7f47eca373cf419b87cbbaf702626271"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/browser-before.log",
+      "bytes": 404,
+      "sha256": "fe542ebefcaf3281d116d4c95fdca040dbd7ea0880618bf8e7495ef8903cad90"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/copy-shared-assets.py",
+      "bytes": 406,
+      "sha256": "f9ef6525c3877f72f6e1016572bae4b3bfeacaff825bda6449453383e95c5a8c"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/focused-tests.log",
+      "bytes": 99,
+      "sha256": "dabc311d1ed08059703a6ad5592fd8baa957d26de5f62ac1d4f4e88ee336041e"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/matched/comparison.json",
+      "bytes": 27369,
+      "sha256": "55552a0ea9dd96cd3bd9a91c3347419e542393cd3a34521a5382de44eb6d7ca7"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/matched/trials.json",
+      "bytes": 23944,
+      "sha256": "b0cd20685d1af678bd68a243b0cd134bd6b2e5941a849eb4632f3e4b7ba8a76a"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/matched-profile.log",
+      "bytes": 2329,
+      "sha256": "80f49243af6de02f42fe27dc64a14cbb251f70991349e8d80a77eb47248fd9fa"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/optimized-profile.txt",
+      "bytes": 3978,
+      "sha256": "fb48316c35d5f7d73c3e16a0330e0f93790baece35cc926f3d3733f621a56c7f"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/optimized-source.tar.gz",
+      "bytes": 730516,
+      "sha256": "1e083596ba746725fcd37b8e925191c9388d72c8784434912eed2403e5193c6c"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/optimized.prof",
+      "bytes": 53577,
+      "sha256": "95613c5bfe84d951d23049e6df3b992ac666dd13aadf87b5f12ecc4d342cfb9e"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/prechange-source.json",
+      "bytes": 36216,
+      "sha256": "56e37f5c28c10ab9ff0ee1691e5f7ee0bdb985e8fa5460e984ee313e1e03a84e"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/prechange-source.tar.gz",
+      "bytes": 727975,
+      "sha256": "1cb3683d6ecc1336cbb2e4e453a2458dc5267b3f0cd4566ae1b35565d9fc356c"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/python-full.log",
+      "bytes": 3314,
+      "sha256": "a1b82c53e5c551c4e88d2036af46a910875172a11eb071e93f7b992115d55366"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/scenario-equivalence/verification.json",
+      "bytes": 38563,
+      "sha256": "37649b22e9557423c33758f4a7b456af5ec98cee7ded56d788566643aac2d7b1"
+    },
+    {
+      "path": "results/evidence_resilience/performance-improvement-v2/scenario-verification.log",
+      "bytes": 480,
+      "sha256": "d75cda4e8f2bdbc962b825cf05eb6d2c9a2e92f47f445b4515fe4db798d7b0f6"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/README.md",
+      "bytes": 7730,
+      "sha256": "f36c6032618049e45401409aa35370b38582448a42b86f767a765a0fcd5007de"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/baseline-profile.txt",
+      "bytes": 7284,
+      "sha256": "97ed70471e4292210038df9f0e98823b566292ba03825e872a59394586a37ff7"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/browser-profiles.json",
+      "bytes": 7652,
+      "sha256": "f6da7a6806c13d8fee4e0e01400d064e81a15498a64efbc568517f4c85eaf622"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/browser-sources.json",
+      "bytes": 36540,
+      "sha256": "28f8746651467ae9f6178f8dcdcce7c501dfa961849f07ab1533a46a202223a8"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/commands.json",
+      "bytes": 2752,
+      "sha256": "54bb318cd0d76feb076c13a8fc5895ed3279579420594b0c711f1b1721643dcf"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/cpu-comparison.csv",
+      "bytes": 516,
+      "sha256": "2f6b931518345e1a4f6aad03b942a75ced8dc5ba491980208586f1d15391c84c"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/cpu-comparison.json",
+      "bytes": 27369,
+      "sha256": "55552a0ea9dd96cd3bd9a91c3347419e542393cd3a34521a5382de44eb6d7ca7"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/evidence/3d-after.png",
+      "bytes": 674375,
+      "sha256": "35d8714f5d55be06e8e47bc98a18f1e7a59141ff51d10e6a517f5ced77129711"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/evidence/3d-before.png",
+      "bytes": 674138,
+      "sha256": "3c1d2ae968a0d0db413ab30f343b38c9095cb544ed0a409e44d320d369d86386"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/historical-preservation.json",
+      "bytes": 364,
+      "sha256": "39ad04a4ac24c29685f61d12dbe663f5dde16120e9b3b1702ab6166c8aa8e397"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/isolation.json",
+      "bytes": 9736,
+      "sha256": "5fa1420ffcf7b014d19463029bacffd1cf0ee0c4c9aa4f39f126981378c0c22b"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/optimized-profile.txt",
+      "bytes": 3978,
+      "sha256": "fb48316c35d5f7d73c3e16a0330e0f93790baece35cc926f3d3733f621a56c7f"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/scenario-equivalence.json",
+      "bytes": 38563,
+      "sha256": "37649b22e9557423c33758f4a7b456af5ec98cee7ded56d788566643aac2d7b1"
+    },
+    {
+      "path": "validation/evidence_resilience/performance-improvement-2/source-manifest.json",
+      "bytes": 36248,
+      "sha256": "64203f5d2ed8e7118471fd43786cfd12ca3ba5680f70523287af77394b4f4500"
+    }
+  ]
+}

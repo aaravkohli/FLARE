@@ -1,0 +1,23 @@
+{
+  "at_utc": "2026-10-26T07:06:18.324019+00:00",
+  "python": "3.11.4 (v3.11.4:d2340ef257, Jun  6 2023, 19:15:51) [Clang 13.0.0 (clang-1300.0.29.30)]",
+  "node": "v25.2.1",
+  "npm": "11.6.2",
+  "platform": {
+    "system": "Darwin",
+    "node": "Aaravs-MacBook-Air.local",
+    "release": "25.6.0",
+    "version": "Darwin Kernel Version 25.6.0: Fri Jul 31 19:18:43 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T8112",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "rendering_hardware": {
+    "platform": "darwin",
+    "arch": "arm64",
+    "cpu": "Apple M2"
+  },
+  "browser": "155.0.8059.85",
+  "source_archive": "results/affected_uav_assistance/reproduction-source.tar.gz",
+  "source_archive_sha256": "8f890d79f5ca310f4a64396493a341edaae744ecc1b69245171b8e2ae8488796",
+  "note": "Python 3.11 repository venv; locked frontend dependencies already installed. No dependency changes or retraining. Existing operator mission remains running."
+}

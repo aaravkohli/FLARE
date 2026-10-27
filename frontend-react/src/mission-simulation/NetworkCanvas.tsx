@@ -8,6 +8,7 @@ import { createFrameRateSampler } from './world/framePerformance';
 import { showGroundLink } from './world/networkLayers';
 import { linkEmphasisScale } from './world/networkLinkStyle';
 import NetworkLayerKey from './NetworkLayerKey';
+import { recoveryOverlay } from './world/recoveryOverlay';
 
 type Props={snapshot:SwarmSnapshot;selected:string;targets?:string[];display:NetworkDisplay;current?:boolean;camera?:RefObject<NetworkCamera>;onSelect:(id:string,additive?:boolean)=>void;onLink?:(id:string)=>void;onGround?:()=>void;externalTools?:boolean;controls?:Ref<CanvasControls>};
 const EMPTY_EVENTS:NonNullable<SwarmSnapshot['packet_events']>=[];
@@ -89,6 +90,7 @@ export default function NetworkCanvas(props:Props){
     line(l.a,l.b,blocked?'#d4877b':degraded&&p.display.qualityColors?'#e4b77c':chosen?(p.display.candidate?'#b5a1ea':'#99e1bc'):policyLink?'#88bfec':busy?'#8ddce8':'#88b4c4',Math.min(.98,(chosen||policyLink?.95:near?.75:busy?.65:s.nodes.length>50?.2:.4)*emphasis),(chosen?2.7:policyLink?1.8:1.3)*emphasis,blocked||chosen&&!!p.display.candidate);
    }
    if(p.display.inactive)for(const l of s.disconnected_links??[])if(showGroundLink(l.a,l.b,p.display))line(l.a,l.b,'#d4877b',.25,1,true);
+   element.dataset.recoveryEdges='[]';if(p.display.inactive){const overlay=recoveryOverlay(s,p.selected);element.dataset.recoveryEdges=JSON.stringify(overlay);for(const e of overlay)line(e.a,e.b,e.kind==='verification'?'#b5a1ea':'#9ad5e4',.75,2,true);}
    const satPackets=packets.filter(v=>v.packet.family==='satellite'&&(v.packet.source===p.selected||p.display.replay?.packetId===v.packet.id));
    if(policy?.family==='satellite'||satPackets.length){
     const x=Math.max(12,w-250),y=w<560?116:72;ctx.fillStyle='#142a35ed';ctx.fillRect(x,y,230,56);ctx.strokeStyle='#3b5b70';ctx.strokeRect(x,y,230,56);

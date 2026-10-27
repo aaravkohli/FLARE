@@ -1,6 +1,6 @@
 """Single authoritative mission state and logical SDN data plane."""
 from __future__ import annotations
-from collections import deque
+from collections import Counter, deque
 from copy import deepcopy
 import hashlib
 import math
@@ -19,6 +19,14 @@ from simulation.swarm.terrain import Terrain
 from simulation.swarm.topology import pair, topology_edges
 from simulation.swarm.session import write_registry
 from simulation.swarm.scenarios import DEMO_PRESETS, step_scenario
+from simulation.swarm.performance import Performance
+from simulation.swarm.observability import Observability
+from simulation.swarm.resilience_control import ResilienceControl, ResilienceSettings
+from simulation.swarm.autonomy import AutonomousRecovery
+from simulation.swarm.uav_assistance import UavAssistance
+from simulation.swarm.flight_safety import FlightSafety
+from schemas.autonomy import SafetyProfile
+from simulation.swarm.recovery_scenarios import PRESETS as RECOVERY_PRESETS,step as step_recovery
 
 BASE_POSITION=[-280.,35.,170.]
 SCENARIOS={
@@ -32,6 +40,7 @@ SCENARIOS={
 }
 
 SCENARIOS.update(DEMO_PRESETS)
+SCENARIOS.update(RECOVERY_PRESETS)
 
 class RevisionConflict(ValueError): pass
 
@@ -40,6 +49,10 @@ class SwarmEngine:
     def __init__(self,records,config=None,registry_path=None,isolated=False):
         path=Path(__file__).resolve().parents[2]/'config/swarm_config.yaml'
         self.cfg=deepcopy(config or yaml.safe_load(path.read_text()))
+        if self.cfg.get('adaptive_policy','balanced_v1') not in ('balanced_v1','evidence_resilience_v1'): raise ValueError('unknown adaptive policy')
+        ResilienceSettings.model_validate(self.cfg.get('resilience',{}))
+        if self.cfg.get('autonomy_mode','off') not in ('off','recovery_v1'):raise ValueError('unknown autonomy mode')
+        SafetyProfile.model_validate(self.cfg.get('safety_profile',{}))
         self.isolated=isolated
         self.trace_sink=None
         self.registry_path=None if isolated else registry_path
@@ -57,6 +70,7 @@ class SwarmEngine:
         self.events.append(dict(schema_version='mission_event_v1',cursor=self.event_cursor,session_id=self.session_id,
                                 simulation_time=self.scheduler.event_time if hasattr(self,'scheduler') and self.scheduler.event_time is not None else self.seconds,revision=self.revision,evidence_source='packet_simulation',correlation_id=(data or {}).get('correlation_id',(data or {}).get('command_id')),timestamp=time.time(),category=category,kind=kind,data=data or {}))
     def reset(self):
+        self.performance=Performance()
         if self.topology_mode=='manual': self.topology=self.manual_topology
         if self.pending_seed is not None:
             self.seed=self.pending_seed; self.cfg['seed']=self.seed; self.pending_seed=None
@@ -72,17 +86,33 @@ class SwarmEngine:
         self.disconnected_links=deque(maxlen=5000); self.recovery={}; self.scenario_actions=set()
         self.last_network=-1.; self.last_traffic=-1.; self.scenario='normal'; self.scenario_fired=False; self.poisoning_client=None
         self.failed_families=set(); self.packet_results=deque(maxlen=100)
+        self.offer_sequences=Counter()
         self.attacks=AttackConditions(self)
         self.runtime={'orchestrator':{'status':'waiting_for_play'},'flower':{'status':'waiting_for_play','round':0,'participants':[]}}
         self.scheduler=PacketScheduler(dict(self.cfg['packets'],seed=self.seed),self.rng,self.packet_event)
-        self.physical_links={}; self.adaptive=AdaptiveTopology(self)
+        scheduler_step=self.scheduler.step
+        def timed_step(*args,**kwargs):
+            with self.performance.measure('scheduling'): return scheduler_step(*args,**kwargs)
+        self.scheduler.step=timed_step
+        self.physical_links={}; self.observability=Observability(self); self.resilience=ResilienceControl(self)
+        self.scheduler.protected_scheduling=self.resilience.enabled and self.cfg.get('resilience',{}).get('protected_scheduling',True)
+        self.scheduler.protected_share=self.cfg.get('resilience',{}).get('protected_airtime_share',.10)
+        self.assistance=UavAssistance(self)
+        self.adaptive=AdaptiveTopology(self)
+        self.autonomy=AutonomousRecovery(self);self.flight_safety=FlightSafety(self)
         self.resize(self.count,initial=True); self.rebuild(); self.event('COMMAND','mission_reset',{'seed':self.seed})
+        self.flight_safety.sync()
+        if self.autonomy.enabled:self.autonomy.sync()
     def _clear_routes(self):
         self._route_cache.clear(); self._adjacency_cache.clear(); self._backup_cache.clear()
     def check_revision(self,revision):
         if revision!=self.revision: raise RevisionConflict(f'expected revision {self.revision}, received {revision}')
     def resize(self,count,initial=False):
         if not 10<=count<=self.cfg['max_count']: raise ValueError('count outside supported mission capacity')
+        if self.autonomy.enabled:
+            bound=self.flight_safety.profile.geofence_m
+            if any(abs(p[j])+5>bound for p in formation_positions(self.formation,count) for j in (0,2)):
+                raise ValueError('Fleet formation exceeds the configured safety geofence')
         while len(self.reserved)<count:
             ordinal=max((r['index'] for r in self.records.values()),default=0)+1
             identity=f'sim_uav_{ordinal:03d}'
@@ -112,15 +142,59 @@ class SwarmEngine:
             self.records[identity]['enabled']=True
         for identity,r in self.records.items(): r['enabled']=identity in active
         self.count=count; self.slots=slots
+        self.flight_safety.sync()
+        if self.autonomy.enabled:self.autonomy.sync()
         for key,flow in list(self.flows.items()):
             if flow['source'] in retired or flow['destination'] in retired: self.remove_policy(key)
         if self.registry_path: write_registry(Path(self.registry_path),list(self.records.values()))
         if not initial: self.revision+=1; self.rebuild()
     def configure(self,request):
         self.check_revision(request.expected_revision)
+        if request.autonomy_mode=='recovery_v1' and not self.autonomy.enabled:
+            if not self.controller_connected:raise ValueError('Provision autonomous recovery before command-link loss; reset or restore communication first')
+            for n,d in self.nodes.items():
+                if not d.available or d.containment=='quarantined':continue
+                options=[(self.route(n,'base','mesh',True),'mesh'),([n,'base'],'direct'),([n,'base'],'satellite')]
+                if not any(self.autonomy.permitted(path,family) for path,family in options):
+                    raise ValueError(f'Provision autonomous recovery before communication loss for {n}')
+        if (request.autonomy_mode or self.cfg.get('autonomy_mode','off'))=='recovery_v1':
+            profile=request.safety_profile or self.flight_safety.profile;bound=profile.geofence_m
+            proposed=formation_positions(request.formation or self.formation,request.count or self.count)
+            if any(abs(p[j])+5>bound for p in proposed for j in (0,2)) or any(abs(d.position[j])+5>bound for d in self.nodes.values() for j in (0,2)):
+                raise ValueError('Proposed fleet or formation exceeds the configured safety geofence')
+        if request.safety_profile is not None:
+            bound=request.safety_profile.geofence_m
+            if any(abs(d.position[j])+5>bound for d in self.nodes.values() for j in (0,2)):raise ValueError('Current fleet lies outside the proposed geofence')
+        if request.topology is not None and self.autonomy.enabled:
+            c=self.adaptive.candidate(request.topology,self.permitted_physical_links(),self.adaptive.demands()[0],{})
+            self.autonomy.check_candidate(c)
         previous_mode=self.topology_mode
         pending_manual=bool(self.adaptive.transition and not self.adaptive.transition['automatic'])
         self.adaptive.cancel('Configuration changed')
+        if request.affected_uav_assist is not None:
+            self.cfg['affected_uav_assist']=request.affected_uav_assist;self.assistance.configure()
+        self.assistance.proposal=None;self.assistance.winner=None;self.assistance.wins=0
+        if request.autonomy_mode is not None:
+            reenable=request.autonomy_mode=='recovery_v1' and not self.autonomy.enabled
+            self.cfg['autonomy_mode']=request.autonomy_mode
+            self.autonomy.guard=None
+            if reenable:
+                for n in list(self.autonomy.controllers):
+                    if not self.flight_safety.supervisors[n].latched:self.autonomy.controllers.pop(n)
+            if self.autonomy.enabled:self.flight_safety.sync();self.autonomy.sync()
+            self.event('RECOVERY','autonomy_mode_changed',{'mode':request.autonomy_mode,'safety_latches_retained':True})
+        if request.safety_profile is not None:
+            self.cfg['safety_profile']=request.safety_profile.model_dump()
+            self.flight_safety.profile=request.safety_profile.model_copy(deep=True)
+            if (self.autonomy.enabled or any(s.latched for s in self.flight_safety.supervisors.values())) and self.seconds>0:self.autonomy.configure_profile(request.safety_profile)
+            else:
+                for n,s in self.flight_safety.supervisors.items():
+                    s.profile=request.safety_profile.model_copy(deep=True);s.home_valid=s.site_valid(s.home[0],s.home[2])
+        if request.adaptive_policy is not None and request.adaptive_policy!=self.cfg.get('adaptive_policy','balanced_v1'):
+            self.cfg['adaptive_policy']=request.adaptive_policy; self.observability.invalidate()
+            self.scheduler.protected_scheduling=self.resilience.enabled and self.cfg.get('resilience',{}).get('protected_scheduling',True)
+            self.adaptive.last_evaluation=None; self.adaptive.winner=None; self.adaptive.wins=0
+            self.event('OBSERVABILITY','observation_policy_changed',{'policy':request.adaptive_policy,'epoch':self.observability.epoch})
         mode=request.topology_mode or ('manual' if request.topology is not None else self.topology_mode)
         enabling_auto=mode=='auto' and self.topology_mode!='auto'
         self.topology_mode=mode
@@ -158,21 +232,37 @@ class SwarmEngine:
     def load_scenario(self,name,revision):
         self.check_revision(revision)
         if name not in SCENARIOS: raise ValueError('unknown scenario')
-        preset=SCENARIOS[name]; self.count=preset['count']; self.formation=preset['formation']
+        preset=SCENARIOS[name]
+        if self.autonomy.enabled:
+            bound=self.flight_safety.profile.geofence_m
+            if any(abs(p[j])+5>bound for p in formation_positions(preset['formation'],preset['count']) for j in (0,2)):
+                raise ValueError('Scenario formation exceeds the configured safety geofence')
+        self.count=preset['count']; self.formation=preset['formation']
         if self.topology_mode!='manual': self.topology=preset['topology']
         self.reset(); self.scenario=name
         if preset.get('preferred_family'): self.route_preferences={identity:preset['preferred_family'] for identity in self.nodes}
         self.event('COMMAND','scenario_loaded',{'scenario':name,'attack_at_s':8,'preferred_family':preset.get('preferred_family'),'preference_is_safety_constrained':True})
         return self.snapshot()
     def tick(self,wall_delta):
-        if not self.playing: return
+        before=self.seconds
+        if not self.playing:
+            self.performance.previous=None
+            return
+        self._tick(wall_delta)
+        self.performance.tick(before,self.seconds,wall_delta)
+    def _tick(self,wall_delta):
         self.accumulator+=max(0,min(.25,wall_delta))*self.speed
         step=self.cfg['fixed_step_s']
         while self.accumulator+1e-9>=step:
             self.accumulator-=step
             self.scheduler.step(self.seconds+step,self.packet_link,self.packet_allowed,self.attacks.relay_drop,self.repair_packet)
             self.seconds+=step
-            advance(list(self.nodes.values()),step,self.seconds,self.slots,self.terrain)
+            supervised=self.autonomy.enabled or any(s.latched for s in self.flight_safety.supervisors.values())
+            if supervised:
+                with self.performance.measure('flight_safety'):self.flight_safety.step()
+            advance(list(self.nodes.values()),step,self.seconds,self.slots,self.terrain,self.flight_safety.supervisors if supervised else None)
+            if supervised:
+                with self.performance.measure('flight_safety'):self.flight_safety.after_motion()
             self.scenario_step()
             conditions_expired=self.attacks.step(step)
             self.dispatch_commands()
@@ -183,7 +273,12 @@ class SwarmEngine:
             self.attacks.generate(step)
             self.scheduler.step(self.seconds,self.packet_link,self.packet_allowed,self.attacks.relay_drop,self.repair_packet)
             self.expire_commands(); self.refresh_transfers()
+            self.observability.step()
+            if supervised:
+                with self.performance.measure('autonomous_recovery'):self.autonomy.step()
+            else:self.autonomy.step()
     def scenario_step(self):
+        if step_recovery(self):return
         if step_scenario(self): return
         if self.scenario_fired or self.seconds<8: return
         self.scenario_fired=True; nodes=list(self.nodes.values())
@@ -244,9 +339,14 @@ class SwarmEngine:
                 and (impaired:=self.attacks.impair(link,'mesh',edge)).loss<=self.cfg['radio']['max_loss']}
 
     def rebuild(self,adapt=True):
+        previous=self.resilience.in_rebuild; self.resilience.in_rebuild=True
+        try:
+            with self.performance.measure('rebuilding'): return self._timed_rebuild(adapt)
+        finally: self.resilience.in_rebuild=previous
+    def _timed_rebuild(self,adapt=True):
         try: self._rebuild(adapt)
         except (ValueError,RuntimeError) as exc:
-            if self.adaptive.transition and self.adaptive.transition['phase']=='validating': self.adaptive.fail(str(exc))
+            if self.adaptive.transition and (self.adaptive.transition['phase'] in ('validating','verifying') or self.adaptive.transition.get('enhanced')): self.adaptive.fail(str(exc))
             else: raise
 
     def _rebuild(self,adapt=True):
@@ -263,7 +363,7 @@ class SwarmEngine:
         for edge in physical_recovered: self.event('SDN','RESTORE',{'link':list(edge),'reason':'modeled_link_recovery'})
         self.auto_blocked.difference_update(physical_recovered)
         base_links={}
-        if not self.cfg.get('mesh_only'):
+        if not self.cfg.get('mesh_only') or self.cfg.get('observation_base_endpoint'):
             for d in self.nodes.values():
                 if not d.available or d.health<=0: continue
                 link=radio_link(d.id,'base',d.position,base,dict(self.cfg['radio'],range_m=d.range_m),self.terrain,self.jammers,d.health)
@@ -278,6 +378,9 @@ class SwarmEngine:
         topology_eligible={e:l for e,l in eligible.items() if e not in self.blocked|self.auto_blocked and self.attacks.impair(l,'mesh',e).loss<=self.cfg['radio']['max_loss']} if self.topology=='self_healing_mesh' else eligible
         previous_edges=self.adaptive.transition['prepared'].edges if committed else set(old)
         edges,heads=topology_edges(self.topology,list(self.nodes.values()),topology_eligible,previous_edges,self.topology_state,self.seconds,self.cfg.get('discovery_timeout_s',.6))
+        pending=self.adaptive.transition
+        if pending and pending.get('enhanced') and pending['phase']=='overlap':
+            prepared=pending['prepared']; edges=prepared.edges & eligible.keys(); heads=prepared.heads
         self.heads=heads; self.radio_links={e:eligible[e] for e in edges}
         self.links={e:self.attacks.impair(eligible[e],'mesh',e) for e in edges}
         for d in self.nodes.values():
@@ -286,6 +389,11 @@ class SwarmEngine:
             if edge in base_links:
                 self.radio_links[edge]=base_links[edge]
                 self.links[edge]=self.attacks.impair(base_links[edge],'mesh',edge)
+        if pending and pending.get('enhanced') and pending['phase']=='overlap':
+            self.resilience.target_links=dict(self.links)
+            overlay=self.resilience.overlay(); self.links.update(overlay)
+            self.radio_links.update({edge:eligible[edge] for edge in overlay if edge in eligible})
+            for d in self.nodes.values(): d.neighbors=sorted(b if a==d.id else a for a,b in self.links if d.id in (a,b) and 'base' not in (a,b))
         for edge in sorted(set(old)-set(self.links)):
             record=dict(old[edge].snapshot(),disconnected_at=self.seconds,status='disconnected')
             self.disconnected_links.append(record)
@@ -319,7 +427,7 @@ class SwarmEngine:
             self.adaptive.after_rebuild(committed)
             pending=self.adaptive.transition
             # No clock advance is needed when there are no old mesh packets to drain.
-            if pending and pending['phase']=='draining' and not pending['affected'].intersection(self.scheduler.packets):
+            if pending and pending['phase'] in ('draining','preparing') and not pending['affected'].intersection(self.scheduler.packets):
                 self.rebuild()
     def valid_route(self,hops,family,control=False):
         if family=='hold': return False
@@ -330,17 +438,22 @@ class SwarmEngine:
             if d and (not d.available or d.health<=0 or (d.threat or 0)>.8 or d.containment=='quarantined' or ((d.containment in ('restricted','control_only') or self.families.get(identity)=='hold') and not control)): return False
         if family=='satellite': return hops[-1]=='base' and len(hops)==2 and self.satellite_link(hops[0]).loss<=self.cfg['radio']['max_loss']
         if family=='direct':
-            return len(hops)==2 and pair(*hops) not in self.blocked and (link:=self.attacks.impair(self.radio_links.get(pair(*hops)),family,hops)) is not None and link.loss<=self.cfg['radio']['max_loss']
-        return all(pair(a,b) in self.links and pair(a,b) not in self.blocked|self.auto_blocked and self.links[pair(a,b)].loss<=self.cfg['radio']['max_loss'] for a,b in zip(hops,hops[1:]))
+            if len(hops)!=2: return False
+            edge=pair(*hops)
+            return edge not in self.blocked and (link:=self.attacks.impair(self.radio_links.get(edge),family,hops)) is not None and link.loss<=self.cfg['radio']['max_loss']
+        for a,b in zip(hops,hops[1:]):
+            edge=pair(a,b); link=self.links.get(edge)
+            if link is None or edge in self.blocked or edge in self.auto_blocked or not link.loss<=self.cfg['radio']['max_loss']: return False
+        return True
     def route(self,source,dest,family='mesh',control=False):
         if source not in self.nodes and source!='base': return []
-        if family=='hold' or family in self.failed_families or self.cfg.get('mesh_only') and (family!='mesh' or dest=='base'): return []
+        if family=='hold' or family in self.failed_families or self.cfg.get('mesh_only') and (family!='mesh' or dest=='base' and not self.cfg.get('observation_base_endpoint')): return []
         if family=='satellite' and dest=='base':
             return [source,dest] if self.valid_route([source,dest],family,control) else []
         if family=='direct': return [source,dest] if self.valid_route([source,dest],family,control) else []
         key=(source,dest,family,control)
         if control not in self._adjacency_cache:
-            self._adjacency_cache[control]=build_adjacency(self.links,self.nodes,self.blocked|self.auto_blocked,control=control)
+            self._adjacency_cache[control]=build_adjacency(self.resilience.target_links if self.resilience.target_links is not None else self.links,self.nodes,self.blocked|self.auto_blocked,control=control)
         if key not in self._route_cache or self._route_cache[key] and not self.valid_route(self._route_cache[key],family,control):
             self._route_cache[key]=shortest_path(self.links,source,dest,self.nodes,self.blocked|self.auto_blocked,control=control,adjacency=self._adjacency_cache[control])
         return self._route_cache[key][:]
@@ -353,7 +466,7 @@ class SwarmEngine:
         route=self.route(source,dest,family,category in CONTROL_TRAFFIC)
         if not omitted.intersection(route) and not any(pair(a,b) in blocked for a,b in zip(route,route[1:])): return route
         if family!='mesh': return []
-        links={edge:link for edge,link in self.links.items() if not omitted.intersection(edge)}
+        links={edge:link for edge,link in (self.resilience.target_links if self.resilience.target_links is not None else self.links).items() if not omitted.intersection(edge)}
         return shortest_path(links,source,dest,self.nodes,self.blocked|self.auto_blocked|blocked,control=category in CONTROL_TRAFFIC)
 
     def ensure_route(self,source,dest,category,family='mesh',decision=None):
@@ -405,7 +518,12 @@ class SwarmEngine:
         self.check_revision(policy.revision)
         if policy.source not in self.nodes and policy.source!='base': raise ValueError('unknown policy source')
         if policy.family=='direct' and len(policy.hops)!=2: raise ValueError('direct policies require a single radio hop')
+        if policy.family=='mesh' and self.resilience.target_links is not None and any(pair(a,b) not in self.resilience.target_links for a,b in zip(policy.hops,policy.hops[1:])):
+            return {'applied':False,'reason':'retained_edges_are_packet_specific','evidence':'packet_simulation'}
         key=f'{policy.source}:{policy.destination}:{policy.traffic_class}'
+        previous=self.installed_rule(policy.source,policy.destination,policy.traffic_class)
+        if previous and not self.resilience.in_rebuild and (previous['hops']!=policy.hops or previous['family']!=policy.family or previous.get('restrictions')!=policy.restrictions):
+            self.resilience.invalidate_flow(policy.source,policy.destination,policy.traffic_class)
         if policy.family=='hold':
             if policy.source not in self.nodes: raise ValueError('network HOLD requires a UAV source')
             self.families[policy.source]='hold'; self.nodes[policy.source].selected_route='hold'; self._clear_routes()
@@ -424,6 +542,7 @@ class SwarmEngine:
         previous=self.installed_rule(policy.source,policy.destination,policy.traffic_class)
         if previous and previous['policy_id']!=policy.policy_id: self.remove_policy(previous['policy_id'])
         flow=policy.model_dump(); self.flow_constraints[key]=deepcopy(policy.restrictions); self.flows[policy.policy_id]=flow; self.forwarding[key]=policy.policy_id
+        if not self.resilience.in_rebuild:self.assistance.permissions_changed()
         if policy.traffic_class=='telemetry' and policy.source in self.nodes:
             self.families[policy.source]=policy.family; self.nodes[policy.source].selected_route=policy.family
         for a,b in zip(policy.hops,policy.hops[1:]): self.event('SDN','INSTALL',{'policy_id':policy.policy_id,'source':policy.source,'destination':policy.destination,'traffic_class':policy.traffic_class,'hops':policy.hops,'link':[a,b],'family':policy.family,'decision_id':policy.decision_id})
@@ -440,6 +559,7 @@ class SwarmEngine:
     def block_link(self,a,b):
         self._clear_routes()
         self.blocked.add(pair(a,b)); self.event('SDN','BLOCK',{'link':[a,b]})
+        self.assistance.permissions_changed()
         for key,flow in list(self.flows.items()):
             if pair(a,b) in {pair(x,y) for x,y in zip(flow['hops'],flow['hops'][1:])}: self.remove_policy(key)
         return {'applied':True}
@@ -450,6 +570,7 @@ class SwarmEngine:
         if identity not in self.nodes: raise ValueError('unknown node')
         self._clear_routes()
         self.nodes[identity].containment=mode
+        self.assistance.permissions_changed()
         for key,flow in list(self.flows.items()):
             if identity in flow['hops'] and not self.valid_route(flow['hops'],flow['family'],flow['traffic_class'] in CONTROL_TRAFFIC): self.remove_policy(key)
         self.event('SDN','ISOLATE' if mode=='quarantined' else 'CONTAINMENT',{'node':identity,'mode':mode,'reason':reason})
@@ -466,6 +587,7 @@ class SwarmEngine:
             if allowed and (preference=='hold' or self.route(identity,'base',preference)): family=preference
             if context: context=dict(context,operator_preference=preference,operator_preference_applied=allowed and family==preference)
         self.families[identity]=family; self.nodes[identity].selected_route=family
+        self.assistance.permissions_changed()
         if family!='hold':
             for key,flow in list(self.flows.items()):
                 if flow['source']==identity and flow['family']=='hold': self.remove_policy(key)
@@ -488,6 +610,7 @@ class SwarmEngine:
                 'flow_priority':200 if installed=='hold' else 100,'timestamp':time.time(),'hops':hops,
                 'session_id':self.session_id,'note':'LOGICAL SIMULATION ENFORCEMENT','network_revision':self.network_revision,'reason':'explicit_network_hold' if family=='hold' else None if hops else 'no_safe_hops'}
     def packet_link(self,p,a,b):
+        if self.autonomy.owns(p):return self.autonomy.packet_link(p,a,b)
         if p.family=='satellite':
             return self.satellite_link(p.source)
         if p.family=='direct': return self.attacks.impair(self.radio_links.get(pair(a,b)),'direct',(a,b))
@@ -495,7 +618,10 @@ class SwarmEngine:
     def satellite_link(self,identity):
         return self.attacks.impair(Link(identity,'base',700000.,-65.,18.,2.,.02,85.,'modeled_satellite'),'satellite',(identity,))
     def packet_allowed(self,p,a,b):
+        if self.autonomy.owns(p):return self.autonomy.allowed(p,a,b)
+        if (self.autonomy.enabled or self.autonomy.interfaces) and not self.autonomy.permitted(p.route[p.hop:],p.family,p.restrictions):return False
         if p.category in ('command','ack') and not self.controller_connected: return False
+        if self.resilience.authorizes(p): return True
         if not self.valid_route(p.route[p.hop:],p.family,p.category in CONTROL_TRAFFIC): return False
         flow=self.installed_rule(p.policy_source or p.source,p.destination,p.category)
         expected=p.route
@@ -509,7 +635,7 @@ class SwarmEngine:
         current=p.route[p.hop]
         omitted=set(p.route[:p.hop])|set(p.restrictions.get('excluded_nodes',[]))
         forbidden={pair(*edge) for edge in p.restrictions.get('excluded_links',[])}
-        links={edge:link for edge,link in self.links.items() if not omitted.intersection(edge)}
+        links={edge:link for edge,link in (self.resilience.target_links if self.resilience.target_links is not None else self.links).items() if not omitted.intersection(edge)}
         suffix=shortest_path(links,current,p.destination,self.nodes,self.blocked|self.auto_blocked|forbidden,control=p.category in CONTROL_TRAFFIC)
         if not suffix: return False
         policy=RoutePolicy(policy_id=f'repair:{p.id}:{p.repair_count}',session_id=self.session_id,revision=self.revision,
@@ -543,17 +669,38 @@ class SwarmEngine:
         oldest=self.packet_events[0]['cursor'] if self.packet_events else self.packet_cursor+1
         return dict(session_id=self.session_id,events=rows,cursor=rows[-1]['cursor'] if rows else max(after,self.packet_cursor),
             latest_cursor=self.packet_cursor,event_gap=after>0 and after<oldest-1,oldest_cursor=oldest)
-    def send(self,source,dest,category,size=512,correlation=None,family_override=None):
+    def send(self,source,dest,category,size=512,correlation=None,family_override=None,service=None,channel_key=None,expires_at=None,_mission_offer=False):
         family=family_override or (self.families.get(source,'mesh') if dest=='base' and category not in CONTROL_TRAFFIC else 'mesh')
         deferred=family=='mesh' and self.adaptive.transition is not None and self.adaptive.transition['phase']=='draining'
+        transition=self.adaptive.transition
+        if transition and transition.get('enhanced') and transition['phase']=='preparing':
+            deferred=family=='mesh' and (source,dest,category) in transition['affected_flows']
+        if service:
+            report=self.observability.pending.get(correlation)
+            if not (report and report['node']==source and dest=='base' and category=='threat' and channel_key in report['keys']):
+                service=None
+        command=self.commands.get(correlation)
+        if self.resilience.enabled and command and ((category=='command' and source=='base' and dest in command['targets']) or (category in ('ack','emergency') and source in command['targets'] and dest=='base')):
+            service={'kind':category,'deadline':command['expires_at']}
+            channel_key=f'command:{correlation}:{category}:{source}:{dest}'
+        if channel_key is None and (self.resilience.enabled or self.cfg.get('logical_channel_keys')):
+            key=(source,dest,category,correlation); self.offer_sequences[key]+=1
+            channel_key=f'{source}:{dest}:{category}:{correlation}:{self.offer_sequences[key]}'
         hops=[] if deferred else self.ensure_route(source,dest,category,family)
+        recovery=None
+        if not hops and not deferred and self.autonomy.enabled and self.families.get(source)!='hold':
+            recovery=self.autonomy.recovery_rule(type('RecoveryOffer',(),dict(source=source,destination=dest,category=category,restrictions=self.flow_constraints.get(f'{source}:{dest}:{category}',{})))())
+            if recovery:hops=recovery['route'][:];family=recovery['family']
         sequence=self.attacks.sequence(source,self.scheduler.serial+1)
         mac=self.records.get(source,{}).get('mac')
         if self.attacks.has(source,'spoofing'): mac='02:ff:00:00:00:01'
         packet_time=self.scheduler.event_time if self.scheduler.event_time is not None else self.seconds
         if family=='mesh' and (not self.cfg.get('mesh_only') or self.topology_mode=='auto'):
             self.adaptive.offer(source,dest,category,size,packet_time)
-        p=self.scheduler.emit(source,dest,category,size,hops,packet_time,self.network_revision,correlation,family,sequence,mac,deepcopy(self.flow_constraints.get(f'{source}:{dest}:{category}',{})),defer=deferred)
+        if family=='mesh' and (_mission_offer or command and ((category=='command' and source=='base' and dest in command['targets']) or (category in ('ack','emergency') and source in command['targets'] and dest=='base')) or service and service.get('kind')=='security_report'):
+            self.assistance.register(f'p{self.scheduler.serial+1}',source,dest,category,size,packet_time)
+        p=self.scheduler.emit(source,dest,category,size,hops,packet_time,self.network_revision,correlation,family,sequence,mac,deepcopy(self.flow_constraints.get(f'{source}:{dest}:{category}',{})),defer=deferred,service=service,channel_key=channel_key,expires_at=expires_at)
+        if recovery and p.id in self.scheduler.packets:self.autonomy.bind_forwarding(p,recovery)
         d=self.nodes.get(source)
         if d: d.sent+=1
         return p
@@ -561,9 +708,9 @@ class SwarmEngine:
         ids=list(self.nodes)
         for i,d in enumerate(self.nodes.values()):
             if not d.available: continue
-            self.send(d.id,'base','telemetry'); self.send(d.id,'base','heartbeat',64)
-            self.send(d.id,ids[(i+1)%len(ids)],'position',128)
-            if int(self.seconds)%3==0: self.send(d.id,ids[(i+3)%len(ids)],'sensor',768)
+            self.send(d.id,'base','telemetry',_mission_offer=True); self.send(d.id,'base','heartbeat',64,_mission_offer=True)
+            self.send(d.id,ids[(i+1)%len(ids)],'position',128,_mission_offer=True)
+            if int(self.seconds)%3==0: self.send(d.id,ids[(i+3)%len(ids)],'sensor',768,_mission_offer=True)
             if int(self.seconds)%5==0 and d.neighbors: self.send(d.id,d.neighbors[0],'discovery',64)
             if int(self.seconds)%7==0 and d.neighbors: self.send(d.id,d.neighbors[0],'routing',96)
     def packet_event(self,kind,data):
@@ -572,7 +719,10 @@ class SwarmEngine:
             simulation_time=data.get('event_at',self.seconds),kind=kind,data=data,evidence_source='packet_simulation')
         self.packet_events.append(record)
         if self.trace_sink: self.trace_sink(record)
+        self.assistance.result(kind,data)
+        self.autonomy.packet_event(kind,data)
         if kind=='packet_result':
+            self.observability.result(data); self.resilience.result(data)
             key=f"{data['source']}:{data['destination']}"
             recovery=self.recovery.get(key)
             if recovery and recovery.get('service_recovered_at') is None and data['status']=='delivered':
@@ -600,14 +750,21 @@ class SwarmEngine:
                     if outcome['status'] in ('expired','retired') or data.get('completed_at',self.seconds)>=command['expires_at']:
                         outcome.update(status='expired',reason='Command expired before execution'); return
                     self.execute_command(data['destination'],command)
-                    outcome['status']='executed_ack_pending'
-                    outcome.update(executed_at=data['completed_at'],delivered_at=data['completed_at'],reason='Executed; awaiting acknowledgment')
+                    if outcome.get('result',{}).get('safety_rejected'):
+                        outcome.update(status='rejected_safety_ack_pending',rejected_at=data['completed_at'],delivered_at=data['completed_at'],reason='Not executed: '+outcome['result']['reason'])
+                    else:
+                        outcome['status']='executed_ack_pending'
+                        outcome.update(executed_at=data['completed_at'],delivered_at=data['completed_at'],reason='Executed; awaiting acknowledgment')
                     ack=self.send(data['destination'],'base','ack',64,data['correlation_id']); outcome['ack_packet']=ack.id
                 else: outcome['status']='delivery_failed'; outcome['reason']=data['reason']
             elif command and data['category']=='ack':
                 command['outcomes'][data['source']]['status']='acknowledged' if data['status']=='delivered' else 'executed_ack_failed'
+                if command['outcomes'][data['source']].get('result',{}).get('safety_rejected'):
+                    command['outcomes'][data['source']]['status']='rejected_safety' if data['status']=='delivered' else 'rejected_safety_ack_failed'
                 command['outcomes'][data['source']]['acknowledged_at']=data['completed_at'] if data['status']=='delivered' else None
                 command['outcomes'][data['source']]['reason']='Radio delivery, execution and acknowledgment confirmed' if data['status']=='delivered' else data['reason']
+                if command['outcomes'][data['source']].get('result',{}).get('safety_rejected'):
+                    command['outcomes'][data['source']]['reason']='Not executed: '+command['outcomes'][data['source']]['result']['reason']
                 self.event('COMMAND','command_ack',{'command_id':command['command_id'],'node':data['source'],'status':command['outcomes'][data['source']]['status']})
     def command(self,request: MissionCommand):
         if request.session_id is not None and request.session_id!=self.session_id: raise RevisionConflict('stale command session')
@@ -658,7 +815,24 @@ class SwarmEngine:
                 packet=self.send('base',identity,'command',128,record['command_id']); packet.expires_at=record['expires_at']; self.scheduler.schedule(packet.expires_at,packet,'expire')
                 outcome['packet_id']=packet.id
     def execute_command(self,identity,record):
-        d=self.nodes[identity]; action=record['action']; params=record['parameters']; d.current_command=action
+        d=self.nodes[identity]; action=record['action']; params=record['parameters']
+        supervisor=self.flight_safety.supervisors.get(identity)
+        if supervisor:
+            frame=self.flight_safety.frame(identity);allowed=True;reason=None
+            targets=[]
+            if action=='move':targets=[[params[k] for k in ('x','y','z')]]
+            elif action=='altitude':targets=[[d.position[0],params['altitude'],d.position[2]]]
+            elif action=='waypoints':targets=params['points']
+            elif action=='formation':targets=[formation_positions(params['formation'],self.count)[list(self.nodes).index(identity)]]
+            if self.autonomy.enabled and targets:
+                if not supervisor.navigation(frame) or not supervisor.obstacles_known(frame):allowed=False;reason='Current navigation and obstacle evidence required'
+                elif any(not supervisor.segment_safe(a,b) for a,b in zip([d.position]+targets,targets)):
+                    allowed=False;reason='Flight command leaves the geofence or intersects a declared obstacle'
+            if allowed:allowed,reason=supervisor.command_allowed(action,frame)
+            if not allowed:
+                record['outcomes'][identity].update(result={'safety_rejected':True,'reason':reason})
+                self.event('SAFETY','flight_command_rejected',dict(node=identity,action=action,reason=reason));return
+        d.current_command=action
         if action=='hold': d.mode='hold'; d.target=d.position[:]
         elif action=='resume': d.mode='patrol'
         elif action in ('return','emergency'):
@@ -716,6 +890,9 @@ class SwarmEngine:
         completed=[key for key,t in self.transfers.items() if t['status']!='pending' and self.seconds-t.get('completed_at',self.seconds)>600]
         for key in completed[:-256]: self.transfers.pop(key,None)
     def metrics(self):
+        return self.observability.metrics() if self.observability.enabled else self.raw_metrics()
+
+    def raw_metrics(self):
         now=time.time(); result={}
         # Candidate RF measurements survive HOLD/containment. Packet enforcement
         # still uses the separate security-aware graph and installed rules.
@@ -734,8 +911,9 @@ class SwarmEngine:
             for family in ('direct','satellite','mesh'):
                 if family=='mesh': hops=shortest_path(self.links,d.id,'base',self.nodes,adjacency=measured_graph)
                 else: hops=[d.id,'base'] if family not in self.failed_families and (family=='satellite' or pair(d.id,'base') in self.links) else []
+                if (self.autonomy.enabled or self.autonomy.interfaces) and not self.autonomy.permitted(hops,family):hops=[]
                 links=[self.links[pair(a,b)] for a,b in zip(hops,hops[1:]) if pair(a,b) in self.links]
-                if family=='direct': links=[self.attacks.impair(self.radio_links[pair(d.id,'base')],'direct',(d.id,))] if pair(d.id,'base') in self.radio_links else []
+                if family=='direct': links=[self.attacks.impair(self.radio_links[pair(d.id,'base')],'direct',(d.id,))] if hops and pair(d.id,'base') in self.radio_links else []
                 if family=='satellite' and hops:
                     sat=self.satellite_link(d.id); channel=('satellite',*pair(d.id,'base'))
                     key=(family,pair(d.id,'base'))
@@ -777,17 +955,24 @@ class SwarmEngine:
                      'drift_m':math.sqrt(2)*120 if self.attacks.has(d.id,'gps_spoofing') else 0.})
         return result
     def snapshot(self,after=0,include_flows=True):
+        with self.performance.measure('snapshot'):
+            result=self._snapshot(after,include_flows)
+        result['performance']=self.performance.snapshot(self.playing,self.speed)
+        return result
+    def _snapshot(self,after=0,include_flows=True):
         active=[d for d in self.nodes.values() if d.available]; edges=[l for l in self.links.values() if 'base' not in (l.a,l.b)]
         n=len(self.nodes); p=self.scheduler
         reachable=sum(bool(self.route(d.id,'base','mesh',True)) for d in active)
         return dict(schema_version='mission_snapshot_v1',session_id=self.session_id,revision=self.revision,network_revision=self.network_revision,
             simulation_time=self.seconds,timestamp=time.time(),playing=self.playing,speed=self.speed,seed=self.seed,pending_seed=self.pending_seed,topology=self.topology,
             topology_selection=self.adaptive.snapshot(),
+            observability=self.observability.snapshot(),
+            autonomy=self.autonomy.snapshot(),
             formation=self.formation,heads=self.heads,scenario=self.scenario,controller_connected=self.controller_connected,evidence='packet_simulation',
             enforcement='simulation_logical_sdn',routing_mode='mesh_reference' if self.cfg.get('mesh_only') else 'flare',range_m=self.cfg['radio']['range_m'],terrain=self.terrain.provenance,base_position=BASE_POSITION,
             nodes=[dict(d.snapshot(),reported_position=self.attacks.position(d.id,d.position),active_attacks=[{k:a[k] for k in ('attack_id','group','profile','effective_paths','expires_at','status')} for a in self.attacks.for_node(d.id)],
                 security=self.security.get(d.id),current_path=(self.installed_rule(d.id,'base','telemetry') or {}).get('hops',[])) for d in self.nodes.values()],
-            links=[dict(l.snapshot(),schema_version='mission_link_v1',session_id=self.session_id,revision=self.network_revision,simulation_time=self.seconds,evidence_source='packet_simulation',status='blocked' if edge in self.blocked|self.auto_blocked else l.status) for edge,l in self.links.items()],
+            links=[dict(l.snapshot(),schema_version='mission_link_v1',session_id=self.session_id,revision=self.network_revision,simulation_time=self.seconds,evidence_source='packet_simulation',status='blocked' if edge in self.blocked|self.auto_blocked else l.status,transition_retained=self.resilience.target_links is not None and edge not in self.resilience.target_links) for edge,l in self.links.items()],
             packets=[dict(p.snapshot(),schema_version='mission_packet_v1',session_id=self.session_id,simulation_time=self.seconds,evidence_source='packet_simulation') for p in sorted(self.scheduler.packets.values(),key=lambda p:(p.category in ('fl_update','command','ack','threat','emergency'),p.created_at),reverse=True)[:200]],packet_results=list(self.packet_results)[-40:],
             packet_events=[e for e in self.packet_events if e['simulation_time']>=self.seconds-max(.6,self.speed*.4)][-4000:],packet_cursor=self.packet_cursor,
             interference_regions=deepcopy(self.jammers),

@@ -9,7 +9,7 @@ test('network routes, real packet replay, 3D parity and responsive workspace',as
  await resetMission(center);await missionSetting(center,'Fleet size','30');
  await center.getByLabel('Topology',{exact:true}).selectOption('self_healing_mesh');await center.getByLabel('Speed',{exact:true}).selectOption('0.1');
  await expect(center.getByRole('img',{name:'Authoritative 2D mission network'})).toBeVisible();await expect(center.getByLabel('Installed FLARE route')).toBeVisible();
- await expect(center.getByLabel('Topology',{exact:true}).locator('option')).toHaveCount(11);
+ await expect(center.getByLabel('Topology',{exact:true}).locator('option')).toHaveCount(12);
  await center.getByRole('button',{name:'Play mission',exact:true}).click();
  await center.getByRole('button',{name:'Layers',exact:true}).click();await center.getByLabel('Idle links',{exact:true}).uncheck();await center.getByLabel('Selected range',{exact:true}).check();await center.getByRole('button',{name:'Close Layers',exact:true}).click();
  await center.getByRole('button',{name:'Route probes',exact:true}).click();const sent=page.waitForResponse(r=>r.url().endsWith('/probes')&&r.request().method()==='POST');await center.getByRole('button',{name:'Send probe',exact:true}).click();const probe=await (await sent).json();expect(probe.packet.route.length).toBeGreaterThan(1);

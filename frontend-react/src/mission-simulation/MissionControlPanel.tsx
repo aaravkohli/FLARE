@@ -1,10 +1,12 @@
+import { AssistanceStatus } from './UavAssistance';
 import { useState } from 'react';
 import { COMMANDS, ROLES, commandParameters } from './commandParameters';
 import { FORMATIONS, title, selectAllMissionTargets, clearMissionTargets, toggleMissionTarget } from './swarm';
 import type { SwarmSnapshot } from './swarm';
-type Props = {snapshot:SwarmSnapshot; first:string; targets:string[]; busy:boolean; tab:'events'|'inspect'|'commands';
+import { AutonomyStatus } from './AutonomyPanel';
+type Props = {snapshot:SwarmSnapshot; first:string; targets:string[]; busy:boolean; current:boolean; tab:'events'|'inspect'|'commands';
  linkId:string; onLink:(id:string)=>void; select:(id:string,additive?:boolean)=>void; mutate:(path:string,body:Record<string,unknown>,method?:string)=>Promise<unknown>};
-export default function MissionControlPanel({snapshot,first,targets,busy,tab,linkId,onLink,select,mutate}:Props) {
+export default function MissionControlPanel({snapshot,first,targets,busy,current,tab,linkId,onLink,select,mutate}:Props) {
  const [query,setQuery]=useState(''),[command,setCommand]=useState('hold'),[error,setError]=useState('');
  const [fields,setFields]=useState<Record<string,string|boolean>>({altitude:'120',x:'0',y:'100',z:'0',points:'[[0,100,0],[100,100,100]]',loop:false,family:'mesh',role:'relay',formation:'v'});
  const drone=snapshot.nodes.find(n=>n.id===first),link=snapshot.links.find(l=>l.id===linkId&&(l.a===first||l.b===first));
@@ -38,6 +40,8 @@ export default function MissionControlPanel({snapshot,first,targets,busy,tab,lin
   </div>
   <div role="tabpanel" id="uav-tools-panel-inspect" aria-label="Inspect" hidden={tab!=='inspect'}>
    <label>Inspected UAV<select aria-label="Inspected UAV" value={first} onChange={e=>select(e.target.value)}>{snapshot.nodes.map(n=><option key={n.id} value={n.id}>{n.alias}</option>)}</select></label>
+   <AutonomyStatus snapshot={snapshot} inspected={first} current={current}/>
+    <AssistanceStatus snapshot={snapshot} inspected={first} current={current}/>
    {drone&&<div className="swarm-detail"><h3>{drone.alias}<small>{drone.id} · {drone.available?'Online':'Offline'}</small></h3>
     {Object.entries({
      Network:{Role:snapshot.heads?.includes(drone.id)?snapshot.topology==='star'?'Leader':'Cluster head':title(drone.role),Neighbors:drone.neighbors.length,'Radio range':`${drone.range_m.toFixed(0)} m`,'Installed hops':drone.current_path.map(id=>snapshot.nodes.find(n=>n.id===id)?.alias??id).join(' → ')||'None','Sent / received':`${drone.sent} / ${drone.received}`,'Forwarded / dropped':`${drone.forwarded} / ${drone.dropped}`},

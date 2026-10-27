@@ -1,0 +1,9 @@
+{
+  "outcome": "Passed",
+  "execution_source_sha256": "d133d646c16b0c7f66a7fd28dafa3f96dbbfa1bbd6ecd9f0a55059635ac5e524",
+  "repaired_source_sha256": "680f127a14929a07bc51f55c63d78bc542148fdb7bd02034888098efab0b010e",
+  "changed_functions": [
+    "AutonomousRecovery.snapshot"
+  ],
+  "note": "Only optional-field reading in snapshot overlay serialization changed after batch completion. Scheduler, controller, topology, and flight methods are AST-identical. Batch run_one never calls engine.snapshot; paired repeat and legacy checks are recorded separately."
+}

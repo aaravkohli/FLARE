@@ -1,0 +1,441 @@
+{
+  "source_sha256": "bdfbe8a0c4d7d871c3f09f52d71d57113bb88dc7c5bbc1675a8e948f234927ca",
+  "at_utc": "2026-10-26T07:06:18.451000+00:00",
+  "artifacts": [
+    {
+      "path": "results/affected_uav_assistance/accepted-baseline.log",
+      "sha256": "b76701f7d99711d753859aec5ec62a3ebe8fc089a8df7e3297578601412bcb19",
+      "bytes": 7
+    },
+    {
+      "path": "results/affected_uav_assistance/accepted-batch/state.json",
+      "sha256": "a96fac28c7b2288c573a0c60c50d064764d361b7bc1f8b45cf886ff50732b476",
+      "bytes": 901817
+    },
+    {
+      "path": "results/affected_uav_assistance/accepted-batch.log",
+      "sha256": "0982f12e19555deb5b4260027fdd3d8151a55a22ec975f775f173855e4b61063",
+      "bytes": 2840
+    },
+    {
+      "path": "results/affected_uav_assistance/accepted-independent.log",
+      "sha256": "4fcd9cc29c3a6be427f0d8994ac088ca59feccd2cb9438f41bebc5fd37786612",
+      "bytes": 1948
+    },
+    {
+      "path": "results/affected_uav_assistance/accepted-source-tests.log",
+      "sha256": "b7065dee58f46310a614673a6da257d84a61e4a3ff3e5888c56aafb40e2436ba",
+      "bytes": 1165
+    },
+    {
+      "path": "results/affected_uav_assistance/baseline.log",
+      "sha256": "b76701f7d99711d753859aec5ec62a3ebe8fc089a8df7e3297578601412bcb19",
+      "bytes": 7
+    },
+    {
+      "path": "results/affected_uav_assistance/batch.log",
+      "sha256": "0274c209172295ec85103fa6f22c517ba3a22fadae85d80dc8e70053b9c890a3",
+      "bytes": 2840
+    },
+    {
+      "path": "results/affected_uav_assistance/browser-assistance-recheck.log",
+      "sha256": "00f40defd5a86b78cc154dd232d39af59f2171d3ab6573518bbef0e484c73428",
+      "bytes": 364
+    },
+    {
+      "path": "results/affected_uav_assistance/browser-assistance.log",
+      "sha256": "c525603748347f88d5bc6de56e6660cd5a1d9b530e131071f9b9a706a44dd97f",
+      "bytes": 3893
+    },
+    {
+      "path": "results/affected_uav_assistance/browser-final-features.log",
+      "sha256": "0c03f9f1dd01ec9d3d9c310ae6401df665d6f1582dc40dfe21b18953b09918d6",
+      "bytes": 663
+    },
+    {
+      "path": "results/affected_uav_assistance/browser-regression.log",
+      "sha256": "c70b25959826bad6011c5569fb8b4a94258f9d28af524c569ddd50fbdfc989c8",
+      "bytes": 12402
+    },
+    {
+      "path": "results/affected_uav_assistance/browser-traffic-recheck.log",
+      "sha256": "5b6f96e5df5d7a0c59a2c9542ee61a2b1c720535dc5aa26f8a5d93bf51f95397",
+      "bytes": 366
+    },
+    {
+      "path": "results/affected_uav_assistance/complete-edge.log",
+      "sha256": "2ca0e694756d4d315a61a03e6cd34fa68423d88b9691a28e108ff4042aadbd16",
+      "bytes": 100
+    },
+    {
+      "path": "results/affected_uav_assistance/cpu-profile.log",
+      "sha256": "a53be0ad928549e65ca79db1cf2e35246a84f7b02738c38fb25e011c830e0447",
+      "bytes": 507
+    },
+    {
+      "path": "results/affected_uav_assistance/edge-final.log",
+      "sha256": "f03b48c8c9b64d3aa7fcdce2f2979ab24fe8823681abf0daaa81342f23941bb6",
+      "bytes": 100
+    },
+    {
+      "path": "results/affected_uav_assistance/final-baseline.log",
+      "sha256": "b76701f7d99711d753859aec5ec62a3ebe8fc089a8df7e3297578601412bcb19",
+      "bytes": 7
+    },
+    {
+      "path": "results/affected_uav_assistance/final-batch.log",
+      "sha256": "8830fd333cd3cd006cd840e50bd7211ef8f7cd340b34e4aff0d9752a3a7759e2",
+      "bytes": 2840
+    },
+    {
+      "path": "results/affected_uav_assistance/final-source-focus.log",
+      "sha256": "172f6642fbe29a872218284cb0f0aaaccc66be053da6ba89fef5e7091b9e389a",
+      "bytes": 1165
+    },
+    {
+      "path": "results/affected_uav_assistance/focused-final.log",
+      "sha256": "7b3d65d6f68dbac681ec49ed4c9f40ecfd8bda9625a5599fad6bc1729ce9ddee",
+      "bytes": 1165
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-accepted-build.log",
+      "sha256": "447e67cc0be8aed8202235f945113382bff057e60ce6a4078e2653fb88882c1e",
+      "bytes": 1585
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-accepted-lint.log",
+      "sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6",
+      "bytes": 2324
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-accepted-typecheck.log",
+      "sha256": "373b6abd1702072c02436a7dda84d3996d43e72c96042734e7cd9c714859a0c7",
+      "bytes": 44
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-accepted-unit.log",
+      "sha256": "e4782643a0982a1338ab73c6d1ac6fb00df1f6ddb8ecf7203290d98b8a06f052",
+      "bytes": 17568
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-build.log",
+      "sha256": "7da7c13d0dbf133be4fd75a48028a2c01d7a3ba6d61d3443e9c7f4514225d8dc",
+      "bytes": 1585
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-final-build.log",
+      "sha256": "5ce6fd704b0ca62fbecca1d15a8a4b824b0a7c11ecc32a2706ddac66123d1975",
+      "bytes": 1585
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-final-lint.log",
+      "sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6",
+      "bytes": 2324
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-final-typecheck.log",
+      "sha256": "373b6abd1702072c02436a7dda84d3996d43e72c96042734e7cd9c714859a0c7",
+      "bytes": 44
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-final-unit.log",
+      "sha256": "c84736b8366cfdbcccc46d0d72520a7d63ce4a91a882e8990cc38bc38e4e1037",
+      "bytes": 17569
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-lint.log",
+      "sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6",
+      "bytes": 2324
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-release-build.log",
+      "sha256": "47a8e7702b8da192e26a732345150ada80b4068a4340a15d565d9cddeb07672e",
+      "bytes": 1585
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-release-lint.log",
+      "sha256": "c6b6bc50c44e4f3f06e06d8430225ee8d51f7130e821bbc1606752448a7c06e6",
+      "bytes": 2324
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-release-typecheck.log",
+      "sha256": "373b6abd1702072c02436a7dda84d3996d43e72c96042734e7cd9c714859a0c7",
+      "bytes": 44
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-release-unit.log",
+      "sha256": "2a5135111dd9820fb80fe037640fd4e9461d1625580fea32e7c43edb779021ae",
+      "bytes": 17635
+    },
+    {
+      "path": "results/affected_uav_assistance/frontend-unit.log",
+      "sha256": "8ec0c9f1d8b63bf5a769a93d4b369477e527a9818f2d0b09cb71f6f06985b357",
+      "bytes": 17544
+    },
+    {
+      "path": "results/affected_uav_assistance/historical-equivalence.log",
+      "sha256": "d75cda4e8f2bdbc962b825cf05eb6d2c9a2e92f47f445b4515fe4db798d7b0f6",
+      "bytes": 480
+    },
+    {
+      "path": "results/affected_uav_assistance/independent.log",
+      "sha256": "4ee362573cae606c5526fc806443526c0475ef325567f98d05db19f103e5bc97",
+      "bytes": 1948
+    },
+    {
+      "path": "results/affected_uav_assistance/legacy-ordering.log",
+      "sha256": "b76701f7d99711d753859aec5ec62a3ebe8fc089a8df7e3297578601412bcb19",
+      "bytes": 7
+    },
+    {
+      "path": "results/affected_uav_assistance/preflight-fixtures.log",
+      "sha256": "0946e7d5a5b22dbf3c5c9755b85d68f4852ea730fed5d9c08493ae390062e3c3",
+      "bytes": 1359
+    },
+    {
+      "path": "results/affected_uav_assistance/preflight.log",
+      "sha256": "76eb9b18f79f8206d1b422fa879a32b59682def18758bd567635f4570a0d92cb",
+      "bytes": 271
+    },
+    {
+      "path": "results/affected_uav_assistance/probe.log",
+      "sha256": "1baee2b7a1398033ae94f1ff83760e9786250c27a537344ad6c8cc6139147445",
+      "bytes": 5953
+    },
+    {
+      "path": "results/affected_uav_assistance/probe2.log",
+      "sha256": "50ae37c9fa2cc95a468cb7151cb43c9c8b0dcee39646ba293561fb0dedfbb2d7",
+      "bytes": 9457
+    },
+    {
+      "path": "results/affected_uav_assistance/probe3.log",
+      "sha256": "fcdcb57c4de4af647589543bdebc7f4df6bfd5f507876af736c545cf248e1648",
+      "bytes": 9429
+    },
+    {
+      "path": "results/affected_uav_assistance/probe4.log",
+      "sha256": "e185dd770b5734a0efb5a54ac861a609e711cc81c908b3f27c66a32840991955",
+      "bytes": 6534
+    },
+    {
+      "path": "results/affected_uav_assistance/python-final-regression.log",
+      "sha256": "c698f8ddaf4b0859fe51fb7b26654b482a45300ee7f3422f15976f0d702d879d",
+      "bytes": 3474
+    },
+    {
+      "path": "results/affected_uav_assistance/python-regression.log",
+      "sha256": "405476e6d06259acb102b2275e078ac17e63a7328218d2f0a385d6481d3d0bed",
+      "bytes": 3474
+    },
+    {
+      "path": "results/affected_uav_assistance/quality-final.log",
+      "sha256": "2952c7546a31d038ac6e2c6cbc97d252694a8d71a7361a30bc7e841b6df09f37",
+      "bytes": 100
+    },
+    {
+      "path": "results/affected_uav_assistance/release-batch.log",
+      "sha256": "1766b96244831d5afc7a60f5a240c0c4e6ee93bb4bf9fc48fd89de7daacc146b",
+      "bytes": 2840
+    },
+    {
+      "path": "results/affected_uav_assistance/render-2d.log",
+      "sha256": "007d53eff084cc927d96ceec5e059a14d187ef13e7ae427abe257aa33e382e43",
+      "bytes": 323
+    },
+    {
+      "path": "results/affected_uav_assistance/render-3d.log",
+      "sha256": "73974a1e5b5bccdfeb46aaf4e8c8d821026528c6908d79ab34892107b145f959",
+      "bytes": 323
+    },
+    {
+      "path": "results/affected_uav_assistance/render-compare.log",
+      "sha256": "a2c06b111ce1bfaea313ba472da5eaf2996a3fa29d9c070825c9773f46f4444a",
+      "bytes": 323
+    },
+    {
+      "path": "results/affected_uav_assistance/repeatability.log",
+      "sha256": "5dd3b2947c719be5f0abaab543450a69d4bf18604afff3ecd5920c62ee727b9b",
+      "bytes": 19
+    },
+    {
+      "path": "results/affected_uav_assistance/reproduction-source.tar.gz",
+      "sha256": "8f890d79f5ca310f4a64396493a341edaae744ecc1b69245171b8e2ae8488796",
+      "bytes": 516624
+    },
+    {
+      "path": "results/affected_uav_assistance/unit.log",
+      "sha256": "40dd3ca1ac304884943308dd13ffd711885c9f168343a97bc2a592ad85fb22e7",
+      "bytes": 2259
+    },
+    {
+      "path": "results/affected_uav_assistance/unit2.log",
+      "sha256": "0145e2f1cfd4ae75140dee03a7e9e4140bb379b8cad6b4d6193a8f194bf624ac",
+      "bytes": 100
+    },
+    {
+      "path": "results/affected_uav_assistance/unit3.log",
+      "sha256": "6e054a6393f10d216f15418f50f8e21603fb68fb3a1c34409fa39f9fd3f8cd37",
+      "bytes": 913
+    },
+    {
+      "path": "validation/affected_uav_assistance/README.md",
+      "sha256": "b66fa991818026fd3b29e03e1234c538728d379fe2411a7db127eeb3145a5596",
+      "bytes": 8780
+    },
+    {
+      "path": "validation/affected_uav_assistance/commands.json",
+      "sha256": "68a83073ef3ce4525477a25f59ac9935a03298b7f481d184835b1035fd42103d",
+      "bytes": 8353
+    },
+    {
+      "path": "validation/affected_uav_assistance/cpu-profile.json",
+      "sha256": "ce17951785ca9711c58189870dcbe9f9ea7def1fee1611ebff76dbc92023d881",
+      "bytes": 14059
+    },
+    {
+      "path": "validation/affected_uav_assistance/environment.json",
+      "sha256": "a2dd49dab3efb5ef94e19ee6b78c4edd69dd25599ccb9beb57ab3c296bb6c1d6",
+      "bytes": 948
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/assistance-1024.png",
+      "sha256": "a7c66674fea80e067773825489a0b78959cd90e982f224b670b89da0cf05545f",
+      "bytes": 147394
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/assistance-1440.png",
+      "sha256": "e203ed8ba5381a2bac9c84f381cc6a735a18a488fec7d423933b69552fd83ba3",
+      "bytes": 184974
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/assistance-390.png",
+      "sha256": "995d049980b86f97d51a8ccc4640b1cdfaff375ee2a315d8dfd7bdf24812f153",
+      "bytes": 43606
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/assistance-687.png",
+      "sha256": "30d814f7a711c2eee1b7773f1ac50ddd2628931bf82da138616e3903749840e0",
+      "bytes": 43455
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/assistance-768.png",
+      "sha256": "b1e45761972bad8997ed4be521a80e17f6ec5509094915db20504589ecf488b7",
+      "bytes": 122026
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/assistance-915.png",
+      "sha256": "523284456fc8841fcc076ac1e7d06ca4570bc51635831faddf165d4bf8025dce",
+      "bytes": 137989
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/completed-resilience-pilot.png",
+      "sha256": "a96920b06d048758d2c411240fbcddc4b4e3632e1ec9caec6a6e34c2fa519e98",
+      "bytes": 132370
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/completed-study.png",
+      "sha256": "78065ed27205263ba974433c4e3c5cdb8a10f4db07658cf23386d95cd0ab1cbd",
+      "bytes": 109999
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/profile-2d-100.png",
+      "sha256": "59d236401e8d017d4e4982299c8c9a9ac398e01cd92bc7f210ad7608ab493d9d",
+      "bytes": 279288
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/profile-3d-100.png",
+      "sha256": "c3ccf5f198fe576e794fcdfe00f5bb139ae4dbf857ff603149c4bde5a758a3a2",
+      "bytes": 678529
+    },
+    {
+      "path": "validation/affected_uav_assistance/evidence/profile-compare-100.png",
+      "sha256": "465035200d3bb3c46a327f9944a3536c16e08ff1823aba6ca6fc893062f591c6",
+      "bytes": 368222
+    },
+    {
+      "path": "validation/affected_uav_assistance/exploratory-summary.json",
+      "sha256": "d2303ae82fa59def72944ab9cb54e6ad4919700cbf9dcfee6e16f621ab667767",
+      "bytes": 16096
+    },
+    {
+      "path": "validation/affected_uav_assistance/feature-coverage.csv",
+      "sha256": "f8dc9bcb63a89a276d7f7a0362cb535af579e45ee30450ef5e17b3faecbc0193",
+      "bytes": 5453
+    },
+    {
+      "path": "validation/affected_uav_assistance/feature-coverage.json",
+      "sha256": "233eede3a072f825e51820ec3368f32ae2dfeaec844f572c3bf3a92dfd0e70c1",
+      "bytes": 8019
+    },
+    {
+      "path": "validation/affected_uav_assistance/historical-preservation.json",
+      "sha256": "7601944e25594727095d21b81535a949a6633e1901870c2a6b0fb1381d3cbf69",
+      "bytes": 388149
+    },
+    {
+      "path": "validation/affected_uav_assistance/independent-verification.json",
+      "sha256": "19ef5805bdde15ffd69a8869a47660051549a74df9d4d03975d967c4e129e308",
+      "bytes": 18421
+    },
+    {
+      "path": "validation/affected_uav_assistance/isolation.json",
+      "sha256": "8b528c92dc9609e7848cfb55cf67e5c08035cf1c541a8a243dece67b81990974",
+      "bytes": 12650
+    },
+    {
+      "path": "validation/affected_uav_assistance/legacy-equivalence.json",
+      "sha256": "012a715cb1746c61c77df207df466f79dbc1794c3f36d47f3fc34a00c9edaf79",
+      "bytes": 43214
+    },
+    {
+      "path": "validation/affected_uav_assistance/pair-comparisons.json",
+      "sha256": "4d3363d2e99160d0acfcdfc94a20d39e881fd34535e4badb0e1c08a7e9e53590",
+      "bytes": 5523
+    },
+    {
+      "path": "validation/affected_uav_assistance/per-run-measurements.csv",
+      "sha256": "53c0b72eaf59b24b9b320c009fce4ff72fe5e3239b6dd5f3964152748554ece4",
+      "bytes": 11556
+    },
+    {
+      "path": "validation/affected_uav_assistance/per-run-measurements.json",
+      "sha256": "849e8159081374ffa9e3ede73acbdb9f1c73a3c73b43a6a9e3262387aef62871",
+      "bytes": 834864
+    },
+    {
+      "path": "validation/affected_uav_assistance/per-uav-measurements.csv",
+      "sha256": "173aaa8328c8aabd96ab65fed3be6f6fbd2191714585720a8b7a673b3ef3ac45",
+      "bytes": 148424
+    },
+    {
+      "path": "validation/affected_uav_assistance/protocol-manifest.json",
+      "sha256": "ff5566b88149df829254f3a4afd413e9a4b003850288cbc240696e198ec74159",
+      "bytes": 21439
+    },
+    {
+      "path": "validation/affected_uav_assistance/rendering-profiles.json",
+      "sha256": "ace91df26419575ae12613428c1392b0a65379d1e4a4ef29e848c3af5e2a6d4c",
+      "bytes": 503293
+    },
+    {
+      "path": "validation/affected_uav_assistance/repeatability.json",
+      "sha256": "56fb6f1dbe1acea1d152003ff3c8ea503a687aced6c5b402687a574075bf01c2",
+      "bytes": 2399
+    },
+    {
+      "path": "validation/affected_uav_assistance/safeguarded-decision-example.json",
+      "sha256": "8501e485014b4a3a3d93cd4b9c3341b163a9c30b8a7a6658b6f5940d44cac6e5",
+      "bytes": 48706
+    },
+    {
+      "path": "validation/affected_uav_assistance/source-manifest.json",
+      "sha256": "01fe7e0ce14f00fca9724c664992979c2e2724997fa560cc0839a3d74df4d6ae",
+      "bytes": 30468
+    },
+    {
+      "path": "validation/affected_uav_assistance/verification-report.md",
+      "sha256": "82e0c2b3e25acbf292acc0848d74bf2d6a2088894cf16e9b06b4a2b3c623991c",
+      "bytes": 11436
+    }
+  ]
+}

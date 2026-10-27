@@ -1,0 +1,106 @@
+         41775252 function calls (40266324 primitive calls) in 11.535 seconds
+
+   Ordered by: cumulative time
+   List reduced from 368 to 65 due to restriction <65>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      100    0.000    0.000   11.192    0.112 engine.py:186(tick)
+      100    0.002    0.000   11.192    0.112 engine.py:193(_tick)
+       25    0.000    0.000    6.954    0.278 engine.py:272(rebuild)
+       25    0.002    0.000    6.954    0.278 engine.py:277(_timed_rebuild)
+       25    0.179    0.007    6.952    0.278 engine.py:283(_rebuild)
+       25    0.007    0.000    3.345    0.134 adaptive_topology.py:439(after_rebuild)
+      200    0.000    0.000    3.086    0.015 engine.py:86(timed_step)
+      200    0.434    0.002    3.084    0.015 network.py:266(step)
+       23    0.001    0.000    2.957    0.129 adaptive_topology.py:331(evaluate)
+        4    0.015    0.004    2.956    0.739 adaptive_topology.py:335(_evaluate)
+   126250    0.621    0.000    2.501    0.000 network.py:26(radio_link)
+        4    0.008    0.002    2.078    0.519 adaptive_topology.py:344(<dictcomp>)
+       40    0.245    0.006    2.070    0.052 adaptive_topology.py:246(candidate)
+   895192    1.416    0.000    1.769    0.000 terrain.py:32(height)
+2096391/1728227    0.302    0.000    1.184    0.000 {built-in method builtins.sorted}
+    10947    0.922    0.000    1.175    0.000 network.py:60(shortest_path)
+   191427    0.351    0.000    0.999    0.000 engine.py:363(valid_route)
+       40    0.005    0.000    0.978    0.024 adaptive_topology.py:121(demand_paths)
+       40    0.006    0.000    0.925    0.023 adaptive_topology.py:125(<dictcomp>)
+     4000    0.758    0.000    0.920    0.000 adaptive_topology.py:79(paths_from)
+   140171    0.123    0.000    0.910    0.000 engine.py:541(packet_allowed)
+        4    0.000    0.000    0.848    0.212 adaptive_topology.py:349(<dictcomp>)
+       40    0.001    0.000    0.848    0.021 resilience_control.py:62(assess)
+       40    0.024    0.001    0.846    0.021 observability.py:132(predict)
+   133149    0.101    0.000    0.761    0.000 network.py:248(pop_event)
+1136330/560251    0.302    0.000    0.656    0.000 {built-in method builtins.sum}
+   259578    0.067    0.000    0.605    0.000 {built-in method builtins.all}
+    10379    0.013    0.000    0.593    0.000 engine.py:398(ensure_route)
+   133149    0.078    0.000    0.588    0.000 network.py:254(key)
+574773/130107    0.320    0.000    0.575    0.000 copy.py:128(deepcopy)
+    35843    0.036    0.000    0.557    0.000 engine.py:374(route)
+    15062    0.015    0.000    0.549    0.000 network.py:154(event)
+  2076393    0.334    0.000    0.535    0.000 topology.py:21(pair)
+   498348    0.290    0.000    0.527    0.000 engine.py:373(<genexpr>)
+    16083    0.029    0.000    0.510    0.000 network.py:109(snapshot)
+    73093    0.165    0.000    0.500    0.000 network.py:237(protected_due)
+       25    0.000    0.000    0.493    0.020 engine.py:842(snapshot)
+       25    0.002    0.000    0.492    0.020 engine.py:847(_snapshot)
+      100    0.217    0.002    0.469    0.005 movement.py:62(advance)
+    13343    0.022    0.000    0.466    0.000 engine.py:386(policy_route)
+      370    0.281    0.001    0.465    0.001 network.py:45(build_adjacency)
+       65    0.010    0.000    0.460    0.007 topology.py:24(topology_edges)
+      100    0.003    0.000    0.455    0.005 observability.py:36(step)
+44094/40494    0.064    0.000    0.420    0.000 copy.py:227(_deepcopy_dict)
+    36495    0.041    0.000    0.361    0.000 copy.py:201(_deepcopy_list)
+  2811827    0.302    0.000    0.350    0.000 {built-in method builtins.min}
+    32120    0.008    0.000    0.339    0.000 topology.py:36(nearest)
+  7654038    0.335    0.000    0.335    0.000 {method 'get' of 'dict' objects}
+     2400    0.010    0.000    0.267    0.000 engine.py:591(send)
+       25    0.004    0.000    0.257    0.010 engine.py:857(<listcomp>)
+        5    0.014    0.003    0.251    0.050 engine.py:781(raw_metrics)
+     2500    0.001    0.000    0.246    0.000 movement.py:37(snapshot)
+     2500    0.001    0.000    0.245    0.000 dataclasses.py:1263(asdict)
+109082/2500    0.103    0.000    0.243    0.000 dataclasses.py:1287(_asdict_inner)
+       46    0.093    0.002    0.228    0.005 adaptive_topology.py:156(connectivity_state)
+        5    0.001    0.000    0.225    0.045 engine.py:619(generate_traffic)
+2137337/2134970    0.182    0.000    0.192    0.000 {built-in method builtins.max}
+   325766    0.091    0.000    0.175    0.000 topology.py:38(<genexpr>)
+       86    0.037    0.000    0.172    0.002 adaptive_topology.py:173(connectivity_from_adjacencies)
+     7353    0.027    0.000    0.157    0.000 {method 'update' of 'set' objects}
+      500    0.149    0.000    0.149    0.000 engine.py:813(<listcomp>)
+   814357    0.130    0.000    0.130    0.000 {built-in method _heapq.heappop}
+   243072    0.043    0.000    0.120    0.000 {built-in method builtins.any}
+      125    0.017    0.000    0.117    0.001 observability.py:104(statuses)
+     2400    0.006    0.000    0.112    0.000 network.py:217(finish)
+
+
+         41775252 function calls (40266324 primitive calls) in 11.535 seconds
+
+   Ordered by: internal time
+   List reduced from 368 to 25 due to restriction <25>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   895192    1.416    0.000    1.769    0.000 terrain.py:32(height)
+    10947    0.922    0.000    1.175    0.000 network.py:60(shortest_path)
+     4000    0.758    0.000    0.920    0.000 adaptive_topology.py:79(paths_from)
+   126250    0.621    0.000    2.501    0.000 network.py:26(radio_link)
+      200    0.434    0.002    3.084    0.015 network.py:266(step)
+   191427    0.351    0.000    0.999    0.000 engine.py:363(valid_route)
+  7654038    0.335    0.000    0.335    0.000 {method 'get' of 'dict' objects}
+  2076393    0.334    0.000    0.535    0.000 topology.py:21(pair)
+574773/130107    0.320    0.000    0.575    0.000 copy.py:128(deepcopy)
+  2811827    0.302    0.000    0.350    0.000 {built-in method builtins.min}
+1136330/560251    0.302    0.000    0.656    0.000 {built-in method builtins.sum}
+2096391/1728227    0.302    0.000    1.184    0.000 {built-in method builtins.sorted}
+   498348    0.290    0.000    0.527    0.000 engine.py:373(<genexpr>)
+      370    0.281    0.001    0.465    0.001 network.py:45(build_adjacency)
+       40    0.245    0.006    2.070    0.052 adaptive_topology.py:246(candidate)
+      100    0.217    0.002    0.469    0.005 movement.py:62(advance)
+2137337/2134970    0.182    0.000    0.192    0.000 {built-in method builtins.max}
+       25    0.179    0.007    6.952    0.278 engine.py:283(_rebuild)
+    73093    0.165    0.000    0.500    0.000 network.py:237(protected_due)
+      500    0.149    0.000    0.149    0.000 engine.py:813(<listcomp>)
+   814357    0.130    0.000    0.130    0.000 {built-in method _heapq.heappop}
+   140171    0.123    0.000    0.910    0.000 engine.py:541(packet_allowed)
+   383122    0.107    0.000    0.107    0.000 adaptive_topology.py:183(<genexpr>)
+  3601063    0.104    0.000    0.104    0.000 {built-in method builtins.abs}
+109082/2500    0.103    0.000    0.243    0.000 dataclasses.py:1287(_asdict_inner)
+
+

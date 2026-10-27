@@ -1,0 +1,534 @@
+{
+  "source_sha256": "2aa38e615d4e03e9933b8e8328da93e4b2eab8d3d99ff702b44ed80cdf62e136",
+  "results_sha256": "fcfdfb134ebdecd202efeb28c75b526e9ce9b98f57e557e5ce1475a95e1ed9e0",
+  "checks": [
+    {
+      "check": "Complete unique protocol run set",
+      "outcome": "Passed",
+      "detail": {
+        "status": "completed",
+        "completed": 550,
+        "expected": 550,
+        "failed_runs": []
+      }
+    },
+    {
+      "check": "Matched fleet_sha256",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Matched initial_input_sha256",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Matched motion_sha256",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Matched offered_input_sha256",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Matched shared_input_sha256",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "One compatible design",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Packet conservation and TTL drain",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Primary cohort size and accounting",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "All offered packets accounted",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Real congestion hop transmissions",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Bottleneck queue pressure",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Unrecovered flows retained",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Scientific result hash excludes timings",
+      "outcome": "Passed",
+      "detail": null
+    },
+    {
+      "check": "Every compressed artifact hash",
+      "outcome": "Passed",
+      "detail": []
+    },
+    {
+      "check": "Stratified independent trace/cohort verification",
+      "outcome": "Passed",
+      "detail": [
+        {
+          "scenario": "normal",
+          "policy": "auto",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08769484738372
+        },
+        {
+          "scenario": "normal",
+          "policy": "full_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0608694677545
+        },
+        {
+          "scenario": "normal",
+          "policy": "partial_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09921358474553
+        },
+        {
+          "scenario": "normal",
+          "policy": "star",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09070237793115
+        },
+        {
+          "scenario": "normal",
+          "policy": "ring",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.19514714973553
+        },
+        {
+          "scenario": "normal",
+          "policy": "tree",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.12084521504444
+        },
+        {
+          "scenario": "normal",
+          "policy": "cluster_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09233336238968
+        },
+        {
+          "scenario": "normal",
+          "policy": "grid",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.10936880953541
+        },
+        {
+          "scenario": "normal",
+          "policy": "random_geometric",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0608694677545
+        },
+        {
+          "scenario": "normal",
+          "policy": "hybrid_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08769484738372
+        },
+        {
+          "scenario": "normal",
+          "policy": "self_healing_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09928497040649
+        },
+        {
+          "scenario": "mobility",
+          "policy": "auto",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09921358409623
+        },
+        {
+          "scenario": "mobility",
+          "policy": "full_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.06087103542949
+        },
+        {
+          "scenario": "mobility",
+          "policy": "partial_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09921358409623
+        },
+        {
+          "scenario": "mobility",
+          "policy": "star",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09072374820973
+        },
+        {
+          "scenario": "mobility",
+          "policy": "ring",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.19514681306497
+        },
+        {
+          "scenario": "mobility",
+          "policy": "tree",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.12084848487316
+        },
+        {
+          "scenario": "mobility",
+          "policy": "cluster_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0923307101561
+        },
+        {
+          "scenario": "mobility",
+          "policy": "grid",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.10936881341233
+        },
+        {
+          "scenario": "mobility",
+          "policy": "random_geometric",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.06087103542949
+        },
+        {
+          "scenario": "mobility",
+          "policy": "hybrid_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08769368965446
+        },
+        {
+          "scenario": "mobility",
+          "policy": "self_healing_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.1206206587205
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "auto",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08769484738372
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "full_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0608694677545
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "partial_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09921358474553
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "star",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09070237793115
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "ring",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.19514714973553
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "tree",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.12084521504444
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "cluster_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09233336238968
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "grid",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.10936880953541
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "random_geometric",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0608694677545
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "hybrid_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08769484738372
+        },
+        {
+          "scenario": "regional_jamming",
+          "policy": "self_healing_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09921358474553
+        },
+        {
+          "scenario": "congestion",
+          "policy": "auto",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0611373354393
+        },
+        {
+          "scenario": "congestion",
+          "policy": "full_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0611373354393
+        },
+        {
+          "scenario": "congestion",
+          "policy": "partial_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0981490332681
+        },
+        {
+          "scenario": "congestion",
+          "policy": "star",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.090144692304
+        },
+        {
+          "scenario": "congestion",
+          "policy": "ring",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.19602920185588
+        },
+        {
+          "scenario": "congestion",
+          "policy": "tree",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.12200064158458
+        },
+        {
+          "scenario": "congestion",
+          "policy": "cluster_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09172066242267
+        },
+        {
+          "scenario": "congestion",
+          "policy": "grid",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.11056931033013
+        },
+        {
+          "scenario": "congestion",
+          "policy": "random_geometric",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0611373354393
+        },
+        {
+          "scenario": "congestion",
+          "policy": "hybrid_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08765639770832
+        },
+        {
+          "scenario": "congestion",
+          "policy": "self_healing_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09825054209763
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "auto",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08769484738372
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "full_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0608694677545
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "partial_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09921358474553
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "star",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09070237793115
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "ring",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.19514714973553
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "tree",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.12084521504444
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "cluster_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.09233336238968
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "grid",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.10936880953541
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "random_geometric",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.0608694677545
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "hybrid_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.08769484738372
+        },
+        {
+          "scenario": "partition_reconnection",
+          "policy": "self_healing_mesh",
+          "seed": 1001,
+          "outcome": "Passed",
+          "packet_events_ordered": true,
+          "maximum_simulation_time": 64.12001118283948
+        }
+      ]
+    }
+  ],
+  "outcome": "Passed",
+  "trace_sample": "All cases and policies at first declared seed; all compressed artifacts separately hash-checked"
+}

@@ -1,0 +1,29 @@
+capability,outcome,evidence,limitations
+"Balanced default, manual pin, reset and scenario persistence",Passed,tests/test_evidence_resilience.py; resilience-controller.spec.ts,No live operator reset
+Ten candidates × sizes 10–100 × seeds 7/42/99,Passed,test_enhanced_ten_candidate_matrix; test_adaptive_topology.py,300 enhanced candidate evaluations plus baseline matrix
+"Packet-specific overlap, completed-hop immutability and lease expiry",Passed,test_transition_leases_only_captured_packets_and_bound_duration; test_expiring_binding_does_not_erase_an_earlier_precise_arrival,Deterministic modeled scheduler
+"Containment, excluded flows and new-packet isolation",Passed,test_containment_overrides_retained_forwarding_and_rollback_never_rewinds; test_new_policies_cannot_use_retained_edges,Current security restrictions override leases
+Installation failure and rollback,Passed,test_enhanced_installation_failure_rolls_back_current_state,Explicit installation fault fixture
+Registered service and non-preemptive airtime,Passed,test_registration_not_category_grants_protected_service; test_priority_reservation_is_work_conserving_and_nonpreemptive,Controlled lossless timing expectation
+"Fragment completeness, losses, duplicates, out-of-order receipts",Passed,test_reports_require_complete_receipts_and_frozen_samples; test_duplicate_lost_and_out_of_order_fragments_and_epoch_invalidation,Real scheduler plus explicit receipt-order fixture
+Pause and simulation-clock age at 0.1× through 4×,Passed,test_report_age_uses_simulation_clock_at_every_speed; resilience-controller.spec.ts,No wall-clock extrapolation
+Report once-only orchestrator processing and missing evidence,Passed,test_orchestrator_processes_a_report_once_and_holds_when_unavailable,Model integration fixture; unavailable-model browser run
+"API authentication, revisions, policy values and pilot preset",Passed,tests/test_swarm_api.py; tests/test_evidence_resilience.py,Existing authenticated endpoints
+Fixed workloads retain numerical measurements,Passed,test_fresh_prechange_fixed_workload_numerical_baselines,Four fresh pre-change fixed-workload golden cases; configuration fingerprint excluded
+Public control matrix and existing mission workflows,Passed,browser-control-matrix.log; browser-final.log; browser-rerun.log,17 matrix cases and 8 final browser cases; fixture cases labeled in specs
+"Pilot create/cancel, exports, navigation and isolation",Passed,resilience-controller.spec.ts; browser-new.log; browser-missing-models.log; browser-final.log,"Actual isolated jobs, partial results and downloads"
+Responsive 390/687/768/915/1024/1440 and keyboard access,Passed,resilience-controller.spec.ts; sign-in.spec.ts; audit-surfaces.spec.ts,Screenshots plus overflow/focus assertions
+100-UAV 2D/3D/A/B rendering targets,Passed,rendering-profiles.json; rendering-source-manifests.json,Separate fresh 60-second profiles on Apple M2
+100-UAV achieved 1× live simulation speed,Failed,rendering-profiles.json,Final source: 0.474× in 2D and 0.453× in 3D; requested 1×. Rendering passes do not imply real-time simulation.
+Protected scheduler optimization event equivalence,Passed,scheduler-profile.json; multiradio-scheduler-equivalence.json; tests/test_evidence_resilience.py,Independent reference order; component gain only
+Linux CI execution,Not Tested,.github/workflows/ci.yml,Workflow updated; this local run is macOS
+Physical RF and real multi-hop SDN enforcement,Not Tested,README.md,Outside milestone; simulator evidence is not hardware validation
+"New detector training, convergence or detection-quality claims",Not Tested,README.md,No new training; existing model contracts preserved
+Patent novelty or exhaustive prior-art opinion,Not Tested,README.md,Technical hypothesis and three nearby primary references only
+Activation in operator running services,Not Tested,README.md,Intentionally preserved operator mission; normal restart required
+Final four-arm 72-run pilot and shared external inputs,Passed,study-summary.json; independent-verification.json; per-run-measurements.csv,Three exploratory seeds; all arms selected identical topology sequences
+Fresh subprocess scientific reproducibility,Passed,repeatability.json,"Congestion seed 7, two arms, hash seeds 1/99; CPU/wall timing excluded"
+Unreserved and protected radio occupancy accounting,Passed,admission-airtime-tests.log; accepted-regressions.log,"Sum of endpoint occupancy, not global channel time"
+Completed accepted pilot presentation and paired intervals,Passed,accepted-results-browser.log; evidence/completed-resilience-pilot.png,Real accepted data through explicit HTTP transport fixture
+Matched final-source Auto/Manual CPU measurement,Passed,cpu-profile.json,100 UAVs; three seeds; ten simulation seconds; no whole-application real-time claim
+Final full Python regression suite,Passed,python-accepted-full.log,"1038 passed, 5 warnings; pytest configuration excludes tests/test_adversarial.py"

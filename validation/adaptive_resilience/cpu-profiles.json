@@ -1,0 +1,137 @@
+[
+  {
+    "source_sha256": "01b2ba0c508d784f0fa5ff1dd189a0a08827281f5bed716ec9480cf4ff9ec826",
+    "count": 100,
+    "seed": 7,
+    "hardware": "macOS-26.6.2-arm64-arm-64bit",
+    "process_clock": "time.process_time",
+    "note": "Modeled packet simulation; not a real-time deadline or hardware network benchmark",
+    "runs": [
+      {
+        "mode": "manual",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 6.7181109999999995,
+        "wall_seconds": 6.810709125129506,
+        "evaluations": 0,
+        "evaluation_cpu_ms": [],
+        "selector_cpu_seconds": 0,
+        "conservation": true
+      },
+      {
+        "mode": "auto",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 9.393698,
+        "wall_seconds": 9.557843874907121,
+        "evaluations": 9,
+        "evaluation_cpu_ms": [
+          232.851,
+          172.124,
+          215.735,
+          224.17,
+          189.489,
+          201.626,
+          192.643,
+          201.865,
+          208.554
+        ],
+        "selector_cpu_seconds": 1.8390570000000022,
+        "conservation": true
+      }
+    ],
+    "total_cpu_ratio": 1.3982647800847592
+  },
+  {
+    "source_sha256": "01b2ba0c508d784f0fa5ff1dd189a0a08827281f5bed716ec9480cf4ff9ec826",
+    "count": 100,
+    "seed": 42,
+    "hardware": "macOS-26.6.2-arm64-arm-64bit",
+    "process_clock": "time.process_time",
+    "note": "Modeled packet simulation; not a real-time deadline or hardware network benchmark",
+    "runs": [
+      {
+        "mode": "manual",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 6.826683000000003,
+        "wall_seconds": 6.95909604197368,
+        "evaluations": 0,
+        "evaluation_cpu_ms": [],
+        "selector_cpu_seconds": 0,
+        "conservation": true
+      },
+      {
+        "mode": "auto",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 9.345544999999998,
+        "wall_seconds": 9.50162774999626,
+        "evaluations": 9,
+        "evaluation_cpu_ms": [
+          198.317,
+          183.981,
+          221.794,
+          205.459,
+          196.022,
+          196.182,
+          197.376,
+          205.957,
+          221.85
+        ],
+        "selector_cpu_seconds": 1.8269379999999984,
+        "conservation": true
+      }
+    ],
+    "total_cpu_ratio": 1.3689730429844178
+  },
+  {
+    "source_sha256": "01b2ba0c508d784f0fa5ff1dd189a0a08827281f5bed716ec9480cf4ff9ec826",
+    "count": 100,
+    "seed": 99,
+    "hardware": "macOS-26.6.2-arm64-arm-64bit",
+    "process_clock": "time.process_time",
+    "note": "Modeled packet simulation; not a real-time deadline or hardware network benchmark",
+    "runs": [
+      {
+        "mode": "manual",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 6.887920000000001,
+        "wall_seconds": 6.990291249938309,
+        "evaluations": 0,
+        "evaluation_cpu_ms": [],
+        "selector_cpu_seconds": 0,
+        "conservation": true
+      },
+      {
+        "mode": "auto",
+        "initial_topology": "grid",
+        "active_topology": "grid",
+        "simulated_seconds": 10.000000000000007,
+        "cpu_seconds": 9.396052000000005,
+        "wall_seconds": 9.503728125011548,
+        "evaluations": 9,
+        "evaluation_cpu_ms": [
+          179.268,
+          176.335,
+          195.736,
+          192.943,
+          203.467,
+          232.889,
+          199.351,
+          200.342,
+          214.085
+        ],
+        "selector_cpu_seconds": 1.7944160000000053,
+        "conservation": true
+      }
+    ],
+    "total_cpu_ratio": 1.3641348912298636
+  }
+]

@@ -241,5 +241,19 @@ frontend-react/artifacts/swarm-repair-*/
 
 
 # Audited, reproducible mesh reference benchmark
+# Streamed study traces and disposable execution evidence are retained locally.
+/results/adaptive_resilience/
 !results/mesh_topology_benchmark_v2.json
 !results/mesh_topology_benchmark_v2.csv
+
+# Disposable resilience-pilot traces and local test evidence; release record is in validation/.
+/results/evidence_resilience/
+!/validation/evidence_resilience/evidence/*.png
+
+# Isolated autonomous-recovery execution traces and local logs.
+/results/autonomous_recovery/
+!/validation/autonomous_recovery/evidence/*.png
+
+# Affected-UAV assistance traces and disposable validation services.
+/results/affected_uav_assistance/
+!/validation/affected_uav_assistance/evidence/*.png

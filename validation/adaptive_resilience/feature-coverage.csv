@@ -1,0 +1,17 @@
+capability,implementation,interface_applicability,evidence,outcome
+Protocol/presets/arms,adaptive_study.py; schemas/mission.py,Frontend/API/CLI,protocol tests; 550 actual runs,Passed
+Startup nominal demand,reference_workload.py; adaptive_topology.py,Simulator,startup demand assertions,Passed
+Effective peer congestion,reference_workload.py,Reference A/B/benchmark/study,"real transmissions, contention, queue pressure",Passed
+Captured inputs/isolation,experiments.py; adaptive_study.py,API/workers,cross-arm hashes; live session unchanged,Passed
+Cancellation/partial results,experiments.py; adaptive_study.py,Frontend/API,actual pilot and fixed-benchmark regressions,Passed
+JSON/CSV/Markdown/manifest/trace export,api/mission.py; adaptive_study.py,Frontend/API/CLI,authenticated exports; gzip hash/decompression,Passed
+Paired bootstrap/nulls/compatibility,study_statistics.py,Research reports/frontend,independent statistics fixtures; 10000 resamples,Passed
+Achieved speed and bounded timing,performance.py; engine.py,Snapshots/Live Mission,bounded timing tests; actual profiles,Passed
+Charts/filters/navigation/details,AdaptiveStudyPanel.tsx; ExperimentResults.tsx,Frontend,actual API pilot and real completed-artifact transport fixture,Passed
+Uncertain submission safety,AdaptiveStudyPanel.tsx,Frontend/API,"accepted real job, lost receipt, one POST",Passed
+Offline continuation/storage,scripts/resume_adaptive_study.py,CLI research,preserved failures; projection/integrity tests; full dataset,Passed
+Deterministic recovery serialization,experiments.py,Research exports,cross-process hash-seed checks; order/float regressions,Passed
+100-UAV rendering,mesh-performance.spec.ts,Frontend,three fresh 60-second profiles,Passed
+CI configuration,ci.yml; playwright.config.ts,PR CI configuration,YAML parsed; corresponding local commands,Passed
+Remote Linux execution,ci.yml,GitHub Actions,not pushed/executed remotely,Not Tested
+RF hardware/real multi-hop SDN/calibrated energy,Deferred,Hardware/infrastructure,excluded from this milestone,Not Tested

@@ -1,0 +1,343 @@
+[
+  {
+    "count": 100,
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 9.22,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-8amj6gyf/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "selected_view": "2d",
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "main_topology": "safeguarded",
+    "comparison_topologies": [
+      "partial_mesh",
+      "self_healing_mesh"
+    ],
+    "comparison_background": "Live mission reset to 10 UAVs and paused before the isolated 100-UAV A/B run",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "headless": true,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "reports": [
+      {
+        "view": "2d",
+        "simulation_performance": {
+          "status": "running",
+          "achieved_speed": 0.4735927066917942,
+          "relative_to_requested": 0.4735927066917942,
+          "clipped_wall_time_s": 33.927068582503125,
+          "timings": {
+            "selection": {
+              "samples": 33,
+              "mean_ms": 417.0170795652225,
+              "p95_ms": 519.0325421281159,
+              "max_ms": 716.3726659491658
+            },
+            "rebuilding": {
+              "samples": 161,
+              "mean_ms": 212.13728129886877,
+              "p95_ms": 585.8521659392864,
+              "max_ms": 974.8566660564393
+            },
+            "snapshot": {
+              "samples": 76,
+              "mean_ms": 19.665914471261203,
+              "p95_ms": 31.00716695189476,
+              "max_ms": 96.72708297148347
+            },
+            "scheduling": {
+              "samples": 256,
+              "mean_ms": 7.391431812720839,
+              "p95_ms": 23.170291911810637,
+              "max_ms": 190.31454110518098
+            }
+          },
+          "sample_limit": 256,
+          "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+        },
+        "duration_s": 60,
+        "clock_before": [
+          "T+0.1s"
+        ],
+        "clock_after": [
+          "T+28.8s"
+        ],
+        "canvases": [
+          {
+            "buffer_capacity": 72000,
+            "frame_count": 3529,
+            "dpr": 1,
+            "canvas_pixels": [
+              1082,
+              505
+            ],
+            "canvas_css": [
+              1082,
+              505
+            ],
+            "gpu": null,
+            "packet_visual": "authoritative-packet-events",
+            "average_fps": 58.70483395797671,
+            "fifth_percentile_fps": 59.523809523824994
+          }
+        ],
+        "render_buffers": [
+          {
+            "packet_event_count": "20000",
+            "packet_result_count": "80"
+          }
+        ],
+        "retained_heap_before": 22698692,
+        "retained_heap_after": 45915368
+      }
+    ],
+    "errors": []
+  },
+  {
+    "count": 100,
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 8.65,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-jm4jud7h/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "selected_view": "3d",
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "main_topology": "safeguarded",
+    "comparison_topologies": [
+      "partial_mesh",
+      "self_healing_mesh"
+    ],
+    "comparison_background": "Live mission reset to 10 UAVs and paused before the isolated 100-UAV A/B run",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "headless": true,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "reports": [
+      {
+        "view": "3d",
+        "simulation_performance": {
+          "status": "running",
+          "achieved_speed": 0.45287590173493614,
+          "relative_to_requested": 0.45287590173493614,
+          "clipped_wall_time_s": 35.167725418228656,
+          "timings": {
+            "selection": {
+              "samples": 32,
+              "mean_ms": 434.15245967480587,
+              "p95_ms": 541.8612079229206,
+              "max_ms": 586.1646668054163
+            },
+            "rebuilding": {
+              "samples": 154,
+              "mean_ms": 224.3120909090964,
+              "p95_ms": 628.6325408145785,
+              "max_ms": 1040.585541864857
+            },
+            "snapshot": {
+              "samples": 69,
+              "mean_ms": 23.13593418026964,
+              "p95_ms": 31.018709065392613,
+              "max_ms": 182.70754208788276
+            },
+            "scheduling": {
+              "samples": 256,
+              "mean_ms": 6.364154322000104,
+              "p95_ms": 22.75300002656877,
+              "max_ms": 196.69012515805662
+            }
+          },
+          "sample_limit": 256,
+          "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+        },
+        "duration_s": 60,
+        "clock_before": [
+          "T+0.1s"
+        ],
+        "clock_after": [
+          "T+26.9s"
+        ],
+        "canvases": [
+          {
+            "buffer_capacity": 72000,
+            "frame_count": 3298,
+            "dpr": 1,
+            "canvas_pixels": [
+              919,
+              403
+            ],
+            "canvas_css": [
+              1082,
+              475
+            ],
+            "gpu": {
+              "vendor": "Google Inc. (Apple)",
+              "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+            },
+            "packet_visual": "authoritative-packet-events",
+            "site_details": "true",
+            "quality": "balanced",
+            "draw_calls": "202",
+            "geometries": "137",
+            "textures": "8",
+            "average_fps": 54.77104275894596,
+            "fifth_percentile_fps": 30.030030030027405
+          }
+        ],
+        "render_buffers": [
+          {
+            "packet_event_count": "20000",
+            "packet_result_count": "80"
+          }
+        ],
+        "retained_heap_before": 29142340,
+        "retained_heap_after": 50980544
+      }
+    ],
+    "errors": []
+  },
+  {
+    "count": 100,
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 8.63,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-ehvc4sp_/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "selected_view": "compare",
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "main_topology": "safeguarded",
+    "comparison_topologies": [
+      "partial_mesh",
+      "self_healing_mesh"
+    ],
+    "comparison_background": "Live mission reset to 10 UAVs and paused before the isolated 100-UAV A/B run",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "headless": true,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "reports": [
+      {
+        "view": "compare",
+        "duration_s": 60,
+        "clock_before": [
+          "T+1.0s",
+          "T+1.0s"
+        ],
+        "clock_after": [
+          "T+32.0s",
+          "T+32.0s"
+        ],
+        "canvases": [
+          {
+            "buffer_capacity": 72000,
+            "frame_count": 3604,
+            "dpr": 1,
+            "canvas_pixels": [
+              693,
+              420
+            ],
+            "canvas_css": [
+              693,
+              420
+            ],
+            "gpu": null,
+            "packet_visual": "authoritative-packet-events",
+            "average_fps": 60.00236413310403,
+            "fifth_percentile_fps": 59.88023952094243
+          },
+          {
+            "buffer_capacity": 72000,
+            "frame_count": 3604,
+            "dpr": 1,
+            "canvas_pixels": [
+              694,
+              420
+            ],
+            "canvas_css": [
+              694,
+              420
+            ],
+            "gpu": null,
+            "packet_visual": "authoritative-packet-events",
+            "average_fps": 60.00236413310403,
+            "fifth_percentile_fps": 59.88023952094243
+          }
+        ],
+        "render_buffers": [
+          {
+            "packet_event_count": "0",
+            "packet_result_count": "0"
+          }
+        ],
+        "retained_heap_before": 25345296,
+        "retained_heap_after": 27144868
+      }
+    ],
+    "errors": []
+  }
+]

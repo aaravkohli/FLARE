@@ -3,6 +3,7 @@ from __future__ import annotations
 
 from typing import Literal, Optional
 from pydantic import BaseModel, ConfigDict, Field, model_validator
+from schemas.autonomy import SafetyProfile
 
 TOPOLOGIES = ('full_mesh', 'partial_mesh', 'star', 'ring', 'tree', 'cluster_mesh',
               'grid', 'random_geometric', 'hybrid_mesh', 'self_healing_mesh')
@@ -22,6 +23,10 @@ class MissionConfig(Strict):
     count: Optional[int] = Field(default=None, ge=10, le=100)
     topology: Optional[str] = None
     topology_mode: Optional[Literal['auto', 'manual']] = None
+    adaptive_policy: Optional[Literal['balanced_v1', 'evidence_resilience_v1']] = None
+    affected_uav_assist: Optional[bool] = None
+    autonomy_mode: Optional[Literal['off','recovery_v1']] = None
+    safety_profile: Optional[SafetyProfile] = None
     formation: Optional[str] = None
     speed: Optional[Literal[0.1, 0.25, 0.5, 1.0, 2.0, 4.0]] = None
     range_m: Optional[float] = Field(default=None, ge=50, le=1000)
@@ -59,6 +64,19 @@ class ExperimentRequest(Strict):
         if len(set(self.seeds))!=len(self.seeds) or any(seed < 0 or seed >= 2**32 for seed in self.seeds) or self.warmup_s >= self.duration_s:
             raise ValueError('invalid seeds or warmup')
         return self
+
+class AdaptiveStudyRequest(Strict):
+    mode: Literal['adaptive_study']
+    protocol_id: Literal['adaptive_resilience_v1', 'evidence_resilience_pilot_v1']
+    preset: Literal['pilot', 'evidence']
+
+    @model_validator(mode='after')
+    def pilot_only(self):
+        if self.protocol_id == 'evidence_resilience_pilot_v1' and self.preset != 'pilot':
+            raise ValueError('evidence resilience is an exploratory pilot only')
+        return self
+
+ExperimentJobRequest = ExperimentRequest | AdaptiveStudyRequest
 
 class ExperimentControl(Strict):
     action: Literal['play', 'pause', 'reset', 'cancel']

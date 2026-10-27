@@ -1,0 +1,231 @@
+{
+  "source_sha256": "85844bbaf415323189d0c2a5fa100934cfc7f5fa720c5496a84d586e40aab5da",
+  "hardware": {
+    "system": "Darwin",
+    "node": "Aaravs-MacBook-Air.local",
+    "release": "25.6.0",
+    "version": "Darwin Kernel Version 25.6.0: Fri Jul 31 19:18:43 PDT 2026; root:xnu-12377.161.14~5/RELEASE_ARM64_T8112",
+    "machine": "arm64",
+    "processor": "arm"
+  },
+  "count": 100,
+  "description": "Both arms use receipt-backed telemetry and protected scheduling. Manual pins the initial Auto topology; no inference or wall-clock throttling. Different subsequent topology decisions are allowed.",
+  "results": [
+    {
+      "seed": 7,
+      "mode": "auto",
+      "initial_topology": "hybrid_mesh",
+      "final_topology": "hybrid_mesh",
+      "simulated_s": 10.000000000000007,
+      "cpu_s": 8.987282,
+      "wall_s": 8.996985583100468,
+      "startup_cpu_s": 0.6031040000000001,
+      "positions_sha256": "449d31cfd60830d4563a9ce0f3611657f980c79893e83f5f3b398c339b4fd954",
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 273.0060460045934,
+          "p95_ms": 279.69062491320074,
+          "max_ms": 285.3425000794232
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 150.88996798462736,
+          "p95_ms": 372.856582980603,
+          "max_ms": 592.5781659316272
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.5952809201044147,
+          "p95_ms": 10.198625037446618,
+          "max_ms": 92.97337499447167
+        }
+      },
+      "generated": 2000,
+      "pending": 0,
+      "report_counts": {
+        "offered": 1000,
+        "bytes_offered": 1332300,
+        "failed": 153,
+        "delivered": 847
+      }
+    },
+    {
+      "seed": 7,
+      "mode": "manual",
+      "initial_topology": "hybrid_mesh",
+      "final_topology": "hybrid_mesh",
+      "simulated_s": 10.000000000000007,
+      "cpu_s": 5.965374000000001,
+      "wall_s": 5.969164208043367,
+      "startup_cpu_s": 0.11482900000000029,
+      "positions_sha256": "449d31cfd60830d4563a9ce0f3611657f980c79893e83f5f3b398c339b4fd954",
+      "timings": {
+        "rebuilding": {
+          "samples": 51,
+          "mean_ms": 81.51265441476568,
+          "p95_ms": 95.09954205714166,
+          "max_ms": 129.28966688923538
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.4396313610850484,
+          "p95_ms": 9.957707952708006,
+          "max_ms": 79.6083752065897
+        }
+      },
+      "generated": 2000,
+      "pending": 0,
+      "report_counts": {
+        "offered": 1000,
+        "bytes_offered": 1332300,
+        "failed": 153,
+        "delivered": 847
+      }
+    },
+    {
+      "seed": 42,
+      "mode": "auto",
+      "initial_topology": "hybrid_mesh",
+      "final_topology": "hybrid_mesh",
+      "simulated_s": 10.000000000000007,
+      "cpu_s": 9.07864,
+      "wall_s": 9.083286582957953,
+      "startup_cpu_s": 0.6194029999999984,
+      "positions_sha256": "449d31cfd60830d4563a9ce0f3611657f980c79893e83f5f3b398c339b4fd954",
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 274.2268374422565,
+          "p95_ms": 280.614374903962,
+          "max_ms": 287.8417500760406
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 152.24317068574376,
+          "p95_ms": 370.0298329349607,
+          "max_ms": 609.4464580528438
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.541228523114114,
+          "p95_ms": 10.387957794591784,
+          "max_ms": 88.73979188501835
+        }
+      },
+      "generated": 2000,
+      "pending": 0,
+      "report_counts": {
+        "offered": 1000,
+        "bytes_offered": 1333112,
+        "failed": 174,
+        "delivered": 826
+      }
+    },
+    {
+      "seed": 42,
+      "mode": "manual",
+      "initial_topology": "hybrid_mesh",
+      "final_topology": "hybrid_mesh",
+      "simulated_s": 10.000000000000007,
+      "cpu_s": 5.969999999999999,
+      "wall_s": 5.973956082947552,
+      "startup_cpu_s": 0.08857499999999874,
+      "positions_sha256": "449d31cfd60830d4563a9ce0f3611657f980c79893e83f5f3b398c339b4fd954",
+      "timings": {
+        "rebuilding": {
+          "samples": 51,
+          "mean_ms": 80.16466253491886,
+          "p95_ms": 83.16316595301032,
+          "max_ms": 98.3492920640856
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.456366533806431,
+          "p95_ms": 10.393083095550537,
+          "max_ms": 86.6979998536408
+        }
+      },
+      "generated": 2000,
+      "pending": 0,
+      "report_counts": {
+        "offered": 1000,
+        "bytes_offered": 1333112,
+        "failed": 174,
+        "delivered": 826
+      }
+    },
+    {
+      "seed": 99,
+      "mode": "auto",
+      "initial_topology": "hybrid_mesh",
+      "final_topology": "hybrid_mesh",
+      "simulated_s": 10.000000000000007,
+      "cpu_s": 9.065134999999998,
+      "wall_s": 9.13958749989979,
+      "startup_cpu_s": 0.6172190000000022,
+      "positions_sha256": "449d31cfd60830d4563a9ce0f3611657f980c79893e83f5f3b398c339b4fd954",
+      "timings": {
+        "selection": {
+          "samples": 10,
+          "mean_ms": 271.5753831434995,
+          "p95_ms": 280.711208935827,
+          "max_ms": 280.73770785704255
+        },
+        "rebuilding": {
+          "samples": 52,
+          "mean_ms": 152.18995985252639,
+          "p95_ms": 366.80066701956093,
+          "max_ms": 607.5516249984503
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.640730464918306,
+          "p95_ms": 10.30674995854497,
+          "max_ms": 92.58262510411441
+        }
+      },
+      "generated": 2000,
+      "pending": 0,
+      "report_counts": {
+        "offered": 1000,
+        "bytes_offered": 1332547,
+        "delivered": 842,
+        "failed": 158
+      }
+    },
+    {
+      "seed": 99,
+      "mode": "manual",
+      "initial_topology": "hybrid_mesh",
+      "final_topology": "hybrid_mesh",
+      "simulated_s": 10.000000000000007,
+      "cpu_s": 6.015679000000006,
+      "wall_s": 6.023674624972045,
+      "startup_cpu_s": 0.08803899999999487,
+      "positions_sha256": "449d31cfd60830d4563a9ce0f3611657f980c79893e83f5f3b398c339b4fd954",
+      "timings": {
+        "rebuilding": {
+          "samples": 51,
+          "mean_ms": 79.88241257821666,
+          "p95_ms": 85.7701248023659,
+          "max_ms": 92.83091686666012
+        },
+        "scheduling": {
+          "samples": 256,
+          "mean_ms": 2.4414133640675573,
+          "p95_ms": 9.496957994997501,
+          "max_ms": 84.34562501497567
+        }
+      },
+      "generated": 2000,
+      "pending": 0,
+      "report_counts": {
+        "offered": 1000,
+        "bytes_offered": 1332547,
+        "delivered": 842,
+        "failed": 158
+      }
+    }
+  ]
+}

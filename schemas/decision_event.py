@@ -94,6 +94,7 @@ class TelemetrySnapshot(_StrictModel):
     ]
     source_collected_at: Optional[float] = Field(default=None, gt=0.0)
     source_age_s: Optional[float] = Field(default=None, ge=0.0)
+    observation: Optional[dict[str, Any]] = None
     paths: list[PathMetrics] = Field(min_length=3, max_length=3)
     gps: Optional[GpsMetrics] = None
     ew_status: Optional[EwStatus] = None

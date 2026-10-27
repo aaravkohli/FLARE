@@ -28,15 +28,21 @@ async function setup(page:Page,request:APIRequestContext){
 }
 const fleetButton=(center:Locator,n='001')=>center.getByRole('group',{name:'Fleet selection'}).getByRole('checkbox',{name:`Target UAV-${n}`,exact:true});
 
-test('frontend topology / size / formation / speed / preset matrix',async({page,request})=>{
- test.setTimeout(420000);const {center,state,reset,errors}=await setup(page,request);await reset();
- for(const count of [10,20,30,40,50,60,70,75,80,90,100]){
+// Keep every finite case, with bounded budgets per fleet. The previous single
+// 110-configuration test exhausted its aggregate deadline despite valid effects.
+for(const count of [10,20,30,40,50,60,70,75,80,90,100]){
+ test(`frontend topology matrix / ${count} UAVs`,async({page,request})=>{
+  test.setTimeout(120000);const {center,state,reset,errors}=await setup(page,request);await reset();
   await missionSetting(center,'Fleet size',String(count));await expect.poll(async()=>(await state()).nodes.length).toBe(count);
   for(const topology of ['full_mesh','partial_mesh','star','ring','tree','cluster_mesh','grid','random_geometric','hybrid_mesh','self_healing_mesh']){
    const applied=page.waitForResponse(r=>r.url()===sim+'/config'&&r.request().method()==='PATCH');await center.getByLabel('Topology',{exact:true}).selectOption(topology);expect((await applied).ok()).toBeTruthy();await expect.poll(async()=>(await state()).topology,{timeout:15000}).toBe(topology);
    const s=await state();expect(s.nodes.length).toBe(count);expect(s.links.every((l:any)=>[l.a,l.b].every(n=>n==='base'||s.nodes.some((d:any)=>d.id===n)))).toBeTruthy();record(`${count} UAV / ${topology}`,'PATCH /config',{count,topology,links:s.links.length,revision:s.revision});
   }
- }
+  expect(errors).toEqual([]);
+ });
+}
+test('frontend formation / speed / preset matrix',async({page,request})=>{
+ test.setTimeout(180000);const {center,state,reset,errors}=await setup(page,request);await reset();
  for(const formation of ['grid','v','line','circle','diamond','wedge','column','distributed','cluster']){
   const before=await state();await missionSetting(center,'Formation',formation);await expect.poll(async()=>(await state()).formation).toBe(formation);const after=await state();expect(after.nodes.map((n:any)=>n.position)).toEqual(before.nodes.map((n:any)=>n.position));record(formation,'PATCH /config',{formation,positions_preserved:true});
  }

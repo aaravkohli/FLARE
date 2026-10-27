@@ -5,6 +5,22 @@ import api.server as server
 import api.mission as mission
 
 
+def test_adaptive_study_is_additive_authenticated_and_validated(monkeypatch):
+    monkeypatch.setenv('MODE','simulation');calls=[]
+    async def upstream(method,path,body=None,params=None):
+        calls.append((method,path,body));return {'id':'study','mode':'adaptive_study','status':'starting','results':[]}
+    monkeypatch.setattr(mission,'service_request',upstream)
+    client=TestClient(server.app)
+    admin={'Authorization':'Bearer '+server._create_access_token({'sub':server.ADMIN_USERNAME})}
+    payload={'mode':'adaptive_study','protocol_id':'adaptive_resilience_v1','preset':'pilot'}
+    assert client.post('/mission/simulation/experiments',json=payload).status_code==401
+    assert client.post('/mission/simulation/experiments',headers=admin,json=payload).status_code==200
+    assert calls[-1]==('POST','/experiments',payload)
+    assert client.post('/mission/simulation/experiments',headers=admin,json=payload|{'preset':'other'}).status_code==422
+    assert client.post('/mission/simulation/experiments',headers=admin,json=payload|{'seeds':[7]}).status_code==422
+    assert len(calls)==1
+
+
 def test_topology_mode_is_additive_authenticated_and_forwarded(monkeypatch):
     monkeypatch.setenv('MODE','simulation');calls=[]
     async def upstream(method,path,body=None,params=None):
@@ -208,3 +224,48 @@ def test_session_change_clears_orchestrator_acknowledgments_rewards_and_containm
     assert actor._prev_path['a'] is None and actor._last_good_decision['a'] is None
     assert actor._prev_rewards['a']==0. and actor._last_good_ts['a']==0.
     assert actor._containment_modes['a']=='normal'
+
+
+def test_safeguarded_policy_and_pilot_preserve_auth_and_validation(monkeypatch):
+    monkeypatch.setenv('MODE','simulation');calls=[]
+    async def upstream(method,path,body=None,params=None):calls.append((path,body));return {'accepted':True}
+    monkeypatch.setattr(mission,'service_request',upstream);client=TestClient(server.app)
+    headers={'Authorization':'Bearer '+server._create_access_token({'sub':server.ADMIN_USERNAME})}
+    cfg={'expected_revision':3,'topology_mode':'auto','adaptive_policy':'evidence_resilience_v1'}
+    assert client.patch('/mission/simulation/config',json=cfg).status_code==401
+    assert client.patch('/mission/simulation/config',headers=headers,json=cfg).status_code==200
+    assert calls[-1][1]==cfg
+    assert client.patch('/mission/simulation/config',headers=headers,json=cfg|{'adaptive_policy':'fake'}).status_code==422
+    pilot={'mode':'adaptive_study','protocol_id':'evidence_resilience_pilot_v1','preset':'pilot'}
+    assert client.post('/mission/simulation/experiments',headers=headers,json=pilot).status_code==200
+    assert client.post('/mission/simulation/experiments',headers=headers,json=pilot|{'preset':'evidence'}).status_code==422
+    assert calls[-1][1]==pilot
+
+
+def test_autonomy_config_auth_profile_validation_and_forwarding(monkeypatch):
+    monkeypatch.setenv('MODE','simulation');calls=[]
+    async def upstream(method,path,body=None,params=None):calls.append((path,body));return {'accepted':True}
+    monkeypatch.setattr(mission,'service_request',upstream);client=TestClient(server.app)
+    headers={'Authorization':'Bearer '+server._create_access_token({'sub':server.ADMIN_USERNAME})}
+    payload={'expected_revision':4,'autonomy_mode':'recovery_v1','safety_profile':{'geofence_m':2500,'navigation_confidence':None}}
+    assert client.patch('/mission/simulation/config',json=payload).status_code==401
+    assert client.patch('/mission/simulation/config',headers=headers,json=payload).status_code==200
+    assert calls[-1][1]['safety_profile']['navigation_confidence'] is None
+    assert calls[-1][1]['autonomy_mode']=='recovery_v1'
+    assert client.patch('/mission/simulation/config',headers=headers,json=payload|{'autonomy_mode':'unsafe'}).status_code==422
+    assert client.patch('/mission/simulation/config',headers=headers,json=payload|{'safety_profile':{'critical_battery':.5}}).status_code==422
+
+
+def test_affected_assistance_config_keeps_existing_authorization_and_proxy_contract(monkeypatch):
+    monkeypatch.setenv('MODE','simulation');calls=[]
+    async def upstream(method,path,body=None,params=None):
+        calls.append((method,path,body));return {'topology_selection':{'assistance':{'enabled':True}}}
+    monkeypatch.setattr(mission,'service_request',upstream)
+    users=copy.deepcopy(server._USERS);users['assist-viewer']={'username':'assist-viewer','role':'viewer'};monkeypatch.setattr(server,'_USERS',users)
+    client=TestClient(server.app);admin={'Authorization':'Bearer '+server._create_access_token({'sub':server.ADMIN_USERNAME})};viewer={'Authorization':'Bearer '+server._create_access_token({'sub':'assist-viewer'})}
+    body={'expected_revision':9,'affected_uav_assist':True}
+    assert client.patch('/mission/simulation/config',json=body).status_code==401
+    assert client.patch('/mission/simulation/config',headers=viewer,json=body).status_code==403
+    assert client.patch('/mission/simulation/config',headers=admin,json=body).status_code==200
+    assert calls==[('PATCH','/config',body)]
+    assert client.patch('/mission/simulation/config',headers=admin,json=body|{'affected_uav_assist':'invalid'}).status_code==422

@@ -38,5 +38,5 @@ export function workspaceEvidence(input: WorkspaceEvidenceInput, sessionId: stri
   const state = request ? applyMissionRouteRequest(canonical, request) : canonical;
   const controllerProgress = request ? evidence.evidenceCurrent ? 'awaiting' : 'outcome-unknown' : null;
   const phase = request ? evidence.evidenceCurrent ? 'request-not-installed' : 'awaiting-evidence' : decisionPhase(state,null,droneId);
-  return {state,evidence,controllerProgress,phase} as const;
+  return {state,evidence,controllerProgress,phase,observation:request?.telemetry.observation??payload?.metrics.observation} as const;
 }

@@ -1,7 +1,8 @@
 """Modeled radio links, graph routing, and bounded per-hop packet scheduling."""
 from __future__ import annotations
 from collections import defaultdict, deque
-from dataclasses import dataclass, asdict, field
+from dataclasses import dataclass, fields, field
+from copy import deepcopy
 import heapq
 import hashlib
 import math
@@ -18,15 +19,19 @@ class Link:
     loss: float
     latency_ms: float
     status: str = 'healthy'
-    def snapshot(self): return dict(asdict(self), id=':'.join(pair(self.a,self.b)), encrypted='simulated_policy')
+    def snapshot(self): return dict({name:getattr(self,name) for name in _LINK_FIELDS}, id=':'.join(pair(self.a,self.b)), encrypted='simulated_policy')
+
+_LINK_FIELDS = tuple(f.name for f in fields(Link))
 
 def radio_link(a,b,pa,pb,cfg,terrain,jammers,health=1.,offset=0.):
     distance=math.dist(pa,pb)
     if distance>cfg['range_m'] or health<=0: return None
     attenuation=0.
-    for i in range(1,9):
-        t=i/9; x=pa[0]+(pb[0]-pa[0])*t; z=pa[2]+(pb[2]-pa[2])*t
-        if terrain.height(x,z)+3 > pa[1]+(pb[1]-pa[1])*t: attenuation+=3
+    clear = getattr(terrain, 'clears_heightfield', None)
+    if not (math.isfinite(distance) and callable(clear) and clear(min(pa[1],pb[1]),3)):
+        for i in range(1,9):
+            t=i/9; x=pa[0]+(pb[0]-pa[0])*t; z=pa[2]+(pb[2]-pa[2])*t
+            if terrain.height(x,z)+3 > pa[1]+(pb[1]-pa[1])*t: attenuation+=3
     rssi=cfg['reference_rssi_dbm']-10*cfg['path_loss_exponent']*math.log10(max(1,distance))-attenuation+offset
     noise=10**(cfg['noise_dbm']/10); jammed=False
     for jammer in jammers:
@@ -100,8 +105,21 @@ class Packet:
     restrictions: dict = field(default_factory=dict)
     event_at: float=0.
     history: list = field(default_factory=list)
+    service_deadline: float | None = None
+    service_kind: str | None = None
+    channel_key: str | None = None
     def snapshot(self):
-        return dict(asdict(self),protocol='reliable_simulated' if self.category in ('command','ack','fl_update') else 'udp_simulated')
+        # Scalar fields are immutable. Copy the three mutable payloads, keeping
+        # event history independent without deepcopy/reflection on every scalar.
+        row={name:getattr(self,name) for name in _PACKET_FIELDS}
+        row['route']=self.route[:]
+        row['restrictions']=deepcopy(self.restrictions)
+        row['history']=deepcopy(self.history)
+        for key in ('service_deadline','service_kind','channel_key'):
+            if row[key] is None: row.pop(key)
+        return dict(row,protocol='reliable_simulated' if self.category in ('command','ack','fl_update') else 'udp_simulated')
+
+_PACKET_FIELDS = tuple(f.name for f in fields(Packet))
 
 class PacketScheduler:
     """Exact event times inside fixed movement steps; no per-hop tick rounding.
@@ -126,6 +144,11 @@ class PacketScheduler:
         self.completions=deque(maxlen=20000)
         self.event_time=None
         self.deferred=set()
+        self.protected_scheduling=False
+        self.protected_share=.10
+        self.airtime_usage=defaultdict(dict)
+        self.airtime_totals=defaultdict(float)
+        self._ready_batch=deque()
 
     def schedule(self,at,p,kind):
         self.order+=1; heapq.heappush(self.heap,(at,self.order,p.id,kind,p.repair_count))
@@ -141,13 +164,19 @@ class PacketScheduler:
         seed=self.cfg.get('seed')
         if seed is None: return self.rng.random()
         key=f'{seed}:{p.source}:{p.destination}:{p.sequence}:{edge}:{p.hop}:{p.attempt}:{purpose}'
+        if p.channel_key is not None:
+            key=f'{seed}:{p.source}:{p.destination}:{p.channel_key}:{edge}:{p.hop}:{p.attempt}:{purpose}'
         return int.from_bytes(hashlib.blake2b(key.encode(),digest_size=8).digest(),'big')/2**64
 
-    def emit(self,source,destination,category,size,route,now,revision,correlation=None,family='mesh',sequence=None,claimed_source_mac=None,restrictions=None,defer=False):
+    def emit(self,source,destination,category,size,route,now,revision,correlation=None,family='mesh',sequence=None,claimed_source_mac=None,restrictions=None,defer=False,service=None,channel_key=None,expires_at=None):
         self.serial+=1; identity=f'p{self.serial}'; self.generated+=1
         p=Packet(identity,source,destination,category,size,route[:],now,now+self.cfg['ttl_s'],revision,
                  correlation_id=correlation,family=family,sequence=self.serial if sequence is None else sequence,
                  claimed_source_mac=claimed_source_mac,policy_source=source,event_at=now,restrictions=restrictions or {})
+        if service:
+            p.service_kind=service['kind']; p.service_deadline=min(p.expires_at,service['deadline'])
+        p.channel_key=channel_key
+        if expires_at is not None: p.expires_at=min(p.expires_at,expires_at)
         if len(self.packets)>=self.cfg['capacity']:
             self.finish(p,'dropped','capacity',now); return p
         self.packets[identity]=p
@@ -207,10 +236,47 @@ class PacketScheduler:
     def channel(p,a,b):
         return ('satellite',*pair(a,b)) if p.family=='satellite' else pair(a,b)
 
+    def protected_due(self,radios,at):
+        """A rolling one-second, 50-ms-bucket service deficit, never idle padding."""
+        due=True
+        for radio in radios:
+            buckets=self.airtime_usage[radio]; cutoff=math.floor((at-1)*20)
+            for key in list(buckets):
+                if key<cutoff: buckets.pop(key)
+            protected=sum(v[0] for v in buckets.values()); total=sum(sum(v) for v in buckets.values())
+            due&=protected<=self.protected_share*total+1e-12
+        return due
+
+    def pop_event(self):
+        if not self.protected_scheduling: return heapq.heappop(self.heap)
+        at=self._ready_batch[0][0] if self._ready_batch else self.heap[0][0]
+        if self._ready_batch and (not self.heap or self.heap[0][0]>at+1e-12): return self._ready_batch.popleft()
+        batch=list(self._ready_batch); self._ready_batch.clear()
+        while self.heap and self.heap[0][0]<=at+1e-12: batch.append(heapq.heappop(self.heap))
+        def key(event):
+            _,order,identity,kind,generation=event; p=self.packets.get(identity)
+            if kind!='ready' or p is None or generation!=p.repair_count: return (-1,0,order)
+            if not p.service_kind or p.hop+1>=len(p.route): return (1,0,order)
+            a,b=p.route[p.hop:p.hop+2]
+            radios=(('satellite',a),('satellite',b)) if p.family=='satellite' else (('radio',a),('radio',b))
+            return (0 if self.protected_due(radios,at) else 2,p.service_deadline or p.expires_at,order)
+        # A contended half-duplex radio admits only one start at this timestamp;
+        # losers requeue at its exact release. Sort that ready cohort once.
+        self._ready_batch=deque(sorted(batch,key=key))
+        return self._ready_batch.popleft()
+
     def step(self,now,links,allowed,relay_drop=None,repair=None):
         if now < self.now-1e-9: raise ValueError('packet clock cannot run backwards')
+        self.checking_at=now
+        next_events={}
+        if self.protected_scheduling:
+            for at,_,identity,kind,generation in self.heap:
+                packet=self.packets.get(identity)
+                if packet and (kind=='expire' or generation==packet.repair_count):
+                    next_events[identity]=min(at,next_events.get(identity,at))
         # Validate packets at the observation boundary, including future reservations.
         for p in list(self.packets.values()):
+            self.checking_at=min(now,next_events.get(p.id,now))
             if p.id in self.deferred: continue
             if p.hop>=len(p.route)-1: continue
             a,b=p.route[p.hop:p.hop+2]
@@ -222,8 +288,9 @@ class PacketScheduler:
                     self.event('packet_rerouted',p,now); self.schedule(now,p,'ready')
                 else:
                     self.policy_dropped[a]+=1; self.finish(p,'dropped','policy_or_link_removed',now)
-        while self.heap and self.heap[0][0]<=now+1e-12:
-            at,_,identity,kind,generation=heapq.heappop(self.heap)
+        while self._ready_batch or self.heap and self.heap[0][0]<=now+1e-12:
+            at,_,identity,kind,generation=self.pop_event()
+            self.checking_at=at
             p=self.packets.get(identity)
             if p is None or kind!='expire' and generation!=p.repair_count: continue
             if kind=='expire': self.finish(p,'dropped','expired',at); continue
@@ -263,7 +330,12 @@ class PacketScheduler:
             if relay_drop and relay_drop(p,a): self.finish(p,'dropped','relay_discard',at); continue
             radios=(('satellite',a),('satellite',b)) if p.family=='satellite' else (('radio',a),('radio',b))
             if p.id not in self.reservations:
-                if self.queued[edge]>=self.cfg['queue_limit']:
+                limit=self.cfg['queue_limit']
+                if self.protected_scheduling and not p.service_kind:
+                    reserved=max(1,int(limit*self.protected_share)) if limit>1 else 0
+                    protected=sum(1 for identity,(channel,_) in self.reservations.items() if channel==edge and self.packets.get(identity) and self.packets[identity].service_kind)
+                    limit-=max(0,reserved-protected)
+                if self.queued[edge]>=limit:
                     self.radio_dropped[a]+=1; self.finish(p,'dropped','queue_overflow',at); continue
                 self.queued[edge]+=1; self.reservations[p.id]=(edge,radios)
             available=max(at,*(self.radio_busy[r] for r in radios))
@@ -271,6 +343,15 @@ class PacketScheduler:
                 self.schedule(available,p,'ready'); continue
             p.attempt+=1
             airtime=p.size_bytes*8/(link.bandwidth_mbps*1e6)
+            if self.protected_scheduling:
+                for radio in radios:
+                    bucket=math.floor(at*20); usage=self.airtime_usage[radio]
+                    for expired in list(usage):
+                        if expired<bucket-20: usage.pop(expired)
+                    usage.setdefault(bucket,[0.,0.])[0 if p.service_kind else 1]+=airtime
+            # Measurement must include unreserved control arms too. This counter
+            # does not grant priority or participate in admission decisions.
+            self.airtime_totals['protected' if p.service_kind else 'ordinary']+=airtime*len(radios)
             jitter=self.cfg.get('jitter_ms',0)*self.draw(p,edge,'jitter')/1000
             p.start_at=at; p.end_at=at+airtime+link.latency_ms/1000+jitter
             for radio in radios: self.radio_busy[radio]=at+airtime; self.radio_owner[radio]=p.id
@@ -279,6 +360,7 @@ class PacketScheduler:
             self.event('packet_hop',p,at,from_node=a,to_node=b)
             self.schedule(p.end_at,p,'arrival')
         self.now=now
+        self.checking_at=now
         if len(self.heap)>max(1000,self.cfg['capacity']*4):
             self.heap=[e for e in self.heap if e[2] in self.packets]; heapq.heapify(self.heap)
 

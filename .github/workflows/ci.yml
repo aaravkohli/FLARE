@@ -69,10 +69,50 @@ jobs:
       - name: Lint frontend
         run: npm run lint
 
+      - name: Frontend unit tests
+        run: npm test
+
       - name: Build frontend
         env:
           VITE_API_BASE_URL: http://localhost:8000
         run: npm run build
+
+  browser-smoke:
+    name: Isolated production browser smoke (missing models)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend-react/package-lock.json
+      - name: Install isolated service dependencies
+        run: |
+          python -m venv venv
+          venv/bin/python -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+          venv/bin/python -m pip install -r requirements.txt
+          npm --prefix frontend-react ci
+          cd frontend-react
+          npx playwright install --with-deps chromium
+      - name: Exercise studies, safeguarded control and unavailable-model states
+        env:
+          FLARE_TEST_PRODUCTION: '1'
+          FLARE_TEST_MISSING_MODELS: '1'
+          FLARE_ARTIFACT_DIR: /tmp/flare-browser-artifacts
+        run: npm --prefix frontend-react run test:browser -- adaptive-study.spec.ts resilience-controller.spec.ts autonomous-recovery.spec.ts
+      - name: Retain browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-browser-smoke
+          path: |
+            frontend-react/test-results
+            /tmp/flare-browser-artifacts
 
   deployment-config:
     name: Validate Docker Compose configuration

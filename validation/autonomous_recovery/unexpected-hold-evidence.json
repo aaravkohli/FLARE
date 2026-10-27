@@ -1,0 +1,10 @@
+{
+  "outcome": "Passed",
+  "scenario": "recovery_dual_interference",
+  "seed": 99,
+  "node": "sim_uav_001",
+  "safety_latch_at": 15.200000000000081,
+  "last_received_ground_roundtrip": 12.110607172573086,
+  "gap_s": 3.0893928274269946,
+  "interpretation": "The schedule-only oracle expected no safety hold during dual-family impairment, but the actual mesh receipt gap exceeded the declared timeout. This is an extra safety intervention, not evidence that injection alone triggered detection."
+}

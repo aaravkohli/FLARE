@@ -4,6 +4,7 @@ import MissionWorldCanvas from './world/MissionWorldCanvas';
 import NetworkCanvas from './NetworkCanvas';
 import NetworkInspector from './NetworkInspector';
 import ExperimentPanel from './ExperimentPanel';
+import BenchmarkWorkspace from './BenchmarkWorkspace';
 import { DEMONSTRATIONS } from './scenarioMetadata';
 import { createClock } from './world/clock';
 import { createWorld } from './world/dynamics';
@@ -27,6 +28,9 @@ import ActivityPanel from './ActivityPanel';
 import AttackLab from './AttackLab';
 import { ActiveTopology, TopologyDiagnostics } from './TopologySelection';
 import { topologyControlValue } from './world/topologySelection';
+import { AssistanceSetup } from './UavAssistance';
+import { AutonomySetup } from './AutonomyPanel';
+import { RECOVERY_SCENARIOS } from './scenarioMetadata';
 import './mission-simulation.css';
 import './swarm.css';
 
@@ -112,23 +116,25 @@ export default function SwarmCommandCenter({snapshot:initialSnapshot,api,token,e
  return <section className={`swarm-center live-workspace workspace-${workspace}${presentation?' swarm-presentation':''}`} aria-label="Swarm command center" ref={root}>
   <header className="workspace-header"><div className="workspace-brand">FLARE <span>Mission workspace</span></div>
    <nav className="network-workspace-tabs" aria-label="Simulation workspace">{(['mission','compare','benchmark'] as const).map(tab=><button key={tab} aria-pressed={workspace===tab} onClick={()=>setWorkspace(tab)}>{workspaceLabels[tab]}</button>)}</nav>
-   <div className="workspace-mission-status"><span title="Live mission status" className={stale?'is-stale':snapshot.controller_connected?'is-connected':'is-stale'}>{stale?'Connection stale':snapshot.controller_connected?snapshot.playing?workspace==='mission'?'Running':'Live running':workspace==='mission'?'Paused':'Live paused':'Command link lost'}</span><time title="Live mission clock" className="swarm-clock">{workspace!=='mission'?'Live ':''}T+{snapshot.simulation_time.toFixed(1)}s</time><button aria-label={presentation?'Exit presentation':'Presentation'} onClick={()=>setPresentation(!presentation)}><Maximize2 size={16}/></button></div>
+   <div className="workspace-mission-status"><span title="Live mission status" className={stale?'is-stale':snapshot.controller_connected?'is-connected':'is-stale'}>{stale?'Connection stale':snapshot.controller_connected?snapshot.playing?workspace==='mission'?'Running':'Live running':workspace==='mission'?'Paused':'Live paused':'Command link lost'}</span><time title="Live mission clock" className="swarm-clock">{workspace!=='mission'?'Live ':''}T+{snapshot.simulation_time.toFixed(1)}s</time><span className="swarm-note" title="Achieved simulation seconds per wall second">{stale?'Speed stale':!snapshot.playing?'Speed paused':snapshot.performance?.achieved_speed!=null?`${snapshot.performance.achieved_speed.toFixed(2)}× achieved`:'Speed —'}</span><button aria-label={presentation?'Exit presentation':'Presentation'} onClick={()=>setPresentation(!presentation)}><Maximize2 size={16}/></button></div>
   </header>
   <div className="mission-workspace-page" hidden={workspace!=='mission'}>
    <div className="swarm-toolbar">
     <button className="mission-play" disabled={busy||stale} onClick={()=>void mutate('/control',{action:snapshot.playing?'pause':'play'})}>{snapshot.playing?<Pause size={15}/>:<Play size={15}/>} {snapshot.playing?'Pause mission':'Play mission'}</button>
     <label>Speed<select aria-label="Speed" value={snapshot.speed} disabled={busy} onChange={e=>void mutate('/config',{speed:Number(e.target.value)},'PATCH')}>{[.1,.25,.5,1,2,4].map(n=><option key={n} value={n}>{n}×</option>)}</select></label>
-    <label>Topology<select aria-label="Topology" title={topologies.find(t=>t.id===snapshot.topology)?.description} value={topologyControlValue(snapshot.topology,snapshot.topology_selection)} disabled={busy||stale} onChange={e=>void mutate('/config',e.target.value==='auto'?{topology_mode:'auto'}:{topology_mode:'manual',topology:e.target.value},'PATCH')}><option value="auto">Auto (balanced)</option>{!TOPOLOGIES.includes(requestedTopology)&&<option value={requestedTopology}>{title(requestedTopology)} (legacy)</option>}{topologies.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
+    <label>Topology<select aria-label="Topology" title={topologies.find(t=>t.id===snapshot.topology)?.description} value={topologyControlValue(snapshot.topology,snapshot.topology_selection)} disabled={busy||stale} onChange={e=>void mutate('/config',e.target.value==='auto'||e.target.value==='safeguarded'?{topology_mode:'auto',...(snapshot.topology_selection?.policy_id?{adaptive_policy:e.target.value==='safeguarded'?'evidence_resilience_v1':'balanced_v1'}:{})}:{topology_mode:'manual',topology:e.target.value},'PATCH')}><option value="auto">Auto (balanced)</option><option value="safeguarded" disabled={!snapshot.topology_selection?.policy_id}>Auto (safeguarded){!snapshot.topology_selection?.policy_id?' · service update required':''}</option>{!TOPOLOGIES.includes(requestedTopology)&&<option value={requestedTopology}>{title(requestedTopology)} (legacy)</option>}{topologies.map(t=><option key={t.id} value={t.id}>{t.label}</option>)}</select></label>
     <div className="workspace-view-switch" aria-label="Network view"><button aria-pressed={fallback} onClick={()=>setFallback(true)}>2D network</button><button aria-pressed={!fallback} onClick={()=>setFallback(false)}>3D world</button></div>
     <ToolPopover label="Mission setup" drawer><div className="mission-setup-fields">
      <label>UAVs<select aria-label="Fleet size" value={snapshot.nodes.length} disabled={busy} onChange={e=>void mutate('/config',{count:Number(e.target.value)},'PATCH')}>{fleetSizeOptions(snapshot.nodes.length).map(n=><option key={n}>{n}</option>)}</select></label>
      <label>Formation<select aria-label="Formation" value={snapshot.formation} disabled={busy} onChange={e=>void mutate('/config',{formation:e.target.value},'PATCH')}>{FORMATIONS.map(n=><option key={n} value={n}>{title(n)}</option>)}</select></label>
-     <label>Scenario<select aria-label="Scenario" value={snapshot.scenario} disabled={busy} onChange={e=>void mutate(`/scenarios/${e.target.value}`,{action:'reset'})}>{[...DEMONSTRATIONS,'large_manet','jamming','poisoning','failures','controller_loss','rerouting'].map(n=><option key={n} value={n}>{title(n)}</option>)}</select></label>
+     <label>Scenario<select aria-label="Scenario" value={snapshot.scenario} disabled={busy} onChange={e=>void mutate(`/scenarios/${e.target.value}`,{action:'reset'})}>{[...DEMONSTRATIONS,'large_manet','jamming','poisoning','failures','controller_loss','rerouting',...RECOVERY_SCENARIOS].map(n=><option key={n} value={n}>{title(n)}</option>)}</select></label>
      <label>Radio range<select aria-label="Radio range" value={snapshot.range_m??350} disabled={busy} onChange={e=>void mutate('/config',{range_m:Number(e.target.value)},'PATCH')}>{[...new Set([snapshot.range_m??350,100,200,350,500,750,1000])].sort((a,b)=>a-b).map(n=><option key={n} value={n}>{n} m</option>)}</select></label>
      <button disabled={busy} onClick={()=>void mutate('/commands',{session_id:snapshot.session_id,command_id:crypto.randomUUID(),targets:snapshot.nodes.map(n=>n.id),action:'formation',parameters:{formation:topologies.find(t=>t.id===snapshot.topology)?.suggested_formation??'distributed'},ttl_s:10})}>Apply suggested formation</button>
      <button disabled={busy} onClick={()=>void mutate('/control',{action:'reset'})}>Reset</button>
      <p className="swarm-note">Seed {snapshot.seed}{snapshot.pending_seed!=null?` · next reset ${snapshot.pending_seed}`:''}. Topology changes preserve positions.</p>
+     <AssistanceSetup snapshot={snapshot} busy={busy||stale} mutate={mutate}/>
      <TopologyDiagnostics snapshot={snapshot}/>
+     <AutonomySetup key={snapshot.session_id} snapshot={snapshot} busy={busy||stale} mutate={mutate}/>
     </div></ToolPopover>
    </div>
    <ActiveTopology snapshot={snapshot} stale={stale}/>
@@ -144,10 +150,10 @@ export default function SwarmCommandCenter({snapshot:initialSnapshot,api,token,e
     <WorkspaceTabs label="UAV tools" value={toolTab} onChange={setToolTab} items={[{id:'events',label:'Events'},{id:'inspect',label:'Inspect'},{id:'commands',label:'Commands'}]}/>
     <div className="sidebar-content"><div role="tabpanel" id="uav-tools-panel-events" aria-label="Events" hidden={toolTab!=='events'}><AttackLab key={snapshot.session_id} snapshot={snapshot} inspected={first} targets={targets} busy={busy} stale={stale} mutate={mutateAttack}/></div>
      {asset&&toolTab!=='events'&&<p className="asset-notice" role="status">Inspecting {asset}</p>}
-     <MissionControlPanel snapshot={snapshot} first={first} targets={targets} busy={busy} tab={toolTab} linkId={linkId} onLink={setLinkId} select={id=>{select(id);setToolTab('inspect');}} mutate={mutate}/>
+     <MissionControlPanel current={!stale} snapshot={snapshot} first={first} targets={targets} busy={busy} tab={toolTab} linkId={linkId} onLink={setLinkId} select={id=>{select(id);setToolTab('inspect');}} mutate={mutate}/>
     </div></aside></div>
    <WorkspaceBottomPanel tab={bottomTab} onTab={setBottomTab}><div hidden={bottomTab==='activity'}><WorkspaceEvidence key={snapshot.session_id} input={evidence} snapshot={snapshot} inspected={first} nowMs={nowMs} current={!stale} tab={bottomTab}/></div><div role="tabpanel" id="research-details-panel-activity" aria-label="Activity" hidden={bottomTab!=='activity'}><ActivityPanel snapshot={snapshot} events={events} inspected={first}/></div></WorkspaceBottomPanel>
   </div>
-  {(['compare','benchmark'] as const).map(mode=><div key={mode} className="experiment-workspace-page" hidden={workspace!==mode}><ExperimentPanel visible={workspace===mode} mode={mode} client={client} topologies={topologies} storedJob={experiments[mode]} onJob={rememberExperiment}/></div>)}
+  {(['compare','benchmark'] as const).map(mode=>{const Panel=mode==='benchmark'?BenchmarkWorkspace:ExperimentPanel;return <div key={mode} className="experiment-workspace-page" hidden={workspace!==mode}><Panel visible={workspace===mode} mode={mode} client={client} topologies={topologies} storedJob={experiments[mode]} onJob={rememberExperiment}/></div>;})}
  </section>;
 }

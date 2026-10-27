@@ -1,0 +1,15 @@
+{
+  "outcome": "Passed",
+  "prior_manifests": [
+    {
+      "manifest": "validation/evidence_resilience/artifact-manifest.json",
+      "artifacts": 694
+    },
+    {
+      "manifest": "validation/evidence_resilience/performance-improvement/artifact-manifest.json",
+      "artifacts": 32
+    }
+  ],
+  "historical_550_trace_hashes_unchanged": true,
+  "changed": []
+}

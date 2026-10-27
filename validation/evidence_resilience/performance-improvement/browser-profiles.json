@@ -1,0 +1,252 @@
+[
+  {
+    "arm": "before",
+    "count": 100,
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 5.25,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-9dqb4ue9/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "selected_view": "3d",
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "main_topology": "safeguarded",
+    "comparison_topologies": [
+      "partial_mesh",
+      "self_healing_mesh"
+    ],
+    "comparison_background": "Live mission reset to 10 UAVs and paused before the isolated 100-UAV A/B run",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "headless": true,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "reports": [
+      {
+        "view": "3d",
+        "simulation_performance": {
+          "status": "running",
+          "achieved_speed": 0.468581825325055,
+          "relative_to_requested": 0.468581825325055,
+          "clipped_wall_time_s": 34.1593508743681,
+          "timings": {
+            "selection": {
+              "samples": 31,
+              "mean_ms": 468.0901880661446,
+              "p95_ms": 555.9096659999341,
+              "max_ms": 647.6286249235272
+            },
+            "rebuilding": {
+              "samples": 157,
+              "mean_ms": 215.6671268263369,
+              "p95_ms": 643.8790829852223,
+              "max_ms": 848.5028750728816
+            },
+            "snapshot": {
+              "samples": 73,
+              "mean_ms": 18.481349932948408,
+              "p95_ms": 27.86883316002786,
+              "max_ms": 29.684375040233135
+            },
+            "scheduling": {
+              "samples": 256,
+              "mean_ms": 6.1545176367872045,
+              "p95_ms": 14.458291931077838,
+              "max_ms": 172.27604100480676
+            }
+          },
+          "sample_limit": 256,
+          "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+        },
+        "duration_s": 60,
+        "clock_before": [
+          "T+1.1s"
+        ],
+        "clock_after": [
+          "T+29.0s"
+        ],
+        "canvases": [
+          {
+            "buffer_capacity": 72000,
+            "frame_count": 3290,
+            "dpr": 1,
+            "canvas_pixels": [
+              919,
+              429
+            ],
+            "canvas_css": [
+              1082,
+              505
+            ],
+            "gpu": {
+              "vendor": "Google Inc. (Apple)",
+              "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+            },
+            "packet_visual": "authoritative-packet-events",
+            "site_details": "true",
+            "quality": "balanced",
+            "draw_calls": "202",
+            "geometries": "137",
+            "textures": "8",
+            "average_fps": 54.68359143212836,
+            "fifth_percentile_fps": 30.030030030027405
+          }
+        ],
+        "render_buffers": [
+          {
+            "packet_event_count": "20000",
+            "packet_result_count": "80"
+          }
+        ],
+        "retained_heap_before": 32035896,
+        "retained_heap_after": 50374068
+      }
+    ],
+    "errors": []
+  },
+  {
+    "arm": "after",
+    "count": 100,
+    "model_services": {
+      "status": "ok",
+      "rl_loaded": true,
+      "fl_loaded": true,
+      "uptime_s": 8.61,
+      "mode": "simulation",
+      "sdn_controller": "mock",
+      "fl_client_manager": "unavailable",
+      "active_fl_clients": 0,
+      "deployment": {
+        "active_generation": 0,
+        "failed_generation": null,
+        "last_error": null,
+        "manifest_path": "/private/var/folders/cn/bdb9l4sj3s3b8sylsm_m3q_m0000gn/T/flare-swarm-repair-lo1kgw0n/project/models/deployment_manifest.json",
+        "fl_model_hash": "sha256:9e9cd305b28b30ff78704ec0a0dd4c16bdb09add0bd304f3c7119a37c5cffb2a",
+        "routing_model_hash": "sha256:6cd95b1684b677395b3d280a0134935658ad9c988ba319d103a548700e6e11e2",
+        "routing_contract": "routing_state_v3"
+      },
+      "version": "2.0.0"
+    },
+    "selected_view": "3d",
+    "browser": "155.0.8059.85",
+    "frontend_mode": "production",
+    "main_topology": "safeguarded",
+    "comparison_topologies": [
+      "partial_mesh",
+      "self_healing_mesh"
+    ],
+    "comparison_background": "Live mission reset to 10 UAVs and paused before the isolated 100-UAV A/B run",
+    "viewport": {
+      "width": 1440,
+      "height": 1000
+    },
+    "headless": true,
+    "hardware": {
+      "platform": "darwin",
+      "arch": "arm64",
+      "cpu": "Apple M2"
+    },
+    "reports": [
+      {
+        "view": "3d",
+        "simulation_performance": {
+          "status": "running",
+          "achieved_speed": 0.49933915226014375,
+          "relative_to_requested": 0.49933915226014375,
+          "clipped_wall_time_s": 31.73455987125635,
+          "timings": {
+            "selection": {
+              "samples": 34,
+              "mean_ms": 465.7251311616753,
+              "p95_ms": 543.4250831604004,
+              "max_ms": 569.5213340222836
+            },
+            "rebuilding": {
+              "samples": 168,
+              "mean_ms": 187.05811858360124,
+              "p95_ms": 599.2300000507385,
+              "max_ms": 654.4900420121849
+            },
+            "snapshot": {
+              "samples": 74,
+              "mean_ms": 20.22918756119907,
+              "p95_ms": 35.76720901764929,
+              "max_ms": 53.13712521456182
+            },
+            "scheduling": {
+              "samples": 256,
+              "mean_ms": 5.217056161200162,
+              "p95_ms": 12.362125096842647,
+              "max_ms": 157.62225002981722
+            }
+          },
+          "sample_limit": 256,
+          "evidence": "wall_clock_diagnostics_excluded_from_simulation_hashes"
+        },
+        "duration_s": 60,
+        "clock_before": [
+          "T+1.1s"
+        ],
+        "clock_after": [
+          "T+31.1s"
+        ],
+        "canvases": [
+          {
+            "buffer_capacity": 72000,
+            "frame_count": 3288,
+            "dpr": 1,
+            "canvas_pixels": [
+              919,
+              429
+            ],
+            "canvas_css": [
+              1082,
+              505
+            ],
+            "gpu": {
+              "vendor": "Google Inc. (Apple)",
+              "renderer": "ANGLE (Apple, ANGLE Metal Renderer: Apple M2, Unspecified Version)"
+            },
+            "packet_visual": "authoritative-packet-events",
+            "site_details": "true",
+            "quality": "balanced",
+            "draw_calls": "202",
+            "geometries": "137",
+            "textures": "8",
+            "average_fps": 54.60496925149009,
+            "fifth_percentile_fps": 30.030030030027405
+          }
+        ],
+        "render_buffers": [
+          {
+            "packet_event_count": "20000",
+            "packet_result_count": "80"
+          }
+        ],
+        "retained_heap_before": 34339144,
+        "retained_heap_after": 56912492
+      }
+    ],
+    "errors": []
+  }
+]

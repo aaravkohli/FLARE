@@ -32,7 +32,7 @@ test('wide links reuse bounded buffers, preserve endpoints, distinguish candidat
   for(let i=0;i<11000;i++)layer.add('background',a,b,'#88b4c4');
   layer.add('neighbor',a,b,'#9ad5e4');layer.add('route',a,b,'#91e1c1');layer.add('candidate',b,a,'#b5a1ea');
   layer.commit(915,500,true);
-  assert.deepEqual(layer.counts(),{background:10000,neighbor:1,route:1,candidate:1});
+  assert.deepEqual(layer.counts(),{background:10000,neighbor:1,route:1,candidate:1,recovery:0});
   const route=lines.find(line=>line.material.vertexColors&&line.material.linewidth===3.2&&!line.material.dashed)!;
   const candidate=lines.find(line=>line.material.vertexColors&&line.material.dashed)!;
   assert.ok(route&&candidate);assert.equal(candidate.geometry.instanceCount,1);
@@ -40,11 +40,11 @@ test('wide links reuse bounded buffers, preserve endpoints, distinguish candidat
   assert.equal(route.material.resolution.x,915);
   layer.begin(10);layer.add('route',b,a,'#91e1c1');layer.commit(390,400,true);
   assert.deepEqual(geometries.map(g=>g.getAttribute('instanceStart')),buffers);
-  assert.deepEqual(layer.counts(),{background:0,neighbor:0,route:1,candidate:0});
+  assert.deepEqual(layer.counts(),{background:0,neighbor:0,route:1,candidate:0,recovery:0});
   assert.equal(route.material.linewidth,3.2);assert.equal(route.material.resolution.x,390);
   let geometryDisposals=0,materialDisposals=0;
   geometries.forEach(g=>g.addEventListener('dispose',()=>geometryDisposals++));materials.forEach(m=>m.addEventListener('dispose',()=>materialDisposals++));
-  layer.dispose();layer.dispose();assert.equal(geometryDisposals,4);assert.equal(materialDisposals,6);assert.equal(layer.root.children.length,0);
+  layer.dispose();layer.dispose();assert.equal(geometryDisposals,5);assert.equal(materialDisposals,7);assert.equal(layer.root.children.length,0);
 });
 test('emphasis changes width and opacity without replacing buffers or health colors',()=>{
  const layer=createNetworkLinkLayer(),lines=layer.root.children as LineSegments2[];

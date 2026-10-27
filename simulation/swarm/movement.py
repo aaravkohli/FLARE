@@ -59,12 +59,18 @@ def formation_positions(name: str, count: int, spacing: float = 42.) -> list[lis
         points.append([x,80.+(i%3)*12,z])
     return points
 
-def advance(drones: list[Drone], dt: float, seconds: float, slots: list[list[float]], terrain) -> None:
+def advance(drones: list[Drone], dt: float, seconds: float, slots: list[list[float]], terrain, supervisors=None) -> None:
     # Neighbor buckets avoid quadratic separation work in sparse, large missions.
     buckets: dict[tuple[int,int],list[Drone]] = {}
     for d in drones: buckets.setdefault((int(d.position[0]//70),int(d.position[2]//70)),[]).append(d)
     changes=[]
     for i,d in enumerate(drones):
+        supervisor=supervisors.get(d.id) if supervisors else None
+        if supervisor and supervisor.latched and d.mode in ('landed','failed_ground_contact'):
+            changes.append((d,d.position[:],[0.,0.,0.]));continue
+        if supervisor and supervisor.latched and d.mode=='uncontrolled_descent':
+            velocity=[0.,max(-12.,d.velocity[1]-9.81*dt),0.]
+            changes.append((d,[d.position[j]+velocity[j]*dt for j in range(3)],velocity));continue
         if not d.available or d.health <= 0: changes.append((d,d.position[:],[0.,0.,0.])); continue
         if d.mode == 'patrol':
             slot=d.formation_slot or slots[i]; d.target=[slot[0]+45*math.sin(seconds/45),slot[1],slot[2]+45*math.cos(seconds/45)]
@@ -74,10 +80,11 @@ def advance(drones: list[Drone], dt: float, seconds: float, slots: list[list[flo
                 if d.waypoint_index+1<len(d.waypoints): d.waypoint_index+=1
                 elif d.waypoint_loop: d.waypoint_index=0
                 else: d.mode='hold'
-        target=d.position if d.mode=='hold' else d.target
+        target=d.position if d.mode in ('hold','safety_hold') else d.target
         offset=[target[j]-d.position[j] for j in range(3)]; distance=math.dist(target,d.position)
         desired=[v/max(1,distance)*min(16.,distance*.55) for v in offset]
         desired[1]=max(-2.,min(2.,desired[1]))
+        if supervisor and d.mode=='landing':desired[1]=max(-1.,desired[1])
         cx,cz=int(d.position[0]//70),int(d.position[2]//70)
         for bx in ([] if d.mode=='hold' else range(cx-1,cx+2)):
             for bz in range(cz-1,cz+2):
@@ -88,8 +95,10 @@ def advance(drones: list[Drone], dt: float, seconds: float, slots: list[list[flo
                         if gap<.01: diff=[1. if d.id<other.id else -1.,0.,0.]; gap=1.
                         strength=(40-gap)/40*16
                         for j in (0,2): desired[j] += diff[j]/gap*strength
-        floor=terrain.height(d.position[0],d.position[2])+35
-        desired[1]=max(desired[1],min(2.,(floor-d.position[1])*2))
+        floor=terrain.height(d.position[0],d.position[2])+(0 if supervisor and d.mode=='landing' and supervisor.site else 35)
+        if supervisor and d.mode=='landing':desired[1]=-min(1.,max(0.,d.position[1]-floor)/dt)
+        if not (supervisor and d.mode=='landing') or d.position[1]<floor:
+            desired[1]=max(desired[1],min(2.,(floor-d.position[1])*2))
         speed=math.sqrt(sum(v*v for v in desired))
         if speed>16: desired=[v*16/speed for v in desired]
         dv=[desired[j]-d.velocity[j] for j in range(3)]; size=math.sqrt(sum(v*v for v in dv)); scale=min(1.,4*dt/max(size,1e-9))
@@ -103,6 +112,11 @@ def advance(drones: list[Drone], dt: float, seconds: float, slots: list[list[flo
             if delta>4*dt: turn=[d.velocity[j]+(turn[j]-d.velocity[j])*4*dt/delta for j in range(3)]
             velocity=turn
         position=[d.position[j]+velocity[j]*dt for j in range(3)]
+        if supervisor and d.mode=='landing':
+            position[1]=max(floor,position[1]);velocity[1]=max(-1.,velocity[1])
+        if supervisor and not supervisor.segment_safe(d.position,position):
+            position=d.position[:];velocity=[0.,0.,0.]
+            supervisor.unresolved=list(dict.fromkeys(supervisor.unresolved+['Flight segment blocked by geofence or declared obstacle']))
         changes.append((d,position,velocity))
     for d,p,v in changes:
         d.position=p; d.velocity=v

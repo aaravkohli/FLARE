@@ -1,0 +1,370 @@
+[
+  {
+    "file": "schemas/autonomy.py",
+    "line": 41,
+    "function": "SafetyProfile.ordered",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 51,
+    "function": "LocalNetworkController.receive",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 75,
+    "function": "LocalNetworkController.recent_ground",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 76,
+    "function": "LocalNetworkController.advertised_route",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 80,
+    "function": "LocalNetworkController.advertisement",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 85,
+    "function": "LocalNetworkController.peer_targets",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 93,
+    "function": "LocalNetworkController.diagnose",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 108,
+    "function": "LocalNetworkController.step",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 135,
+    "function": "LocalNetworkController.snapshot",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 144,
+    "function": "AutonomousRecovery.__init__",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 149,
+    "function": "AutonomousRecovery.enabled",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 150,
+    "function": "AutonomousRecovery.sync",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 162,
+    "function": "AutonomousRecovery.permitted",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 180,
+    "function": "AutonomousRecovery.link_for",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 185,
+    "function": "AutonomousRecovery.packet_link",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 186,
+    "function": "AutonomousRecovery.owns",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 187,
+    "function": "AutonomousRecovery.allowed",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 201,
+    "function": "AutonomousRecovery.send",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 219,
+    "function": "AutonomousRecovery.packet_event",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 261,
+    "function": "AutonomousRecovery.step",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 292,
+    "function": "AutonomousRecovery.recovery_rule",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 297,
+    "function": "AutonomousRecovery.bind_forwarding",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 302,
+    "function": "AutonomousRecovery.configure_profile",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 308,
+    "function": "AutonomousRecovery.start_guard",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 317,
+    "function": "AutonomousRecovery.check_candidate",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 331,
+    "function": "AutonomousRecovery.guard_step",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/autonomy.py",
+    "line": 346,
+    "function": "AutonomousRecovery.snapshot",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 26,
+    "function": "SafetySupervisor.__init__",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 34,
+    "function": "SafetySupervisor.site_valid",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 41,
+    "function": "SafetySupervisor.inputs_fresh",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 42,
+    "function": "SafetySupervisor.navigation",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 43,
+    "function": "SafetySupervisor.obstacles_known",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 44,
+    "function": "SafetySupervisor.segment_safe",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 53,
+    "function": "SafetySupervisor.choose_site",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 71,
+    "function": "SafetySupervisor.step",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 116,
+    "function": "SafetySupervisor.command_allowed",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 125,
+    "function": "SafetySupervisor.target",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 130,
+    "function": "SafetySupervisor.snapshot",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 140,
+    "function": "FlightSafety.__init__",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 141,
+    "function": "FlightSafety.sync",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 148,
+    "function": "FlightSafety.frame",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 155,
+    "function": "FlightSafety.step",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 162,
+    "function": "FlightSafety.after_motion",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/flight_safety.py",
+    "line": 179,
+    "function": "FlightSafety.snapshot",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/recovery_scenarios.py",
+    "line": 7,
+    "function": "schedule",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  },
+  {
+    "file": "simulation/swarm/recovery_scenarios.py",
+    "line": 18,
+    "function": "step",
+    "verification": "integration and targeted behavioral assertions; not a claim of exhaustive branch coverage",
+    "tests": "tests/test_autonomous_recovery.py; tests/test_autonomy_edge_safety.py",
+    "outcome": "Passed"
+  }
+]

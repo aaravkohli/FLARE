@@ -1,0 +1,69 @@
+[
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "frontend-react",
+      "test"
+    ],
+    "started_at_utc": "2026-10-25T22:23:15.620565+00:00",
+    "wall_s": 4.046736375000364,
+    "exit_code": 0,
+    "log": "results/autonomous_recovery/frontend-units-final.log",
+    "outcome": "Passed"
+  },
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "frontend-react",
+      "run",
+      "typecheck"
+    ],
+    "started_at_utc": "2026-10-25T22:23:19.667397+00:00",
+    "wall_s": 3.367304917000183,
+    "exit_code": 0,
+    "log": "results/autonomous_recovery/typecheck-final.log",
+    "outcome": "Passed"
+  },
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "frontend-react",
+      "run",
+      "lint"
+    ],
+    "started_at_utc": "2026-10-25T22:23:23.034786+00:00",
+    "wall_s": 0.28486883400000806,
+    "exit_code": 0,
+    "log": "results/autonomous_recovery/lint-final.log",
+    "outcome": "Passed"
+  },
+  {
+    "command": [
+      "npm",
+      "--prefix",
+      "frontend-react",
+      "run",
+      "build"
+    ],
+    "started_at_utc": "2026-10-25T22:23:23.319739+00:00",
+    "wall_s": 3.804685000000063,
+    "exit_code": 0,
+    "log": "results/autonomous_recovery/build-final.log",
+    "outcome": "Passed"
+  },
+  {
+    "command": [
+      "git",
+      "diff",
+      "--check"
+    ],
+    "started_at_utc": "2026-10-25T22:23:27.124485+00:00",
+    "wall_s": 0.02938295800049673,
+    "exit_code": 0,
+    "log": "results/autonomous_recovery/diff-final.log",
+    "outcome": "Passed"
+  }
+]
