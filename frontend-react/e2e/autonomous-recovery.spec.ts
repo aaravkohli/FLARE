@@ -6,17 +6,30 @@ import fs from 'node:fs';
 
 let originalSafetyProfile:unknown;
 test.afterEach(async({request})=>{
- const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
- const read=async()=>(await request.get('http://127.0.0.1:18000/mission/simulation',{headers})).json();
- const before=await read();const restored=await request.patch('http://127.0.0.1:18000/mission/simulation/config',{headers,data:{expected_revision:before.revision,autonomy_mode:'off',...(originalSafetyProfile?{safety_profile:originalSafetyProfile}:{})}});expect(restored.ok()).toBeTruthy();
+ const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});expect(auth.ok(),`Cleanup authentication returned HTTP ${auth.status()}`).toBeTruthy();const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const read=async()=>{
+  const r=await request.get('http://127.0.0.1:18000/mission/simulation',{headers});
+  expect(r.ok(),`Cleanup state returned HTTP ${r.status()}: ${await r.text()}`).toBeTruthy();
+  return r.json();
+ };
+ let before=await read();
+ for(let attempt=0;before.playing&&attempt<3;attempt++){
+  const paused=await request.post('http://127.0.0.1:18000/mission/simulation/control',{headers,data:{action:'pause',expected_revision:before.revision}});
+  // Only a confirmed rejection permits another cleanup attempt. Lost delivery
+  // fails directly; it never resubmits a mutation with an unknown outcome.
+  if(paused.status()!==409)expect(paused.ok(),`Cleanup pause returned HTTP ${paused.status()}: ${await paused.text()}`).toBeTruthy();
+  before=await read();
+ }
+ expect(before.playing,'Cleanup could not confirm a paused mission').toBe(false);
+ const restored=await request.patch('http://127.0.0.1:18000/mission/simulation/config',{headers,data:{expected_revision:before.revision,autonomy_mode:'off',...(originalSafetyProfile?{safety_profile:originalSafetyProfile}:{})}});expect(restored.ok(),`Cleanup configuration returned HTTP ${restored.status()}: ${await restored.text()}`).toBeTruthy();
  const ready=await read();const reset=await request.post('http://127.0.0.1:18000/mission/simulation/scenarios/normal',{headers,data:{expected_revision:ready.revision,action:'reset'}});expect(reset.ok()).toBeTruthy();
 });
 
 test('opt-in local recovery, frozen clocks, delivered profile, safety latch and view consistency',async({page,request})=>{
  test.setTimeout(180000);
  const center=await signInToMission(page);
- const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
- const state=async()=>{const r=await request.get('http://127.0.0.1:18000/mission/simulation',{headers});expect(r.ok()).toBeTruthy();return r.json();};
+ const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});expect(auth.ok()).toBeTruthy();const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const state=async()=>{const r=await request.get('http://127.0.0.1:18000/mission/simulation',{headers});expect(r.ok(),`Mission state returned HTTP ${r.status()}: ${await r.text()}`).toBeTruthy();return r.json();};
  const initial=await state();originalSafetyProfile=initial.autonomy.profile;expect(initial.autonomy.mode).toBe('off');
  // Reset through the UI so its authoritative revision is published before
  // the next configuration mutation; an out-of-band reset can race that input.
@@ -30,6 +43,7 @@ test('opt-in local recovery, frozen clocks, delivered profile, safety latch and 
  const after=await center.locator('canvas.mission-world-canvas').getAttribute('data-recovery-edges');expect(JSON.parse(after??'[]')).toEqual(JSON.parse(before??'[]'));
  await center.getByRole('button',{name:'2D network',exact:true}).click();
  await missionSetting(center,'Scenario','recovery_total_loss');await selectMissionValue(center,'Speed','4');await missionControl(center,'play');
+ expect((await state()).nodes).toHaveLength(30); // Preset deliberately restores 30; exercise the actual CI load.
  await expect.poll(async()=>{const s=await state();return s.autonomy.safety.some((n:{latched:boolean})=>n.latched);},{timeout:45000}).toBeTruthy();
  await missionControl(center,'pause');await expect.poll(async()=>(await state()).playing).toBe(false);
  await center.getByRole('tab',{name:'Inspect',exact:true}).click();await expect(center.getByRole('region',{name:'Local recovery and safety'})).toContainText('Resume required');

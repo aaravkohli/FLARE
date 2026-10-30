@@ -37,7 +37,7 @@ def write_credentials(directory, credentials):
 
 
 def main():
-    parser=argparse.ArgumentParser();parser.add_argument('--directory',type=Path)
+    parser=argparse.ArgumentParser();parser.add_argument('--directory',type=Path,default=Path(os.environ['FLARE_TEST_DIRECTORY']) if os.getenv('FLARE_TEST_DIRECTORY') else None)
     parser.add_argument('--flower-rounds',type=int,default=0)
     parser.add_argument('--audit-smoke-training',action='store_true',help='Private copy only: one local epoch, five clients')
     parser.add_argument('--production',action='store_true',default=os.getenv('FLARE_TEST_PRODUCTION')=='1')

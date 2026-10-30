@@ -29,6 +29,13 @@ a **confirmed 409 rejection**. A timeout, lost response, or ambiguous delivery
 fails without repeating the action. `mission-requests.spec.ts` tests this boundary
 against real services with response fault injection.
 
+The simulator service yields between complete fixed steps when draining its
+wall-time budget. State, pause and configuration requests can therefore run
+during catch-up without changing exact packet timestamps or dropping pending
+simulation steps. Recovery scenario presets restore their registered fleet size;
+the total-loss smoke intentionally retains all 30 UAVs at 4x speed. CI stores
+service logs alongside browser evidence, excluding its private credentials file.
+
 For credential isolation unit coverage, run `npm --prefix frontend-react test`
 and `venv/bin/python -m pytest -q tests/test_browser_service_auth.py`.
 

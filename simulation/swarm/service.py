@@ -14,6 +14,25 @@ from simulation.swarm.experiments import ExperimentManager
 from fastapi.responses import Response, FileResponse
 
 
+async def simulation_clock(application):
+    """Yield at complete movement/packet boundaries, including during catch-up.
+
+    A slow host at 4x can admit twenty fixed steps in a single wall-clock tick.
+    Running all of them synchronously starves state and pause requests. Keep the
+    exact fixed-step order and budget, allowing I/O between individual steps.
+    """
+    previous=time.monotonic()
+    while True:
+        await asyncio.sleep(.025)
+        now=time.monotonic()
+        e=application.state.swarm
+        e.tick(now-previous,max_steps=1)
+        previous=now
+        while e.playing and e.accumulator+1e-9>=e.cfg['fixed_step_s']:
+            await asyncio.sleep(0)
+            e.tick(0,max_steps=1)
+
+
 def attach_simulation(app, authenticate):
     app.state.swarm = None
     app.state.experiments = None
@@ -26,14 +45,7 @@ def attach_simulation(app, authenticate):
                 raise RuntimeError('swarm requires a separate mission registry')
             application.state.swarm = SwarmEngine(list_drones(), registry_path=registry)
             application.state.experiments = ExperimentManager(os.getenv('FLARE_EXPERIMENT_DIR',str(registry.parent/'experiments')))
-            async def clock():
-                previous = time.monotonic()
-                while True:
-                    await asyncio.sleep(.025)
-                    now = time.monotonic()
-                    application.state.swarm.tick(now-previous)
-                    previous = now
-            task = asyncio.create_task(clock())
+            task = asyncio.create_task(simulation_clock(application))
         try:
             yield
         finally:

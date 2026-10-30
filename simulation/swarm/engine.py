@@ -243,17 +243,25 @@ class SwarmEngine:
         if preset.get('preferred_family'): self.route_preferences={identity:preset['preferred_family'] for identity in self.nodes}
         self.event('COMMAND','scenario_loaded',{'scenario':name,'attack_at_s':8,'preferred_family':preset.get('preferred_family'),'preference_is_safety_constrained':True})
         return self.snapshot()
-    def tick(self,wall_delta):
+    def tick(self,wall_delta,*,max_steps=None):
+        """Advance fixed steps; a service may defer catch-up work between requests.
+
+        The default drains the complete admitted wall-time budget as before.
+        A bounded call retains the remaining budget in ``accumulator``; drain it
+        with zero wall delta so no time, packets or random draws are discarded.
+        """
         before=self.seconds
         if not self.playing:
             self.performance.previous=None
             return
-        self._tick(wall_delta)
+        self._tick(wall_delta,max_steps=max_steps)
         self.performance.tick(before,self.seconds,wall_delta)
-    def _tick(self,wall_delta):
+    def _tick(self,wall_delta,*,max_steps=None):
         self.accumulator+=max(0,min(.25,wall_delta))*self.speed
         step=self.cfg['fixed_step_s']
-        while self.accumulator+1e-9>=step:
+        completed=0
+        while self.accumulator+1e-9>=step and (max_steps is None or completed<max_steps):
+            completed+=1
             self.accumulator-=step
             self.scheduler.step(self.seconds+step,self.packet_link,self.packet_allowed,self.attacks.relay_drop,self.repair_packet)
             self.seconds+=step

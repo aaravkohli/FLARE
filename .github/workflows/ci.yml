@@ -104,6 +104,7 @@ jobs:
           FLARE_TEST_PRODUCTION: '1'
           FLARE_TEST_MISSING_MODELS: '1'
           FLARE_ARTIFACT_DIR: /tmp/flare-browser-artifacts
+          FLARE_TEST_DIRECTORY: /tmp/flare-browser-services
         run: npm --prefix frontend-react run test:browser -- adaptive-study.spec.ts resilience-controller.spec.ts autonomous-recovery.spec.ts mission-requests.spec.ts
       - name: Retain browser evidence
         if: always()
@@ -113,6 +114,8 @@ jobs:
           path: |
             frontend-react/test-results
             /tmp/flare-browser-artifacts
+            /tmp/flare-browser-services/*.log
+            /tmp/flare-browser-services/frontend-mode.json
 
   deployment-config:
     name: Validate Docker Compose configuration
