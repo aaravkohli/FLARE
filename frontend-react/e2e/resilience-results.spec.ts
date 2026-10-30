@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 
@@ -9,7 +11,7 @@ test('completed resilience pilot renders real per-seed results and intervals (tr
  await page.route('**/mission/simulation/experiments',async route=>{
   if(route.request().method()==='POST')await route.fulfill({status:200,json:artifact});else await route.continue();
  });
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  await center.getByRole('button',{name:'Topology benchmark',exact:true}).click();await center.getByRole('tab',{name:'Resilience pilot',exact:true}).click();
  const panel=center.locator('#benchmark-panel-resilience');await panel.getByRole('button',{name:'Run adaptive study',exact:true}).click();

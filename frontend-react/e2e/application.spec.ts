@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {test,expect,type Page} from '@playwright/test';
 import fs from 'node:fs';
 const api='http://127.0.0.1:18000';
@@ -6,7 +8,7 @@ const directory=process.env.FLARE_ARTIFACT_DIR||'/private/tmp/flare-application-
 let originalPolicy:unknown;
 let policyHeaders:Record<string,string>;
 test.beforeEach(async({request})=>{
- const auth=await request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}});
+ const auth=await request.post(api+'/auth/token',{form:{username: testOperator,password: testPassword}});
  policyHeaders={Authorization:`Bearer ${(await auth.json()).access_token}`};
  originalPolicy=await(await request.get(api+'/api/fl/config',{headers:policyHeaders})).json();
 });
@@ -14,9 +16,9 @@ test.afterEach(async({request})=>{
  const current=await(await request.get(api+'/api/fl/config',{headers:policyHeaders})).json();
  if(JSON.stringify(current)!==JSON.stringify(originalPolicy))expect((await request.post(api+'/api/fl/config',{headers:policyHeaders,data:originalPolicy})).ok()).toBeTruthy();
 });
-async function login(page:Page){await page.goto('/');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.getByRole('heading',{name:'Overview',exact:true})).toBeVisible();}
+async function login(page:Page){await page.goto('/');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();await expect(page.getByRole('heading',{name:'Overview',exact:true})).toBeVisible();}
 async function nav(page:Page,label:string){const link=page.getByRole('navigation',{name:'Application',exact:true}).getByRole('link',{name:label,exact:true});if(!await link.isVisible())await page.getByRole('button',{name:'Navigation',exact:true}).click();await link.click();await expect(page.getByRole('region',{name:label,exact:true})).toBeVisible();}
-async function headers(page:Page){return await page.evaluate(async(url)=>{const body=new URLSearchParams({username:'admin',password:'antijam2026'});const data=await(await fetch(url+'/auth/token',{method:'POST',body})).json();return {Authorization:`Bearer ${data.access_token}`};},api);}
+async function headers(page:Page){return await page.evaluate(async({url,username,password})=>{const body=new URLSearchParams({username,password});const data=await(await fetch(url+'/auth/token',{method:'POST',body})).json();return {Authorization:`Bearer ${data.access_token}`};},{url:api,username:testOperator,password:testPassword});}
 
 test('navigation preserves mission identity, inspection, commands, camera, policy drafts and experiments',async({page,request})=>{
  const errors:string[]=[];let sockets=0;page.on('pageerror',e=>errors.push(e.message));page.on('websocket',()=>sockets++);

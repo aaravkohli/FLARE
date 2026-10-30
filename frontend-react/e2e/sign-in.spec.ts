@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 
@@ -81,8 +83,8 @@ test('real authentication retains the requested Mission destination and Lock ret
   const errors: string[] = [];
   page.on('pageerror', error => errors.push(error.message));
   await page.goto('/#mission');
-  await page.getByLabel('Operator', { exact: true }).fill('admin');
-  await page.getByLabel('Password', { exact: true }).fill('antijam2026');
+  await page.getByLabel('Operator', { exact: true }).fill(testOperator);
+  await page.getByLabel('Password', { exact: true }).fill(testPassword);
   await page.getByLabel('Password', { exact: true }).press('Enter');
   await expect(page.getByRole('region', { name: 'Swarm command center', exact: true })).toBeVisible({ timeout: 30000 });
   await expect(page).toHaveURL(/#mission$/);

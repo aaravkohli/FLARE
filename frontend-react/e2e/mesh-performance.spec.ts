@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import { missionSetting, resetMission } from './workspace-helpers';
 import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
@@ -12,9 +14,9 @@ const directory=process.env.FLARE_ARTIFACT_DIR||'/private/tmp/flare-mesh-profile
 test('100-UAV 2D, 3D and synchronized A/B rendering profile',async({page,request})=>{
  test.skip(!enabled,'Set FLARE_MESH_PROFILE=1 for the sustained rendering profile.');test.setTimeout(duration*3000+90000);fs.mkdirSync(directory,{recursive:true});
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/?profile=1#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/?profile=1#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
- const health=await (await request.get('http://127.0.0.1:18000/health')).json();const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const health=await (await request.get('http://127.0.0.1:18000/health')).json();const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  if(!['all','2d','3d','compare'].includes(selectedView))throw new Error('Unknown FLARE_PROFILE_VIEW');
  await resetMission(center);await missionSetting(center,'Fleet size',selectedView==='compare'?'10':'100');await center.getByLabel('Topology',{exact:true}).selectOption(mainTopology);await center.getByLabel('Speed',{exact:true}).selectOption('1');await center.getByRole('button',{name:'Presentation',exact:true}).click();if(selectedView!=='compare')await center.getByRole('button',{name:'Play mission',exact:true}).click();
  if(process.env.FLARE_PROFILE_ASSISTANCE==='1'){await center.getByRole('button',{name:'Mission setup',exact:true}).click();await center.getByLabel('Prioritize affected UAVs',{exact:true}).check();await center.getByRole('button',{name:'Close Mission setup',exact:true}).click();}

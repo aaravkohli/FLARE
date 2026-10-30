@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import { missionSetting, resetMission, commandOutcomes } from './workspace-helpers';
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
@@ -5,7 +7,7 @@ const artifacts=process.env.FLARE_ARTIFACT_DIR||`artifacts/swarm-repair-${new Da
 fs.mkdirSync(artifacts,{recursive:true});
 test('authoritative controls, multi-selection, commands, scenarios and fallback',async({page,request})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();await center.getByRole('tab',{name:'Activity',exact:true}).click();await center.getByRole('tab',{name:'Commands',exact:true}).click();
  await resetMission(center);await expect(center.getByRole('button',{name:'Play mission'})).toBeVisible();
  await center.getByRole('button',{name:'Play mission'}).click();await expect(center.getByRole('button',{name:'Pause mission'})).toBeVisible();
@@ -26,7 +28,7 @@ test('authoritative controls, multi-selection, commands, scenarios and fallback'
 
 test('delivered flight commands, lost command link, retirement and canvas cleanup',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();await center.getByRole('tab',{name:'Activity',exact:true}).click();await center.getByRole('tab',{name:'Commands',exact:true}).click();
  await resetMission(center);await missionSetting(center,'Fleet size','10');await center.getByLabel('Speed',{exact:true}).selectOption('4');
  await center.getByRole('button',{name:'Play mission'}).click();await center.getByRole('checkbox',{name:'Target UAV-001',exact:true}).click();
@@ -43,7 +45,7 @@ test('delivered flight commands, lost command link, retirement and canvas cleanu
   await center.getByRole('button',{name:'3D world',exact:true}).click();await expect(center.locator('canvas')).toHaveCount(1);
   await center.getByRole('button',{name:'2D network',exact:true}).click();await expect(center.getByRole('img',{name:'Authoritative 2D mission network'})).toBeVisible();
  }
- await page.reload();await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.reload();await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  await expect(center).toBeVisible({timeout:30000});await expect(center.locator('canvas')).toHaveCount(1,{timeout:20000});
  expect(errors).toEqual([]);
 });

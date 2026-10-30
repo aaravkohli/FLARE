@@ -1,13 +1,15 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {chromium,expect} from '@playwright/test';
 import fs from 'node:fs';
 const api=process.env.FLARE_REVIEW_API||'http://127.0.0.1:18200',front=process.env.FLARE_REVIEW_FRONTEND||'http://127.0.0.1:15273',out=process.env.FLARE_ARTIFACT_DIR;
 if(!out)throw new Error('Set FLARE_ARTIFACT_DIR');fs.mkdirSync(out,{recursive:true});
 const browser=await chromium.launch({executablePath:'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true,args:['--use-angle=metal']}),page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[],captures=[];page.on('pageerror',e=>errors.push(e.message));
 try{
- const auth=await page.request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}}),headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const auth=await page.request.post(api+'/auth/token',{form:{username: testOperator,password: testPassword}}),headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>await(await page.request.get(api+'/mission/simulation',{headers})).json();
  async function capture(step){const s=await state();captures.push({step,simulation_time:s.simulation_time,session_id:s.session_id,statistics:s.statistics,attacks:s.attacks,selected:s.nodes.find(n=>n.id==='drone_1'),flows:s.flows.filter(f=>f.source==='drone_1'&&f.traffic_class==='telemetry')});await page.screenshot({path:`${out}/${step}.png`});fs.writeFileSync(`${out}/rehearsal.json`,JSON.stringify({captures,errors},null,2));}
- await page.goto(front+'/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
+ await page.goto(front+'/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  if(await center.getByRole('button',{name:'Pause mission',exact:true}).isVisible())await center.getByRole('button',{name:'Pause mission',exact:true}).click();
  for(const [label,value] of [['Fleet size','10'],['Formation','circle'],['Radio range','1000']]){await center.getByRole('button',{name:'Mission setup',exact:true}).click();await center.getByRole('dialog',{name:'Mission setup',exact:true}).getByLabel(label,{exact:true}).selectOption(value);await center.getByRole('button',{name:'Close Mission setup',exact:true}).click();await expect(center.getByLabel('Topology',{exact:true})).toBeEnabled();}
  await center.getByLabel('Topology',{exact:true}).selectOption('ring');await expect(center.getByLabel('Topology',{exact:true})).toBeEnabled();await center.getByRole('button',{name:'Mission setup',exact:true}).click();await center.getByRole('button',{name:'Reset',exact:true}).click();await center.getByRole('button',{name:'Close Mission setup',exact:true}).click();await center.getByLabel('Speed',{exact:true}).selectOption('1');await capture('01-ring-paused');

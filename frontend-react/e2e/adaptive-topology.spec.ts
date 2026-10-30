@@ -1,17 +1,18 @@
+import {missionSetting,resetMission,selectMissionValue,missionControl,signInToMission} from './workspace-helpers';
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
-import {missionSetting,resetMission} from './workspace-helpers';
 
 const directory=process.env.FLARE_ARTIFACT_DIR||'/private/tmp/flare-adaptive-browser';
 test('Auto reasons, manual persistence, pause and 2D/3D use authoritative topology',async({page,request})=>{
  test.setTimeout(120000);fs.mkdirSync(directory,{recursive:true});
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
- const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
- const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});
+ const center=await signInToMission(page);
+ const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});
  const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>(await request.get('http://127.0.0.1:18000/mission/simulation',{headers})).json();
- await center.getByLabel('Topology',{exact:true}).selectOption('auto');await resetMission(center);
+ await selectMissionValue(center,'Topology','auto');await resetMission(center);
  await expect(center.getByLabel('Topology',{exact:true})).toHaveValue('auto');
  await expect(center.getByRole('status',{name:'Topology selection'})).toContainText('Active:');
  const initial=await state();expect(initial.topology_selection.mode).toBe('auto');expect(initial.topology_selection.candidates).toHaveLength(10);
@@ -22,17 +23,17 @@ test('Auto reasons, manual persistence, pause and 2D/3D use authoritative topolo
  await page.screenshot({path:`${directory}/adaptive-diagnostics.png`});
  await center.getByRole('button',{name:'Close Mission setup',exact:true}).click();
  const configured=page.waitForResponse(r=>r.url().endsWith('/simulation/config')&&r.request().method()==='PATCH');
- await center.getByLabel('Topology',{exact:true}).selectOption('ring');const response=await configured;expect(response.ok()).toBeTruthy();
+ await selectMissionValue(center,'Topology','ring');const response=await configured;expect(response.ok()).toBeTruthy();
  expect(response.request().postDataJSON()).toMatchObject({topology:'ring',topology_mode:'manual'});
  await expect.poll(async()=>(await state()).topology).toBe('ring');
  await expect(center.getByRole('status',{name:'Topology selection'})).toContainText('Manual override');
  await missionSetting(center,'Scenario','mobility');await resetMission(center);
  expect((await state()).topology).toBe('ring');
- await center.getByLabel('Topology',{exact:true}).selectOption('auto');
- await center.getByLabel('Speed',{exact:true}).selectOption('4');
- await center.getByRole('button',{name:'Play mission',exact:true}).click();
+ await selectMissionValue(center,'Topology','auto');
+ await selectMissionValue(center,'Speed','4');
+ await missionControl(center,'play');
  await expect.poll(async()=>(await state()).topology_selection.evaluated_at,{timeout:20000}).toBeGreaterThan(2);
- await center.getByRole('button',{name:'Pause mission',exact:true}).click();
+ await missionControl(center,'pause');
  const paused=await state();await page.waitForTimeout(700);const frozen=await state();
  expect(frozen.simulation_time).toBe(paused.simulation_time);expect(frozen.topology_selection).toEqual(paused.topology_selection);
  await expect(center.getByRole('status',{name:'Topology selection'})).toContainText(paused.topology.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase()));

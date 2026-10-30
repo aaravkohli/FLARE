@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 const filename=process.env.FLARE_STUDY_RESULT_FIXTURE;
@@ -6,7 +8,7 @@ test('completed real study artifact renders final cohorts and paired intervals (
  const artifact=JSON.parse(fs.readFileSync(filename!,'utf8'));expect(artifact.status).toBe('completed');expect(artifact.results).toHaveLength(550);
  // This verifies presentation of real retained evidence, not another backend run.
  await page.route('**/mission/simulation/experiments',async route=>{if(route.request().method()==='POST')await route.fulfill({status:200,json:artifact});else await route.continue();});
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();await center.getByRole('button',{name:'Topology benchmark',exact:true}).click();await center.getByRole('tab',{name:'Adaptive Study',exact:true}).click();
  const study=center.getByRole('region',{name:'Adaptive resilience study'});await study.getByLabel('Study preset').selectOption('evidence');await study.getByRole('button',{name:'Run adaptive study',exact:true}).click();
  await expect(study.getByText(/Completed · Final results/)).toBeVisible();await expect(study.locator('.experiment-results tbody tr')).toHaveCount(110);

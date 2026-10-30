@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword, sdnToken: testSdnToken } = testCredentials();
 import {test,expect} from '@playwright/test';
 import type {Page,Locator} from '@playwright/test';
 import fs from 'node:fs';
@@ -6,7 +8,7 @@ import {resetMission,missionSetting} from './workspace-helpers';
 const directory=process.env.FLARE_ARTIFACT_DIR||'/private/tmp/flare-connections-countdown';
 fs.mkdirSync(directory,{recursive:true});
 async function openMission(page:Page){
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();await resetMission(center);await missionSetting(center,'Fleet size','10');await center.getByLabel('Speed',{exact:true}).selectOption('1');return center;
 }
 const remaining=async(panel:Locator)=>Number((await panel.getByTestId('attack-remaining').first().innerText()).split('s')[0]);
@@ -58,7 +60,7 @@ test('a disconnected countdown freezes until fresh authoritative snapshots retur
 
 test('interference ends and route indicators clear automatically, without a Clear request',async({page,request})=>{
  test.setTimeout(90000);const center=await openMission(page);await missionSetting(center,'Radio range','1000');
- const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const snapshot=async()=>await(await request.get('http://127.0.0.1:18000/mission/simulation',{headers})).json();
  const id=(await snapshot()).nodes[0].id;
  const metrics=async()=>{const value=await(await request.get('http://127.0.0.1:18000/swarm/metrics',{headers})).json();return (value.metrics??value)[id];};
@@ -112,7 +114,7 @@ test('confirmed Direct, Mesh and Satellite policies retain their distinct 3D tra
  test.setTimeout(60000);const center=await openMission(page);await missionSetting(center,'Radio range','1000');await center.getByLabel('Topology',{exact:true}).selectOption('full_mesh');
  await center.getByRole('button',{name:'3D world',exact:true}).click();const canvas=center.locator('canvas.mission-world-canvas');
  // Install real policies in the isolated controller; no model verdict or snapshot is fabricated.
- const headers={Authorization:'Bearer antijam-development-sdn-token'};
+ const headers={Authorization:`Bearer ${testSdnToken}`};
  const before=await(await request.get('http://127.0.0.1:18080/simulation/state',{headers})).json();
  for(const family of ['direct','mesh','satellite']){
   const state=await(await request.get('http://127.0.0.1:18080/simulation/state',{headers})).json();
@@ -130,7 +132,7 @@ test('confirmed Direct, Mesh and Satellite policies retain their distinct 3D tra
 test('topology links remain exact, probe highlighting is explicit and connection emphasis is adjustable',async({page,request})=>{
  test.setTimeout(120000);const center=await openMission(page);await missionSetting(center,'Fleet size','30');await missionSetting(center,'Radio range','1000');
  await center.getByRole('button',{name:'3D world',exact:true}).click();const canvas=center.locator('canvas.mission-world-canvas');
- const headers={Authorization:'Bearer antijam-development-sdn-token'};
+ const headers={Authorization:`Bearer ${testSdnToken}`};
  const snapshot=async()=>await(await request.get('http://127.0.0.1:18080/simulation/state',{headers})).json();
  const before=await snapshot();
  await expect(canvas).toHaveAttribute('data-probe-hops','[]');
@@ -161,7 +163,7 @@ test('topology links remain exact, probe highlighting is explicit and connection
 
 test('ordinary RF degradation is optional coloring with inspectable real link quality',async({page,request})=>{
  test.setTimeout(90000);const center=await openMission(page);await missionSetting(center,'Fleet size','30');await missionSetting(center,'Formation','grid');await missionSetting(center,'Radio range','1000');await center.getByLabel('Topology',{exact:true}).selectOption('tree');await resetMission(center);
- const headers={Authorization:'Bearer antijam-development-sdn-token'};const snapshot=async()=>await(await request.get('http://127.0.0.1:18080/simulation/state',{headers})).json();const before=await snapshot();
+ const headers={Authorization:`Bearer ${testSdnToken}`};const snapshot=async()=>await(await request.get('http://127.0.0.1:18080/simulation/state',{headers})).json();const before=await snapshot();
  const degraded=before.links.filter((l:{a:string;b:string;status:string})=>l.a!=='base'&&l.b!=='base'&&l.status==='degraded');expect(degraded.length).toBeGreaterThan(0);
  await center.getByRole('button',{name:'3D world',exact:true}).click();const canvas=center.locator('canvas.mission-world-canvas');await expect(canvas).toHaveAttribute('data-quality-colors','false');
  await center.getByRole('tab',{name:'Commands',exact:true}).click();await center.getByLabel('Target UAV-001',{exact:true}).check();

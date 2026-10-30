@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import { resetMission, missionSetting } from './workspace-helpers';
@@ -9,11 +11,11 @@ test('field station layers, quality, cameras and responsive views preserve the p
   test.setTimeout(120000);
   const errors: string[] = []; page.on('pageerror', e => errors.push(e.message));
   await page.goto('/#mission');
-  await page.getByPlaceholder('Operator').fill('admin'); await page.getByPlaceholder('Password').fill('antijam2026');
+  await page.getByPlaceholder('Operator').fill(testOperator); await page.getByPlaceholder('Password').fill(testPassword);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   const center = page.getByRole('region', { name: 'Swarm command center' }); await expect(center).toBeVisible();
   await resetMission(center); await missionSetting(center, 'Fleet size', '10');
-  const auth = await request.post('http://127.0.0.1:18000/auth/token', { form: { username: 'admin', password: 'antijam2026' } });
+  const auth = await request.post('http://127.0.0.1:18000/auth/token', { form: { username: testOperator, password: testPassword } });
   const headers = { Authorization: `Bearer ${(await auth.json()).access_token}` };
   const snapshot = async () => (await request.get('http://127.0.0.1:18000/mission/simulation', { headers })).json();
   const before = await snapshot();
@@ -77,7 +79,7 @@ test('field station layers, quality, cameras and responsive views preserve the p
 
 test('missing surface maps retain readable terrain and reduced-motion site controls', async ({ page }) => {
   await page.route('**/*terrain-*.png', route => route.abort('failed')); await page.emulateMedia({ reducedMotion: 'reduce' });
-  await page.goto('/#mission'); await page.getByPlaceholder('Operator').fill('admin'); await page.getByPlaceholder('Password').fill('antijam2026');
+  await page.goto('/#mission'); await page.getByPlaceholder('Operator').fill(testOperator); await page.getByPlaceholder('Password').fill(testPassword);
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   const center = page.getByRole('region', { name: 'Swarm command center' });
   await center.getByRole('button', { name: '3D world', exact: true }).click();

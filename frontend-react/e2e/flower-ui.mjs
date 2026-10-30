@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 // A real round, armed through the authenticated Attack Lab before dispatch.
 import {chromium,expect} from '@playwright/test';
 import fs from 'node:fs';
@@ -6,7 +8,7 @@ const dir=process.env.FLARE_ARTIFACT_DIR||`artifacts/repair-flower-ui-${Date.now
 const browser=await chromium.launch({executablePath:process.env.FLARE_CHROME_PATH||'/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',headless:true,args:['--use-angle=metal']});
 const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();const errors=[];page.on('pageerror',e=>errors.push(e.message));
 try{
- await page.goto(front+'#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto(front+'#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  for(const [label,value] of [['Fleet size','10'],['Formation','circle'],['Radio range','1000']]){
   await center.getByRole('button',{name:'Mission setup',exact:true}).click();await center.getByRole('dialog',{name:'Mission setup',exact:true}).getByLabel(label,{exact:true}).selectOption(value);await center.getByRole('button',{name:'Close Mission setup',exact:true}).click();
@@ -16,7 +18,7 @@ try{
  await center.getByRole('tab',{name:'Events',exact:true}).click();await center.getByLabel('Condition group').selectOption('fl');await center.getByLabel('Attack profile').selectOption('poisoned');await center.getByLabel('Attack duration',{exact:true}).fill('300');await center.getByTestId('attack-apply').click();
  await expect(center.getByLabel('Active conditions')).toContainText('Awaiting Participating Round');
  await center.getByRole('button',{name:'Play mission',exact:true}).click();
- const auth=await context.request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}}),headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const auth=await context.request.post(api+'/auth/token',{form:{username: testOperator,password: testPassword}}),headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const events=[];let cursor=0,result;
  const started=Date.now();while(Date.now()-started<180000){
   const r=await context.request.get(api+`/mission/simulation/events?after=${cursor}`,{headers});expect(r.ok()).toBeTruthy();const data=await r.json();events.push(...data.events);cursor=data.cursor;

@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import { missionSetting, resetMission, commandOutcomes } from './workspace-helpers';
 import {test,expect} from '@playwright/test';
 import type {Page,APIRequestContext,Locator} from '@playwright/test';
@@ -8,9 +10,9 @@ fs.mkdirSync(dir,{recursive:true});
 function record(control:string,path:string,effect:unknown,evidence='authenticated_frontend_packet_simulation'){const output=`${dir}/control-matrix.json`;const matrix:unknown[]=fs.existsSync(output)?JSON.parse(fs.readFileSync(output,'utf8')):[];matrix.push({control,backend_path:path,effect,evidence,timestamp:new Date().toISOString()});fs.writeFileSync(output,JSON.stringify(matrix,null,2));}
 async function setup(page:Page,request:APIRequestContext){
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible({timeout:30000});await center.getByRole('tab',{name:'Activity',exact:true}).click();await center.getByRole('tab',{name:'Commands',exact:true}).click();
- const auth=await request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const auth=await request.post(api+'/auth/token',{form:{username: testOperator,password: testPassword}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>{const r=await request.get(sim,{headers});expect(r.ok()).toBeTruthy();return r.json();};
  const metrics=async()=>{const r=await request.get(api+'/swarm/metrics',{headers});expect(r.ok()).toBeTruthy();return r.json();};
  const reset=async()=>{
@@ -192,7 +194,7 @@ test('absent FL measurements stay unavailable and measured zero stays zero (cont
  const {state,reset,errors}=await setup(page,request);await reset();const session=(await state()).session_id;
  let measured=false;
  await page.route('**/fl/metrics',route=>route.fulfill({json:{session_id:session,last_round:1,latest:{round:1,...(measured?{threat_f1:0}:{})},history:[]}}));
- const reload=async()=>{await page.reload();await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('navigation',{name:'Application',exact:true}).getByRole('link',{name:'Security',exact:true}).click();await page.getByRole('tab',{name:'Monitoring',exact:true}).click();};
+ const reload=async()=>{await page.reload();await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();await page.getByRole('navigation',{name:'Application',exact:true}).getByRole('link',{name:'Security',exact:true}).click();await page.getByRole('tab',{name:'Monitoring',exact:true}).click();};
  await reload();const metrics=page.getByRole('region',{name:'Security',exact:true}).locator('.federation-evidence');
  await expect(metrics.getByText('Threat classifier F1', {exact:true}).locator('..')).toContainText('—');
  await expect(metrics.getByText('Compression ratio',{exact:true}).locator('..')).toContainText('—');

@@ -1,10 +1,12 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import { missionSetting, resetMission } from './workspace-helpers';
 import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 const artifacts=process.env.FLARE_ARTIFACT_DIR||'/private/tmp/flare-mesh-browser';fs.mkdirSync(artifacts,{recursive:true});
 test('network routes, real packet replay, 3D parity and responsive workspace',async({page})=>{
  const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  await resetMission(center);await missionSetting(center,'Fleet size','30');
  await center.getByLabel('Topology',{exact:true}).selectOption('self_healing_mesh');await center.getByLabel('Speed',{exact:true}).selectOption('0.1');
@@ -31,7 +33,7 @@ test('network routes, real packet replay, 3D parity and responsive workspace',as
 });
 test('isolated synchronized comparison and exportable all-ten benchmark',async({page})=>{
  test.setTimeout(120000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  // Start from a bounded, paused live fleet; this workflow measures the isolated
  // experiment rather than inheriting the preceding regional-jamming workload.

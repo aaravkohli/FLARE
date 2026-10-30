@@ -25,6 +25,7 @@ Icon
 *.secret
 secrets/
 config/secrets.yaml
+**/credentials.json
 
 # =============================================================================
 # Python

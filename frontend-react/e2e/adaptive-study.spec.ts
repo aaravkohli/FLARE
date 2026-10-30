@@ -1,11 +1,13 @@
+import {signInToMission} from './workspace-helpers';
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 import {createHash} from 'node:crypto';
 test('isolated production study submits once, retains partial results and exports without resetting mission',async({page,request})=>{
  test.setTimeout(150000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
- const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
- const login=await request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});
+ const center=await signInToMission(page);
+ const login=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});
  const headers={Authorization:`Bearer ${(await login.json()).access_token}`};
  const live=async()=>(await request.get('http://127.0.0.1:18000/mission/simulation',{headers})).json();
  const before=await live();
@@ -35,8 +37,7 @@ test('isolated production study submits once, retains partial results and export
 });
 
 test('lost study receipt is never automatically resubmitted',async({page,request})=>{
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
- const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
+ const center=await signInToMission(page);
  await center.getByRole('button',{name:'Topology benchmark',exact:true}).click();await center.getByRole('tab',{name:'Adaptive Study',exact:true}).click();
  let submissions=0,identity='';
  await page.route('**/mission/simulation/experiments',async route=>{
@@ -48,7 +49,7 @@ test('lost study receipt is never automatically resubmitted',async({page,request
  const study=center.getByRole('region',{name:'Adaptive resilience study'});
  await study.getByRole('button',{name:'Run adaptive study',exact:true}).click();
  await expect(study.getByRole('alert')).toContainText('not automatically repeated');await page.waitForTimeout(2000);expect(submissions).toBe(1);
- const token=await request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});
+ const token=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});
  const headers={Authorization:`Bearer ${(await token.json()).access_token}`};
  expect((await request.post(`http://127.0.0.1:18000/mission/simulation/experiments/${identity}/control`,{headers,data:{action:'cancel'}})).ok()).toBe(true);
 });

@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {chromium,expect} from '@playwright/test';
 import fs from 'node:fs';
 const api=process.env.FLARE_REVIEW_API,front=process.env.FLARE_REVIEW_FRONTEND,out=process.env.FLARE_ARTIFACT_DIR;
@@ -8,9 +10,9 @@ const page=await browser.newPage({viewport:{width:1440,height:1000}}),errors=[],
 page.on('pageerror',error=>errors.push(error.message));
 const report=(name,status,detail)=>{checks.push({name,status,detail});fs.writeFileSync(out+'/extended-result.json',JSON.stringify({checks,errors},null,2));};
 try{
- const auth=await page.request.post(api+'/auth/token',{form:{username:'admin',password:'antijam2026'}}),headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const auth=await page.request.post(api+'/auth/token',{form:{username: testOperator,password: testPassword}}),headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>await(await page.request.get(api+'/mission/simulation',{headers})).json();
- await page.goto(front+'/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto(front+'/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
  if(await center.getByRole('button',{name:'Pause mission',exact:true}).isVisible())await center.getByRole('button',{name:'Pause mission',exact:true}).click();
  await center.getByRole('button',{name:'Route probes',exact:true}).click();await center.getByLabel('Route source').selectOption('drone_1');await center.getByLabel('Route destination').selectOption('sim_uav_006');

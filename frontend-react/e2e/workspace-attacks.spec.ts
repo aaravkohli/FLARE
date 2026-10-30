@@ -1,3 +1,5 @@
+import { testCredentials } from './support/credentials.mjs';
+const { username: testOperator, password: testPassword } = testCredentials();
 import {test,expect} from '@playwright/test';
 import fs from 'node:fs';
 import {gunzipSync} from 'node:zlib';
@@ -5,9 +7,9 @@ import { missionSetting, resetMission } from './workspace-helpers';
 const directory=process.env.FLARE_ARTIFACT_DIR||'/private/tmp/flare-workspace-redesign';fs.mkdirSync(directory,{recursive:true});
 test('workspace tabs, independent targeting, attack lifecycle, bottom panel and responsive layouts',async({page,request})=>{
  test.setTimeout(120000);const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await expect(center).toBeVisible();
- const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username:'admin',password:'antijam2026'}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
+ const auth=await request.post('http://127.0.0.1:18000/auth/token',{form:{username: testOperator,password: testPassword}});const headers={Authorization:`Bearer ${(await auth.json()).access_token}`};
  const state=async()=>await (await request.get('http://127.0.0.1:18000/mission/simulation',{headers})).json();
  await missionSetting(center,'Fleet size','10');await missionSetting(center,'Formation','distributed');await resetMission(center);await center.getByLabel('Speed',{exact:true}).selectOption('1');
  const attack=center.getByRole('region',{name:'Simulation event'});await expect(attack).toBeVisible();
@@ -41,7 +43,7 @@ test('workspace tabs, independent targeting, attack lifecycle, bottom panel and 
 });
 
 test('benchmark individual seeds, filters, sorting, details and complete export survive navigation',async({page})=>{
- test.setTimeout(150000);await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ test.setTimeout(150000);await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await center.getByRole('button',{name:'Topology benchmark',exact:true}).click();const benchmark=center.locator('.experiment-workspace-page:not([hidden])');
  await benchmark.getByLabel('Experiment fleet size').selectOption('10');await benchmark.getByLabel('Experiment duration').fill('10');await benchmark.getByLabel('Experiment seeds').fill('7,42');await benchmark.getByRole('button',{name:'Run all ten',exact:true}).click();
  await expect(benchmark.getByText(/Partial results/)).toBeVisible();await expect(benchmark.getByText(/Final results/)).toBeVisible({timeout:120000});await expect(benchmark.locator('tbody>tr')).toHaveCount(20);
@@ -56,12 +58,12 @@ test('benchmark individual seeds, filters, sorting, details and complete export 
 
 test('WebGL unavailable falls back to the authoritative 2D view',async({page})=>{
  await page.addInitScript(()=>{const original=HTMLCanvasElement.prototype.getContext;HTMLCanvasElement.prototype.getContext=function(type:string,...args:unknown[]){if(type==='webgl'||type==='webgl2'||type==='experimental-webgl')return null;return Reflect.apply(original,this,[type,...args]);} as typeof original;});
- await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await center.getByRole('button',{name:'3D world',exact:true}).click();await expect(center.getByRole('button',{name:'2D network',exact:true})).toHaveAttribute('aria-pressed','true');await expect(center.getByRole('img',{name:'Authoritative 2D mission network'})).toBeVisible();
 });
 
 test('cancelled benchmark retains partial measurements and labels remaining runs explicitly',async({page})=>{
- test.setTimeout(90000);await page.goto('/#mission');await page.getByPlaceholder('Operator').fill('admin');await page.getByPlaceholder('Password').fill('antijam2026');await page.getByRole('button',{name:'Sign in',exact:true}).click();
+ test.setTimeout(90000);await page.goto('/#mission');await page.getByPlaceholder('Operator').fill(testOperator);await page.getByPlaceholder('Password').fill(testPassword);await page.getByRole('button',{name:'Sign in',exact:true}).click();
  const center=page.getByRole('region',{name:'Swarm command center'});await center.getByRole('button',{name:'Topology benchmark',exact:true}).click();const benchmark=center.locator('.experiment-workspace-page:not([hidden])');await benchmark.getByLabel('Experiment fleet size').selectOption('10');await benchmark.getByLabel('Experiment duration').fill('10');await benchmark.getByRole('button',{name:'Run all ten',exact:true}).click();
  await expect(benchmark.locator('tbody>tr').first()).toBeVisible({timeout:60000});await benchmark.getByRole('button',{name:'Cancel experiment',exact:true}).click();await expect(benchmark.getByText('Cancelled',{exact:true})).toBeVisible();await expect(benchmark.getByText(/Partial results/)).toBeVisible();await expect(benchmark.getByText('Not run',{exact:true}).first()).toBeVisible();const completed=await benchmark.locator('tbody>tr').count();expect(completed).toBeGreaterThan(0);expect(completed).toBeLessThan(30);await page.waitForTimeout(1100);await expect(benchmark.locator('tbody>tr')).toHaveCount(completed);await benchmark.getByText(/Replayable packet traces/).click();const downloaded=page.waitForEvent('download');await benchmark.locator('.experiment-traces').getByRole('button').filter({hasNotText:' · partial'}).first().click();const file=await downloaded;const contents=gunzipSync(fs.readFileSync((await file.path())!)).toString('utf8');expect(JSON.parse(contents.trim().split('\n')[0]).schema_version).toBe('mission_packet_event_v1');await center.screenshot({path:`${directory}/benchmark-partial.png`});
 });
